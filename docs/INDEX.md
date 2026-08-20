@@ -40,7 +40,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | A red suite is never just reported | skill `failing-tests`; this repo's debug routing [`plans/AGENTS.md`](../plans/AGENTS.md) |
 | Plan/roadmap/ledger structure, lifecycle and method | skill `plans`; this repo's layout, scripts and skill names [`plans/AGENTS.md`](../plans/AGENTS.md) |
 | Reviewing a branch, a docs diff, a massive branch, or only the new commits | skills `review`, `docs-review`, `big-review`, `big-review-all`, `incremental-review` |
-| Review files as work orders; addressing and deleting findings | skills `address-review`, `review-lifecycle` |
+| Review files as work orders; splitting, deferring and deleting findings | skill `review-lifecycle` (the procedure that obeys it: skill `address-review`) |
 | Continuation, handoff and resume prompt shape | skill `handoff` |
 | One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
 | Code comments — default to none | global agent instructions (mechanics: skill `comments`) |

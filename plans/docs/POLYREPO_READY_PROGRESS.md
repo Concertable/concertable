@@ -39,11 +39,12 @@ file. See `## Decisions`.
    below. Afterwards Tommy runs `/plugin marketplace update agent-standards` per machine so the seven new
    routers resolve in Claude; Codex needs nothing beyond that repo being on merged `main`.
 
-2. **Then the `^reviews/.*\.md$` route row**, once the plugin refresh has happened on every machine. It is
-   deliberately not in this slice: a route row naming a skill the plugin cache has not reinstalled yet
-   hard-blocks writes to `reviews/**` until the refresh, the same trap that kept `handoff` out of the table
-   in Phase 1. The row is what restores automatic delivery of the review-file lifecycle, which used to come
-   from `reviews/AGENTS.md` sitting in the directory.
+2. **Then the `^reviews/.*\.md$` route row.** It is deliberately not in this slice: a route row naming a
+   skill the plugin cache has not reinstalled yet hard-blocks every write to `reviews/**` until the refresh,
+   the same trap that kept `handoff` out of the table in Phase 1. The row is what restores automatic
+   delivery of the review-file lifecycle, which used to come from `reviews/AGENTS.md` sitting in the
+   directory. **Pass condition:** `review-lifecycle` resolves after `/plugin marketplace update
+   agent-standards` on this machine, and Tommy has confirmed the same on any other machine he works from.
 
 3. **N1 family 2 — merge/PR (634 lines): `merge`, `merge-docs`, `pr-preflight`, `create-gh-pr`.** Same
    producer-then-consumer shape. Try the family-1 answer first — resolve values mechanically, ship no values
@@ -109,7 +110,21 @@ N1 family 1, consumer (this repo):
 
 ## Reviews
 
-`/docs-review` over `04d274979..HEAD` → recorded below once run for this slice.
+`/docs-review` over `133b018da..eb089c56a` → `reviews/Docs-docs_polyrepo-ready-nodes.md`. Three findings,
+all fixed and ticked; no open findings. **Run from the moved copy of the procedure**
+(`standards/process/review/DOCS.md` on the producer branch), because this branch deletes the in-repo
+`docs-review` skill and #6 has not merged — which discharges the family's own gate, "`docs-review` still
+runs end-to-end from the moved copy", on this slice's diff.
+
+- `ACC1` — `DOCS_ROADMAP.md`'s `docs/polyrepo-ready` row still measured N1 at 28 skills / 3,285 lines after
+  six of them left. The roadmap is the durable tracker, so its figures now move with the plan's.
+- `HOME1` — the new `docs/INDEX.md` row named `address-review` beside `review-lifecycle` as owners of one
+  rule, in a file whose premise is one owner per rule. `review-lifecycle` owns it; `address-review` is
+  named as the procedure that obeys it.
+- `INST1` — Next Step 2 gated the route row on "the plugin refresh has happened on every machine", which
+  nothing can check. It now carries an objective pass condition.
+
+The producer PR is reviewed in its own repo — `agent-standards` `reviews/Docs-polyrepo-ready-review-family.md`.
 
 Phase 1's reviews, all clean and merged: this repo's #669 → `reviews/Docs-docs_polyrepo-ready.md`, four
 findings all fixed; agent-standards #5 → `reviews/Docs-polyrepo-ready-process.md`, one finding fixed and one

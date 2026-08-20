@@ -5,7 +5,8 @@ Concertable connects venues, artists and fans around live music ([`docs/OVERVIEW
 **No standard lives in this repo — not for code, not for process.** How work gets done is a set of
 load-on-demand skills: `git-branching`, `committing`, `merging`, `remote-validation`, `plans`,
 `failing-tests`, `docs-and-debt`, and the review family (`review`, `docs-review`, `big-review`,
-`big-review-all`, `incremental-review`, `address-review`, `review-lifecycle`). What stays here is only what is true of *Concertable* — its real
+`big-review-all`, `incremental-review`, `address-review`, `review-lifecycle`). What stays here is only
+what is true of *Concertable* — its real
 labels, workflows, scripts and commands, plus the few invariants whose violation is silent and
 expensive enough not to wait for a skill invocation.
 
