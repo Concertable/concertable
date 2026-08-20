@@ -110,7 +110,7 @@ N1 family 1, consumer (this repo):
 
 ## Reviews
 
-`/docs-review` over `133b018da..eb089c56a` → `reviews/Docs-docs_polyrepo-ready-nodes.md`. Three findings,
+`/docs-review` over `133b018da..2053862d1` → `reviews/Docs-docs_polyrepo-ready-nodes.md`. Three findings,
 all fixed and ticked; no open findings. **Run from the moved copy of the procedure**
 (`standards/process/review/DOCS.md` on the producer branch), because this branch deletes the in-repo
 `docs-review` skill and #6 has not merged — which discharges the family's own gate, "`docs-review` still
