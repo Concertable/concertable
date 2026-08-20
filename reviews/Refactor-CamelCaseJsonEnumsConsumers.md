@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `7306a826194db511e9da0d6b118a14297bec5597`  _(2026-08-20)_
-**Security-reviewed up to commit:** `7306a826194db511e9da0d6b118a14297bec5597`  _(2026-08-20)_ — no findings. The rework only moves the same strict camel-case converter to the three serialization seams and removes per-type attributes; deserialization targets known closed types (no polymorphic type-name binding from untrusted input) and the bus now rejects integer enum values (`allowIntegerValues:false`) — a net tightening. No auth/authz, routing, or input-parsing surface changed.
+**Reviewed up to commit:** `d3112b99189d6e3c69931ec7c2c7f85969abc3f7`  _(2026-08-20)_
+**Security-reviewed up to commit:** `d3112b99189d6e3c69931ec7c2c7f85969abc3f7`  _(2026-08-20)_ — no findings. The rework only moves the same strict camel-case converter to the three serialization seams and removes per-type attributes; deserialization targets known closed types (no polymorphic type-name binding from untrusted input) and the bus now rejects integer enum values (`allowIntegerValues:false`) — a net tightening. No auth/authz, routing, or input-parsing surface changed.
 
 > Range reviewed: `836a15a56..cdf21ea2a` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
