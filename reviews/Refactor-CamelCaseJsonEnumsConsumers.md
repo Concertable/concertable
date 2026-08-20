@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a927478f6`  _(2026-08-16)_
-**Security-reviewed up to commit:** `a927478f6`  _(2026-08-16)_ — no findings (integers now rejected = net tightening; role/status mismatch fails closed, no authz bypass; published converter safe; test client is test-only).
+**Reviewed up to commit:** `7306a826194db511e9da0d6b118a14297bec5597`  _(2026-08-20)_
+**Security-reviewed up to commit:** `7306a826194db511e9da0d6b118a14297bec5597`  _(2026-08-20)_ — no findings. The rework only moves the same strict camel-case converter to the three serialization seams and removes per-type attributes; deserialization targets known closed types (no polymorphic type-name binding from untrusted input) and the bus now rejects integer enum values (`allowIntegerValues:false`) — a net tightening. No auth/authz, routing, or input-parsing surface changed.
 
 > Range reviewed: `836a15a56..cdf21ea2a` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -31,3 +31,36 @@
 - **Lens E conventions:** clean — no comments added; label maps follow the existing `GENRE_LABELS`/`DEAL_TYPE_LABELS` convention; null-vs-undefined unaffected.
 - **Lens F test coverage:** Genre + MessageAction boundary tests added; `MessageSenderKind` covered by `MessagingInboxTests` (updated); global-policy enums covered by the existing `AddApplicationJson` mechanism test.
 - **Authz check:** backend keys `FrozenDictionary<TenantRole, …>` by enum value, not wire string — casing flip cannot bypass authorization.
+
+## Incremental review — 2026-08-20 (seam rework)
+
+> Range: `d1422b6b..7306a8261` (full PR, re-reviewed after the approach change). The per-enum
+> `[JsonConverter]`/`[JsonStringEnumMemberName]` attributes were replaced by one strict camel-case
+> converter applied at the three serialization seams (MVC `AddApplicationJson`, SignalR
+> `AddSignalR().AddJsonProtocol`, bus `MessageSerializer`); all per-enum attributes and the bespoke
+> `StrictCamelCaseEnumConverter` were deleted. Native (Layer 1) + security (Layer 2) + architecture lenses.
+
+- **Layer 1 (native), clean in-range:** confirmed all four hosts route MVC through `AddApplicationJson`,
+  the single `AddSignalR` registration carries the converter, and `MessageSerializer` is the only other
+  serialization path touching these enums. `JsonNamingPolicy.CamelCase` reproduces every wire value
+  exactly (`DnB`→`dnB`, `HipHop`→`hipHop`, `FlatFee`→`flatFee`, `Org`→`org`); `DealTypeNames`/
+  `HeaderTypeNames` survive as `[JsonDerivedType]` `$type` discriminators, unaffected by the enum policy.
+- **Lens F:** MVC seam covered by `GenreWireFormatTests`; bus seam covered by the new
+  `MessageSerializer` enum tests (camel-case out, integer rejected); `MessageAction` boundary test
+  rerouted through the shared policy. SignalR seam has no unit test but the merge-queue mailbox/
+  notification UI E2E exercises it end-to-end (a PascalCase regression breaks the camel-case label
+  mapping and fails the scenario), so it is covered, not a gap.
+- **Lenses B/C/D/E:** clean — converter registrations are inlined at each seam (no new cross-service or
+  cross-module reference; `MessageSerializer` in shared messaging infra, SignalR in shared notification);
+  no seeders, no logging templates, no comments, style-conformant.
+
+### Out of scope — deferred consumer surfaces (NOT this PR's diff)
+
+The native pass flagged PascalCase literals in `app/web/b2b/{venue,artist}/**`
+(`VenueAcceptCheckoutPage.tsx`, `ApplicationCard.tsx`, dashboard `mid/thriving` fixtures). These files
+are **not modified by this PR** and are identical to `origin/main`: commit `2c00f7bbc` deliberately keeps
+the venue/artist surfaces on the published-package PascalCase baseline because they carve-build against
+the published `@concertable/*` packages, which only republish after this producer PR merges. Their
+internal consistency is gated by the `carve-fe (web/b2b/{venue,artist})` checks (green on the producer
+diff). Migrating them to camel-case is the stacked consumer cut-over (`Refactor/CamelCaseJsonEnumSurfaces`),
+legal only once the new package is on the feed — i.e. after this merge + platform sync.
