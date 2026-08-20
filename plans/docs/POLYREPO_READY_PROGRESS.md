@@ -5,7 +5,7 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-git-family`
 - Branch: `Docs/docs_polyrepo-ready-git-family`, from `main` at `1176a002f` - N1 family 4, git.
-- PR: this repo - **#679**, open at `c1254eb75`; producer - **agent-standards #9, open at `9bf6b55`, `verify` green**.
+- PR: this repo - **#679**, open at `c1254eb75`; producer - **agent-standards #9, open at `3bbf7ab`, `verify` green, reviewed, ready to merge**.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as #676 + agent-standards #7 at `30734a9`; N1 family 3 as **#677, merged 2026-08-20 at
   `1176a002f`** + agent-standards #8 at `2d9a8fe`.
@@ -45,12 +45,20 @@ plan-workflow (203) and `package-cutover` (184).
 
 ## Next Steps
 
-1. **Land agent-standards #9, then this branch's PR.** The producer half must merge first, as every family
-   has: the consumer deletes the skill bodies, so a consumer merged alone leaves the procedures reachable
-   under no name. This branch is **meta-only** - every changed path is `.agents/**`, `.claude/**`, `docs/**`
-   or `plans/**`, and `scripts/worktrees.ps1` is byte-identical to what was already there (only its
-   provenance entry is new) - so it lands through `/merge-docs`. Then close this worktree with
+1. **Land agent-standards #9, then #679 - both are reviewed, green and waiting only on the merge itself.**
+   The producer half must merge first, as every family has: the consumer deletes the skill bodies, so a
+   consumer merged alone leaves the procedures reachable under no name. #679 is **meta-only** - every changed
+   path is `.agents/**`, `.claude/**`, `docs/**`, `plans/**` or `reviews/**`, and `scripts/worktrees.ps1` is
+   byte-identical to what was already there (only its provenance entry is new) - so it lands through
+   `/merge-docs`. Then close this worktree with
    `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 679 -PlanManaged`.
+
+   **Blocked on authorization, not on work.** `gh pr merge` was refused twice in the authoring session -
+   once by `merge_review_gate.py` (it could not resolve git state from the tool's working directory) and
+   once by the harness's own action classifier. Nothing is outstanding in either diff: the docs review is
+   recorded at `reviews/Docs-docs_polyrepo-ready-git-family.md` with all three findings fixed, agent-standards
+   `verify` is green at `3bbf7ab` (161/161 hook tests, 176 generated files current), and #679's matrix was
+   passing at hand-off. Merge needs Tommy's go-ahead or a permission rule.
 
 2. **Refresh the plugin cache once more after #9 merges**, for the same reason as last time: the two renamed
    skills resolve under no name until the installed cache carries them, and the old `sync`/`worktree` names
@@ -76,7 +84,7 @@ plan-workflow (203) and `package-cutover` (184).
 
 ## Completed work
 
-- **N1 family 4 producer - agent-standards #9, open at `9bf6b55`.** Six docs under
+- **N1 family 4 producer - agent-standards #9, open at `3bbf7ab`.** Six docs under
   `standards/process/git/`, one router each: `COMMIT.md` <- `commit`; `COMMIT_ALL.md` <- `commit-all`;
   `PUSH.md` <- `push`; `PULL.md` <- `pull`; `SYNC.md` <- **`sync-checkout`** (was `sync`); `WORKTREE.md` <-
   **`open-worktree`** (was `worktree`). Phase 1 had already moved this family's *principles* -
