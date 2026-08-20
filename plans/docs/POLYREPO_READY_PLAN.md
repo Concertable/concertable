@@ -100,7 +100,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 
 | # | Node | Size | Destination | Leaves behind |
 |---|---|---|---|---|
-| N1 | `.agents/skills/` — 28 skills | **3,285** lines | platform-wide, six families | per-repo values: script paths, suite names |
+| N1 | `.agents/skills/` — 22 skills left of 28 | **2,472** of 3,285 lines | platform-wide, five families left of six | per-repo values: script paths, suite names |
 | N2 | `.agents/skill-routes.json` — 36 rows | 36 rows | the *convention* + a generator | the table itself: per-repo data |
 | N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
 | N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
@@ -120,7 +120,7 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 
 | Family | Lines | Why it is common |
 |---|---|---|
-| `review` · `docs-review` · `big-review` · `incremental-review` · `address-review` · `big-review-all` | 813 | Every repo reviews before merge. Only 25 lines name anything here, and those are doc paths |
+| ~~`review` · `docs-review` · `big-review` · `incremental-review` · `address-review` · `big-review-all`~~ **done** | 813 | Every repo reviews before merge. Landed as seven `standards/process/review/` docs — `reviews/AGENTS.md` joined the family, since the review-file lifecycle is the same rule in every repo |
 | `merge` · `merge-docs` · `pr-preflight` · `create-gh-pr` | 634 | Every repo has a queue, a docs bypass, a preflight, PRs. The queue and `platform-sync` are *platform* facts, not one service's |
 | `e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer` | 1,022 | Every repo debugs a red suite by tier. The *procedure* is common; the artifact it invokes (`scripts/e2e.ps1`, the suite names) is the per-repo value |
 | `commit` · `commit-all` · `push` · `pull` · `sync` · `worktree` | 429 | Zero lines name this repo. Also needs reconciling with `dotagents`' `commit-push`/`sync`/`pull-main`, which already duplicate them |
@@ -131,11 +131,18 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 its suite names, its hook and migration paths — named in a thin `AGENTS.md` on the `Concertable.Payment`
 model. The same applies to `plans/AGENTS.md` (N7).
 
-One family per slice, ordered by cost of duplication: review → merge/PR → test-debug (largest; needs the
+One family per slice, ordered by cost of duplication: ~~review~~ → merge/PR → test-debug (largest; needs the
 parameterisation decided first) → git (plus the `dotagents` overlap) → plan-workflow → `package-cutover`.
 
 **Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
 fresh install, and what stays at root is only values this repo owns.
+
+**The review family answered "how do you parameterise a workflow?" — you don't.** It leaves *no* values
+file behind. Every repo-specific input the procedure needs is already resolved mechanically at run time:
+`skill_router.py --skills-for` over that repo's route table, every `AGENTS.md` in a touched directory, and
+whichever architecture doc the root `AGENTS.md` names as the boundary premise. The remaining families should
+try that shape first and reach for a named value only where a *path a script lives at* genuinely cannot be
+discovered — which is the open question the test-debug family still has to settle.
 
 ### N2 — the route table's convention (36 rows)
 
