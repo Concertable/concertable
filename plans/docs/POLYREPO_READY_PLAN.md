@@ -48,6 +48,19 @@ re-anchor should follow, not a second set of prefixes.
    lives is contentious and gated on that roadmap's §6. How to *write* a plan has no locality question,
    so it does not wait behind it.
 
+## The only two destinations
+
+[`POLYREPO_ROADMAP.md`](../platform/POLYREPO_ROADMAP.md) §6, decided 2026-08-18: *"there is no `api/` node
+in a polyrepo, so `api/agents/` and `api/AGENTS.md` are destinations with no future. Everything in them
+re-homes to `standards/` (platform-wide, inherited by every service repo) or to the owning service's repo."*
+
+**Every phase below answers one question per artifact: platform-wide → `agent-standards`, or single-service
+→ that service's repo. There is no third answer.** "It names this repo's scripts", "it is the in-repo
+floor", "it is genuinely per-repo" are not destinations — the root is being deleted, so anything left there
+is deleted with it or replicated eight times, which is the failure this epic exists to end. The test is
+**common across services**, never *does it mention Concertable*: `/merge` names the queue and
+platform-sync and is still platform-wide, because all eight repos merge and all eight own a sync.
+
 ## Phases
 
 ### Phase 1 — move the generic plan process out ✅ **done**
@@ -63,11 +76,15 @@ Target `Concertable/agent-standards` (PR [#5](https://github.com/Concertable/age
 - [x] `plans` skill description widened; `handoff` router added; the README charter reworded to say which
   domain is a roster and which is method, and why a fourth process repo was rejected.
 
-**What stayed in-repo, deliberately:** `plans/AGENTS.md` (71 → 75 lines) keeps the `plans/<epic>/`
-layout, `plan_graph.py` and `plan_handoff_stop.py`, `worktrees.ps1 close -PlanManaged`, the debug-skill
-names by tier, `/resume-plan` and `/continue-roadmap`, `initial-migrations.ps1`, the merge-queue E2E
-tier, and the carve's own instance of the breaking-contract rule. That is genuinely per-repo and is what
-each carved service will carry.
+**What stayed in-repo — and owes the two-destination test.** `plans/AGENTS.md` (71 → 75 lines) kept the
+`plans/<epic>/` layout, `plan_graph.py` and `plan_handoff_stop.py`, `worktrees.ps1 close -PlanManaged`, the
+debug-skill names by tier, `/resume-plan` and `/continue-roadmap`, `initial-migrations.ps1`, the
+merge-queue E2E tier, and the carve's instance of the breaking-contract rule. Calling that "genuinely
+per-repo" was the mistake above in miniature: **every one of those is platform-wide.** All eight repos run
+a plan graph, close plan-managed worktrees, debug by tier, and own a merge queue; only the *values* differ
+(this service's script path, this service's suite names). So the content belongs in `standards/` with the
+values named by each repo's own thin `AGENTS.md` — not as 75 lines copied eight times, which is what the
+ledger's "generated or hand-kept?" open question was really asking. Phase 5 settles it with the rest.
 
 **Gate — met.** `plan_graph.py` 0 errors, `docs_reachability.py` 0 errors (26 pre-existing warnings, all
 in `plans/`); the `plans` route still fires on a `plans/**/*.md` write; hook tests 14/14 here and 161/161
@@ -83,11 +100,15 @@ anchored floor silently matches nothing there: precisely the failure the floors 
 **Gate:** replay every tracked path through the table and confirm 100% coverage **in both shapes** — the
 monorepo tree, and a simulated carved tree with the prefix stripped.
 
-### Phase 3 — re-premise the hub docs
+### Phase 3 — re-home the hub docs, rather than re-premise them
 
-Root `AGENTS.md` opens "It is a monorepo (a convenience, not the architecture)". A carved service repo
-inheriting that inherits a false statement; same for `docs/INDEX.md`'s framing. Reword so the corpus
-describes a platform of services, with the monorepo named as current packaging rather than premise.
+The original framing here was "root `AGENTS.md` opens *It is a monorepo* — reword it so the monorepo is
+named as current packaging rather than premise". Under §6 that is effort spent on a file with no future:
+root `AGENTS.md` and `docs/INDEX.md` are as deleted as `api/AGENTS.md` was. **Split their content by the
+same test instead** — every rule in them is platform-wide (→ `agent-standards`, where the eight repos
+inherit it) or single-service (→ that service's repo) — and let what remains at root be whatever genuinely
+describes the monorepo *while it exists*, since it dies with it. Rewording the premise of a doomed hub is
+the cosmetic tier; re-homing its rules is the work.
 
 ### Phase 4 — prove it on one service, or it is not done
 
@@ -97,42 +118,43 @@ candidate — an adapter service with the fewest inbound dependencies.
 
 **This is the only phase that tests the claim.** The first three are edits; this is the evidence.
 
-### Phase 5 — the workflow skills, which Phase 1 never looked at
+### Phase 5 — the 28 workflow skills, split by the two-destination test
 
-Phase 1 moved the plan *standards*. It left all 28 executable skills in `.agents/skills/`, and a count of
-lines naming anything Concertable-specific (a service, script, hook path, CI job, label, doc) says that is
-wrong for two families:
+Phase 1 moved the plan *standards* and never looked at `.agents/skills/`. All 28 skills — 2,900 lines — sit
+in the root that is being deleted, and under §6 each one is platform-wide or single-service. Applying the
+test rather than the "does it name Concertable" question that produced a keep-bucket:
 
-| Family | Lines | Lines naming this repo |
+**Platform-wide → `agent-standards` (every service repo needs them, so a copy per repo is eight copies):**
+
+| Family | Lines | Why it is common |
 |---|---|---|
-| `review` · `docs-review` · `big-review` · `incremental-review` · `address-review` · `big-review-all` | 813 | 25 |
-| `commit` · `commit-all` · `push` · `pull` · `sync` | 334 | 0 |
-| `resume-plan` · `continue-roadmap` · `update-roadmap` | 163 | 14 |
-| `merge` · `e2e-*` · `integration-debug` · `pr-preflight` · `reset-test-explorer` · `package-cutover` | ~1,700 | 10–53 each — genuinely local, keep |
+| `review` · `docs-review` · `big-review` · `incremental-review` · `address-review` · `big-review-all` | 813 | Every repo reviews before merge. Only 25 lines name anything here, and those are doc paths |
+| `merge` · `merge-docs` · `pr-preflight` · `create-gh-pr` | 634 | Every repo has a queue, a docs bypass, a preflight, PRs. The queue and `platform-sync` are *platform* facts, not one service's |
+| `e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer` | 1,022 | Every repo debugs a red suite by tier. The *procedure* is common; the artifact it invokes (`scripts/e2e.ps1`, the suite names) is the per-repo value |
+| `commit` · `commit-all` · `push` · `pull` · `sync` · `worktree` | 429 | Zero lines name this repo. Also needs reconciling with `dotagents`' `commit-push`/`sync`/`pull-main`, which already duplicate them |
+| `resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt` · `auto-memory` | 203 | The executable counterparts of the `plans` skill Phase 1 already moved |
+| `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo that consumes the feed |
 
-`docs-review` is the clearest case: 195 lines, of which 5 carry a repo-specific reference (`api/**`/`app/**`
-as example paths, `plans/AGENTS.md`, `reviews/AGENTS.md`, `docs/INDEX.md`, one `docs_reachability.py` call).
-That is the same 96%-generic shape that justified moving `plans/agents/PLAN.md`, and it has no counterpart
-anywhere: `dotagents` carries no `review`/`docs-review`/`commit`/`push`, and `agent-standards` carries the
-process *standards* but no review workflow. Eight carved repos inherit eight copies otherwise — the exact
-copy-and-drift failure this epic exists to kill.
+**Single-service → that service's repo:** nothing in the current roster, which is the finding. What each
+repo carries is *values*, not procedure: its own `scripts/e2e.ps1`, its suite names, its hook paths, its
+`initial-migrations.ps1` — named in its own thin `AGENTS.md`, the way `Concertable.Payment` already models.
 
-The split follows Phase 1's shape: generic body out to `agent-standards/standards/process/` with its router,
-a thin in-repo floor keeping only the hook paths, script names, review-file location and skill names this
-repo actually owns. Order by cost of duplication: the review family first, then the git family (which also
-needs reconciling against `dotagents`' `commit-push`/`sync`/`pull-main`, functionally overlapping today),
-then the three plan-workflow skills, which are the executable counterparts of the `plans` skill Phase 1
-already moved.
+So the skill *bodies* leave, parameterised over those values, and each carved repo keeps a short floor that
+supplies them. The same applies to `plans/AGENTS.md`, which Phase 1 left behind (see its note above).
 
-**Gate:** for every moved skill, the in-repo remainder names only things that exist in *this* repo, the
-router resolves from a fresh install, and a simulated carved tree loses no rule. Same evidence bar as
-Phase 4 — and Phase 4's "prove it on one service" is not meaningful until this lands, because a carved
-Payment repo with no review skill cannot review anything.
+**Order by cost of duplication:** review family → merge/PR family → the test-debug family (largest, and
+needs the parameterisation decided first) → git family (plus the `dotagents` overlap) → plan-workflow.
+
+**Gate:** for each moved skill, a simulated carved tree loses no rule, the router resolves from a fresh
+install, and what remains at root is only values that repo genuinely owns. Phase 4 depends on all of it —
+"prove it on one service" is meaningless while a carved Payment repo would have no review, merge, or debug
+skill at all.
 
 ## Explicitly not in scope
 
 - Moving plan *documents* (4c above).
 - The polyrepo cut itself, its seam decision, or any repo creation.
 - `docs/analyzer-pushdown`, which is independent of this.
-- ~~The workflow skills in `.agents/skills/`~~ — silently out of scope until Phase 5 named them. Phase 1
-  measured three documents and moved three documents; nothing in it examined the skill roster.
+- ~~The workflow skills in `.agents/skills/`~~ — silently out of scope until Phase 5 named them, and first
+  classified with a "genuinely local, keep" bucket that §6 does not allow. Phase 1 measured three documents
+  and moved three documents; nothing in it examined the skill roster.

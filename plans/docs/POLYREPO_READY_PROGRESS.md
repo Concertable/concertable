@@ -42,10 +42,12 @@ reports "no checks reported" until it is retargeted — retarget it the moment #
    once against the monorepo tree, once against a tree with the prefix stripped, and require 100% both
    times. Do it on a branch that has #668's version of the table.
 
-3. **Phases 3, 4 and 5** as the plan states. Phase 5 (the workflow skills) was added after Phase 1 shipped
-   and is the larger remaining piece; Phase 4 is the only one that produces evidence rather than edits, and
-   it is not meaningful before Phase 5 — a carved service repo with no `review`/`docs-review` skill cannot
-   review anything. Do not call the item done without Phase 4.
+3. **Phases 3, 4 and 5** as the plan states, every artifact answered by the two-destination rule at the top
+   of the plan: platform-wide → `agent-standards`, single-service → that service's repo, nothing stays.
+   Phase 5 (all 28 workflow skills, 2,900 lines, none of them single-service) is the largest piece left and
+   Phase 4 depends on it — "prove it on one service" is meaningless while a carved Payment repo would have
+   no review, merge, or debug skill. Phase 3 is a re-homing pass, not a rewording pass. Do not call the item
+   done without Phase 4.
 
 **Open question for Tommy, not blocking:** each carved service repo will need its own thin
 `plans/AGENTS.md` and hook wiring naming its own script paths — the file this phase left behind is 75
@@ -130,12 +132,22 @@ Phase 4 settles), and #668 → an `## Incremental review` section on
   agent-standards. A route row naming a skill the machine has not reinstalled yet would block writes to
   `plans/**` until the plugin cache refreshed, and the `^plans/` row plus the widened `plans` description
   already carry the trigger.
-- **Phase 1 never examined the skill roster, and that is a scope gap, not a decision.** It measured three
-  documents and moved three documents. Counting lines that name anything Concertable-specific: the review
-  family (`review`, `docs-review`, `big-review`, `incremental-review`, `address-review`, `big-review-all`)
-  is 813 lines with 25 such lines; the git family (`commit`, `commit-all`, `push`, `pull`, `sync`) is 334
-  lines with **zero**; `docs-review` alone is 195 lines with 5. Neither family has a counterpart in
-  `dotagents` or `agent-standards`, so eight carved repos inherit eight copies. Now Phase 5 of the plan.
+- **There are only two destinations, and "in-repo floor" is not one of them.** `POLYREPO_ROADMAP` §6
+  (2026-08-18) already ruled it: everything re-homes to `standards/` (platform-wide) or to the owning
+  service's repo, because the root is deleted. The plan now states that rule before its phases, and two
+  earlier calls were wrong against it: Phase 5's first draft kept ~1,700 lines as "genuinely local", and
+  Phase 1's own note called the 75-line `plans/AGENTS.md` "genuinely per-repo". Both are platform-wide —
+  every repo runs a plan graph, merges, debugs by tier — with only the *values* differing. The test is
+  **common across services**, never *does it name Concertable*.
+- **All 28 skills (2,900 lines) are platform-wide; none is single-service.** That is the finding, not a
+  classification detail: review family 813 lines (25 naming this repo), merge/PR family 634, test-debug
+  family 1,022, git family 429 (zero), plan-workflow + misc 203, `package-cutover` 184. What a carved repo
+  keeps is values — its `scripts/e2e.ps1`, its suite names, its hook and migration paths — named in a thin
+  `AGENTS.md` on the `Concertable.Payment` model. This answers the ledger's old "generated or hand-kept?"
+  question: neither, the content leaves.
+- **Phase 3 was rewriting a doomed file.** "Re-premise root `AGENTS.md` so the monorepo reads as packaging,
+  not premise" spends effort on a hub that dies with the root. Re-homing its rules by the same test is the
+  work; the wording is the cosmetic tier.
 - **Codex needs no separate setup for this change.** The canonical guidance is `.agents/**` (Codex reads it
   directly; `.claude/skills/*` are stubs), both hooks already handle Claude and Codex, and Codex reaches the
   standards through per-domain junctions from `~/.agents/standards/agent-standards/*` into the local
