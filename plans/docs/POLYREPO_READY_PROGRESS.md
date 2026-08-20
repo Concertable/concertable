@@ -8,17 +8,17 @@
 - PR: this repo — #676, based on `main`; producer `Concertable/agent-standards` #7. Phase 1 shipped as this
   repo's #669 and agent-standards #5; N1 family 1 as this repo's #675 and agent-standards #6, both merged
   2026-08-20.
-- Dependency/package gates: **the producer merges first.** This branch deletes the four skill bodies the
-  producer publishes; landing this one first leaves the repo with no merge, PR-opening or preflight
-  procedure at all. No open `chore/platform-sync-*` PR.
-- Last reconciled: 2026-08-20 at the family-2 delivery gate — both PRs verified green and current from
-  `gh pr checks`/`gh pr view`, the E2E tier label applied, the two merge invocations handed to Tommy.
+- Dependency/package gates: **the producer merges first — discharged.** agent-standards #7 is `MERGED` at
+  `30734a9`, so the four docs this branch's deletions depend on are on that repo's `main`. No open
+  `chore/platform-sync-*` PR.
+- Last reconciled: 2026-08-20 after agent-standards #7 merged, from `gh pr view` on it and `gh pr checks`
+  on #676.
 
 ## Current state
 
-**Phase 1 and N1 family 1 are merged in both repos. N1 family 2 — the merge/PR family — is implemented,
-reviewed and verified green in both repos, and now waits only on Tommy running the two merge commands in
-Next Step 2, producer first.**
+**Phase 1 and N1 family 1 are merged in both repos. N1 family 2 — the merge/PR family — is published:
+agent-standards #7 landed at `30734a9`. The consumer half, #676, is reviewed and green and is the last
+step of the family.**
 
 Producer publishes four docs under `standards/process/merge/` with a router each; consumer (this branch)
 deletes 674 lines — the four skill bodies and their `.claude/skills` stubs — and re-points five citation
@@ -42,18 +42,17 @@ dependency.
    can find, which is why this slice's own docs review had to be run from the moved copy of the procedure.
    Codex needs nothing beyond both repos being on merged `main`.
 
-2. **Land N1 family 2 — both PRs are verified green and current; the two merge invocations are Tommy's.**
-   agent-standards #7 first, then #676:
+2. **Land the consumer half — #676, verified green and current. The invocation is Tommy's:**
 
    ```
-   ! cd C:/Users/TommySeery/source/repos/agent-standards; gh pr merge 7 --merge --delete-branch
    ! cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-merge-family; gh pr merge 676 --merge --auto
    ```
 
-   Two independent gates put those invocations in Tommy's hands, and step 0 of the queue procedure already
-   prescribes exactly this handover: `merge_review_gate.py` fails closed on a `WinError 267` (see
-   `## Decisions`), and the harness's auto-mode classifier declines the action for the agent regardless.
-   Both reviews are clean and recorded below. **#676 lands through the queue, not the
+   agent-standards #7 is done, at `30734a9`. Two independent gates put this invocation in Tommy's hands,
+   and step 0 of the queue procedure already prescribes exactly this handover: `merge_review_gate.py` fails
+   closed on a `WinError 267` (see `## Decisions`), and the harness's auto-mode classifier declines the
+   action for the agent regardless. Both reviews are clean and recorded below. **#676 lands through the
+   queue, not the
    meta-only path** — it edits a comment in `.github/workflows/test.yml` that pointed at a skill file it
    deletes, and a CI workflow definition fails the meta-only path gate by path even for a comment. That is
    the gate working, not a problem to route around; the alternative was shipping a known dead pointer.
@@ -91,7 +90,7 @@ dependency.
 
 ## Completed work
 
-- **N1 family 2 producer — agent-standards #7.** Four docs under
+- **N1 family 2 producer — agent-standards #7, merged 2026-08-20 at `30734a9`.** Four docs under
   `standards/process/merge/`, one router each: `QUEUE.md` (287) ← `merge`; `META_ONLY.md` (100) ←
   `merge-docs`; `PREFLIGHT.md` (108) ← `pr-preflight`; `OPENING.md` (95) ← `create-gh-pr`, routed by a new
   skill `open-pr`. `MERGING.md`'s delegation of the runnable poll loop re-pointed from "whatever executable
