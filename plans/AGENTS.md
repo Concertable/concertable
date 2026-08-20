@@ -65,9 +65,8 @@ fix → re-run loop. Here it routes by tier:
   [`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
 - **Merge-queue E2E tier.** The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are
   expensive and Docker-gated. **The merge queue IS the E2E gate — never run E2E locally ahead of a merge**,
-  and [`../.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) Step 4 is the single source of
-  truth for which tier runs. A plan phase line or kickoff prompt saying "run the E2E regress" **selects the
-  queue's tier**; it is not a reason to duplicate the run. The only local E2E is targeted diagnosis after a
+  and the `merge` skill's Step 4 is the single source of truth for which tier runs. A plan phase line or
+  kickoff prompt saying "run the E2E regress" **selects the queue's tier**; it is not a reason to duplicate the run. The only local E2E is targeted diagnosis after a
   queue failure, through the debug skills above.
 - A refactor that changes a **published** `Concertable.*` contract is a breaking package change and cannot
   land in one PR — B2B and Customer compile against the published packages, not the source beside them (the
