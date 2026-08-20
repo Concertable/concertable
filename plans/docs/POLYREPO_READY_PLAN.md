@@ -123,7 +123,7 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 | ~~`review` · `docs-review` · `big-review` · `incremental-review` · `address-review` · `big-review-all`~~ **done** | 813 | Every repo reviews before merge. Landed as seven `standards/process/review/` docs — `reviews/AGENTS.md` joined the family, since the review-file lifecycle is the same rule in every repo |
 | ~~`merge` · `merge-docs` · `pr-preflight` · `create-gh-pr`~~ **done** | 634 | Every repo has a queue, a docs bypass, a preflight, PRs. Landed as four `standards/process/merge/` docs. `create-gh-pr` became `open-pr`: a plugin installs per machine, and that name already belonged to a contradictory work-repo procedure |
 | ~~`e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer`~~ **done** | 1,022 | Every repo debugs a red suite by tier. Landed as six `standards/process/testing/` docs with every name kept. `docker-health.ps1` vendored through a new second tier of `vendor-hooks.ps1`; `e2e.ps1` and `integration.ps1` stayed, their invocation grammar stated and their own usage listings used as the discovery mechanism |
-| `commit` · `commit-all` · `push` · `pull` · `sync` · `worktree` | 429 | Zero lines name this repo. Also needs reconciling with `dotagents`' `commit-push`/`sync`/`pull-main`, which already duplicate them |
+| ~~`commit` · `commit-all` · `push` · `pull` · `sync` · `worktree`~~ **done** | 429 | Every repo commits, pushes, pulls and isolates a branch. Landed as six `standards/process/git/` docs. **"Zero lines name this repo" was wrong** — five skills held none, but `worktree` named Concertable in its own description and carried `scripts/worktrees.ps1`, the platform-sync gate and two sibling skill names; the script turned out repo-invariant and was vendored, so the doc kept the citation as a constant. `sync` → `sync-checkout` and `worktree` → `open-worktree` on the `create-gh-pr` precedent |
 | `resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt` · `auto-memory` | 203 | The executable counterparts of the `plans` skill Phase 1 already moved |
 | `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed |
 
@@ -131,8 +131,8 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 its suite names, its hook and migration paths — named in a thin `AGENTS.md` on the `Concertable.Payment`
 model. The same applies to `plans/AGENTS.md` (N7).
 
-One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → ~~test-debug~~ → git (plus
-the `dotagents` overlap) → plan-workflow → `package-cutover`.
+One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → ~~test-debug~~ → ~~git~~ →
+plan-workflow → `package-cutover`.
 
 **Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
 fresh install, and what stays at root is only values this repo owns.
@@ -173,7 +173,12 @@ does not read a variable.
 on the same machine by a contradictory work-repo procedure reached through junctions, and a plugin installs
 per machine. Check a new name against every repo on the machine, not just the three standards repos and the
 harness built-ins — and expect it again for `worktree`, which family 4 shares with both `dotagents` and the
-work repos.
+work repos. **Family 4 confirmed it, twice over.** `sync` collides with a user-global skill doing a
+narrower job under the same name, and `worktree` collides three ways at once — user-global, `dotagents`,
+and the work repos. It is not a theoretical hazard: authoring the family, the user-global `worktree` fired
+instead of this repo's and junctioned sixteen untracked skill directories into a fresh checkout, every one
+a stale copy of a skill that now ships from the plugin. `sync-checkout` and `open-worktree` resolve it, and
+`git/WORKTREE.md` states the junction hazard as a rule.
 
 ### N2 — the route table's convention (36 rows)
 
