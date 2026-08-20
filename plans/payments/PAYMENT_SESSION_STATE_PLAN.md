@@ -238,7 +238,7 @@ and a pending or failed platform-sync PR.
 
 ## Phases
 
-### Phase 1 - Persist the operation and attempt aggregate
+### Phase 1 - Persist the operation and attempt aggregate ✅ DONE (2026-08-20)
 
 - Add the aggregate entities, fingerprint specification/canonicalizer, repository contracts and EF
   implementations, configurations, schema constants, and `PaymentDbContext` sets.
