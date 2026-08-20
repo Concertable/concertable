@@ -53,6 +53,7 @@ jobs:
       run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
       run_fe:     ${{ steps.detect.outputs.run_fe }}
       unit_projects: ${{ steps.test-projects.outputs.unit_projects }}
+      composition_projects: ${{ steps.test-projects.outputs.composition_projects }}
       integration_projects: ${{ steps.test-projects.outputs.integration_projects }}
     steps:
       - uses: actions/checkout@v4
@@ -62,10 +63,13 @@ jobs:
         id: test-projects
         run: |
           unit_projects=$(find api -type f -name '*.UnitTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          composition_projects=$(find api -type f -name '*.CompositionTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           integration_projects=$(find api -type f -name '*.IntegrationTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           [ "$unit_projects" != '[]' ] || { echo "No unit test projects found."; exit 1; }
+          [ "$composition_projects" != '[]' ] || { echo "No composition test projects found."; exit 1; }
           [ "$integration_projects" != '[]' ] || { echo "No integration test projects found."; exit 1; }
           echo "unit_projects=$unit_projects" >> "$GITHUB_OUTPUT"
+          echo "composition_projects=$composition_projects" >> "$GITHUB_OUTPUT"
           echo "integration_projects=$integration_projects" >> "$GITHUB_OUTPUT"
       - name: Classify changed files
         id: detect
@@ -667,9 +671,41 @@ jobs:
         shell: pwsh
         run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
 
-  integration-tests:
+  composition-tests:
     runs-on: ubuntu-latest
     needs: [build, changes, local-platform-pack]
+    if: needs.changes.outputs.run_tests == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.changes.outputs.composition_projects) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Run ${{ matrix.project }}
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [build, changes, local-platform-pack, composition-tests]
     if: needs.changes.outputs.run_tests == 'true'
     permissions:
       contents: read
@@ -710,7 +746,7 @@ jobs:
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes]
+    needs: [build, changes, composition-tests]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
     # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
@@ -1065,6 +1101,7 @@ jobs:
       - fe-boundaries
       - carve-fe
       - unit-tests
+      - composition-tests
       - integration-tests
       - e2e-api-tests
       - e2e-ui-tests
