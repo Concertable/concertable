@@ -42,5 +42,13 @@
       "commit": "a8a3e6f3f9ad96769f326dad50eb55690c8f7452",
       "sha256": "sha256:0f7168877b1128e0f0388e2a67d24872f08639bee764ac24c778916c1d8056f7"
     }
+  },
+  "scripts": {
+    "docker-health.ps1": {
+      "source": "Concertable/agent-standards",
+      "path": "scripts/docker-health.ps1",
+      "commit": "76758be8ae5973ebca29bf6c28814e697ccdd9c6",
+      "sha256": "sha256:985ce6ca8e4f82dc4e707f5d88aac100857404c56b08bf87a20fddafe224083f"
+    }
   }
 }

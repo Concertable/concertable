@@ -8,7 +8,7 @@ is true of *this* repo:
 |---|---|
 | Local worktree | required generators and invariant greps, the smallest affected project or app build, focused unit tests |
 | Draft-PR CI | `build`, `carve-*`, `unit-tests`, `integration-tests`, on the exact remote head |
-| Merge queue | `e2e-api-tests` + `e2e-ui-tests`, at the tier [`.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) Step 4 selects |
+| Merge queue | `e2e-api-tests` + `e2e-ui-tests`, at the tier the `merge` skill's Step 4 selects |
 
 - **Never `dotnet build api/Concertable.slnx`**, every unit project, or the full integration matrix as
   routine local verification.
