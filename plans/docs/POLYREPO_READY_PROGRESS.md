@@ -67,7 +67,8 @@ families 2 and 3 inherit the same dependency.
    skills, which both merged families now cite only indirectly as "the checkpoint procedure the repository's
    plan floor names") → `package-cutover` (184).
 
-5. **N2 can run in parallel**; N3–N6 after N1; N7 when roadmap §4c unblocks; N8 last as the only evidence.
+5. **N2 can run in parallel**; N3–N6 and **N7a** (`plans/AGENTS.md`'s content) after N1; **N7b** (the
+   plan-document tree) when roadmap §4c unblocks; N8 last as the only evidence.
    N6 still carries the one open question to put to Tommy rather than answer: `OVERVIEW.md`, `USP.md` and
    `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor service-specific.
 
