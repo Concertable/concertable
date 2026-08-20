@@ -50,8 +50,9 @@ destinations with no future.
 
 What that leaves, measured rather than estimated:
 
-- ~~**Generic plan process sits in a repo that is going away.**~~ **Fixed** — 324 lines (`plans/agents/PLAN.md`
-  233, `PROMPTS.md` 57, `plans/agents/ROADMAP.md` 34; 32 of them naming anything Concertable-specific) now
+- ~~**Generic plan process sits in a repo that is going away.**~~ **Fixed** — 324 lines by `wc -l`
+  (`plans/agents/PLAN.md` 233, `PROMPTS.md` 57, `plans/agents/ROADMAP.md` 34; 32 of them naming anything
+  Concertable-specific; the 259 recorded earlier was the same files counted non-blank) now
   live in `standards/process/PLANS.md` and `HANDOFF.md`. Six sibling process docs had already moved; the
   asymmetry was the restructure scoping `PLANS.md` narrowly and nobody re-deriving it.
 - **Three route rows are anchored on the monorepo layout** — the `^api/` and `^app/` area floors and

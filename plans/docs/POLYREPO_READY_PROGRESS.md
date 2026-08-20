@@ -103,9 +103,10 @@ and ticked; no open findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- **The measured baseline in the plan was wrong and is corrected.** The 259 lines it recorded were
-  actually 324 (`PLAN.md` 233, `PROMPTS.md` 57, `ROADMAP.md` 34), of which 32 carry any
-  Concertable-specific name or command. The plan and roadmap now carry the `wc -l` figures.
+- **The baseline counted non-blank lines, not `wc -l`.** Its 183/50/26 are exactly the non-blank counts
+  of `PLAN.md`/`PROMPTS.md`/`ROADMAP.md`, whose totals are 233/57/34 — one consistent method, not an
+  error, so 259 was sound for what it measured. The plan and roadmap now carry `wc -l` (324 total, 32 of
+  them naming anything Concertable-specific) and say which method each figure is.
 - **The "Watch for" trap in the old Next Steps did not exist as written.** Neither `plan_graph.py` nor
   `plan_handoff_stop.py` reads `PROMPTS.md`; the Stop hook hard-codes the pointer's shape (`plan_handoff_stop.py:339-347`)
   and both hooks are vendored *from* agent-standards, so the enforcement already sits with the doc's new

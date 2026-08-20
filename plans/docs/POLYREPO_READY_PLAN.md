@@ -17,7 +17,7 @@ reintroduced at repo scale.
 
 | Problem | Measure |
 |---|---|
-| ~~Generic plan process sits in a repo with no future~~ — **moved, Phase 1** | `plans/agents/PLAN.md` 233 lines · `PROMPTS.md` 57 · `plans/agents/ROADMAP.md` 34 — **324 lines**, of which 32 carried a Concertable-specific name or command (the 259 first recorded here undercounted; `wc -l` on the files at the time of the move is the number) |
+| ~~Generic plan process sits in a repo with no future~~ — **moved, Phase 1** | `plans/agents/PLAN.md` 233 lines · `PROMPTS.md` 57 · `plans/agents/ROADMAP.md` 34 — **324 lines**, of which 32 carried a Concertable-specific name or command (the 259 first recorded here counted non-blank lines; these are `wc -l` at the time of the move) |
 | Route rows anchored on the monorepo layout | 3 of 37: `^api/…`, `^app/…`, `^plans/…` — no such prefix exists in a service repo |
 | Hub docs open by describing a monorepo | root `AGENTS.md` line 1; `docs/INDEX.md` is a monorepo index |
 
