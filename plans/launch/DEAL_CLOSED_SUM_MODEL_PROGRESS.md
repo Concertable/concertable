@@ -9,15 +9,15 @@
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
 - Branch: `Refactor/deal-dispatch-foundation`
 - Implementation PR: not created
-- Push state: intentionally unpushed
+- Push state: intentionally unpushed; the preflighted candidate was 8 commits ahead of `origin/main`,
+  this ledger checkpoint follows it, and no `origin/Refactor/deal-dispatch-foundation` branch exists yet
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
 - Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after merging current `origin/main`, focused revalidation, and a clean
-  post-merge incremental review
+- Last reconciled: 2026-08-20 after a GREEN PR preflight on the clean, current, reviewed branch
 
 ## Current state
 
@@ -73,8 +73,9 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Run `/pr-preflight` on the clean, reviewed `Refactor/deal-dispatch-foundation` branch. If it is green, use
-its reported next command as the next delivery action; do not push or create the PR before that result.
+Push current `HEAD` explicitly to a new `origin/Refactor/deal-dispatch-foundation` branch and set it as
+the upstream, following the plan-managed two-leg push protocol. After local, remote-tracking, and GitHub
+heads are verified, run `/create-gh-pr` to open the feature PR.
 
 ## Separate public-library follow-up
 
@@ -142,6 +143,8 @@ The public library is not implemented or published by the current PR.
 - `python .agents/hooks/plan_graph.py --root
   C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`: 0 errors
   and 0 warnings.
+- `/pr-preflight`: GREEN after `5436a4af3`; branch naming, clean tree, current-main drift (`0` behind,
+  `8` ahead), existing-PR, platform-sync, non-packable Deal contracts, and recorded local gates all pass.
 
 ## Reviews
 
