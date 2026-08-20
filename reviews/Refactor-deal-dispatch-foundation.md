@@ -15,5 +15,5 @@
 
 - [x] **CV1 — LOW — C# conventions** — `api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure/Services/Strategies/DealStrategyFactory.cs:7`
   Replace the primary-constructor capture with an explicit `private readonly IKeyedServiceProvider services` field and constructor assignment; the `csharp-style` standard requires explicit readonly fields for dependencies read by methods.
-- [ ] **CV2 — MEDIUM — keyed strategies** — `api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure/Extensions/ServiceCollectionExtensions.cs:47`
+- [x] **CV2 — MEDIUM — keyed strategies** — `api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure/Extensions/ServiceCollectionExtensions.cs:47`
   Restore validated vertical strategy registration with `RequireAll<IDealMapper>()` and `RequireAll<IDealUpdater>()`; plain `AddKeyedSingleton` calls defer an omitted `DealType`/family pair to runtime, while the `keyed-strategies` standard requires incomplete coverage to fail during composition.
