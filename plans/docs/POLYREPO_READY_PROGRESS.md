@@ -5,8 +5,9 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-nodes`
 - Branch: `Docs/docs_polyrepo-ready-nodes`
-- PR: this repo — not opened yet for this slice; producer `Concertable/agent-standards`
-  [PR #6](https://github.com/Concertable/agent-standards/pull/6). Phase 1 shipped as this repo's #669
+- PR: this repo — [#675](https://github.com/Concertable/concertable/pull/675), based on `main`; producer
+  `Concertable/agent-standards` [PR #6](https://github.com/Concertable/agent-standards/pull/6), CI green.
+  Phase 1 shipped as this repo's #669
   (`1d15a7920`) and agent-standards #5 (`1d44caa38`)
 - Dependency/package gates: **#6 merges first.** This branch deletes the six skill bodies whose procedure
   #6 publishes; landing this one first leaves the repo with no review procedure at all. No open
@@ -33,11 +34,12 @@ file. See `## Decisions`.
 
 ## Next Steps
 
-1. **Land N1 family 1, in this order.** agent-standards [#6](https://github.com/Concertable/agent-standards/pull/6)
-   merges first — its CI is hook tests plus `sync-generated.ps1 -Check`, both green locally. Then open this
-   branch's PR against `main`, read its CI, and land it through `/merge-docs`; its docs review is recorded
-   below. Afterwards Tommy runs `/plugin marketplace update agent-standards` per machine so the seven new
-   routers resolve in Claude; Codex needs nothing beyond that repo being on merged `main`.
+1. **Land N1 family 1, in this order.** agent-standards
+   [#6](https://github.com/Concertable/agent-standards/pull/6) merges first — its `verify` check (hook tests
+   plus `sync-generated.ps1 -Check`) is **green**. Then [#675](https://github.com/Concertable/concertable/pull/675)
+   through `/merge-docs`; its docs review is recorded below and clean, so the review gate is met. Afterwards
+   Tommy runs `/plugin marketplace update agent-standards` per machine so the seven new routers resolve in
+   Claude; Codex needs nothing beyond that repo being on merged `main`.
 
 2. **Then the `^reviews/.*\.md$` route row.** It is deliberately not in this slice: a route row naming a
    skill the plugin cache has not reinstalled yet hard-blocks every write to `reviews/**` until the refresh,
