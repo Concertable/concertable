@@ -5,9 +5,9 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-merge-family`
 - Branch: `Docs/docs_polyrepo-ready-merge-family`
-- PR: this repo — see `## Current state`; producer `Concertable/agent-standards`
-  `Docs/polyrepo-ready-merge-family`. Phase 1 shipped as this repo's #669 and agent-standards #5; N1 family
-  1 as this repo's #675 and agent-standards #6, both merged 2026-08-20.
+- PR: this repo — #676, based on `main`; producer `Concertable/agent-standards` #7. Phase 1 shipped as this
+  repo's #669 and agent-standards #5; N1 family 1 as this repo's #675 and agent-standards #6, both merged
+  2026-08-20.
 - Dependency/package gates: **the producer merges first.** This branch deletes the four skill bodies the
   producer publishes; landing this one first leaves the repo with no merge, PR-opening or preflight
   procedure at all. No open `chore/platform-sync-*` PR.
@@ -41,8 +41,7 @@ dependency.
    can find, which is why this slice's own docs review had to be run from the moved copy of the procedure.
    Codex needs nothing beyond both repos being on merged `main`.
 
-2. **Land N1 family 2, in this order.** agent-standards `Docs/polyrepo-ready-merge-family` merges first,
-   then this branch. **This branch lands through `/merge`, not `/merge-docs`** — it edits a comment in
+2. **Land N1 family 2, in this order.** agent-standards #7 merges first, then #676. **This branch lands through `/merge`, not `/merge-docs`** — it edits a comment in
    `.github/workflows/test.yml` that pointed at a skill file it deletes, and a CI workflow definition fails
    the meta-only path gate by path even for a comment. That is the gate working, not a problem to route
    around; the alternative was shipping a known dead pointer. Its docs review is recorded below and clean.
@@ -77,7 +76,7 @@ dependency.
 
 ## Completed work
 
-- **N1 family 2 producer — agent-standards `Docs/polyrepo-ready-merge-family`.** Four docs under
+- **N1 family 2 producer — agent-standards #7.** Four docs under
   `standards/process/merge/`, one router each: `QUEUE.md` (287) ← `merge`; `META_ONLY.md` (100) ←
   `merge-docs`; `PREFLIGHT.md` (108) ← `pr-preflight`; `OPENING.md` (95) ← `create-gh-pr`, routed by a new
   skill `open-pr`. `MERGING.md`'s delegation of the runnable poll loop re-pointed from "whatever executable
