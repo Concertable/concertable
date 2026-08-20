@@ -49,14 +49,10 @@ close-out that only records terminal evidence goes on `Docs/<epic>_<name>_closeo
 `/review` or `/big-review`, then `/incremental-review` after later code commits; a docs/meta-only PR routes
 `/docs-review` and `/merge-docs`. Each skill owns its own resolution rules — read it, don't infer them here.
 
-## A red suite routes to this repo's debug skill
+## A red suite routes to a debug skill
 
 A failing test is never reported back and left there — the `failing-tests` skill owns the run → diagnose →
-fix → re-run loop. Here it routes by tier:
-
-- unit / integration → **`integration-debug`**
-- API E2E → **`e2e-api-debug`**
-- UI E2E → **`e2e-ui-debug`** (or **`e2e-debug`** to sweep both layers)
+fix → re-run loop, and its own tier table names the skill for each red suite.
 
 ## What this repo adds to a phase's verification gate
 
@@ -65,10 +61,9 @@ fix → re-run loop. Here it routes by tier:
   [`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
 - **Merge-queue E2E tier.** The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are
   expensive and Docker-gated. **The merge queue IS the E2E gate — never run E2E locally ahead of a merge**,
-  and [`../.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) Step 4 is the single source of
-  truth for which tier runs. A plan phase line or kickoff prompt saying "run the E2E regress" **selects the
-  queue's tier**; it is not a reason to duplicate the run. The only local E2E is targeted diagnosis after a
-  queue failure, through the debug skills above.
+  and the `merge` skill's Step 4 is the single source of truth for which tier runs. A plan phase line or
+  kickoff prompt saying "run the E2E regress" **selects the queue's tier**; it is not a reason to duplicate the run. The only local E2E is targeted diagnosis after a
+  queue failure, through that tier's debug skill.
 - A refactor that changes a **published** `Concertable.*` contract is a breaking package change and cannot
   land in one PR — B2B and Customer compile against the published packages, not the source beside them (the
   carve: [`../api/ARCHITECTURE.md`](../api/ARCHITECTURE.md)). Capture it in its own plan; the expand/contract

@@ -14,13 +14,13 @@ import dayjs from "dayjs";
 import type { ActivityItem, ActivityType } from "@concertable/shared/features/dashboard";
 
 const iconMap: Record<ActivityType, LucideIcon> = {
-  ApplicationReceived: UserPlus,
-  ApplicationAccepted: CheckCircle2,
-  ApplicationDeclined: XCircle,
-  ConcertSettled: CircleDollarSign,
-  ReviewReceived: Star,
-  TicketSold: Ticket,
-  MessageReceived: MessageSquare,
+  applicationReceived: UserPlus,
+  applicationAccepted: CheckCircle2,
+  applicationDeclined: XCircle,
+  concertSettled: CircleDollarSign,
+  reviewReceived: Star,
+  ticketSold: Ticket,
+  messageReceived: MessageSquare,
 };
 
 function timestampLabel(iso: string) {

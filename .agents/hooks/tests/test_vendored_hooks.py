@@ -60,7 +60,9 @@ def matchers_for(wiring_path, hook_name):
 
 class VendoredHookTests(unittest.TestCase):
     def setUp(self):
-        self.entries = json.loads(MANIFEST.read_text(encoding="utf-8"))["hooks"]
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.entries = manifest["hooks"]
+        self.scripts = manifest["scripts"]
 
     def test_the_manifest_lists_at_least_one_vendored_hook(self):
         self.assertTrue(self.entries)
@@ -141,6 +143,55 @@ class VendoredHookTests(unittest.TestCase):
                                 f"{wiring.name} routes '{tool}' to {name}, but the hook ignores that "
                                 "tool name and exits 0 - the wiring enforces nothing for it.",
                             )
+
+
+class VendoredScriptTests(unittest.TestCase):
+    """The second vendoring tier: repo-invariant executables, copied to the same path they hold upstream.
+
+    They carry no `delivery`, because a script is run from a command line or by another script and never
+    wired to a harness event - so the hook tier's wiring questions do not apply and a field with one
+    possible value would only invite a wrong answer. What still applies is that the copy is generated:
+    edit it here and the fix is lost on the next sync.
+    """
+
+    def setUp(self):
+        self.scripts = json.loads(MANIFEST.read_text(encoding="utf-8"))["scripts"]
+
+    def test_the_manifest_lists_at_least_one_vendored_script(self):
+        self.assertTrue(self.scripts)
+
+    def test_every_vendored_script_matches_the_hash_it_was_generated_with(self):
+        for name, entry in self.scripts.items():
+            with self.subTest(script=name):
+                body = normalized(REPO / entry["path"])
+                digest = "sha256:" + hashlib.sha256(body.encode("utf-8")).hexdigest()
+                self.assertEqual(
+                    entry["sha256"],
+                    digest,
+                    f"{name} was edited in place. It is generated from {entry['source']} - change it "
+                    "there and re-run that repo's vendor-hooks.ps1, or the fix is lost on the next sync.",
+                )
+
+    def test_every_vendored_script_lands_at_the_path_it_holds_upstream(self):
+        # The tier's whole purpose is that a standard can name the path as a constant, which only holds
+        # if source and target agree. A copy landing anywhere else silently breaks every doc naming it.
+        for name, entry in self.scripts.items():
+            with self.subTest(script=name):
+                self.assertEqual(entry["path"], f"scripts/{name}")
+                self.assertTrue((REPO / entry["path"]).is_file())
+
+    def test_every_vendored_script_records_where_it_came_from(self):
+        for name, entry in self.scripts.items():
+            with self.subTest(script=name):
+                self.assertTrue(entry["source"])
+                self.assertRegex(entry["commit"], r"^[0-9a-f]{40}$")
+                self.assertNotIn("delivery", entry)
+
+    def test_a_vendored_script_is_wired_in_no_harness(self):
+        for name in self.scripts:
+            for wiring in WIRING:
+                with self.subTest(script=name, wiring=wiring.name):
+                    self.assertNotIn(name, wiring.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

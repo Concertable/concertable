@@ -3,7 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import type { StripeConnectStatus } from "@concertable/shared/features/dashboard";
 
 export function StripeConnectBanner({ status }: { status: StripeConnectStatus }) {
-  if (status.state === "Complete") return null;
+  if (status.state === "complete") return null;
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
