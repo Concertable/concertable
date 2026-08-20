@@ -8,8 +8,9 @@
 - Worktree:
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
 - Branch: `Refactor/deal-dispatch-foundation`
-- Implementation PR: [#678](https://github.com/Concertable/concertable/pull/678), draft, targeting `main`;
-  verified remote head `e4fdc642d8856c776a7d47f51e1379c6eb1dcf5e`
+- Implementation PR: [#678](https://github.com/Concertable/concertable/pull/678), open and ready, targeting `main`;
+  queue-ejected after API E2E failure; verified remote head
+  `ad1de76998d3916ba11028eb625357aad91feb11`
 - Push state: reviewed work head `0a0958719cd44cdb29e8228bacaa8c464c485642` was pushed and verified
   equal locally, at `origin/Refactor/deal-dispatch-foundation`, and on PR #678; this ledger commit is
   the checkpoint-transport leg
@@ -19,7 +20,7 @@
 - Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after the verified reviewed-work push and before checkpoint transport
+- Last reconciled: 2026-08-20 after diagnosing the queue failure and locally fixing Workers composition
 
 ## Current state
 
@@ -41,6 +42,12 @@ registration and resolution remain confined to Deal Infrastructure. The updater 
 The production generator projects, analyzer references, attributes, anchors, and generated registration
 dependency have been removed from this branch. The complete prototype remains recoverable from
 `Spike/net11-closed-dispatch` at `785cd8040`, including the incomplete same-pass attribute-source redesign.
+
+The full-E2E merge group exposed a pre-existing `origin/main` Workers composition defect: the User
+module's `CredentialRegisteredHandler` requires `IAdminModule`, but B2B Workers did not reference or
+register Admin Infrastructure. All four `ConcertFinishedTests` timed out while Workers repeatedly crashed
+with that DI validation error. The local uncommitted fix adds the Admin Infrastructure project reference,
+registers `AddAdminModule(configuration)`, and adds a host-backed validated-service-provider unit test.
 
 The plan now separates three delivery stages:
 
@@ -75,8 +82,7 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-After this checkpoint commit is transported and local, remote-tracking, and PR heads are verified equal,
-wait for exact-head PR CI, apply the merge skill's E2E tier, and enqueue PR #678 through the merge queue.
+Paused: Tommy — Start Docker Desktop and wait until it shows Running; resume when `scripts/docker-health.ps1` passes so the targeted `ConcertFinishedTests` E2E class can verify the local Workers fix before review, commit, push, and requeue.
 
 ## Separate public-library follow-up
 
@@ -146,6 +152,16 @@ The public library is not implemented or published by the current PR.
   and 0 warnings.
 - `/pr-preflight`: GREEN after `5436a4af3`; branch naming, clean tree, current-main drift (`0` behind,
   `8` ahead), existing-PR, platform-sync, non-packable Deal contracts, and recorded local gates all pass.
+- PR #678 exact-head CI at `ad1de7699`: build, carves, all unit suites, and all integration suites passed.
+- Full-E2E merge-group run [32414372870](https://github.com/Concertable/concertable/actions/runs/32414372870)
+  failed in `e2e-api-tests`: the four `ConcertFinishedTests` timed out in `WorkersFixture.TriggerAsync`;
+  diagnostics showed Workers crashing because `IAdminModule` was not registered. UI E2E was not run after
+  the API gate failed.
+- Local B2B Workers unit tests after the composition fix: 6 passed, 0 failed, including the new full
+  validated-service-provider regression test.
+- Local targeted API E2E is not started: `scripts/docker-health.ps1` and `docker ps -a` both hung without
+  usable output, proving Docker is not healthy enough to launch the stack. The health probe was stopped
+  without retrying.
 
 ## Reviews
 
