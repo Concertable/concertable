@@ -5,7 +5,7 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-git-family`
 - Branch: `Docs/docs_polyrepo-ready-git-family`, from `main` at `1176a002f` - N1 family 4, git.
-- PR: this repo - **#679**, open at `97287f328`, brought current with `main` and re-running CI; producer -
+- PR: this repo - **#679**, open at `7687a81dc`, current with `main`, **`CLEAN` and 58/58 green**; producer -
   **agent-standards #9, open at `3bbf7ab`, `verify` green, reviewed, `CLEAN`, current with its `main`**.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as #676 + agent-standards #7 at `30734a9`; N1 family 3 as **#677, merged 2026-08-20 at
@@ -64,7 +64,8 @@ plan-workflow (203) and `package-cutover` (184).
    `reviews/Docs-docs_polyrepo-ready-git-family.md` with all three findings fixed and an incremental section
    for the two later commits, agent-standards `verify` is green at `3bbf7ab` (161/161 hook tests, 176
    generated files current) and its branch is `CLEAN` and current with its `main`, and #679 was green across
-   the full matrix at `98a086d78` before the currency merge. **Merge needs Tommy to run it, approve it
+   the full matrix at `98a086d78`, and is green again at `7687a81dc` after it - 58 pass, 0 fail, 0 pending,
+   `mergeStateStatus` `CLEAN`, polled to a terminal state rather than assumed. **Merge needs Tommy to run it, approve it
    interactively, or add a permission rule.** The two commands, in order:
 
    ```bash
@@ -186,6 +187,8 @@ The route row and the currency merge, on this branch at `97287f328`:
   `.agents/`, `.claude/`, `AGENTS.md`, `docs/`, `plans/`, `reviews/` - no `api/**`, so still no publish and
   no `chore/platform-sync-*`, and still the `/merge-docs` path.
 - Grepped the whole worktree outside `plans/` for a citation of any of the six deleted skill names - none.
+- #679 re-ran the full matrix after the currency merge and the route row: **58 pass, 0 fail**, `CLEAN` at
+  `7687a81dc`. Confirmed by a capped background poll that echoed every state, not by a single reading.
 
 N1 family 3, producer (`agent-standards` #8):
 
