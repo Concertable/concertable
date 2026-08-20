@@ -57,3 +57,17 @@ D (concision of harness-reloaded docs), E (dangling/transient references), F (fo
   tree rather than taken from the previous ledger.
 - Lens D: the only harness-reloaded file touched is `AGENTS.md` (via ACC3), and the fix there adds names to
   an existing list rather than new prose.
+
+## Incremental review — `060479d59..HEAD`
+
+Two additions after the review above: the `origin/main` currency merge (no conflicts, no content of its
+own) and the `^reviews/.*\.md$` row in `.agents/skill-routes.json`.
+
+- **Row verified, not eyeballed.** `review-lifecycle` resolves from the installed plugin cache at
+  `2d9a8fedf0e7`, and `standards/process/review/LIFECYCLE.md` is present beside it, so the row names a
+  skill that exists rather than one this family still owes. `skill_router.py --skills-for
+  reviews/Docs-docs_polyrepo-ready-git-family.md` fires it. `.agents/hooks/tests` 19 passed / 48 subtests.
+- **Bare name, per the table's own `_comment`.** `review-lifecycle` has one home, so it takes no
+  `plugin:` qualifier — unlike the paired rosters above it.
+- Lens C: no second copy created. `docs/INDEX.md:50` already names `review-lifecycle` as the owner; the
+  row restores *delivery*, which is a different job from ownership.
