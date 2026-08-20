@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `207b28d44ef11f1692e2631df2cf1d7f41654b6f`  _(2026-08-20)_
+**Reviewed up to commit:** `25b492c1b0edf8179e300491d0a4399c3c4cc097`  _(2026-08-20)_
 
-> Range reviewed: `d1422b6b5..207b28d44` (4 commits), plus the producer half it exists to consume —
+> Range reviewed: `d1422b6b5..25b492c1b` (5 commits), plus the producer half it exists to consume —
 > `Concertable/agent-standards` `30734a9..76758be` (1 commit, PR #8). One review across both branches
 > rather than two, because three of the four findings are defects in the moved docs; the producer branch
 > carries a companion file pointing here.
