@@ -1,4 +1,4 @@
-﻿---
+---
 name: push
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/push/SKILL.md.
 ---

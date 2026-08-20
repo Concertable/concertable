@@ -14,6 +14,13 @@ export function useVenueQuery(id: number) {
   });
 }
 
+export function useVenueByIdQuery(id: number) {
+  return useQuery({
+    queryKey: venueKeys.byId(id),
+    queryFn: () => venueApi.getVenueById(id),
+  });
+}
+
 export function useMyVenueQuery() {
   return useQuery({
     queryKey: venueKeys.my(),

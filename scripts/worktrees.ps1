@@ -22,7 +22,8 @@ function Run {
     $oldPreference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
-        $executable = (Get-Command "$Program.exe" -CommandType Application -ErrorAction Stop).Source
+        # No ".exe": Windows resolves it through PATHEXT, and hard-coding it makes every call fail on Linux.
+        $executable = (Get-Command $Program -CommandType Application -ErrorAction Stop).Source
         $output = @(& $executable @Arguments 2>&1)
         $exitCode = $LASTEXITCODE
     }
@@ -197,7 +198,7 @@ function AssertTarget {
     if (IsPersistent $item.Branch) { throw "Persistent worktree cannot be removed: $($item.Branch)" }
     $current = Canonical (Get-Location).Path
     if ([string]::Equals($current, $target, [StringComparison]::OrdinalIgnoreCase) -or
-        $current.StartsWith($target + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        $current.StartsWith($target + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
         throw 'Run this command from a different checkout.'
     }
     $dirty = Dirty $target
@@ -210,7 +211,10 @@ function AssertTarget {
 
 function AssertLedger {
     param([int] $Number, [string] $Head, [string] $DefaultRef)
-    $paths = (Gh @('pr', 'diff', $Number.ToString(), '--name-only')).Text -split "\r?\n"
+    $paths = (Gh @(
+        'api', '--paginate', "repos/{owner}/{repo}/pulls/$Number/files",
+        '--jq', '.[].filename'
+    )).Text -split "\r?\n"
     $ledgers = @($paths | Where-Object { $_ -match '^plans/.+_PROGRESS\.md$' })
     if ($ledgers.Count -eq 0) { throw "Plan-managed close requires a progress ledger in PR #$Number." }
     foreach ($ledger in $ledgers) {
@@ -259,7 +263,11 @@ function RemoveTarget {
         }
     }
     if (Test-Path -LiteralPath $target) {
-        $extended = if ($target.StartsWith('\\?\')) { $target } else { "\\?\$target" }
+        # The \\?\ long-path prefix is Windows-only; on Linux it would be read as part of the filename.
+        $extended =
+            if ([IO.Path]::DirectorySeparatorChar -ne '\') { $target }
+            elseif ($target.StartsWith('\\?\')) { $target }
+            else { "\\?\$target" }
         Remove-Item -LiteralPath $extended -Recurse -Force
     }
     if ((Git @('show-ref', '--verify', '--quiet', "refs/heads/$branch") -AllowFailure).ExitCode -eq 0) {

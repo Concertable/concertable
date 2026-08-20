@@ -1,169 +1,70 @@
 # Working in `plans/`
 
-One convention, three tiers, each with its own playbook in [`agents/`](agents/): **ROADMAP → PLAN →
-PROGRESS**.
+**The plan method is the `plans` skill and the handoff prompt's shape is the `handoff` skill** — what a
+roadmap, plan and ledger each are, the phases and their verification gate, the required ledger headers and
+sections, the lifecycle from writing a plan to closing it out, cross-plan blockers as two-way handoffs, the
+four-line blocker schema, and the rename grep gate. Read them before working a plan. This file carries only
+what is true of *this* repo: its folder layout, its hooks, its scripts, and its skill names.
 
-- **Roadmaps** (`<EPIC>_ROADMAP.md`) — an epic's living progress tracker: no ledger, never deleted, lives
-  until the epic ships. Each item spins off its own plan. How they work → [`agents/ROADMAP.md`](agents/ROADMAP.md).
-- **Plans** (`<NAME>_PLAN.md`) — working docs for unfinished, multi-step work spun off a roadmap item,
-  each with a `<NAME>_PROGRESS.md` ledger, deleted when the work is done. How they work → [`agents/PLAN.md`](agents/PLAN.md).
+**Folder = roadmap/plan.** Each epic gets a folder under `plans/`; its roadmap and every plan it spins off
+live inside it (`plans/<epic>/<EPIC>_ROADMAP.md`, `plans/<epic>/<NAME>_PLAN.md` + `<NAME>_PROGRESS.md`).
+Standing reference/RFC docs keep a bare stem (no suffix). A plan's worktree/branch is temporary execution
+state, normally named `<Type>/<epic>_<name>` and safe to recreate from `origin/main` after the prior PR's
+worktree is removed. New ledgers start from
+[`resume-plan/assets/progress-template.md`](../.agents/skills/resume-plan/assets/progress-template.md);
+the mandatory update procedure is
+[`resume-plan/references/plan-progress-checkpoint.md`](../.agents/skills/resume-plan/references/plan-progress-checkpoint.md).
 
-**Folder = roadmap/plan.** Each epic gets a folder under `plans/`; its roadmap and every plan it spins
-off live inside it (`plans/<epic>/<EPIC>_ROADMAP.md`, `plans/<epic>/<NAME>_PLAN.md` + `<NAME>_PROGRESS.md`).
-Standing reference/RFC docs keep a bare stem (no suffix). The `plans/` hub (this file) and `agents/`
-playbooks stay at the top. A plan's ledger owns its logical workstream across delivery PRs. Its current
-worktree/branch is temporary execution state, normally named `<Type>/<epic>_<name>` and safe to
-recreate from `origin/main` after the prior PR's worktree is removed.
+`plans/launch/LAUNCH_ROADMAP.md` is the driving roadmap for the current effort — most work traces back to one
+of its items, so it is usually the one a landed change has to tick.
 
-Git history is the archive; a finished plan kept "for reference" is rot that misleads the next reader.
-This file carries the cross-cutting rules for *doing* the work; the root [`AGENTS.md`](../AGENTS.md)
-carries the short version.
+## The plan hooks are machine gates
 
-## Commit finished work when its targeted checkpoint goes green
+```bash
+python .agents/hooks/plan_graph.py --root <absolute-worktree>
+```
 
-**The default is to commit, not to "leave it for review."** The moment a discrete chunk of work is
-complete and its targeted local checks pass, **commit it, without asking.** At the first coherent code
-checkpoint, push and open a draft PR; push later coherent checkpoints so remote CI can run. Merge and
-deployment still wait for Tommy's explicit go-ahead. See
-[`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
+Run it after creating or changing plan graph metadata. Missing or broken links, malformed blockers, missing
+reciprocal owner handoffs, and terminal owners with pending handoffs fail.
+`.agents/hooks/plan_handoff_stop.py` blocks one incomplete final response for Claude and Codex and supplies
+the exact replacement handoff; its retry guard prevents recursive blocking.
 
-This rule is **not** scoped to phase boundaries or handoffs; it applies to *every* finished, verified
-chunk: a phase, a bug fix, a refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
-handing off / clearing is exactly the misread that produces the failure below.
+## Closing a plan-managed worktree
 
-**"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
+Every plan-managed PR must merge the current plan and progress ledger, so `main` is always the recovery
+anchor. Once the PR merges:
 
-- **Review runs off commits.** `/review` diffs `main..HEAD`; work sitting in the working tree
-  is invisible to it. Leaving it uncommitted is precisely what stops the reviewer seeing it.
-- **Uncommitted is the fragile state.** It survives no `git checkout`, no stray `git restore`, no
-  context clear. A commit is the cheapest insurance that exists.
-- **It silently wrecks PR scoping.** Finished work left loose gets swept into an unrelated PR by a
-  later `git add -A`, or stranded when the branch moves on — and a reviewer opening the PR finds the
-  feature the branch is *named after* missing from it.
+```powershell
+./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged
+```
 
-If finished work belongs in a **different PR** than the branch you're on, that is a reason to
-**branch and commit it there** — never a reason to leave it sitting in the working tree.
+Then create a fresh worktree from current `origin/main` if work remains. A superseded no-PR branch uses
+`./scripts/worktrees.ps1 retire` with its exact head and a retirement-evidence commit already on `main`. A
+close-out that only records terminal evidence goes on `Docs/<epic>_<name>_closeout` and lands through
+`/merge-docs`.
 
-**Mechanical trigger:** the targeted checkpoint went green → commit. If your next sentence would be *"should I
-commit this?"* or *"I've left it uncommitted for your review"*, **that sentence is the trigger** —
-don't send it, commit. Push coherent implementation checkpoints to their draft PR; do not enqueue,
-merge, or deploy without explicit instruction.
+## The repo's plan skills
 
-## Use the fewest safe merges
+`/resume-plan` resumes a ledger; `/continue-roadmap` creates the next roadmap item's plan. Review routes
+`/review` or `/big-review`, then `/incremental-review` after later code commits; a docs/meta-only PR routes
+`/docs-review` and `/merge-docs`. Each skill owns its own resolution rules — read it, don't infer them here.
 
-Complete a plan in the fewest PRs its real dependencies allow. Numbered steps, commits and phases do
-not each need their own PR; keep coherent work together. Split only where a merge, package publication,
-platform sync or runtime deployment must finish before the next work can build or run, and group all
-work possible on each side of that gate.
+## A red suite routes to a debug skill
 
-## Plans outlive PR worktrees
+A failing test is never reported back and left there — the `failing-tests` skill owns the run → diagnose →
+fix → re-run loop, and its own tier table names the skill for each red suite.
 
-Every plan-managed PR must merge the current plan and progress ledger. A worktree owns one PR-sized
-delivery slice, not the plan's lifetime. Once the PR merges, run
-`./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`, then create a fresh
-worktree from current `origin/main` if work remains.
+## What this repo adds to a phase's verification gate
 
-Never commit observations after a PR's merged head or retain its worktree as the only recovery copy.
-GitHub owns remote check/merge evidence until it is reconciled from the next continuation or
-`Docs/*_closeout` worktree. A superseded no-PR branch uses `scripts/worktrees.ps1 retire` with its exact
-head and a retirement-evidence commit already on `main`.
-
-## Delivery gates do not automatically block implementation
-
-For work spanning branches, packages, or generated syncs, keep two dependency graphs: what must exist
-to implement and verify locally, and what must land before delivery. A PR, publication, or platform-sync
-gate blocks local implementation only when the required source, API, design, or exact test artifact is
-unavailable. Otherwise prepare the consumer in its own worktree, test and review it against the exact
-producer artifact, and leave it delivery-gated until it passes again against the published baseline.
-Actively hand off every independent implementation path; parallel means independently owned work made
-ready for its eventual merge order, not branches that are already mergeable today.
-
-## Cross-plan blockers are two-way handoffs
-
-A waiting plan never relies on Tommy remembering its prompt or polls another branch. Register the
-blocked ledger in the dependency owner's `## Downstream handoffs`; that owner updates the dependent
-ledger and surfaces its resume prompt when the gate opens. Full mechanics:
-[`agents/PLAN.md`](agents/PLAN.md) "Cross-plan blockers."
-
-## Hand off an actionable non-terminal plan with its continuation pointer
-
-If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is owned by the current or
-explicitly targeted worktree, hand off by ending with the two-line plan pointer from
-[`../PROMPTS.md`](../PROMPTS.md). Reading or editing a foreign owner ledger during dependency or
-roadmap reconciliation does not claim that owner's handoff. Local
-implementation completion is not lifecycle completion while review, PR, merge, publication,
-dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
-continue is not the handoff. The exceptions are a registered in-flight owner wait under the
-cross-plan blocker rule above, a hard stop recorded with the `Blocked:`, `Blocked by:`,
-`Unblock action:`, and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md), or a human-gated
-`Paused:` line — none emit the pointer. The Stop hook surfaces this as a non-blocking reminder for
-Claude and Codex; it no longer rejects a response, so keep the handoff honest yourself rather than
-relying on the gate.
-
-Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>` after creating or changing plan
-graph metadata. Missing or broken links, malformed blockers, missing reciprocal owner handoffs, and
-terminal owners with pending handoffs fail.
-
-### Rename definition-of-done: the grep gate (mechanical, not judgement)
-
-A rename is done **only when `grep -rniE "<oldterm>"` over the entire repo returns zero** — every
-tier, no exceptions: type names, identifiers **of every case** (PascalCase, camelCase, snake, kebab),
-local vars, fields, params, comments, string literals, `data-testid`s, HTTP routes, JSON keys, blob
-paths, file/folder names, and docs. There is **no "cosmetic tier."** A field typed `IDealAccessor`
-named `contractAccessor`, or a comment still saying "the agreement", is *not done* — it's exactly the
-dishonest naming the rename exists to remove.
-
-Run the grep before claiming done. The only acceptable non-zero is an **explicit, written allowlist**
-of deliberate survivors, each justified in the plan — a term that legitimately means something else
-now (a word reused for a different concept), a shared `.Contracts` event package, a wire value kept on
-purpose. Anything not on that allowlist is outstanding work. "I renamed the types, the build's green,
-tests pass" is **not** the bar — the grep is. Don't decide by hand which occurrences "count"; the whole
-failure mode is discretion. Remove the discretion — grep, allowlist, zero.
-
-## Branch first
-
-Before any plan work, create a `Feature/<Name>` branch relevant to the plan if you're not already on one — never commit plan work to `main` or an unrelated branch.
-
-## A failing test is never just reported — enter the matching debug skill and drive it to green
-
-Whenever **any** test run comes back red — unit, integration, API E2E, or UI E2E — the next action is
-**always** the matching debug skill, not a status report back to the user. A failure *is* the trigger;
-don't make the user ask for it.
-
-- unit / integration failures → **`integration-debug`**
-- API E2E failures → **`e2e-api-debug`**
-- UI E2E failures → **`e2e-ui-debug`** (or **`e2e-debug`** to sweep both layers)
-
-The debug skill owns the whole **run → diagnose → fix → re-run** loop: find the root cause, fix it in
-code (service / handler / page-object / step-def / fixture / config — wherever the real bug is), and
-re-run until green. Never report a red suite and wait. Never disable, skip, `--no-build`, or
-inflate-a-timeout to get past a failure — that's bypassing, not fixing. For E2E, the debug skill also
-does **flaky-vs-real triage**: re-run the failed scenario alone on a fresh stack — passes clean = a
-host-load blip (proven, not assumed); fails again = a real bug, so fix it.
-
-## Remote validation tiers — PR CI first, merge-queue E2E second
-
-The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expensive and
-Docker-gated**. Draft-PR CI owns the full build, carve, unit, and integration gate; the merge skill
-selects whether the merge queue runs E2E. Local verification is limited to required generators and
-invariants, the smallest affected build, and focused unit tests.
-
-**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When Step 4 requires
-E2E, the merge-queue pipeline runs the selected suite as the gate. Running it locally first just burns
-~25-30 min duplicating exactly what CI will do on the way in. **Push the coherent checkpoint and let
-PR CI and the queue apply their gates.** The
-**only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then run the
-failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and push the
-fix (the queue re-runs required E2E on the way back in). **This overrides any plan phase line or
-kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
-"run E2E" step is not a reason to duplicate the queue.
-
-The merge skill's Step 4 is the single source of truth for this decision. Apply its positive-trigger
-list and label normalization mechanically; do not substitute a separate plan-level default or run E2E
-“to be safe.” Unit and integration tests never skip in PR CI for code/package changes, and build +
-carve never skip there. Full workflow: [`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
-
-When E2E must run for a PR, let the merge queue run it; this tier decision does **not** authorize a
-duplicate local run. **How** to run E2E safely after a queue failure (the mandatory Docker health
-pre-flight, only via the `e2e-*` skills) is unchanged — see the "E2E suites — Docker health first"
-section in the root [`AGENTS.md`](../AGENTS.md).
+- A phase that changes the model ends with `./initial-migrations.ps1` from `api/` (re-scaffold, never
+  additive migrations). A plan must not restate the local build/integration gate — inherit
+  [`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
+- **Merge-queue E2E tier.** The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are
+  expensive and Docker-gated. **The merge queue IS the E2E gate — never run E2E locally ahead of a merge**,
+  and the `merge` skill's Step 4 is the single source of truth for which tier runs. A plan phase line or
+  kickoff prompt saying "run the E2E regress" **selects the queue's tier**; it is not a reason to duplicate the run. The only local E2E is targeted diagnosis after a
+  queue failure, through that tier's debug skill.
+- A refactor that changes a **published** `Concertable.*` contract is a breaking package change and cannot
+  land in one PR — B2B and Customer compile against the published packages, not the source beside them (the
+  carve: [`../api/ARCHITECTURE.md`](../api/ARCHITECTURE.md)). Capture it in its own plan; the expand/contract
+  shape is the `plans` skill.

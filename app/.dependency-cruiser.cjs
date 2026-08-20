@@ -1,4 +1,5 @@
 const WORKSPACES = [
+  "b2b/shared",
   "web/b2b/shared",
   "web/b2b/venue",
   "web/b2b/artist",
@@ -23,12 +24,20 @@ module.exports = {
         pathNot: ["^$1/"],
       },
     },
+    {
+      name: "cross-platform-b2b-has-no-platform-dependencies",
+      severity: "error",
+      from: { path: "^b2b/shared/" },
+      to: {
+        path: "^(web|mobile)/|node_modules/(@concertable/web|@tanstack/react-router|sonner|react-dom|expo-secure-store)(/|$)",
+      },
+    },
   ],
   options: {
     tsPreCompilationDeps: true,
     doNotFollow: { path: "node_modules" },
     exclude: { path: "node_modules|/dist/|\\.d\\.ts$" },
-    includeOnly: { path: "^(web|mobile|shared|customer)(/|$)" },
+    includeOnly: { path: "^(web|mobile|shared|customer|b2b)(/|$)" },
     preserveSymlinks: true,
   },
 };
