@@ -1,6 +1,6 @@
 # Concertable Launch Roadmap
 
-> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; see [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; the roadmap tier is the `plans` skill.
 >
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
@@ -41,7 +41,7 @@ table-stakes items were resolved in the same pass.
 - [ ] 🔴 **Tenant verification — venue and artist legitimacy** `launch/tenant-verification` — surfaced by the 2026-08-16 sweep. `VenueEntity.Approved` and `[Admin] PATCH /api/Venue/{id}/approve` exist, but the flag is **decorative**: no query filter, guard or workflow reads it, so an unapproved venue publishes opportunities, accepts artists and takes money exactly like an approved one. No evidence is ever collected (a venue uploads only `Banner`/`Avatar`); there is no reject/pending/suspended state, no reason, no re-submission, no notification, and no record of who approved. Artists have no verification concept at all. Needs an evidence-upload surface (licence / proof of address / company docs) on its own blob prefix, a real verification state machine on the tenant, admin review with reasons, and the gate **actually enforced** at opportunity publication and at settlement.
 - [ ] 🔴 **Admin console + production admin provisioning** `launch/admin-console` — surfaced by the 2026-08-16 sweep. There is **no admin SPA** (`app/web/` is `b2b`, `customer`, `shared`) and **no production path to create an admin**: the `Admin` policy is granted only when a credential registers with `ClientId == "admin"` (`CredentialRegisteredHandler`), which only `AuthDevSeeder` ever does. The already-shipped admin backends — OSA moderation (hide/restore/resolve) and venue approval — are therefore unreachable in production. Blocks `launch/tenant-verification` and is what actually closes the OSA enforcement loop.
 - [ ] 🔴 **GDPR subject rights — erasure + data export** `launch/gdpr-subject-rights` — surfaced by the 2026-08-16 sweep. No account deletion, data export or anonymisation anywhere in `api/` or `app/`; the roadmap tracks the ICO *fee* but no DSAR capability. Not a `DELETE` endpoint: settled invoices, self-billing agreements and ledger entries are HMRC-retained for six years, so this needs a designed retain-vs-erase split (anonymise the identity, keep the financial record), an export format, and a documented response SLA.
-- [ ] 🟠 **API rate limiting** `launch/rate-limiting` — surfaced by the 2026-08-16 sweep. Zero `AddRateLimiter` in the codebase; login, apply, messaging and file upload are all unthrottled. Cheap at the shared pipeline seam, and exactly the gap a Stripe production review or a pen-test raises.
+- [x] ✅ **API rate limiting** `launch/rate-limiting` — shipped (`Feature/launch_rate-limiting`) as an opt-in seam in `Concertable.ServiceDefaults` (`AddDefaultRateLimiting`/`AddRateLimitPolicy`/`UseDefaultRateLimiting`, 429 + `Retry-After`, per-`sub` or per-IP fixed-window partitioning, lazy per-policy config binding; producer #655 + platform-sync #663) plus named policies applied across all five web hosts on the ~36 real abuse surfaces the sweep identified (credential/change-password, public reads, blob upload, apply/messaging/checkout, profile-image, purchase/review, search, setup-intent). Opt-in, no global fallback — evidence and rationale in [RATE_LIMITING_PLAN.md](RATE_LIMITING_PLAN.md). In-process only (distributed store deferred) and three adjacent anonymous-endpoint auth gaps logged in [api/TECH_DEBT.md](../../api/TECH_DEBT.md).
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT_PLAN.md](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md).
 
 **Architecture refactors — ready, not launch gates:**
@@ -262,7 +262,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] support@ inbox monitored; SLA documented (target: first response within 1 working day)
 - [ ] Status page live
 - [ ] Database backups verified
-- [ ] Rate limiting active on auth, apply, messaging and upload endpoints
+- [x] Rate limiting active on auth, apply, messaging and upload endpoints
 - [ ] Incident response process documented
 - [ ] First 10 beta venues + 50 beta artists onboarded
 - [ ] Marketing site live with pricing page

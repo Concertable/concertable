@@ -5,8 +5,8 @@
 - Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, this branch — **merge authorized, enqueued**) · consumer PR (all 5 services, **not yet created** — gated on #655 publish)
-- Last reconciled: 2026-08-19, from `origin/main` + repository evidence. Tommy authorized merging #655 (full chain).
+- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, **MERGED** 2026-08-19T20:34Z) · #663 (`chore/platform-sync-0.1.0-alpha.0.1078` — sync from #655, **MERGED** 2026-08-19T21:25Z) · **#670 (Phase 2 consumers — all 5 services, READY, CI green/CLEAN, awaiting merge)**
+- Last reconciled: 2026-08-19, from `origin/main` + repository evidence. #655 + #663 both merged; all five services pin `0.1.0-alpha.0.1078` (the opt-in seam). Spent #655 worktree closed; fresh Phase-2 worktree recreated off `origin/main` (`7f782a237`).
 
 ## Current state
 
@@ -22,38 +22,52 @@ opt-in seam: `AddDefaultRateLimiting` (plumbing + 429/`Retry-After` `OnRejected`
 `RateLimitingOptions`. The lazy binding fixes the earlier eager-bind wart (which had forced env-var-only
 test overrides). Unit tests: partition trips 429 + `Retry-After`, and per-user vs per-IP key resolution — **5 pass**.
 
-**PR #655 repurposed to producer-only.** The obsolete Phase-2 consumer wiring it carried (Auth + B2B
-tagging, built for the abandoned global design, referencing the now-removed `RateLimitPolicies`) was
-reverted to `origin/main`; the old `ApplicationRateLimitApiTests` deleted. #655 now diffs only the
-ServiceDefaults refactor + these plan docs.
+**Producer seam now live on `main`.** All five services pin `0.1.0-alpha.0.1078`, which carries the opt-in
+seam (`AddDefaultRateLimiting`, `AddRateLimitPolicy(name, RateLimitWindow, perUser)`, `UseDefaultRateLimiting`).
+Phase 2 (consumer wiring) is unblocked and in progress on this branch.
+
+**Phase-2 surface reconciled against live code (subagent sweep, 2026-08-19).** No service currently references
+any rate-limiting API — greenfield. `UseForwardedHeaders` is present only in Auth (line 179); B2B, Customer,
+Search, Payment have none and need it added before the limiter for the per-IP policies. No explicit
+`UseRouting` in B2B/Customer/Search/Payment (implicit routing) — the limiter goes after `UseAuthentication`.
+No integration fixture disables rate limiting today (the old env-var seam is gone) — the shared helper is a
+net-new `IntegrationTestHostExtensions` step; each service owns its own `ApiFixture`, there is no shared base.
 
 ## Next Steps
 
-**In progress: merging producer PR #655 (Tommy authorized the full chain, 2026-08-19).** Re-synced current
-with `origin/main` (pin `1073`), rebuilt 0/0, 5/5 unit; `/review` re-run clean at HEAD (see `## Reviews`);
-`skip-e2e` (no positive trigger — internal shared-infra refactor); enqueued into the merge queue.
+**Phase 2 consumer rollout implemented on this branch and building 0/0 (full `api/Concertable.slnx` + each
+touched test project).** Remaining is delivery only:
 
-- **On #655 merge:** `publish-packages` republishes `Concertable.ServiceDefaults` and `platform-sync`
-  opens a `chore/platform-sync-*` pin bump. Non-breaking (no consumer on `main` uses the rate-limit API
-  yet) → follow it to green/merged. Then close this PR's worktree (`-PlanManaged`).
-- **Then create the consumer PR** (Phase 2, new worktree off the new pin): opt all five web hosts into the
-  seam and apply the named policies per the plan's surface table, lift the integration-fixture disable
-  step into `Concertable.Testing.Integration`, add 429 + `Retry-After` integration tests (one per
-  partition kind), confirm `UseForwardedHeaders` before `UseDefaultRateLimiting` for the per-IP policies,
-  and tick roadmap line 44 + §7 in the shipping commit.
+- **PR #670 ready + CI green** — 58 checks pass, 0 fails, `mergeStateStatus: CLEAN` (full build/carve/unit/integration matrix; the rate-limit trip tests + relax helper pass remotely). No positive E2E trigger.
+- **`/review` complete** (medium, both layers + security). NAT1 (Auth prod ForwardedHeaders → global-lockout) **fixed** `a67537bad`; NAT2 (Customer policy-name literals) recorded as a deliberate trade-off (no service-wide assembly; logged in `Customer/TECH_DEBT.md`). Review + security markers stamped.
+- **Merge blocked for the agent by `merge_review_gate.py` — Tommy runs it:** `/merge 670` (or `! gh pr merge 670 --merge --auto`; repo convention is merge-commits). Then follow the `api/**` platform-sync PR to green/merged (republishes ServiceDefaults + consumers, re-bumps the pin — non-breaking, should auto-merge).
+- On merge: close this worktree (`-PlanManaged`), and the plan is terminal → delete `RATE_LIMITING_PLAN.md` + this ledger (roadmap already ticked, not deleted).
 
 ## Completed work
 
 - **Design decision** — opt-in, no global fallback; shared mechanism + per-service policies; all 5
   throttles one endpoint, no global cap.
-- **Phase 1 producer refactor (this branch)** — the ServiceDefaults seam above; unit tests rewritten and
-  green; obsolete consumer wiring stripped from #655.
+- **Phase 1 producer refactor** — the ServiceDefaults seam above; unit tests rewritten and green; obsolete
+  consumer wiring stripped. Shipped as **#655, MERGED**; published pin `0.1.0-alpha.0.1078`.
+- **Platform sync #663 MERGED** — bumped every service's `<ConcertablePlatformVersion>` to `0.1.0-alpha.0.1078`
+  (non-breaking; no consumer used the API yet). Spent #655 worktree closed (`-PlanManaged`); Phase-2 worktree
+  recreated off `origin/main`.
 - **#646** — merged seam v1 (global + central policies); superseded by this refactor.
+- **Phase 2 consumer rollout (this branch)** — all five web hosts opted into the seam with `UseForwardedHeaders`
+  before `UseDefaultRateLimiting` (placed after auth); named policies + `[EnableRateLimiting]` across the surface
+  table. Policy-name constants per service (`RateLimitPolicies` in Search.Api / Payment.Api / Auth / B2B
+  Tenant.Contracts; Customer host + matching literals, no service-wide assembly). Shared
+  `RateLimitingTestConfig.RelaxRateLimiting`/`ConstrainRateLimiting` in `Concertable.Testing.Integration`; every
+  web `ApiFixture` relaxes via one line (`ApiFixture` made a virtual `RateLimitPermit` hook so the trip fixture
+  is a 4-line subclass, not a copy). Two integration trip tests (per-IP + per-user, 429 + `Retry-After`) in the
+  Customer Review module (`RateLimitApiTests`). Adjacent auth gaps logged in `api/TECH_DEBT.md`; roadmap line 44 + §7 ticked.
 
 ## Verification
 
-- `dotnet build` + `dotnet test` → 0/0, **4/4 pass** for `Concertable.ServiceDefaults.UnitTests`.
-- Full build/carve/unit/integration matrix owned by draft-PR CI (remote-first).
+- Producer unit tests: `Concertable.ServiceDefaults.UnitTests` — 5 pass (from #655).
+- Phase 2: `dotnet build api/Concertable.slnx` → **0 errors**; each touched test project builds clean
+  (Customer Review / Auth / Search integration test projects).
+- Integration trip tests + full build/carve/unit/integration matrix owned by draft-PR CI (remote-first; no local E2E).
 
 ## Reviews
 
@@ -84,3 +98,11 @@ with `origin/main` (pin `1073`), rebuilt 0/0, 5/5 unit; `/review` re-run clean a
   api/blob/{fileName}` + `GET download`; Payment `GET /api/Transaction` missing `[Authorize]` — the last
   two logged in `api/TECH_DEBT.md` alongside the Phase 2 wiring.
 - **Partition on `sub`, not tenant**; in-process limiter only (distributed store deferred).
+- **Policy-name constants per service; Customer uses literals** (review NAT2). B2B/Search/Payment/Auth put
+  `RateLimitPolicies` in a project both host and controllers reach (B2B `Tenant.Contracts`; Search/Payment
+  `.Api`; Auth host). Customer has no service-wide assembly the module `*.Api` projects share, so its host
+  holds the constants (registration + fixture `All`) and controllers carry matching literals — fail-fast at
+  startup, `public-read`/`review` covered by trip tests. Durable fix (a new shared Customer project) logged
+  in `api/Concertable.Customer/TECH_DEBT.md` as a topology decision for Tommy.
+- **Auth forwarded-headers made environment-agnostic** (review NAT1) — was Dev-only, which would have made
+  the prod per-IP credential throttle a global lockout. Now matches the other four hosts.

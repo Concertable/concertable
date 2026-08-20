@@ -1,6 +1,6 @@
 ---
 name: docs-review
-description: Full review of a branch's documentation/meta diff (**/*.md, .agents/.claude/.codex agent metadata, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `review`.
+description: Full review of a branch's documentation/meta diff (**/*.md, .agents/.claude/.codex agent metadata, plans/**, docs/**, AGENTS.md, CLAUDE.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `review`.
 ---
 
 # docs-review
@@ -54,7 +54,7 @@ If the range is empty or the branch is `main`, that's the wrong-checkout symptom
 runtime/product/package/CI-test-selection path (`api/**`, `app/**` source, `*.csproj`/CPM,
 `package.json`/lockfiles, `.github/workflows/**`, migrations), this is **not** a docs-only diff — stop
 and route to `review`. In-scope meta paths: `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`,
-`plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `README*`, `PROMPTS.md`.
+`plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `README*`.
 
 ## Step 1b — Create the review file NOW, before reviewing (mandatory)
 
@@ -72,10 +72,10 @@ issue (Lens C) only when a doc actually states it, but Lens A/B/D/E/F stand on a
 consistency, and the observable fact of which files the harness reloads — not on a written convention:
 
 - Root `AGENTS.md` / `CLAUDE.md` — top-of-context conventions, incl. the comment/doc philosophy.
-- `plans/AGENTS.md`, `plans/agents/ROADMAP.md`, `plans/agents/PLAN.md` — the ROADMAP→PLAN→PROGRESS
-  convention and its rules (when a doc referencing the roadmap is legitimate vs a coupling).
+- `plans/AGENTS.md` plus the `plans` skill — the ROADMAP→PLAN→PROGRESS convention and its rules
+  (when a doc referencing the roadmap is legitimate vs a coupling).
 - `reviews/AGENTS.md` — review-file lifecycle (work-order, delete-when-spent).
-- `PROMPTS.md` — handoff/resume/review prompt shape.
+- the `handoff` skill — handoff/resume/review prompt shape.
 - Any `AGENTS.md` in a directory the diff touches, and for a skill diff the sibling skills it names.
 
 ## Step 3 — Review the diff through these lenses
@@ -106,8 +106,8 @@ places, not just one.
 
 ### Lens C — Right home & the topic-playbook convention
 
-The repo keeps each topic's rules in its **own playbook** (`plans/agents/PLAN.md` / `ROADMAP.md` are
-literally "the topic playbook for …") and hubs (`AGENTS.md`) as pointers to them. Flag:
+The repo keeps each topic's rules in its **own playbook** — an owning doc or the skill named in
+`docs/INDEX.md` — and hubs (`AGENTS.md`) as pointers to them. Flag:
 
 - New guidance **bolted onto a hub** that belongs in the topic's own doc — grow the playbook, not the hub.
 - The **same rule stated in two places** so the copies will drift — collapse to one home + a pointer.
@@ -115,8 +115,8 @@ literally "the topic playbook for …") and hubs (`AGENTS.md`) as pointers to th
 
 ### Lens D — Concision of harness-reloaded docs
 
-The harness reloads some docs into **every prompt** — root `AGENTS.md`/`CLAUDE.md`, every skill
-`SKILL.md`, the `plans/agents/*` playbooks — so each added word there is a recurring cost. In those
+The harness reloads some docs into **every prompt** — root `AGENTS.md`/`CLAUDE.md`, every area
+`AGENTS.md`, every skill `SKILL.md` — so each added word there is a recurring cost. In those
 files flag additions that carry no rule: restating a rule already stated, example blocks or preamble
 that add words without adding constraint, narration. The fix is concrete: tighten in place / delete the
 redundant lines. (Ordinary long-form docs under `docs/` and `plans/*_PLAN.md` are held to clarity, not
