@@ -255,16 +255,24 @@ Done when both hold, **verified rather than asserted**:
    or `react-agents`; what remains in this repo is only per-repo *values* named by a thin `AGENTS.md`.
    `api/AGENTS.md`, `api/CLAUDE.md`, root `AGENTS.md`/`CLAUDE.md`, and `plans/AGENTS.md`'s rules are gone
    from the tree. (N7b — the plan-document tree — and the cut itself are separate, gated on roadmap §4c/§6.)
-2. **Every moved rule resolves from Codex *and* Claude Code, no less accessibly than before.** The canonical
-   markdown under `.agents/skills/` is agent-agnostic; `dotagents` syncs it to `~/.agents/skills/` for a
-   Codex session, and Claude Code installs the plugins/stubs. Per node the gate is that a rule an agent
-   loaded before — the always-loaded floor especially (root `AGENTS.md`, the `api/AGENTS.md` pointers, the
-   former `CODE_CONVENTIONS`/`RESULT_PATTERN` content now in `dotnet-standards`) — is reachable from a fresh
-   install of **both** harnesses in the same or fewer hops. A rule that becomes unreachable, or gains a hop,
-   from either harness fails the node.
+2. **Every moved rule still resolves from Codex *and* Claude Code, no less accessibly than before.**
+   Accessibility is lazy by design: opening a file fires the write-time router over
+   `.agents/skill-routes.json`, which loads the matching skill on demand — a convention is never *missing*,
+   only loaded when its path is touched. So the per-node gate is two facts Claude checks itself, **no live
+   Codex session required**:
+   - **Routing fires:** `python .agents/hooks/skill_router.py --skills-for <path>` returns the expected
+     skill(s) for a representative path of each moved family — e.g. a `*.UnitTests/*.cs` still resolves
+     `unit-testing`, a repository still resolves `persistence`. The always-loaded floor (root `AGENTS.md`,
+     the `api/AGENTS.md` pointers, the former `CODE_CONVENTIONS`/`RESULT_PATTERN` content now in
+     `dotnet-standards`) is covered by its own route rows.
+   - **The resolved skill has content in both read locations:** the canonical `.agents/skills/<skill>` that
+     `dotagents` syncs to `~/.agents/skills/` (what a Codex session reads) and the Claude plugin cache/stubs.
 
-N8 demonstrates criterion 1 on a carved service; criterion 2 is checked per node at move time from a fresh
-install of each harness, not deferred to N8.
+   A rule that stops resolving, or resolves to content absent from either location, fails the node.
+
+N8 demonstrates criterion 1 on a carved service. Criterion 2 is checked per node at move time by the two
+mechanical checks above; a single live **Codex end-to-end smoke** — open a representative file in a real
+Codex session and confirm the convention loads — runs once at the end (with N8), not per node.
 
 ## Explicitly not in scope
 
