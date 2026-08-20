@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `25b492c1b0edf8179e300491d0a4399c3c4cc097`  _(2026-08-20)_
+**Reviewed up to commit:** `55de65d0850b82cf10550d207ceb5a560f9ceb8d`  _(2026-08-20)_
 
-> Range reviewed: `d1422b6b5..25b492c1b` (5 commits), plus the producer half it exists to consume —
+> Range reviewed: `d1422b6b5..55de65d08` (7 commits), plus the producer half it exists to consume —
 > `Concertable/agent-standards` `30734a9..5cf3608` (2 commits, PR #8 — the second commit is this review's
 > own fixes). One review across both branches
 > rather than two, because three of the four findings are defects in the moved docs; the producer branch
@@ -71,3 +71,10 @@
   PR. Three classes of citation were dropped for exactly this reason and are recorded in the ledger:
   per-repo memory ids, a conventions file that no longer exists, and both suites' scenario and module
   rosters.
+
+## Incremental review — 2026-08-20
+
+Re-stamped to `55de65d08`. The two commits since the original stamp changed this file and the plan ledger
+only — the checkpoint tail the plan protocol requires — so there is nothing reviewable in them and no
+finding to add. Recorded rather than silently re-stamped, because "nothing changed" is a judgement someone
+should be able to check.
