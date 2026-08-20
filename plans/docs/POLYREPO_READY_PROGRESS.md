@@ -5,7 +5,7 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-test-debug-family`
 - Branch: `Docs/docs_polyrepo-ready-test-debug-family`, from `main` at `d1422b6b5` — N1 family 3, test-debug.
-- PR: this repo — none open yet for family 3; producer `Concertable/agent-standards` — none open yet.
+- PR: this repo — **#677, draft**, based on `main`; producer `Concertable/agent-standards` — none open yet.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as **#676, merged 2026-08-20 at `d1422b6b5`** + agent-standards #7 at `30734a9`.
 - Dependency/package gates: none outstanding. agent-standards `main` is at `30734a9` and carries the review
