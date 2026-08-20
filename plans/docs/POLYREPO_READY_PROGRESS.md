@@ -5,16 +5,16 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-test-debug-family`
 - Branch: `Docs/docs_polyrepo-ready-test-debug-family`, from `main` at `d1422b6b5` — N1 family 3, test-debug.
-- PR: this repo — **#677, draft**, based on `main`; producer — **agent-standards #8, open** at `5cf3608`.
+- PR: this repo — **#677**, based on `main`; producer — **agent-standards #8, merged 2026-08-20 at
+  `2d9a8fe`**.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as **#676, merged 2026-08-20 at `d1422b6b5`** + agent-standards #7 at `30734a9`.
 - Dependency/package gates: none outstanding. agent-standards `main` is at `30734a9` and carries the review
   and merge families, so family 3's producer work has a current base. No open `chore/platform-sync-*` PR —
   #676 touched no `api/**` path, so it triggered no publish.
-- Last reconciled: 2026-08-20, after family 3 was authored, reviewed clean and both halves pushed.
-  agent-standards #8 is at `5cf3608`; this branch's review is clean with no open findings. Plugin cache
-  still stale (its `standards/process/` holds the seven original docs, no `review/`, no `merge/`, no
-  `testing/`).
+- Last reconciled: 2026-08-20, after agent-standards #8 merged at `2d9a8fe`. Family 3's producer half is
+  on that repo's `main`; #677 is the remaining half and lands meta-only. Plugin cache still stale (its
+  `standards/process/` holds the seven original docs, no `review/`, no `merge/`, no `testing/`).
 
 ## Current state
 
@@ -22,10 +22,11 @@
 `d1422b6b5`, closing the family: `merge`, `merge-docs` and `pr-preflight` keep their names so every prose
 citation still resolves, and `create-gh-pr` shipped as `open-pr` for the reason under `## Decisions`.
 
-**N1 family 3 — test-debug — is written and reviewed clean on both sides, ready to land.** The producer is
-agent-standards **#8** (six docs, plus the second vendoring tier); the consumer is this
-branch (1,082 lines deleted, five citation sites re-pointed, the vendored-script provenance and its
-tests). Four review findings, all fixed before either branch went up. All six skill names survived the machine-wide collision check, so **every prose citation that
+**N1 family 3 — test-debug — is merged on the producer side and landing on this one.** agent-standards
+**#8** merged at `2d9a8fe`: six docs under `standards/process/testing/`, every skill name kept, plus
+`vendor-hooks.ps1`'s second source→target tier and `scripts/docker-health.ps1` under it. This branch is
+the consumer half — 1,082 lines deleted, five citation sites touched, the vendored-script provenance and
+its five new tests. Four review findings, all fixed before either branch went up. All six skill names survived the machine-wide collision check, so **every prose citation that
 named one still resolves** — the re-pointing here was de-duplication, not renaming.
 
 **N1 families 4–6 and N2–N8 are untouched.** 816 of N1's original 3,285 lines remain, in three families.
@@ -38,8 +39,7 @@ families 2 and 3 inherit the same dependency.
 
 ## Next Steps
 
-1. **Land family 3 — the review is clean and both halves are pushed.** agent-standards **#8** first (that
-   repo has no merge queue and merges directly), then **#677**. **#677 is meta-only this time** — every
+1. **Land #677 — agent-standards #8 is already merged at `2d9a8fe`.** **#677 is meta-only this time** — every
    changed path is `.agents/**`, `.claude/**`, `docs/**`, `plans/**`, `reviews/**` or root `AGENTS.md`, and
    `scripts/docker-health.ps1` is byte-identical to what was already there — so it lands through
    `/merge-docs`, unlike family 2 which had to break its own gate on a workflow comment. Then close this
@@ -73,7 +73,7 @@ families 2 and 3 inherit the same dependency.
 
 ## Completed work
 
-- **N1 family 3 producer — agent-standards #8, open at `5cf3608`.** Six docs under
+- **N1 family 3 producer — agent-standards #8, merged 2026-08-20 at `2d9a8fe`.** Six docs under
   `standards/process/testing/`, one router each and every name unchanged: `UI_E2E.md` ← `e2e-ui-debug`;
   `API_E2E.md` ← `e2e-api-debug`; `REGRESSION.md` ← `e2e-ui-regress`; `BOTH_LAYERS.md` ← `e2e-debug`;
   `INTEGRATION.md` ← `integration-debug`; `IDE_DISCOVERY.md` ← `reset-test-explorer`. `vendor-hooks.ps1`
@@ -211,7 +211,7 @@ N1 family 2, consumer (this repo):
 **Family 3 — four findings, all fixed and ticked before either branch went up for review; no open
 findings.** One review file across both branches, on the consumer:
 `reviews/Docs-docs_polyrepo-ready-test-debug-family.md`, covering `d1422b6b5..207b28d44` here and
-`30734a9..76758be` in agent-standards; that repo carries a companion pointing at it. **Run from the moved
+`30734a9..5cf3608` in agent-standards; that repo carries a companion pointing at it. **Run from the moved
 copy of the procedure** (`standards/process/review/DOCS.md`, merged as #6) for the second slice running,
 since this repo holds no `docs-review` skill and the plugin cache is still stale.
 

@@ -7,7 +7,8 @@
 **Reviewed up to commit:** `25b492c1b0edf8179e300491d0a4399c3c4cc097`  _(2026-08-20)_
 
 > Range reviewed: `d1422b6b5..25b492c1b` (5 commits), plus the producer half it exists to consume —
-> `Concertable/agent-standards` `30734a9..76758be` (1 commit, PR #8). One review across both branches
+> `Concertable/agent-standards` `30734a9..5cf3608` (2 commits, PR #8 — the second commit is this review's
+> own fixes). One review across both branches
 > rather than two, because three of the four findings are defects in the moved docs; the producer branch
 > carries a companion file pointing here.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
