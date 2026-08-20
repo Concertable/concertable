@@ -31,6 +31,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Branching — `<Type>/<Name>` casing, branching from `origin/main`, refactors that stay on their feature branch | skill `git-branching` |
 | The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
 | When to commit, when to push, fewest safe merges | skill `committing` |
+| Committing procedure — slicing by workstream, or the whole tree in one commit | skills `commit`, `commit-all` |
+| Pushing a head and proving the remote carries it; pulling and recovering a failed pull | skills `push`, `pull` |
+| Bringing a checkout up to date — a stale `origin/HEAD`, a branch that already shipped, drift against the default | skill `sync-checkout` |
 | Ready-for-review ≠ merge authorization | [`AGENTS.md`](../AGENTS.md) |
 | Merge procedure — currency check, enqueue, the four terminal states, sync follow-through | skill `merge` (the reasoning behind each state: skill `merging`) |
 | Opening a PR, and the read-only gate that clears a branch first | skills `open-pr`, `pr-preflight` |
@@ -49,6 +52,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
 | Code comments — default to none | global agent instructions (mechanics: skill `comments`) |
 | Doc locality and `CLAUDE.md` siblings as enforced here | [`AGENTS.md`](../AGENTS.md) "Per-area guidance" |
+| Creating, inspecting or closing one worktree | skill `open-worktree` |
 | Worktree cleanup | [`AGENTS.md`](../AGENTS.md) + `scripts/worktrees.ps1` |
 
 ## Architecture — what may depend on what
