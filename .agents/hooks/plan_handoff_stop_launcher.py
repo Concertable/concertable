@@ -1,4 +1,5 @@
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -43,15 +44,50 @@ def implementation_is_current(root):
     )
 
 
-def main():
-    root = Path(__file__).resolve().parents[2]
-    if not implementation_is_current(root):
-        result = {
+def block_once(data, reason):
+    if data.get("stop_hook_active") or data.get("stopHookActive"):
+        return {
             "systemMessage": (
-                "Plan handoff hook bundle differs from origin/main (advisory); its reminders may not "
-                "match trunk. Sync this branch with current main before relying on them."
+                "Plan handoff hook repair was already attempted in this turn; allowing the turn "
+                "to end to prevent a recursive Stop-hook loop."
             )
         }
+    return {"decision": "block", "reason": reason}
+
+
+def plugin_delivered():
+    """True when this copy came from an installed plugin rather than a repo's vendored copy.
+
+    The currency check below asks whether a repo's checkout still matches its origin/main. A
+    plugin has no such repo above it, so the check can only ever fail - which would block every
+    turn. Under plugin delivery the plugin IS the author, so there is nothing to verify.
+    """
+    plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if not plugin_root:
+        return False
+    try:
+        return Path(plugin_root).resolve() in Path(__file__).resolve().parents
+    except OSError:
+        return False
+
+
+def main():
+    if plugin_delivered():
+        runpy.run_path(str(Path(__file__).resolve().parent / "plan_handoff_stop.py"), run_name="__main__")
+        return
+    root = Path(__file__).resolve().parents[2]
+    if not implementation_is_current(root):
+        try:
+            data = json.loads(sys.stdin.buffer.read().decode("utf-8-sig"))
+        except Exception:
+            data = {}
+        result = block_once(
+            data,
+            (
+                "HANDOFF GATE ERROR: this checkout's plan handoff hook bundle differs from "
+                "origin/main. Sync this branch with current main before relying on plan handoffs."
+            ),
+        )
         json.dump(result, sys.stdout)
         sys.stdout.write("\n")
         return

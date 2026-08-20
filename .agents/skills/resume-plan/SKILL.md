@@ -25,7 +25,7 @@ PR-scoped worktrees; a plan may have several independent workstream ledgers.
    `origin/main`, resume the same ledger, and update its header in the next work commit. If an open
    branch/PR exists without a worktree, restore that exact branch instead. Stop on dirty state or a
    branch/worktree collision.
-2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, `plans/agents/PLAN.md`, the plan, and the resolved
+2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, the `plans` skill, the plan, and the resolved
    ledger.
    After applying the root current-main sync gate, run
    `python .agents/hooks/plan_graph.py --root <absolute-worktree>` before trusting the graph; fix any
@@ -43,7 +43,7 @@ PR-scoped worktrees; a plan may have several independent workstream ledgers.
      blocks only delivery: if local implementation, tests, or review can proceed against an exact
      producer artifact, reconcile the ledger to actionable delivery-gated work and continue normally.
    - If it cannot move, make `## Next Steps` start with the exact single-line `Blocked:`, `Blocked by:`,
-     `Unblock action:`, and `Resume when:` fields from `plans/agents/PLAN.md`. If the same fields and
+     `Unblock action:`, and `Resume when:` fields from the `plans` skill. If the same fields and
      evidence were already recorded, do not create another no-change blocker checkpoint.
    - **Existing owner:** establish the reciprocal return path in every plan-owner ledger named by
      `Blocked by:` before stopping. Report all four lines verbatim and name the owner, but emit no

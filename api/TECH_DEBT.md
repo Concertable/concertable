@@ -6,6 +6,30 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Controller route-token casing is implemented only in the B2B host
+
+`Concertable.B2B.Web` owns `KebabCaseRouteTransformer` and registers
+`RouteTokenTransformerConvention` directly in `Program.cs`. Controller-token casing is an HTTP-host
+convention rather than B2B domain behaviour, so leaving it local lets other backend hosts implement a
+different route format or copy the same plumbing.
+
+**Resolves when:** `Concertable.Shared.Api` exposes the transformer through one shared MVC registration
+extension, the package is published, every MVC host installs that extension, and the B2B-local
+transformer and inline registration are removed.
+
+### Async application and persistence APIs do not consistently propagate cancellation
+
+Many application-service, repository, module-facade, and infrastructure methods perform EF Core,
+HTTP, blob, payment, or other asynchronous I/O without accepting a `CancellationToken`, while some
+neighbouring paths already propagate one. Request cancellation therefore stops at inconsistent
+boundaries, and callers cannot reliably cancel work after a client disconnect or host shutdown.
+
+**Resolves when:** inventory every async backend interface and implementation, add
+`CancellationToken ct = default` to methods that can reach I/O, thread it through all supporting
+dependency and framework calls, and add architecture coverage that rejects new cancellable I/O paths
+without a token. Preserve the Result convention: cancellation propagates as cancellation and is never
+mapped to an expected-outcome error.
+
 ### Repository query outputs blur entities, read models, projections, and DTO contracts
 
 Repository contracts across B2B, Customer, Search, and Payment do not follow one ownership or naming
@@ -15,21 +39,15 @@ public `*.Contracts` DTO. For example, Customer Concert's `IConcertReadRepositor
 the module contract `ConcertDto`, so its persistence adapter materializes a cross-module contract
 directly, while neighbouring repositories return `ConcertDetails`, entities, or persisted read models.
 
-The existing DTO-versus-Response rule in `api/AGENTS.md` defines service and HTTP outputs but does not
-define what a repository/query abstraction may return, who owns an efficient database projection, or
-how to distinguish an ephemeral LINQ projection from an event-fed persisted read model. As a result,
-`Dto`, `Details`, `Projection`, `ReadModel`, and `Entity` communicate different things in different
-areas, and dependency direction, mapping responsibility, tracking expectations, and public-contract
-coupling are decided locally rather than consistently.
+The repository-output and DTO rules in the `csharp-naming` skill now define the intended naming,
+ownership, and mapping boundary. Existing repositories predate that standard, however, so `Dto`,
+`Details`, `Projection`, `ReadModel`, and `Entity` still communicate different things in different areas,
+and dependency direction, tracking expectations, and public-contract coupling remain inconsistent.
 
-**Resolves when:** investigate the repository and query shapes across every backend service, establish
-and document one codebase standard for persistence entities, event-maintained read models, ephemeral
-query projections, application DTOs, module Contracts DTOs, and API Responses/Requests, including
-their ownership, allowed dependency directions, naming/location, mapping boundary, and absence
-semantics. Validate the proposed rule against representative read, write, paginated, cross-module,
-and performance-sensitive queries before migrating code. Then inventory and migrate every violation
-in coherent service/package cut-overs, and add practical architecture tests or mechanical guards for
-the parts of the standard that can be enforced automatically.
+**Resolves when:** inventory and migrate every violation in coherent service/package cut-overs, validate
+the standard against representative read, write, paginated, cross-module, and performance-sensitive
+queries, and add practical architecture tests or mechanical guards for the parts that can be enforced
+automatically.
 
 ### Repository bases repeat CRUD, and read no-tracking is a bypassable `Query` convention
 
@@ -41,7 +59,7 @@ through the tracked `context.Set<T>()`. And `Query` enforces nothing — a read 
 guarantee, and the duplication only exists because tracking lives on the query.
 
 **Resolves when:** no-tracking becomes a property of the **context**, not the query. Read repositories
-sit on a read-only, no-tracking context (the `PublicDbContext` shape — `SaveChanges` throws — already
+sit on a read-only, no-tracking context (the shared `ReadDbContext` shape — `SaveChanges` throws — already
 exists), so `context.Foo` is no-tracking by construction and can't be bypassed, and `Query` is
 deleted. With tracking off the query, read/write `GetById`/`GetAll`/`Exists` become identical, so the
 bases collapse to one CRUD implementation exposed through `IReadRepository` / `IWriteRepository`
@@ -90,23 +108,23 @@ configuration; explicit typed composition/options should select capabilities.
   validate the allowed names. Declarative JSON values may remain strings where the format requires
   them, but their values must follow the same vocabulary and be covered by a consistency test.
 
-### Extension methods use the legacy `this`-parameter syntax, not C# 14 `extension()` blocks
+### Existing extension containers still use legacy `this` parameters
 
-Every extension in the codebase is declared the pre-C# 14 way — `public static T M(this X x, …)` in `XExtensions`
+Many existing extension containers still use the pre-C# 14 form — `public static T M(this X x, …)` in `XExtensions`
 static classes. C# 14 (net10) added `extension()` blocks: the unified "extension members" form that also expresses
 extension properties, indexers, and static members, and groups members by receiver. Both compile to identical IL,
 so this is modernization/consistency debt, not a behavioural gap. The env-vocabulary work set the example —
 `Concertable.Kernel.EnvironmentsExtensions` / `HostEnvironmentExtensions` use `extension(Environments)` /
 `extension(IHostEnvironment env)` blocks (giving `Environments.Integration` + `env.IsIntegration()`).
 
-**Resolves when:** existing `this`-parameter extension methods migrate to `extension()` blocks — one `XExtensions`
-class per receiver type, members grouped in `extension(Receiver)` blocks — as a mechanical sweep or
-opportunistically as files are touched. New extension members use `extension()` from the start (see
-`agents/CODE_CONVENTIONS.md`).
+**Resolves when:** ordinary `this`-parameter extension methods migrate to `extension()` blocks, with
+receiver-owned members grouped in `XExtensions` and related mapping receivers grouped in `XMappers`.
+Every touched container migrates completely; new extension members use `extension()` from the start
+(see the `csharp-style` skill). Signature-bound generator/framework declarations are excluded.
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`csharp-style` skill) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
@@ -220,7 +238,7 @@ Do the pair in one sweep so the store vocabulary doesn't land half-applied.
 not a module concept — and every Api module that grows an action link will copy it a third time.
 
 The OSA report-content plan justified the second copy on the grounds that hoisting it would create the
-cross-module coupling `MODULAR_MONOLITH_RULES.md` forbids. **That reasoning was wrong:** those rules
+cross-module coupling the `module-structure` skill forbids. **That reasoning was wrong:** those rules
 forbid one module reaching into another module's types, and explicitly cover shared libraries as a
 legitimate home for cross-cutting layer concerns. `Concertable.Shared.Api` is exactly that home — the
 Api-layer shared library both modules already consume — and the frontend has had a single shared
@@ -236,51 +254,35 @@ publish-first cut-over, not an edit.
 `Concertable.Shared.Api`, is published, and both module-local copies are deleted in the follow-up PR
 once the pin carries it. Any new Api module uses the shared one rather than minting a third.
 
----
+### Rate limiting is in-process only — no distributed store for horizontally-scaled correctness
 
-### `IPagination<T>.Select` lives in a data-access package, so almost nobody finds it
+`AddDefaultRateLimiting` (`Concertable.ServiceDefaults`) registers the built-in `AddRateLimiter`, whose
+partitioned limiters live in each process's memory. Under horizontal scale every replica counts
+independently, so a policy nominally set to N/min actually permits up to N×(replica count)/min — the
+per-user/per-IP ceiling loosens in proportion to the fleet. This is acceptable at launch (single-instance
+per service) and is the deliberate scope cut in `plans/launch/RATE_LIMITING_PLAN.md`: an in-process
+limiter delivers the abuse floor now without standing up shared infrastructure.
 
-`PaginationExtensions` (`Concertable.DataAccess.Infrastructure`) holds two extensions with very
-different natures. `ToPaginationAsync` is genuinely data-access — it takes `IQueryable<T>` and awaits
-EF's `CountAsync`. `Select(this IPagination<TSource>, Func<TSource, TDestination>)` is **not**: it is a
-pure in-memory projection over an already-materialised page, with no EF dependency and no reason to sit
-behind a data-access reference.
+**Resolves when:** the limiter is backed by a shared store (e.g. Redis) so counts are fleet-global, or a
+gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the app keeps the
+identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
+relied-upon control.
 
-The consequence is that the type it operates on lives in `Concertable.Contracts` while the operation
-lives somewhere most consumers cannot see:
+### Anonymous mutating/detail endpoints found by the rate-limiting sweep
 
-- **Api projects cannot reach it at all** — they reference `Concertable.Shared.Api`, not
-  `Concertable.DataAccess.Infrastructure`, and correctly so. So every Api response mapper hand-rolls the
-  projection: `Concert.Api/Mappers/OpportunityResponseMapper.cs`,
-  `Conversations.Api/Mappers/MessageResponseMappers.cs`.
-- **Layers that *can* reach it still miss it**, because nothing points there and the placement implies a
-  data-access concern: `Conversations/MessageService`, `Concert.Application/OpportunityMapper`,
-  `Search`'s three header services, `Payment/TransactionService` all write
-  `new Pagination<T>(data, TotalCount, PageNumber, PageSize)` by hand.
+The rate-limiting endpoint sweep classified every HTTP endpoint and found three reachable
+unauthenticated that should not be. They are an authorization concern, not a throttling one, so the
+rate-limiting work left them as-is and logged them here:
 
-Eight-plus copies of a four-argument constructor call is the symptom; the placement is the cause.
+- **B2B `DELETE api/blob/{fileName}`** (`Concertable.B2B.Web/Controllers/BlobController.Delete`) — deletes a
+  blob with no `[Authorize]`. Anonymous callers can delete stored files.
+- **B2B `GET api/blob/download/{blobName}`** (same controller, `Download`) — streams any blob by name with no
+  authorization.
+- **Payment `GET /api/Transaction`** (`Concertable.Payment.Api/Controllers/TransactionController.GetPurchases`)
+  — the controller has no class- or action-level `[Authorize]` (contrast `StripeAccountController`, which is
+  `[Authorize]`), so transaction listings are anonymous.
 
-**Fix:** move `Select` to `Concertable.Contracts`, next to `IPagination<T>` and `Pagination<T>`, and
-leave `ToPaginationAsync` in `Concertable.DataAccess.Infrastructure` where it belongs. Then every layer
-— Application, Infrastructure and Api alike — can map a page without minting a constructor call.
+**Resolves when:** each endpoint carries the correct authorization (blob delete/download gated to the owning
+tenant; `TransactionController` requires an authenticated caller scoped to its own transactions), with tests
+proving an anonymous request is rejected.
 
-**Rename it `Map` in the same cut-over.** `Select` names it after LINQ while behaving nothing like it:
-`Enumerable.Select` is lazy, returns `IEnumerable<TResult>`, and composes with `Where`/`OrderBy`; this is
-eager, returns a different container (`IPagination<TDestination>`), and composes with nothing. `Map` is
-already this repo's word for "transform the payload, preserve the carrier" — `Option.Map`, `Result.Map`,
-`MapAsync` — and `IPagination<T>` is exactly a carrier with metadata.
-
-There is a latent trap in the current name too. `IPagination<out T>` does not implement
-`IEnumerable<T>` today, but it exposes `Data` and one day someone will add it — at which point
-`page.Select(...)` silently binds to LINQ's extension instead, yields `IEnumerable<TDestination>`, and
-**drops `TotalCount`/`PageNumber`/`PageSize`**. `Map` cannot be captured that way. The move is already a
-breaking publish-first change, so fold the rename into it rather than paying for two breaks.
-
-
-Both are **published packages pinned by `ConcertablePlatformVersion`**, so like the `ActionLink`
-duplication above this is a publish-first cut-over, not an edit: add to Contracts, publish, let
-`platform-sync` bump the pins, then migrate the call sites and delete the old overload.
-
-**Resolves when:** `Select` lives in `Concertable.Contracts`, the hand-rolled
-`new Pagination<T>(...)` projections above are replaced with it, and `PaginationExtensions` in
-`DataAccess.Infrastructure` retains only `ToPaginationAsync`.

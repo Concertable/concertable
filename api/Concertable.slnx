@@ -6,6 +6,7 @@
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
   <Project Path="Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj" />
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
+  <Project Path="Concertable.ServiceDefaults/tests/Concertable.ServiceDefaults.UnitTests/Concertable.ServiceDefaults.UnitTests.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
     <Project Path="Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj" />
@@ -33,6 +34,15 @@
     <Project Path="Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/Concertable.B2B.Seed.Simulator.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/" />
+  <Folder Name="/B2B/Modules/Admin/">
+    <Project Path="Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Api/Concertable.B2B.Admin.Api.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Application/Concertable.B2B.Admin.Application.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Contracts/Concertable.B2B.Admin.Contracts.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Domain/Concertable.B2B.Admin.Domain.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Infrastructure/Concertable.B2B.Admin.Infrastructure.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Admin/Tests/Concertable.B2B.Admin.IntegrationTests/Concertable.B2B.Admin.IntegrationTests.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Admin/Tests/Concertable.B2B.Admin.UnitTests/Concertable.B2B.Admin.UnitTests.csproj" />
+  </Folder>
   <Folder Name="/B2B/Modules/Artist/">
     <Project Path="Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Api/Concertable.B2B.Artist.Api.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Application/Concertable.B2B.Artist.Application.csproj" />
@@ -241,6 +251,7 @@
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Shared/Concertable.Seed.Shared.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Identity/Concertable.Seed.Identity.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Infrastructure/Concertable.Seed.Infrastructure.csproj" />
+    <Project Path="Concertable.Shared/tests/Concertable.Contracts.UnitTests/Concertable.Contracts.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Grpc.UnitTests/Concertable.Grpc.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests/Concertable.AppHost.Shared.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj" />
