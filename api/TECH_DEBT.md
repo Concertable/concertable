@@ -268,3 +268,21 @@ gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the
 identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
 relied-upon control.
 
+### Anonymous mutating/detail endpoints found by the rate-limiting sweep
+
+The rate-limiting endpoint sweep classified every HTTP endpoint and found three reachable
+unauthenticated that should not be. They are an authorization concern, not a throttling one, so the
+rate-limiting work left them as-is and logged them here:
+
+- **B2B `DELETE api/blob/{fileName}`** (`Concertable.B2B.Web/Controllers/BlobController.Delete`) — deletes a
+  blob with no `[Authorize]`. Anonymous callers can delete stored files.
+- **B2B `GET api/blob/download/{blobName}`** (same controller, `Download`) — streams any blob by name with no
+  authorization.
+- **Payment `GET /api/Transaction`** (`Concertable.Payment.Api/Controllers/TransactionController.GetPurchases`)
+  — the controller has no class- or action-level `[Authorize]` (contrast `StripeAccountController`, which is
+  `[Authorize]`), so transaction listings are anonymous.
+
+**Resolves when:** each endpoint carries the correct authorization (blob delete/download gated to the owning
+tenant; `TransactionController` requires an authenticated caller scoped to its own transactions), with tests
+proving an anonymous request is rejected.
+

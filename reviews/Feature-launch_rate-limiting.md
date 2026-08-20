@@ -5,7 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `07b0bdaae90f30cf87bda7485a26b966902b3288`  _(2026-08-19)_
+**Reviewed up to commit:** `a67537bad03e90ec3e04783b94eeb61ccba607da`  _(2026-08-19)_
+**Security-reviewed up to commit:** `a67537bad03e90ec3e04783b94eeb61ccba607da`  _(2026-08-19)_
 
 > Range reviewed (latest): `6229e87c6..26b9a4354` — re-stamp after merging `origin/main` (the `1073`
 > platform-sync pin bump) into #655 to make it current for merge; #655's ServiceDefaults code is
@@ -78,3 +79,51 @@ design no longer exists.
 
 Security layer: not run — no changed path matches the security-sensitive set (no Auth/Payment/`*.Contracts`/
 `*Controller*.cs`/workflow/credential paths); ServiceDefaults infra only.
+
+## Incremental review — 2026-08-19 (Phase 2 consumers, `7f782a237..a67537bad`)
+
+Range: the two Phase-2 commits opting all five web hosts into the seam + named policies + trip tests
+(`fed21dd91` apply, later fixes). Effort: medium. Two layers run: native (`code-reviewer`) + security
+(diff touches Auth/Payment/`*.Contracts`/`*Controller*.cs`, so the security layer ran and its marker is
+stamped above).
+
+### Findings
+
+- [x] **NAT1 — MEDIUM — correctness** — `api/Concertable.Auth/src/Concertable.Auth/Program.cs` — Auth
+  configured `ForwardedHeadersOptions` only under `if (IsDevelopment())`, so in production
+  `UseForwardedHeaders()` ran with `ForwardedHeaders.None` and the per-IP `credential` throttle would
+  bucket every client behind the proxy into one 10/min partition (global lockout, not per-attacker).
+  **Fixed** (`a67537bad`): configure `XForwardedFor|XForwardedProto` unconditionally like the other four
+  hosts; the dev-only block now only adds `XForwardedHost` + clears the known-proxy trust. Trusted-proxy
+  `KnownProxies` binding remains deferred to `launch/config-and-deployment` (documented) — until then all
+  hosts' per-IP policies collapse to the ingress IP in prod (an availability caveat, not a bypass; the
+  security layer confirmed default loopback `KnownProxies` means forged `X-Forwarded-For` is ignored, so
+  no spoofing).
+
+- [wontfix] **NAT2 — LOW — reuse** — Customer `[EnableRateLimiting("public-read"|"purchase"|"review")]`
+  attributes carry raw literals because `Concertable.Customer.Web.RateLimitPolicies` (the registration-side
+  constants) is unreferenceable from the module Api projects, and — unlike B2B, whose constants sit in the
+  universally-referenced `Tenant.Contracts` — Customer has **no** service-wide assembly the module
+  controllers share. Deliberate trade-off, not an oversight: a typo fails fast at endpoint execution (no
+  such policy) and the `public-read` + `review` literals are exercised by the trip tests; only `purchase`
+  is unpinned. The durable fix is a new low-level Customer project referenced by the module Api projects +
+  host (mirroring `Tenant.Contracts`) — a project-topology decision surfaced to Tommy rather than made
+  unilaterally mid-review.
+
+### Layers
+
+- **Layer 1 (native `code-reviewer`, medium):** verified every `[EnableRateLimiting]` string matches a
+  registered `AddRateLimitPolicy` name across all five services (no mismatch), the relax/constrain config
+  seam overrides `PermitLimit` over code defaults with `QueueLimit`=0 (immediate reject), and the two trip
+  tests use disjoint policies/partitions on a shared fixture (deterministic). Findings NAT1/NAT2 above.
+- **Layer 1d (security):** verdict — **no new vulnerability introduced.** ForwardedHeaders trust is safe
+  in prod (default loopback `KnownProxies` ⇒ `checkKnownIps` true ⇒ forged `X-Forwarded-For` ignored);
+  limiter placed after auth in all five hosts (per-user `sub` populated) and after routing (attribute
+  metadata resolves); `RateLimitingTestConfig` is test-project-only and cannot leak to prod; the credential
+  page-model attributes cover the `OnPost` brute-force paths and Duende ROPC is E2E-only; `OnRejected`
+  leaks no identifiers/secrets; no `[Authorize]`/`[HasPermission]` weakened (all additive).
+- **Layer 2 (Concertable lenses):** microservice isolation / module boundaries / seeding — N/A (no
+  cross-service or cross-module refs added; B2B constants reuse the already-shared `Tenant.Contracts`; no
+  persistence/seeder changes). C# conventions — clean after the `is int permit` fix; no inline logging, no
+  primary constructors, single-statement branches unbraced. Test coverage (Lens F) — the plan scopes
+  "one integration test per partition kind"; both (per-IP `public-read`, per-user `review`) are covered.
