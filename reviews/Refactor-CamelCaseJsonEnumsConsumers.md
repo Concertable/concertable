@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `d3112b99189d6e3c69931ec7c2c7f85969abc3f7`  _(2026-08-20)_
-**Security-reviewed up to commit:** `d3112b99189d6e3c69931ec7c2c7f85969abc3f7`  _(2026-08-20)_ — no findings. The rework only moves the same strict camel-case converter to the three serialization seams and removes per-type attributes; deserialization targets known closed types (no polymorphic type-name binding from untrusted input) and the bus now rejects integer enum values (`allowIntegerValues:false`) — a net tightening. No auth/authz, routing, or input-parsing surface changed.
+**Reviewed up to commit:** `819455bc81e80779df1b403688f614a43ca51847`  _(2026-08-20)_
+**Security-reviewed up to commit:** `819455bc81e80779df1b403688f614a43ca51847`  _(2026-08-20)_ — no findings. The rework only moves the same strict camel-case converter to the three serialization seams and removes per-type attributes; deserialization targets known closed types (no polymorphic type-name binding from untrusted input) and the bus now rejects integer enum values (`allowIntegerValues:false`) — a net tightening. No auth/authz, routing, or input-parsing surface changed.
 
 > Range reviewed: `836a15a56..cdf21ea2a` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -64,3 +64,24 @@ the published `@concertable/*` packages, which only republish after this produce
 internal consistency is gated by the `carve-fe (web/b2b/{venue,artist})` checks (green on the producer
 diff). Migrating them to camel-case is the stacked consumer cut-over (`Refactor/CamelCaseJsonEnumSurfaces`),
 legal only once the new package is on the feed — i.e. after this merge + platform sync.
+
+## Incremental review — 2026-08-20 (Workers Admin-module fix)
+
+> Range: `d3112b99..819455bc`. One code commit `819455bc` fixing a pre-existing `main`
+> breakage that this branch's full-E2E run surfaced (all four `ConcertFinishedTests` timed out).
+
+- **Root cause (not the enum change):** the Admin-module split (`9718862e4`) gave the User module's
+  `CredentialRegisteredHandler` an `IAdminModule` dependency, but the B2B **Workers** host — which wires
+  that handler as a bus consumer — never registered the Admin module. DI validation fails to construct
+  the handler → the Workers host crashes on startup (exit 134) → the settlement worker never runs →
+  `WorkersFixture.TriggerAsync` polling times out. The Web host is unaffected (it doesn't wire that
+  consumer), which is why only the worker-driven payment E2E broke.
+- **Fix:** register `AddAdminModule(configuration)` in `Concertable.B2B.Workers/ServiceCollectionExtensions.cs`
+  alongside the other module registrations, plus the `Admin.Infrastructure` project reference — mirroring
+  how the Web host pulls Admin in via `AddAdminApi`.
+- **Reviewed clean:** the full Admin graph (`AdminModule`→`AdminService`→`IAdminRepository`/`ICurrentUser`/
+  `IUserModule`/`TimeProvider`/`AdminOptions`, `AdminProfileHandler`→`AdminDbContext`,
+  `AdminInvitationCreatedDomainEventHandler`→`IBus`) resolves against services already registered in the
+  Workers host (`AuditInterceptor`, `IDomainEventDispatchInterceptor`, `AddCurrentUser`, `AddUserModule`,
+  `TimeProvider.System`, `AddOutbox`). Build 0 errors. Intra-service module reference (not cross-service).
+  Covered by the `ConcertFinishedTests` E2E that now exercises the worker.
