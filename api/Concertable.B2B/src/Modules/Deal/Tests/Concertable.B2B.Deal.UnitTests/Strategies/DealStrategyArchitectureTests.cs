@@ -117,7 +117,7 @@ public sealed class DealStrategyArchitectureTests
         },
         {
             "Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs",
-            "strategies.RequireAll<ISettlementAmountResolver>();"
+            "strategies.RequireAll<ISettlementGrossCalculator>();"
         },
         {
             "Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs",
