@@ -5,11 +5,11 @@ import { z } from "zod";
 // to be.
 export const reportMessageRequestSchema = z.object({
   category: z.enum([
-    "IllegalContent",
-    "Harassment",
-    "Fraud",
-    "Spam",
-    "Other",
+    "illegalContent",
+    "harassment",
+    "fraud",
+    "spam",
+    "other",
   ]),
   details: z
     .string()

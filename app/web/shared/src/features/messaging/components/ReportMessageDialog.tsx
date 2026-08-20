@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { ReportCategory } from "../types";
-import { useReportMessage } from "@concertable/shared/features/messaging";
+import {
+  REPORT_CATEGORY_LABELS,
+  reportMessageRequestSchema,
+  useReportMessage,
+} from "@concertable/shared/features/messaging";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,13 +23,9 @@ interface CategoryOption {
   label: string;
 }
 
-const categories: CategoryOption[] = [
-  { value: "IllegalContent", label: "Illegal content" },
-  { value: "Harassment", label: "Harassment or abuse" },
-  { value: "Fraud", label: "Fraud or scam" },
-  { value: "Spam", label: "Spam" },
-  { value: "Other", label: "Something else" },
-];
+const categories: CategoryOption[] = reportMessageRequestSchema.shape.category.options.map(
+  (value) => ({ value, label: REPORT_CATEGORY_LABELS[value] }),
+);
 
 interface Props {
   messageId: number;

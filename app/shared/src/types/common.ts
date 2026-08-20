@@ -1,25 +1,25 @@
 export const GENRE_VALUES = [
-  "Rock",
-  "Pop",
-  "Jazz",
-  "HipHop",
-  "Electronic",
-  "Indie",
-  "DnB",
-  "House",
+  "rock",
+  "pop",
+  "jazz",
+  "hipHop",
+  "electronic",
+  "indie",
+  "dnB",
+  "house",
 ] as const;
 
 export type Genre = (typeof GENRE_VALUES)[number];
 
 const GENRE_LABELS: Record<Genre, string> = {
-  Rock: "Rock",
-  Pop: "Pop",
-  Jazz: "Jazz",
-  HipHop: "Hip-Hop",
-  Electronic: "Electronic",
-  Indie: "Indie",
-  DnB: "DnB",
-  House: "House",
+  rock: "Rock",
+  pop: "Pop",
+  jazz: "Jazz",
+  hipHop: "Hip-Hop",
+  electronic: "Electronic",
+  indie: "Indie",
+  dnB: "DnB",
+  house: "House",
 };
 
 export function genreLabel(genre: Genre): string {
