@@ -5,15 +5,15 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-test-debug-family`
 - Branch: `Docs/docs_polyrepo-ready-test-debug-family`, from `main` at `d1422b6b5` — N1 family 3, test-debug.
-- PR: this repo — **#677, draft**, based on `main`; producer `Concertable/agent-standards` — none open yet.
+- PR: this repo — **#677, draft**, based on `main`; producer — **agent-standards #8, open** at `76758be`.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as **#676, merged 2026-08-20 at `d1422b6b5`** + agent-standards #7 at `30734a9`.
 - Dependency/package gates: none outstanding. agent-standards `main` is at `30734a9` and carries the review
   and merge families, so family 3's producer work has a current base. No open `chore/platform-sync-*` PR —
   #676 touched no `api/**` path, so it triggered no publish.
-- Last reconciled: 2026-08-20, after #676 merged — merge confirmed by polling to a terminal state
-  (`MERGED` at 15:28:36Z, queue empty), no sync PR opened; plugin cache still stale (its
-  `standards/process/` holds the seven original docs, no `review/` and no `merge/`).
+- Last reconciled: 2026-08-20, after family 3 was authored on both sides and agent-standards #8 opened.
+  Both halves are written and their local gates are green; neither has been reviewed. Plugin cache still
+  stale (its `standards/process/` holds the seven original docs, no `review/`, no `merge/`, no `testing/`).
 
 ## Current state
 
@@ -21,12 +21,13 @@
 `d1422b6b5`, closing the family: `merge`, `merge-docs` and `pr-preflight` keep their names so every prose
 citation still resolves, and `create-gh-pr` shipped as `open-pr` for the reason under `## Decisions`.
 
-**N1 family 3 — test-debug — is the open slice, and this branch is it.** Nothing has been written yet; what
-is done is the precondition the plan had left open, **the script-path question, now settled** (plan, N1
-section): vendor `docker-health.ps1`, state the `e2e.ps1` / `integration.ps1` invocation grammar, no values
-file. 1,022 lines across six skills, 131 of them carrying a repo-specific token.
+**N1 family 3 — test-debug — is written on both sides and awaiting review.** The producer is
+agent-standards **#8** (six docs, 1,069 lines, plus the second vendoring tier); the consumer is this
+branch (1,082 lines deleted, five citation sites re-pointed, the vendored-script provenance and its
+tests). All six skill names survived the machine-wide collision check, so **every prose citation that
+named one still resolves** — the re-pointing here was de-duplication, not renaming.
 
-**N1 families 4–6 and N2–N8 are untouched.** 1,838 of N1's original 3,285 lines remain, in four families.
+**N1 families 4–6 and N2–N8 are untouched.** 816 of N1's original 3,285 lines remain, in three families.
 
 **Blocked, and it is Tommy's action, not a work item:** the plugin cache on this machine still predates
 agent-standards #6 — `~/.claude/plugins/cache/agent-standards/agent-process/.../standards/process/` holds
@@ -36,22 +37,13 @@ families 2 and 3 inherit the same dependency.
 
 ## Next Steps
 
-1. **N1 family 3 — test-debug, the open slice. Producer first, on `agent-standards`.** Six skills, 1,022
-   lines: `e2e-ui-debug` (248), `integration-debug` (229), `e2e-api-debug` (217), `e2e-ui-regress` (141),
-   `e2e-debug` (105), `reset-test-explorer` (82). The script-path question is settled in the plan, so the
-   order is fixed:
-
-   - **`vendor-hooks.ps1` gets a second source→target tier first** (`scripts/` → `scripts/`, same
-     provenance manifest; it filters `*.py` into `.agents/hooks` today), and `docker-health.ps1` moves under
-     it. Until that exists the moved docs cannot name `./scripts/docker-health.ps1` as a constant, which is
-     the whole basis of the settled answer.
-   - **Then the docs**, under `standards/process/testing/` on the review/merge model: one doc per tier with
-     a router each, names checked against **every repo on this machine** — not just the three standards
-     repos and the built-ins, which is the lesson family 2 paid for.
-   - **Then the consumer half on this branch**: delete the six bodies and their `.claude/skills` stubs,
-     re-point citations, and leave behind only this repo's `scripts/e2e.ps1` / `scripts/integration.ps1`
-     bodies. 131 of the 1,022 lines carry a repo-specific token, so the "leaves behind only values" gate is
-     real work here, not a formality.
+1. **Review family 3, both halves, then land it.** Run the docs review over both branches — from the moved
+   copy of the procedure (`standards/process/review/DOCS.md` in agent-standards), as family 2 had to, since
+   this repo holds no `docs-review` skill and the plugin cache is still stale. Then fix findings, and land
+   agent-standards #8 first (that repo has no merge queue; it merges directly) followed by #677. **#677 is
+   meta-only this time** — every changed path is `.agents/**`, `.claude/**`, `docs/**`, `plans/**` or root
+   `AGENTS.md`, and `scripts/docker-health.ps1` is byte-identical to what was already there — so it lands
+   through `/merge-docs`, unlike family 2 which had to break its own gate on a workflow comment.
 
 2. **Run `/plugin marketplace update agent-standards` — one command, and it is Tommy's.** Two merged
    families (thirteen skills: the review family plus `review-lifecycle`, and the merge/PR family) resolve
@@ -80,6 +72,20 @@ families 2 and 3 inherit the same dependency.
    `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor service-specific.
 
 ## Completed work
+
+- **N1 family 3 producer — agent-standards #8, open at `76758be`.** Six docs under
+  `standards/process/testing/`, one router each and every name unchanged: `UI_E2E.md` ← `e2e-ui-debug`;
+  `API_E2E.md` ← `e2e-api-debug`; `REGRESSION.md` ← `e2e-ui-regress`; `BOTH_LAYERS.md` ← `e2e-debug`;
+  `INTEGRATION.md` ← `integration-debug`; `IDE_DISCOVERY.md` ← `reset-test-explorer`. `vendor-hooks.ps1`
+  restructured around a tier list and given its second source→target tier; `scripts/docker-health.ps1`
+  added as its first member. Three sibling docs re-pointed because this slice falsified what they said —
+  see `## Decisions`. README charter, both marketplace manifests and the plugin manifest widened.
+- **N1 family 3 consumer — this branch.** The six `.agents/skills/*` bodies and their six `.claude/skills/*`
+  stubs deleted — 1,082 lines. Five citation sites touched, and **none of them a rename**: root `AGENTS.md`
+  (skill roster extended by the family), `plans/AGENTS.md` (its own by-tier list deleted, now that
+  `failing-tests` owns the table), `docs/INDEX.md` (the red-suite row split into three and two
+  machine-enforced rows widened), and `.agents/hooks/vendored.json` + its test suite for the new script
+  tier. `.agents/skills/package-cutover/SKILL.md`'s `integration-debug` citation needed no change at all.
 
 - **N1 family 2 — merged in both repos.** agent-standards #7 at `30734a9`; this repo's **#676 merged
   2026-08-20 at `d1422b6b5`**, confirmed by polling the queue to a terminal state rather than assuming.
@@ -119,6 +125,41 @@ families 2 and 3 inherit the same dependency.
   `api/Concertable.Shared/TECH_DEBT.md`, and five roadmap headers.
 
 ## Verification
+
+N1 family 3, producer (`agent-standards` #8):
+
+- `.agents/sync-generated.ps1` → 24 files written; `-Check` reports **158 current (49 skills, 49 docs)**.
+- Hook tests **161/161**.
+- Every relative link in the six new docs and the four edited ones resolves — 150 links walked across the
+  whole `standards/` tree plus the README, one broken and it is pre-existing (`PLANS.md`'s ledger-header
+  template contains the literal placeholder `<url>`, which any link checker reads as dead).
+- **Names checked collision-free across every repo on this machine, not just the standards set** — the
+  lesson family 2 paid for. `dotagents` (32 skills), `react-agents` (14), `agent-standards` (43 before
+  (~90 deployed), `~/.codex` (~1,300 installed) and Claude Code's built-ins. All six names free; the only
+  hits were this repo's own copies across 58 worktree checkouts.
+- The second vendoring tier proved itself before it was trusted: `vendor-hooks.ps1 -Check` against this
+  repo reported **only `vendored.json`** stale, never `docker-health.ps1`. A byte-identical body is the
+  evidence that the script is genuinely repo-invariant rather than merely believed to be.
+
+N1 family 3, consumer (this repo):
+
+- `python .agents/hooks/docs_reachability.py --root <worktree>` → **0 errors, 26 warnings**, and the warning
+  *set* is byte-identical to the branch base's — measured by running the checker in a throwaway detached
+  worktree at `d1422b6b5` and diffing the two sorted lists, not by comparing counts. Nothing added, nothing
+  removed.
+- `python .agents/hooks/plan_graph.py --root <worktree>` → 0 errors, 0 warnings.
+- `python -m unittest discover -s .agents/hooks/tests` → **19/19** (14 before; five new cover the script
+  tier — hash, upstream path, provenance, absence of a `delivery` field, and wired in no harness).
+- No route row names a deleted skill — checked by parsing `.agents/skill-routes.json` and intersecting, not
+  by eye. 36 rows, 53 skills named, unchanged by this slice.
+- `skill_router.py --skills-for` over the staged diff resolves `docs-and-debt` and `plans` on every path
+  this branch touches.
+- Repo-wide grep: no surviving reference to any deleted skill's **path**. Every surviving reference is by
+  skill *name*, and all six names still exist.
+- Every `##`/`###` heading of the six deleted skills maps to a section of a moved doc, with four
+  deliberate exceptions recorded under `## Decisions`.
+- **Meta-only holds:** every changed path is `.agents/**`, `.claude/**`, `docs/**`, `plans/**` or root
+  `AGENTS.md`. `scripts/docker-health.ps1` is untouched on disk.
 
 N1 family 2, producer (`agent-standards`):
 
@@ -197,6 +238,59 @@ finding deferred (`PLANS.md` at 248 lines is 3× that repo's eighty-line split r
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **Every node moved so far has surfaced a rule whose only home was the thing being moved. This family
+  surfaced four, and three of them were *false statements* the move created rather than merely homeless
+  rules.** `FAILING_TESTS.md` said each tier's debug skill is named "in a repository's own guidance" — it
+  no longer is, so it now carries the tier table itself. `REMOTE_VALIDATION.md` ended its container
+  pre-flight section with "script it, and make the suite runner gate on that script"; the script now exists
+  at a constant path in every repo, so it names it. And `MERGING.md` plus `merge/QUEUE.md` both justified an
+  executable merge procedure by its need to resolve "the repo's own slug, check names **and debug routes**"
+  — debug routes became platform-wide constants in this very commit, so the third item had to go from both.
+  A slice that publishes a family invalidates the sentences that described it as per-repo; **grep the
+  standards repo for claims about the thing being moved, not just for links to it.**
+- **Two moved rules contradicted their new siblings, and the contradiction pre-dated the move.**
+  `e2e-ui-regress` said to arm a detached watcher for its terminal line; `e2e-ui-debug` and `e2e-api-debug`
+  both said explicitly *not* to use one, and the merge family had already settled on a capped background
+  loop that echoes every poll. Filing all six in one directory is what made the disagreement visible at
+  all — inside six separate skills it had survived indefinitely. `REGRESSION.md` uses the capped echoing
+  loop. Second: `integration-debug` carried the fixture-and-mock roster that
+  `dotnet:integration-testing` already owns, so `INTEGRATION.md` keeps only *how to read a failure* and
+  points at that inventory for *what the harness contains*.
+- **Four headings were deliberately not carried, and one whole section was refused.** `e2e-ui-regress`'s
+  "When to use" / "When NOT to use" fold into the opening two paragraphs (a doc opens by saying what it is
+  for; a skill needed the headings because its front matter could not). `integration-debug`'s "If the test
+  threw" is item 3 of the read-order list rather than its own section. Refused outright:
+  `integration-debug`'s **"Conventions that affect how failures read"** — the status-assertion failure
+  format moved into Step 3 because it genuinely governs reading a failure, but the response/client variable
+  naming and the three-line fetch shape are *authoring* rules the integration-testing standards already
+  own. A debug procedure restating them is the duplication this epic exists to end.
+- **Three citation classes were dropped rather than moved, all for the same reason: the target does not
+  exist in the destination.** Per-repo memory ids (`e2e_parallel_execution`, `stripe_e2e_resolver_state`,
+  `idevseder_not_itestseeder_for_e2e`, `cross_context_fk`) — memories are project-scoped files, so an id
+  cited from a machine-wide plugin points at nothing on a machine that never had this repo; the *facts*
+  they carried are stated in prose instead. A citation to `SEEDING_CONVENTIONS.md`, which **already did not
+  exist in this repo** — a dead link the move surfaced, and its rule is owned by the two seeding skills the
+  same bullet names. And both suites' scenario, feature and module rosters, which the docs standard's "a
+  count would be wrong by the next one anyone writes" rule forbids; the docs derive them from
+  `--list-tests` and `integration.ps1 list` instead.
+- **`docker ps` versus the real gate is a deliberate split, not an inconsistency, and it is now written
+  down.** The three E2E docs mandate `./scripts/docker-health.ps1`; `INTEGRATION.md` keeps the cheap
+  `docker ps`. The gate's own header scopes it to the E2E suites, and the failure it catches is a *booted
+  stack's* published ports dying. `INTEGRATION.md` states the one case that promotes it — the cheap check
+  passes but every database connection is accepted then reset — so the next reader does not "fix" the
+  asymmetry by copying the heavier gate into a tier that does not need it.
+- **The vendoring tier's manifest is keyed by tier, and only hooks carry `delivery`.** A script is invoked
+  from a command line or by another script and is never wired to a harness event, so a `delivery` field
+  with one possible value is an invitation to answer it wrongly. The consumer's test suite asserts the
+  absence of the field, that the copy lands at the same path it holds upstream (which is the entire basis
+  for a doc naming `./scripts/docker-health.ps1` as a constant), and that it is wired in no harness.
+- **`e2e.ps1` and `integration.ps1` did not move, and their discovery mechanism already existed.** Both
+  scripts print a usage listing when called with no recognised argument, and `integration.ps1 list` prints
+  every integration project. That is the same shape the merge family found in `gh repo view` / `gh pr
+  checks`: the value is *resolvable at run time*, so no doc names a project path and no repo writes a
+  values file. **A fifth family, a fifth time with no values file** — the pattern is now strong enough that
+  reaching for one should be treated as evidence the discovery mechanism has not been found yet.
+
 - **A skill name can collide with a repo this corpus never sees, and one did.** `create-gh-pr` already
   exists on this machine as the work repos' issue-tracker-linked PR skill — a *different and contradictory*
   procedure (work item, board transition, assignee, attribution stripped) reached through per-repo
@@ -271,6 +365,6 @@ finding deferred (`PLANS.md` at 248 lines is 3× that repo's eighty-line split r
 ## Resume prompt
 
 ```
-cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-merge-family
+cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-test-debug-family
 Read @plans/docs/POLYREPO_READY_PLAN.md and @plans/docs/POLYREPO_READY_PROGRESS.md and do what its `## Next Steps` says.
 ```
