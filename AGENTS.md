@@ -4,7 +4,11 @@ Concertable connects venues, artists and fans around live music ([`docs/OVERVIEW
 
 **No standard lives in this repo — not for code, not for process.** How work gets done is a set of
 load-on-demand skills: `git-branching`, `committing`, `merging`, `remote-validation`, `plans`,
-`failing-tests`, `docs-and-debt`. What stays here is only what is true of *Concertable* — its real
+`failing-tests`, `docs-and-debt`, the review family (`review`, `docs-review`, `big-review`,
+`big-review-all`, `incremental-review`, `address-review`, `review-lifecycle`), the merge/PR family
+(`open-pr`, `pr-preflight`, `merge`, `merge-docs`) and the test-debug family (`integration-debug`,
+`e2e-api-debug`, `e2e-ui-debug`, `e2e-ui-regress`, `e2e-debug`, `reset-test-explorer`). What stays here is only
+what is true of *Concertable* — its real
 labels, workflows, scripts and commands, plus the few invariants whose violation is silent and
 expensive enough not to wait for a skill invocation.
 
@@ -77,10 +81,9 @@ already-authorized producer delivery chain; that scoped automation must never ap
 
 ## Merging — `/merge` owns the procedure; these are the invariants
 
-The run-book is [`.agents/skills/merge/SKILL.md`](./.agents/skills/merge/SKILL.md) — currency check, E2E
-tier selection, enqueue, the four-state confirm loop, and the platform-sync follow-through. The generic
-rule and the reasoning behind each state are the `merging` skill. Four things are expensive and silent
-enough to state here:
+The run-book is the `merge` skill — currency check, E2E tier selection, enqueue, the four-state confirm
+loop, and the platform-sync follow-through. The reasoning behind each state is the `merging` skill.
+Four things are expensive and silent enough to state here:
 
 - **Never enable auto-merge on a branch behind `main`.** Update, rebuild to 0 errors, push, *then* arm
   `--auto`. GitHub otherwise holds the PR `BLOCKED`/`BEHIND` so it silently never merges, or merges code
@@ -130,14 +133,11 @@ container, because `docker ps` answering proves nothing. **A suite that dies at 
 scenarios executed is an environment failure:** STOP, verify Docker, then run once. Do not rerun and do
 not debug application code.
 
-## Prompts
+## Plans (`plans/*.md`) and the prompts that carry them
 
-Follow [`PROMPTS.md`](./PROMPTS.md) for every continuation, resume, handoff, review, or implementation prompt.
-
-## Plans (`plans/*.md`)
-
-The lifecycle — roadmap → plan → ledger, what is deleted when, the two dependency graphs, cross-plan
-blockers — is the `plans` skill. This repo's layout, hooks and commands are
+The lifecycle and the method — roadmap → plan → ledger, phases and their gates, what is deleted when, the
+two dependency graphs, cross-plan blockers — is the `plans` skill; the shape of every continuation, resume,
+handoff or implementation prompt is the `handoff` skill. This repo's layout, hooks and commands are
 [`plans/AGENTS.md`](./plans/AGENTS.md), and **opening a `plans/*.md` to work from obliges you to read it in
 the same breath**; the plan's own prose is not a substitute for it.
 

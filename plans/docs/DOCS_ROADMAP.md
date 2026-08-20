@@ -2,8 +2,8 @@
 
 > **Roadmap** for settling the agent/developer guidance corpus — root `AGENTS.md`, `api/agents/*`,
 > `app/agents/*`, `docs/*`, `api/docs/*`, and the repo-local skills. This is the living epic tracker,
-> not an implementation plan. Each buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`; see
-> [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> not an implementation plan. Each buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`;
+> the roadmap tier is the `plans` skill.
 >
 > **Goal:** every rule has exactly one home, contradictions cannot survive unnoticed, each consumer
 > loads only the topics it can act on, and the generic half lives in a separate repo mounted at a fixed
@@ -34,9 +34,42 @@ standing contradiction was structurally invisible to the one process meant to fi
 |---|---|---|---|
 | [x] | `docs/guidance-reconcile` | Reconcile the ten contradictions and every dangling reference; delete the two obsolete north-star docs; extend the reachability hook to fail on dead and root-absolute links | — |
 | [x] | `docs/agent-standards` | Move the generic conventions out as `.agents`-canonical, load-on-demand skills — 35 total, split by whether the rule names this product: 28 generic in `tomjseery/dotagents` (`~/.agents/skills/`), 7 Concertable process ones in `Concertable/agent-standards` | docs/guidance-reconcile |
-| [ ] | `docs/guidance-restructure` | Reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor (2,681 lines → ≈330), give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` of its own precedents, and collapse every duplicated rule to one home | docs/agent-standards |
-| [ ] | `docs/guidance-autoload` | Cut the auto-loaded floor: drop the three `@`-imports, and reduce the always-loaded merge and Docker blocks that `/merge` and `scripts/e2e.ps1` already automate | docs/guidance-restructure |
+| [x] | `docs/guidance-restructure` | Reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor (2,681 lines → ≈330), give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` of its own precedents, and collapse every duplicated rule to one home | docs/agent-standards |
+| [x] | `docs/guidance-autoload` | Delivered by `docs/guidance-restructure` rather than separately: an `api/**` prompt loads 78 lines with zero `@`-imports (from 1,428 at `dc037f477`), root `AGENTS.md` is 150 (from 300), and the merge loop and Docker block are one-line pointers at the skills that automate them | docs/guidance-restructure |
+| [ ] | `docs/polyrepo-ready` | Finish the split the polyrepo cut requires. **Phase 1 shipped:** the plan process (324 lines) is now `standards/process/PLANS.md` + `HANDOFF.md`. **N1 family 1 shipped:** the six review skills (813 lines) plus `reviews/AGENTS.md` are now seven `standards/process/review/` docs. **N1 family 2 shipped:** the merge/PR skills (634 lines) are now four `standards/process/merge/` docs, `create-gh-pr` renamed `open-pr`. Left, one node at a time, each measured on `origin/main`: N1's other four families (18 skills, 1,838 lines), N2 the 36-row route table’s convention, N3 `api/AGENTS.md` (78), N4 `api/ARCHITECTURE.md` + `MICROSERVICES_ARCHITECTURE.md` (587), N5 root `AGENTS.md` (147), N6 `docs/` (554), N7 the `plans/` tree (§4c-gated), then N8 proving one carved service standalone | docs/guidance-restructure |
 | [ ] | `docs/analyzer-pushdown` | Set `EnforceCodeStyleInBuild` so `severity = error` style rules actually fail a build, move what prose re-argues into `.editorconfig`, and document the rules currently enforced with no written home (`MA0053`, file-scoped namespaces) | docs/guidance-restructure |
+
+## The corpus is not polyrepo-ready, and that is the next item
+
+**Recorded 2026-08-19, after the restructure shipped.** `docs/guidance-restructure` split the corpus by
+*portability* — generic rules out to `dotagents`/`react-agents`, this system's roster to
+`agent-standards`, the floor in-repo. That was the right axis, but it was applied as if this repo
+survives. [`plans/platform/POLYREPO_ROADMAP.md`](../platform/POLYREPO_ROADMAP.md) records the ruling that
+it does not: services become independently-developed repos, so `api/` and a shared `plans/` tree are
+destinations with no future.
+
+What that leaves, measured rather than estimated:
+
+- ~~**Generic plan process sits in a repo that is going away.**~~ **Fixed** — 324 lines by `wc -l`
+  (`plans/agents/PLAN.md` 233, `PROMPTS.md` 57, `plans/agents/ROADMAP.md` 34; 32 of them naming anything
+  Concertable-specific; the 259 recorded earlier was the same files counted non-blank) now
+  live in `standards/process/PLANS.md` and `HANDOFF.md`. Six sibling process docs had already moved; the
+  asymmetry was the restructure scoping `PLANS.md` narrowly and nobody re-deriving it.
+- **Three route rows are anchored on the monorepo layout** — the `^api/` and `^app/` area floors and
+  `^plans/`. None of those path prefixes exist in a standalone service repo. The four layer routes
+  (`.Application/`, `.Api/`, `.Domain/`, `.Infrastructure/`) key on architecture rather than location and
+  survive the cut unchanged, which is the shape the re-anchor should follow.
+- **The hub docs open by describing a monorepo**, so a carved service repo inherits a premise that is
+  false there.
+
+**Why copying is not the answer.** A developer works on two or three services, not one and not all — so
+the standards must be identical across the repos they clone. Plugin delivery already gives that: install
+once per machine, not per repo. Committing `plans/agents/` into eight repos means one copy is edited and
+seven go stale, which is the drift this epic exists to remove, reintroduced at repo scale.
+
+**Not to be confused with `POLYREPO_ROADMAP` item 4c**, which asks where a *plan document* spanning four
+services physically lives. That is genuinely contentious and gated on its §6. How to *write* a plan is
+not; it is generic process with no locality question at all.
 
 ## Standing principles
 

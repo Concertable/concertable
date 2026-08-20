@@ -189,11 +189,23 @@ var acceptedApplication = acceptedApplicationFactory.Create(deal, application);
 await bookingConfirmer.ConfirmAsync(acceptedApplication, cancellationToken);
 ```
 
-The lifecycle delivery may use module-local `IStepResolver<TStep>` selectors as explicitly provisional
-seams while its large ownership split lands. They are not the final architecture and must not expand.
-`@plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md` owns their removal in favor of operation-owned union values
-and matches after this plan reaches terminal delivery. There is no shared resolver, cross-module
-registry, workflow object, or Deal-keyed registration block in the target state.
+PR #633 pauses at its current committed recovery checkpoint until the Deal dispatch foundation is
+terminal on `main`. After it resumes, it consumes the delivered generator directly: a module-local Dunet
+union whose cases contain concrete operation implementations, a generated dedicated factory such as
+`IAcceptFactory`, typed constructor injection, one generated Deal-to-operation mapping, and Dunet's
+exhaustive `.Match(...)` over the operation cases. Multiple Deal cases may deliberately map to one
+operation case. The net10 factory retains an unknown-`IDeal` fallback and generated catalog diagnostics;
+net10 does not claim native compiler exhaustiveness.
+
+Because this union names concrete DI implementations, it and its factory remain in the owning module's
+Infrastructure assembly beside the effectful consumer. It must not make Application reference
+Infrastructure or turn a cross-module fact into a service carrier.
+
+The .NET 11 follow-up preserves the factory and call-site semantics, replaces the Dunet wrapper with a
+native union, and regenerates the module catalog against `closed Deal`. The compiler then enforces both
+the operation-union match and generated Deal switch. Neither design contains an
+`IWorkflowStepResolver`, `IStepResolver<TStep>`, `IKeyedServiceProvider`, global workflow bundle, or
+four-Deal executor switch.
 
 HATEOAS and dashboard capability checks consume module-owned persisted facts or the combined read
 projection. They do not instantiate a workflow, resolve a Deal-keyed service, or reflect over an
@@ -346,15 +358,22 @@ Gate: Concert can validate and complete every operation from its own state plus 
 
 - [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
-- [ ] Add local `State`, `Trigger`, `StateMachine`, and contextual operation contracts only where each
-  module needs them.
-- [ ] Carry operation-owned facts through Application → Booking → Concert handoffs rather than asking a
-  downstream module to redispatch from `DealType`.
-- [ ] Keep any module-local keyed selectors introduced by the delivery PR explicitly provisional and
-  register their removal with `@plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
+- [ ] Add local `State`, `Trigger`, `StateMachine`, the minimum provisional keyed-selection seams,
+  named operation facades, and contextual step contracts only where each module needs them.
+- [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
+- [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
+  mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
+  replacement.
+- [ ] After the Deal foundation gate opens and the compile-recovery frontier is green, consume its
+  generator for Application `IDealTerms` and for dedicated net10 operation factories plus Dunet unions
+  over heterogeneous concrete implementations. Keep mapping once at the module composition boundary,
+  allow deliberate many-Deal-to-one-operation aliases, match by operation case, and remove keyed
+  service-provider lookup.
+- [ ] Do not convert honest same-interface families to operation unions or introduce an interim
+  handwritten factory. Use the delivered invariant module strategy factory directly.
 
-Gate: each command invokes one module-owned operation; no service can resolve another module's steps or
-request a whole workflow. Provisional selectors have a two-way handoff to the closed Deal plan.
+Gate: each command invokes one module-owned operation; no service can resolve another module's
+operations or request a whole workflow.
 
 ### Phase 6 — projections, compatibility, and delivery
 

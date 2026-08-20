@@ -24,7 +24,7 @@ current-summary section affected by the event:
 - current state and partial or uncommitted work that must be preserved;
 - `## Next Steps` — the single resolved next action as self-contained steps; when no action can
   proceed, the `Blocked:`, `Blocked by:`, `Unblock action:`, and `Resume when:` fields from
-  `plans/agents/PLAN.md`, or a single `Paused: <who> — <action>` line when only a human decision remains;
+  the `plans` skill, or a single `Paused: <who> — <action>` line when only a human decision remains;
 - compact completed milestones with commit or PR evidence;
 - the latest verification commands and outcomes still valid for the current code state;
 - current review state and every finding that remains open or needs follow-up;
@@ -117,7 +117,7 @@ Report the workflow result only after the checkpoint is durable, having written 
 action into the ledger's `## Next Steps` section so it is the durable source of truth. If actionable
 plan-managed work remains, hand off only the current or explicitly targeted logical workstream.
 Do not claim a dependency ledger merely because it was read or received a cross-workstream return-link
-edit. Use the cd-first pointer for a live worktree or the worktree-create opener from `PROMPTS.md` after
+edit. Use the cd-first pointer for a live worktree or the worktree-create opener from the `handoff` skill after
 merged cleanup. The prompt remains ONLY
 the pointer — nothing plan-specific. Delivery-gated local preparation is actionable; an
 implementation-blocked ledger gets no pointer. Literally:
