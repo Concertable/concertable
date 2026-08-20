@@ -4,7 +4,7 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `060479d593b75aadde27c6d08e7526d1d0c4abd7`  _(2026-08-20)_
+**Reviewed up to commit:** `c7e530a3e13a111d1751e5eef706d73a39ae8500`  _(2026-08-21)_
 
 > Range reviewed: `1176a002f..060479d59` (4 commits), plus the producer half in `Concertable/agent-standards`
 > `2d9a8fe..9bf6b55` (PR #9), which this repo's consumer half depends on.
@@ -71,3 +71,12 @@ own) and the `^reviews/.*\.md$` row in `.agents/skill-routes.json`.
   `plugin:` qualifier — unlike the paired rosters above it.
 - Lens C: no second copy created. `docs/INDEX.md:50` already names `review-lifecycle` as the owner; the
   row restores *delivery*, which is a different job from ownership.
+
+## Incremental review — `060479d59..c7e530a3e` (2026-08-21)
+
+Two additions since the marker, neither new branch content: the `origin/main` currency merge (21 commits
+of already-merged main work, no content of its own) and the conflict resolution in
+`plans/docs/POLYREPO_READY_PROGRESS.md` Next Step 4 — folding PR #686's `N7a`/`N7b` split into this branch's
+rewritten ledger (both sides already reviewed; the merge only reconciled them). `docs_reachability.py`
+0 errors, `plan_graph.py` 0 errors on the merged tree; `#679` remains meta-only vs `origin/main`. No new
+findings.
