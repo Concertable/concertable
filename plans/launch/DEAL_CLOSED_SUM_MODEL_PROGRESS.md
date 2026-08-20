@@ -9,15 +9,17 @@
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
 - Branch: `Refactor/deal-dispatch-foundation`
 - Implementation PR: not created
-- Push state: intentionally unpushed; the preflighted candidate was 8 commits ahead of `origin/main`,
-  this ledger checkpoint follows it, and no `origin/Refactor/deal-dispatch-foundation` branch exists yet
+- Push state: work head `23bad4f9af115e189e55316960d13073db704c1e` was pushed as the 9-commit
+  `1176a002f8e58878f1650b193e7b9ab22daf385c..23bad4f9af115e189e55316960d13073db704c1e`
+  range to the new `origin/Refactor/deal-dispatch-foundation` upstream and verified equal locally and
+  remotely; this ledger commit is the checkpoint-transport leg
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
 - Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after a GREEN PR preflight on the clean, current, reviewed branch
+- Last reconciled: 2026-08-20 after the verified work-head push and before checkpoint transport
 
 ## Current state
 
@@ -73,9 +75,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Push current `HEAD` explicitly to a new `origin/Refactor/deal-dispatch-foundation` branch and set it as
-the upstream, following the plan-managed two-leg push protocol. After local, remote-tracking, and GitHub
-heads are verified, run `/create-gh-pr` to open the feature PR.
+After this checkpoint commit is transported and local and remote-tracking heads are verified equal, run
+`/create-gh-pr` to open the draft feature PR from `Refactor/deal-dispatch-foundation` into `main`.
 
 ## Separate public-library follow-up
 
