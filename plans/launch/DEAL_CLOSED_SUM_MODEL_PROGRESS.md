@@ -12,7 +12,7 @@
 - Push state: intentionally unpushed
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
-- Foundation implementation commit: pending final checkpoint
+- Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
 - Last reconciled: 2026-08-20 after replacing the prototype generator with the .NET 10 keyed-DI
@@ -132,7 +132,12 @@ The public library is not implemented or published by the current PR.
   diagnostic found the same stale-package class in several projects outside this change. No Deal
   project is mismatched.
 - No E2E suite was run locally.
-- Final invariant scans, `git diff --check`, and plan-graph validation are recorded after the checkpoint.
+- Invariant scans passed: no production `IDeal`, old concrete C# DTO names, generator protocol,
+  keyed-DI use outside Deal Infrastructure, or strategy switches in Deal consumers.
+- `git diff --check`: passed.
+- `python .agents/hooks/plan_graph.py --root
+  C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`: 0 errors
+  and 0 warnings.
 
 ## Decisions and discoveries
 
