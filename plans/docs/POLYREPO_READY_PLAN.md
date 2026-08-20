@@ -229,10 +229,14 @@ Three different answers in one folder, so it is one node with three outcomes:
 
 ### N7 — the `plans/` tree and `plans/AGENTS.md` (75 lines)
 
-Gated on roadmap §4c (where a cross-service plan physically lives), which is gated on §6's remaining
-sub-decision. The file itself is not gated: every rule in it is platform-wide with per-repo values, which is
-also the answer to the ledger's old "generate it eight times or hand-keep it?" question — neither, the
-content leaves.
+Two parts on different gates, so it splits:
+
+- **N7a — `plans/AGENTS.md`'s content (not gated).** Every rule in it is platform-wide with per-repo values,
+  so its re-home runs with N3–N6, **not** behind §4c. This is also the answer to the ledger's old "generate
+  it eight times or hand-keep it?" question — neither, the content leaves; the thin per-repo floor keeps only
+  this repo's values (script paths, suite names, debug-tier routing).
+- **N7b — relocating the plan *documents* themselves.** Gated on roadmap §4c (where a cross-service plan
+  physically lives), which is gated on §6's remaining sub-decision. Nothing in N7a waits on it.
 
 ### N8 — prove one carved service standalone, or none of this is done
 
@@ -242,6 +246,25 @@ candidate — an adapter service with the fewest inbound dependencies.
 
 **This is the only node that produces evidence rather than edits**, and it depends on N1–N6: a carved
 Payment repo with no review, merge or debug skill cannot prove anything.
+
+## Acceptance criteria — polyrepo-ready, and usable from both harnesses
+
+Done when both hold, **verified rather than asserted**:
+
+1. **Nothing agent-based is left in root.** Every node N1–N7a is re-homed to `agent-standards`, `dotagents`,
+   or `react-agents`; what remains in this repo is only per-repo *values* named by a thin `AGENTS.md`.
+   `api/AGENTS.md`, `api/CLAUDE.md`, root `AGENTS.md`/`CLAUDE.md`, and `plans/AGENTS.md`'s rules are gone
+   from the tree. (N7b — the plan-document tree — and the cut itself are separate, gated on roadmap §4c/§6.)
+2. **Every moved rule resolves from Codex *and* Claude Code, no less accessibly than before.** The canonical
+   markdown under `.agents/skills/` is agent-agnostic; `dotagents` syncs it to `~/.agents/skills/` for a
+   Codex session, and Claude Code installs the plugins/stubs. Per node the gate is that a rule an agent
+   loaded before — the always-loaded floor especially (root `AGENTS.md`, the `api/AGENTS.md` pointers, the
+   former `CODE_CONVENTIONS`/`RESULT_PATTERN` content now in `dotnet-standards`) — is reachable from a fresh
+   install of **both** harnesses in the same or fewer hops. A rule that becomes unreachable, or gains a hop,
+   from either harness fails the node.
+
+N8 demonstrates criterion 1 on a carved service; criterion 2 is checked per node at move time from a fresh
+install of each harness, not deferred to N8.
 
 ## Explicitly not in scope
 
