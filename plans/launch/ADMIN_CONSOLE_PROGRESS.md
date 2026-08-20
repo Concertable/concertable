@@ -94,6 +94,30 @@
   Both fixes committed as `e9623af6d`, pushed. **Verified:** `Concertable.B2B.Admin.IntegrationTests`
   8/8, `Concertable.B2B.User.IntegrationTests` 11/11, `Concertable.B2B.User.UnitTests` 1/1,
   `Concertable.B2B.Admin.UnitTests` 31/31 — all green locally post-fix.
+- Reconciled 2026-08-20/21: Tommy said "let's merge." Logged two small, related pieces of tech debt
+  Tommy flagged along the way (not fixed, per his call): `api/Concertable.B2B/src/Modules/User/TECH_DEBT.md`
+  (`UserEntity.FromRegistration` is the only domain factory in the B2B layer not named `Create` — no
+  disambiguation need justifies the exception) and
+  `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/TECH_DEBT.md` (`AdminProvisioningTests.LogInAsync`
+  reuses that same production factory, plus a redundant `email` param, to fake an identity for an
+  already-persisted user instead of reading the real row back). Before arming auto-merge, confirmed the
+  currency check (root `AGENTS.md` "Before enabling auto-merge") — branch was 21 commits behind
+  `origin/main`; merged clean (no conflicts), rebuilt `Concertable.B2B.Web`/`Concertable.Auth`/both
+  AppHosts to 0 errors, pushed (`107fafcf5`). Draft-PR CI on that head then genuinely failed:
+  `carve-fe (web/b2b/artist)` and `carve-fe (web/b2b/venue)`, ~150 TypeScript errors combined — real,
+  not flaky. Root cause: the `origin/main` sync brought in #595's camelCase-JSON-enums refactor
+  (`DashboardApplicationStatus`, `ActivityType`, `SettlementDirection`, `PaymentMethod`, `TenantType`,
+  `Genre`, `StripeConnectState`, `PayoutAccountStatus`), and neither `app/web/b2b/artist` nor
+  `app/web/b2b/venue` was in that refactor's scope, so their dashboard fixtures/widgets/route guards
+  still used the old PascalCase literals. Recased every affected literal (dozens per app, via the
+  compiler's own `Did you mean` hints; a first automated pass had a column-offset bug — TS points
+  diagnostics at the enclosing property/argument, not the literal itself — caught before committing by
+  verifying the actual diff, not just script exit status) plus two `Record<K,V>` object-key sets the
+  compiler only reports one violation of at a time. Fixed as `4d2563f29`, pushed. **Verified:** both
+  apps' full builds clean, all five web app builds green (`web-customer`/`web-business`/`web-admin`/
+  `web-artist`/`web-venue`, exit 0 each), `npm run lint:boundaries` clean across all 13 workspaces.
+  Draft-PR CI re-validating on `4d2563f29` — confirm genuinely green (see Next Steps) before arming
+  auto-merge.
 - Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
   `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
   (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
@@ -199,12 +223,15 @@ draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
 ## Next Steps
 
-Paused: Tommy — #648 ([PR #648](https://github.com/Concertable/concertable/pull/648)) is pushed at head
-`e9623af6d`, carrying a genuine bug fix for a red draft-PR CI run (found and fixed locally, verified
-green — see "Current state"). Resume condition: confirm draft-PR CI is green on `e9623af6d`
-(`gh pr checks 648`) before treating it as ready; merge is then gated only on Tommy's explicit
-instruction (when given, re-check the `behind` count per the root `AGENTS.md` "Before enabling
-auto-merge" currency check first, since more time has passed).
+Paused: Tommy — Tommy said "let's merge"; the delivery chain is in progress. #648
+([PR #648](https://github.com/Concertable/concertable/pull/648)) is pushed at head `4d2563f29`, current
+with `origin/main` (synced twice more since the SaveChangesAsync fix — see "Current state" for the
+second currency sync and the camelCase-enum fix it surfaced). Draft-PR CI is re-validating on this head.
+Resume condition: once `gh pr checks 648` confirms genuinely green (0 pending, 0 failing — verify the
+actual job list via `gh run view <runId> --json jobs`, not just `gh pr checks`, since that command has
+shown transient/stale entries mid-run this session), re-check the `behind` count one more time (main
+moves fast right now) and arm auto-merge per the root `AGENTS.md` procedure, then confirm via the
+Bash background until-loop (never `Monitor`).
 
 ## Completed work
 
