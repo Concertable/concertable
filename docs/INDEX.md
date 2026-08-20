@@ -39,7 +39,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Which E2E tier a merge runs | skill `merge`, Step 4 |
 | Platform sync gate after an `api/**` merge | [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate" |
 | Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
-| A red suite is never just reported | skill `failing-tests`; this repo's debug routing [`plans/AGENTS.md`](../plans/AGENTS.md) |
+| A red suite is never just reported, and which tier's skill owns it | skill `failing-tests` |
+| Driving a red suite to green — the in-process, service-E2E and browser-E2E tiers, the baseline regression check, both tiers at once | skills `integration-debug`, `e2e-api-debug`, `e2e-ui-debug`, `e2e-ui-regress`, `e2e-debug` |
+| Test Explorer showing traits the build strips, or missing a project's tests | skill `reset-test-explorer` |
 | Plan/roadmap/ledger structure, lifecycle and method | skill `plans`; this repo's layout, scripts and skill names [`plans/AGENTS.md`](../plans/AGENTS.md) |
 | Reviewing a branch, a docs diff, a massive branch, or only the new commits | skills `review`, `docs-review`, `big-review`, `big-review-all`, `incremental-review` |
 | Review files as work orders; splitting, deferring and deleting findings | skill `review-lifecycle` (the procedure that obeys it: skill `address-review`) |
@@ -149,14 +151,14 @@ diagnostic or test name, not an argument.
 | No legacy Result carriers; no Dunet in shared production | `ReunionArchitectureTests`, `TypedResultArchitectureTests` | Yes |
 | One read-context contract, one generic read repository | `RepositoryArchitectureTests` | Yes |
 | Service boundaries hold when carved | `EnforceServiceBoundary` + the `carve-*` CI jobs | Yes |
-| Docker is really healthy before E2E | `scripts/docker-health.ps1`, gated by `scripts/e2e.ps1` | Gate |
+| Docker is really healthy before E2E | `scripts/docker-health.ps1` (vendored — edit it upstream, not here), gated by `scripts/e2e.ps1` | Gate |
 | Docs are reachable; `CLAUDE.md` siblings exist; every test project carries a stub stating its tier | `.agents/hooks/docs_reachability.py` via `docs-review` | Gate |
 | Plan handoff ends with its continuation pointer | `.agents/hooks/plan_handoff_stop_launcher.py` | Gate |
 | No `gh pr merge` without a current, clean code-review | `.agents/hooks/merge_review_gate.py` over `.agents/merge-gate.json` | Gate |
 | A test project's name declares its tier; a unit test cannot boot a host, container or database | `api/TestConventions.targets` + `api/BannedSymbols.UnitTests.txt` | Yes |
 | The standard that owns a path is loaded before the first write into it | `.agents/hooks/skill_router.py` over `.agents/skill-routes.json`, wired in `.claude/settings.json` and `.codex/hooks.json` | Gate |
 | **No source file is ungated.** Two area floors (`api/**/*.cs`, `app/**/*.{ts,tsx}`) plus four layer routes keyed on the project's layer, so a file shape nobody wrote a rule for still loads its floor | the same table — floors first, specific routes add to them rather than replace them | Gate |
-| A vendored hook still matches upstream, and is wired in both harnesses or in neither as its `delivery` says | `.agents/hooks/tests/test_vendored_hooks.py`, run by the `hook-tests` CI job | Yes |
+| A vendored hook or script still matches upstream; a hook is wired in both harnesses or in neither as its `delivery` says, a script in neither | `.agents/hooks/tests/test_vendored_hooks.py`, run by the `hook-tests` CI job | Yes |
 | A review loads the same standards the author was required to load | `skill_router.py --skills-for` over the same table, run by skill `review` Step 2 | Gate |
 
 ## Adding to the corpus
