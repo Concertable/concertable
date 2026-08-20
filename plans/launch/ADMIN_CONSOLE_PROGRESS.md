@@ -5,9 +5,10 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console`
 - Branch: `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase 1's was deleted on merge)
-- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **READY FOR REVIEW**, branch
-  re-synced with `origin/main` (see reconciliation below); not yet merged — merge waits on Tommy's
-  explicit instruction. Phase 1: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
+- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **OPEN, CI RE-VALIDATING**
+  at head `e9623af6d` after a genuine bug found in the previous draft-PR CI run and fixed locally (see
+  reconciliation below); not yet merged — merge waits on Tommy's explicit instruction. Phase 1:
+  [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
   (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
@@ -70,6 +71,29 @@
   `Concertable.B2B.User.IntegrationTests`, `Concertable.B2B.User.UnitTests`: all green (integration
   tests compile-only, no local Docker). `npm run lint:boundaries`: clean across all 13 workspaces.
   `npm run build:admin`: green. Committed as `80208ce22` and pushed; draft-PR CI running on that head.
+- Draft-PR CI on `80208ce22`/`bc55fefdd`/`82c0c1701` came back genuinely red — 5/8
+  `Concertable.B2B.Admin.IntegrationTests` failing (`gh run view 32296515424`; the wider list `gh pr
+  checks` briefly showed of ~10 failing jobs was a transient/stale snapshot — the run's actual job list
+  had exactly one real failure plus the cascading `ci-complete` gate). **Root cause, found via a local
+  Docker-backed repro (Docker Desktop was down, then recovered) and confirmed by direct experiment (an
+  unconditional `throw`/`Assert.Fail` inside the suspect method, since a custom `ILogger` line and a bare
+  `Console.WriteLine` both turned out not to be captured by this test runner — a dead end that cost real
+  time before switching to xUnit's own assertion-failure reporting, which does reliably surface):** the
+  `origin/main` merge (`80208ce22`) silently dropped `CredentialRegisteredHandler`'s
+  `await context.SaveChangesAsync(ct);` — git's 3-way merge auto-resolved it as a non-conflicting
+  deletion (origin/main's side had replaced the call with an ambient-transaction wrapper this branch's
+  conflict resolution correctly removed to keep the post-login grant design, without the removed
+  wrapper's own internal save being replaced by anything). Effect: **no B2B manager registration —
+  venue, artist, or admin — ever actually persisted a `UserEntity` row**, not just Admin's grant flow;
+  confirmed via `Concertable.B2B.User.IntegrationTests` also failing 6/11 before the fix. Restoring the
+  `SaveChangesAsync` call then surfaced a second, independent, pre-existing bug from PR #651's own module
+  extraction: `AdminApiFixture.ClearAdminsAsync()` only cleared `AdminProfiles`, not the seeded admin's
+  underlying `UserEntity` row (the pre-refactor `UserApiFixture.ClearAdminsAsync` cleared both) — masked
+  until now because nothing ever hit the database, then a real `Users.Email` duplicate-key violation once
+  saves actually ran. Fixed by restoring the `UserDbContext`-based row cleanup, mirroring the original.
+  Both fixes committed as `e9623af6d`, pushed. **Verified:** `Concertable.B2B.Admin.IntegrationTests`
+  8/8, `Concertable.B2B.User.IntegrationTests` 11/11, `Concertable.B2B.User.UnitTests` 1/1,
+  `Concertable.B2B.Admin.UnitTests` 31/31 — all green locally post-fix.
 - Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
   `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
   (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
@@ -175,11 +199,12 @@ draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
 ## Next Steps
 
-Paused: Tommy — #648 ([PR #648](https://github.com/Concertable/concertable/pull/648)) is merged with
-`origin/main` (which now includes #651) and pushed at head `80208ce22`; draft-PR CI is running on that
-head. Resume condition: once CI confirms green, merge is gated only on Tommy's explicit instruction (when
-given, re-check the `behind` count per the root `AGENTS.md` "Before enabling auto-merge" currency check
-first). See "Current state" below for the merge-conflict resolution.
+Paused: Tommy — #648 ([PR #648](https://github.com/Concertable/concertable/pull/648)) is pushed at head
+`e9623af6d`, carrying a genuine bug fix for a red draft-PR CI run (found and fixed locally, verified
+green — see "Current state"). Resume condition: confirm draft-PR CI is green on `e9623af6d`
+(`gh pr checks 648`) before treating it as ready; merge is then gated only on Tommy's explicit
+instruction (when given, re-check the `behind` count per the root `AGENTS.md` "Before enabling
+auto-merge" currency check first, since more time has passed).
 
 ## Completed work
 
