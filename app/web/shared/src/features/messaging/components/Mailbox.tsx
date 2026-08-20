@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useMailbox } from "../hooks/useMailbox";
+import { messageActionLabel } from "../types";
 import { ReportMessageDialog } from "./ReportMessageDialog";
 
 export function Mailbox() {
@@ -78,11 +79,11 @@ export function Mailbox() {
                 </span>
                 {message.action && (
                   <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                    {message.action}
+                    {messageActionLabel(message.action)}
                   </span>
                 )}
               </div>
-              {message.sender.kind === "Org"
+              {message.sender.kind === "org"
                 ? message.sender.town && (
                     <span className="text-muted-foreground text-[11px]">
                       {[message.sender.town, message.sender.county]
