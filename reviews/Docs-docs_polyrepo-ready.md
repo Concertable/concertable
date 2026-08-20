@@ -4,7 +4,7 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c2d2b01589e18612e18a579c9bb1e53168dfa88b`  _(2026-08-20)_
+**Reviewed up to commit:** `c3923539cd917290aa341aa1ccbb15c4da17e3ee`  _(2026-08-20)_
 
 > Range reviewed: `60acb8f6b..c2d2b0158` (2 commits).
 > All four findings fixed on this branch; no open findings.
@@ -70,3 +70,12 @@
 - Gates: `plan_graph.py` 0 errors/0 warnings · `docs_reachability.py` 0 errors, 26 pre-existing `plans/`
   warnings · hook tests 14/14 · `api/initial-migrations.ps1` and the progress-template/checkpoint paths
   all exist.
+
+## Since the reviewed range
+
+Re-stamped to `c3923539c`. Three things landed after `c2d2b0158`, none of them new unreviewed content:
+the fix commit for the four findings above; a one-line correction stating that the earlier 259-line
+baseline counted non-blank lines rather than being wrong (found while incrementally reviewing #668,
+where the same figures are recorded as `DOC5`); and merging `origin/Docs/skill-routes-mapper-coverage`,
+now itself current with `main`, so this branch is 0 behind. Gates after the merge: `plan_graph.py` 0/0,
+`docs_reachability.py` 0 errors, hook tests 14/14.

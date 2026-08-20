@@ -11,6 +11,7 @@
 - Dependency/package gates: this branch's docs point at `standards/process/PLANS.md` and `HANDOFF.md`, which
   ship from agent-standards PR #5. **#5 merges first**, then #668 (this branch's base), then this one.
 - Last reconciled: 2026-08-20, from `gh pr view` on #5/#668/#669, `gh pr checks`, and the hook gates below.
+  All three branches are current with their base (0 behind) and every review marker is re-stamped to head.
 
 ## Current state
 
@@ -88,7 +89,14 @@ Phase 4 is where it gets tested either way.
 ## Reviews
 
 `/docs-review` over `60acb8f6b..c2d2b0158` → `reviews/Docs-docs_polyrepo-ready.md`. Four findings, all fixed
-and ticked; no open findings.
+and ticked; no open findings. Marker re-stamped to head after the base merge.
+
+The other two PRs in this chain are now reviewed too, which they were not when this ledger last claimed
+the chain was ready: agent-standards #5 → `reviews/Docs-polyrepo-ready-process.md` (one finding fixed —
+`PLANS.md` hid the literal `## Reviews` heading its own merge gate reads, which is what caused `INST1`
+here; one recorded as deferred — `PLANS.md` at 248 lines is 3× that repo's eighty-line split rule, which
+Phase 4 settles), and #668 → an `## Incremental review` section on
+`reviews/Docs-skill-routes-mapper-coverage.md` covering the two commits past its old watermark.
 
 - `HOME1` — the new `## The repo's plan skills` section restated the `/resume-plan` and `/continue-roadmap`
   resolution rules their own `SKILL.md` files own (the duplication had come over verbatim from the deleted
