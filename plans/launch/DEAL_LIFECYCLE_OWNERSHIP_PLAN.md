@@ -133,8 +133,10 @@ row. After the B2B runtime moves to .NET 11, native C# unions will represent jus
 values, beginning with the combined read shape
 `ApplicationStage | BookingStage | ConcertStage` and module-local state, trigger, or operation-outcome
 shapes whose cases carry genuinely different data. Unions do not replace state ownership or dependency
-resolution: each module maps its persistence discriminator explicitly and retains transition authority,
-while `IStepResolver<TStep>` continues to resolve runtime services.
+resolution: each module maps its persistence discriminator explicitly and retains transition authority.
+The Deal dispatch plan separately replaces provisional Deal-keyed step resolution with operation-owned
+union values and matches. Its generated common-interface factories are limited to terms, mapper, and
+updater families and are not a lifecycle step mechanism.
 
 ## 5. State machines and contextual names
 
@@ -163,38 +165,51 @@ identical structure.
 A tiny generic transition primitive may be extracted only after real duplication is demonstrated. It
 must contain no B2B state, trigger, `DealType`, module reference, transition table, or ownership rule.
 
-## 6. Deal-type behaviour and step resolution
+## 6. Deal behaviour and contextual operations
 
 Delete the runtime `IConcertWorkflow` dependency-holder. No request needs every lifecycle operation at
 once, and no executable workflow spans the module boundary.
 
-Each module owns only the step families that operate on its aggregates. Internal types use contextual
-names rather than repeating the aggregate name:
+Each module owns only the operations on its aggregates. Internal types use contextual names rather
+than repeating the aggregate name:
 
-| Module | Local step contracts |
+| Module | Contextual operations |
 |---|---|
 | Application | `IApplyStep`, `IApplyCheckoutStep`, `IAcceptStep`, `IAcceptCheckoutStep` |
 | Booking | `IConfirmStep`, `ICancelStep` |
 | Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-The module-local resolver is `IStepResolver<TStep>`. Its implementation is the only code in that
-module allowed to perform keyed DI lookup. A caller requests one operation-specific dependency:
+Deal cases are closed domain values, not runtime-selected service implementations. The operation that
+owns a semantic decision matches the richest closed value available and projects immutable
+operation-owned facts when work crosses a module boundary. Scoped executors inject repositories,
+clients, and publishers directly; only the selected arm performs I/O.
 
 ```csharp
-var step = resolver.Resolve<ICompleteStep>(dealType);
-await step.ExecuteAsync(concert, cancellationToken);
+var acceptedApplication = acceptedApplicationFactory.Create(deal, application);
+await bookingConfirmer.ConfirmAsync(acceptedApplication, cancellationToken);
 ```
 
-The generic keyed-registration mechanism may be mechanically similar in each module, but
-registrations, coverage declarations, step contracts, implementations, and resolver instances are
-module-local. There is no shared `IWorkflowStepResolver`, cross-module registry, or registration block.
+PR #633 pauses at its current committed recovery checkpoint until the Deal dispatch foundation is
+terminal on `main`. After it resumes, it consumes the delivered generator directly: a module-local Dunet
+union whose cases contain concrete operation implementations, a generated dedicated factory such as
+`IAcceptFactory`, typed constructor injection, one generated Deal-to-operation mapping, and Dunet's
+exhaustive `.Match(...)` over the operation cases. Multiple Deal cases may deliberately map to one
+operation case. The net10 factory retains an unknown-`IDeal` fallback and generated catalog diagnostics;
+net10 does not claim native compiler exhaustiveness.
 
-Each module declares exact `DealType` coverage vertically at its own composition root. Repeating the
-closed key in three independent declarations is correct ownership, not duplication. Adding a new
-`DealType` must fail composition/tests in every module whose behaviour requires a deliberate choice.
+Because this union names concrete DI implementations, it and its factory remain in the owning module's
+Infrastructure assembly beside the effectful consumer. It must not make Application reference
+Infrastructure or turn a cross-module fact into a service carrier.
 
-HATEOAS and dashboard capability checks consume module-local capability metadata or the combined read
-projection. They do not instantiate a workflow or reflect over an umbrella capability interface.
+The .NET 11 follow-up preserves the factory and call-site semantics, replaces the Dunet wrapper with a
+native union, and regenerates the module catalog against `closed Deal`. The compiler then enforces both
+the operation-union match and generated Deal switch. Neither design contains an
+`IWorkflowStepResolver`, `IStepResolver<TStep>`, `IKeyedServiceProvider`, global workflow bundle, or
+four-Deal executor switch.
+
+HATEOAS and dashboard capability checks consume module-owned persisted facts or the combined read
+projection. They do not instantiate a workflow, resolve a Deal-keyed service, or reflect over an
+umbrella capability interface.
 
 ## 7. Dependency and communication rules
 
@@ -339,18 +354,26 @@ transition, and all accept/payment arrival orders pass focused integration cover
 
 Gate: Concert can validate and complete every operation from its own state plus immutable handoff facts.
 
-### Phase 5 — replace the god workflow with local steps
+### Phase 5 — replace the god workflow with contextual operations
 
 - [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
-- [ ] Add local `State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`, and contextual step contracts
-  only where each module needs them.
+- [ ] Add local `State`, `Trigger`, `StateMachine`, the minimum provisional keyed-selection seams,
+  named operation facades, and contextual step contracts only where each module needs them.
 - [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
-- [ ] Update `api/agents/CODE_PATTERNS.md` and module guidance so shared keyed infrastructure cannot be
-  mistaken for shared workflow ownership.
+- [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
+  mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
+  replacement.
+- [ ] After the Deal foundation gate opens and the compile-recovery frontier is green, consume its
+  generator for Application `IDealTerms` and for dedicated net10 operation factories plus Dunet unions
+  over heterogeneous concrete implementations. Keep mapping once at the module composition boundary,
+  allow deliberate many-Deal-to-one-operation aliases, match by operation case, and remove keyed
+  service-provider lookup.
+- [ ] Do not convert honest same-interface families to operation unions or introduce an interim
+  handwritten factory. Use the delivered invariant module strategy factory directly.
 
-Gate: each command resolves one local step; no service can resolve another module's steps or request a
-whole workflow.
+Gate: each command invokes one module-owned operation; no service can resolve another module's
+operations or request a whole workflow.
 
 ### Phase 6 — projections, compatibility, and delivery
 
@@ -377,9 +400,10 @@ whole workflow.
 - The runtime dependency graph is Contracts-only and acyclic, with no backwards command/control flow.
 - There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
   holder exposing all steps.
-- Contextual local names (`State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`, `ICancelStep`) are
-  used without redundant aggregate prefixes inside their module.
-- Every `DealType` has exact, independently validated coverage for the local operations it requires.
+- Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
+  aggregate prefixes inside their module.
+- Every Deal case has exhaustive coverage in the operation that owns its semantics; `DealType` is
+  identity, not a service-dispatch key.
 - Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
   callback order is idempotent.
 - Cancellation, late payment, refund, settlement recovery, Contract, Invoice, and Concert-creation

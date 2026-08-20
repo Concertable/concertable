@@ -1,4 +1,4 @@
-﻿---
+---
 name: package-cutover
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/package-cutover/SKILL.md.
 ---

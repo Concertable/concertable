@@ -3,7 +3,7 @@
 > **Roadmap** for making every Stripe-backed workflow durable, idempotent, observable, and reusable
 > across Customer web, Customer mobile, and both B2B web applications. This is the living epic
 > tracker, not an implementation plan. Each buildable item spins off its own `_PLAN.md` and
-> `_PROGRESS.md`; see [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> `_PROGRESS.md`; the roadmap tier is the `plans` skill.
 >
 > **Goal:** a browser, mobile process, SignalR connection, webhook, service process, or provider call
 > may be delayed, duplicated, reordered, disconnected, or restarted without losing the operation,

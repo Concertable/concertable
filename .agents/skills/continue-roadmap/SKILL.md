@@ -6,7 +6,7 @@ description: Pick the next implementable feature off an epic's roadmap and hand 
 # Continue Roadmap
 
 A roadmap (`*_ROADMAP.md`) is an epic's living progress tracker: no `_PROGRESS.md`, never deleted,
-checkboxes *are* its progress (see `plans/agents/ROADMAP.md`). Each buildable item spins off its own
+checkboxes *are* its progress (the `plans` skill). Each buildable item spins off its own
 feature plan. This skill picks the next such item and hands it off to be planned in a fresh context — it
 does **not** design or write the plan here, and does **not** resume an existing plan (that's
 `/resume-plan`).
@@ -52,7 +52,7 @@ does **not** design or write the plan here, and does **not** resume an existing 
      and delivery dependencies;
    - instruct: branch `Feature/<epic>_<name>` off `origin/main` (the epic is the roadmap's folder), then
      write `plans/<epic>/<NAME>_PLAN.md` **and** its `<NAME>_PROGRESS.md` ledger from the progress
-     template, following `plans/agents/PLAN.md`; the ledger must record the roadmap path and exact item
+     template, following the `plans` skill; the ledger must record the roadmap path and exact item
      key, then pass `python .agents/hooks/plan_graph.py --root <absolute-worktree>`;
    - state the outcome, constraints and what's out of scope — but leave the design to the plan;
    - tick the roadmap line when the feature ships (do not delete the roadmap).

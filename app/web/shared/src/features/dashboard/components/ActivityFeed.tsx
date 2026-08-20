@@ -16,16 +16,16 @@ import type {
   ActivityType,
 } from "@concertable/shared/features/dashboard";
 
-const iconMap: Record<ActivityType, LucideIcon> = {
-  ApplicationReceived: UserPlus,
-  ApplicationAccepted: CheckCircle2,
-  ApplicationDeclined: XCircle,
-  ApplicationWithdrawn: XCircle,
-  ApplicationCancelled: XCircle,
-  ConcertSettled: CircleDollarSign,
-  ReviewReceived: Star,
-  TicketSold: Ticket,
-  MessageReceived: MessageSquare,
+  const iconMap: Record<ActivityType, LucideIcon> = {
+  applicationReceived: UserPlus,
+  applicationAccepted: CheckCircle2,
+  applicationDeclined: XCircle,
+  applicationWithdrawn: XCircle,
+  applicationCancelled: XCircle,
+  concertSettled: CircleDollarSign,
+  reviewReceived: Star,
+  ticketSold: Ticket,
+  messageReceived: MessageSquare,
 };
 
 function timestampLabel(iso: string) {

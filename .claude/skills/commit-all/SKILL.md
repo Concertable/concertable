@@ -1,4 +1,4 @@
-﻿---
+---
 name: commit-all
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/commit-all/SKILL.md.
 ---

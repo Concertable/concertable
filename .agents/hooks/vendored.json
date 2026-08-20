@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "docs_reachability.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/docs_reachability.py",
+      "delivery": "invoked",
+      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
+      "sha256": "sha256:5a79595faaf4fe21c63b5af9defffe39ba1969747987002fad7297ed47bcc3d8"
+    },
+    "merge_review_gate.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/merge_review_gate.py",
+      "delivery": "hook",
+      "commit": "0d773bd3db958b6922650ea1675adc3035c0ea89",
+      "sha256": "sha256:43af8a68ed4febe922f0504b9b1dccc1ebf21cdfb7877df216460f2f58886156"
+    },
+    "plan_graph.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/plan_graph.py",
+      "delivery": "invoked",
+      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
+      "sha256": "sha256:cfa58050e17da0711f72f2469359056be532a291faeb99fbdac990140f24d3d8"
+    },
+    "plan_handoff_stop.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/plan_handoff_stop.py",
+      "delivery": "invoked",
+      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
+      "sha256": "sha256:8101cb4ea0bba31cb2f5b03f865685e46a92e900ffe0e19d4bb9834291f06372"
+    },
+    "plan_handoff_stop_launcher.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/plan_handoff_stop_launcher.py",
+      "delivery": "hook",
+      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
+      "sha256": "sha256:43ad4b1b04c878c436123a1edf3414d6bfd73d2896276feb79da0f4329875466"
+    },
+    "skill_router.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/skill_router.py",
+      "delivery": "hook",
+      "commit": "a8a3e6f3f9ad96769f326dad50eb55690c8f7452",
+      "sha256": "sha256:0f7168877b1128e0f0388e2a67d24872f08639bee764ac24c778916c1d8056f7"
+    }
+  },
+  "scripts": {
+    "docker-health.ps1": {
+      "source": "Concertable/agent-standards",
+      "path": "scripts/docker-health.ps1",
+      "commit": "76758be8ae5973ebca29bf6c28814e697ccdd9c6",
+      "sha256": "sha256:985ce6ca8e4f82dc4e707f5d88aac100857404c56b08bf87a20fddafe224083f"
+    }
+  }
+}

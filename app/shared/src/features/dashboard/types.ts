@@ -13,10 +13,10 @@ export interface ProfileHealth {
 }
 
 export type StripeConnectState =
-  | "Complete"
-  | "Incomplete"
-  | "ActionRequired"
-  | "Pending";
+  | "complete"
+  | "incomplete"
+  | "actionRequired"
+  | "pending";
 
 export interface StripeConnectStatus {
   state: StripeConnectState;
@@ -24,15 +24,15 @@ export interface StripeConnectStatus {
 }
 
 export type ActivityType =
-  | "ApplicationReceived"
-  | "ApplicationAccepted"
-  | "ApplicationDeclined"
-  | "ApplicationWithdrawn"
-  | "ApplicationCancelled"
-  | "ConcertSettled"
-  | "ReviewReceived"
-  | "TicketSold"
-  | "MessageReceived";
+  | "applicationReceived"
+  | "applicationAccepted"
+  | "applicationDeclined"
+  | "applicationWithdrawn"
+  | "applicationCancelled"
+  | "concertSettled"
+  | "reviewReceived"
+  | "ticketSold"
+  | "messageReceived";
 
 export interface ActivityItem {
   id: string;
@@ -50,7 +50,7 @@ export interface MonthlyRevenuePoint {
   count: number;
 }
 
-export type SettlementDirection = "In" | "Out";
+export type SettlementDirection = "in" | "out";
 
 export interface Settlement {
   id: number;
@@ -63,12 +63,12 @@ export interface Settlement {
 }
 
 export type DashboardApplicationStatus =
-  | "Pending"
-  | "Accepted"
-  | "AwaitingPayment"
-  | "Confirmed"
-  | "Rejected"
-  | "Withdrawn";
+  | "pending"
+  | "accepted"
+  | "awaitingPayment"
+  | "confirmed"
+  | "rejected"
+  | "withdrawn";
 
 export interface ConcertCard {
   id: number;

@@ -1,8 +1,8 @@
 # Polyrepo Roadmap — services as genuinely standalone repos
 
 > **Roadmap** for the polyrepo epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never
-> deleted, lives until the epic ships). Each buildable item spins off its own feature plan; see
-> [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> deleted, lives until the epic ships). Each buildable item spins off its own feature plan; the
+> roadmap tier is the `plans` skill.
 >
 > **North star:** [`api/AGENTS.md`](../../api/AGENTS.md) — *"The monorepo is a convenience only. Each
 > service is independently owned and will split into its own repo with its own developers. Design every
@@ -125,7 +125,21 @@ tech-debt N7: "a full 6-service history rewrite for a split-repo future nothing 
 gated on §6. (`mirror.yml` still references a `POLYREPO_COMPLETION.md` that no longer exists; fix or drop
 that reference as part of this stream.)
 
-## 6. End-state shape — 🔴 undecided (the deciding gate)
+## 6. End-state shape — ✅ decided 2026-08-18: a true one-way cut
+
+**Tommy's ruling: the monorepo goes.** Services become independently-developed repos, not buildable
+read-only mirrors. This unblocks §4c and settles the guidance question that was blocked behind it: there
+is no `api/` node in a polyrepo, so `api/agents/` and `api/AGENTS.md` are destinations with no future.
+Everything in them re-homes to `standards/` (platform-wide, inherited by every service repo) or to the
+owning service's repo. **Done 2026-08-19:** `api/agents/` and `app/agents/` are deleted, the generic half
+lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's roster in
+`Concertable/agent-standards`, all delivered as plugins; `api/AGENTS.md` is 78 lines of pointers with no
+`@`-imports. `docs/INDEX.md` maps topic to owner.
+
+The remaining sub-decision is still open: whether a true cut restructures to per-service colocation
+(`services/<x>/{api,web,mobile}`) or uses a multi-source mirror assembler.
+
+### Original framing (kept for the trade-off it records)
 
 The open architecture decisions (D-A / D-B in [`POLYREPO_FULLSTACK_PLAN.md`](POLYREPO_FULLSTACK_PLAN.md)):
 

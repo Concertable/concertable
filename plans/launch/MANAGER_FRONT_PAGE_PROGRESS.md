@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Finish this commit for the locally green reconciliation through main commit `1647ec6f8`, then fetch and reconcile the newer `origin/main` tip before pushing the reviewed work head to draft PR #563 through the compound plan push protocol.
+1. Commit the locally green reconciliation through `origin/main` commit `087a65cf`, then push the work head to draft PR #563 through the compound plan push protocol.
 2. Require exact-head CI green and diagnose any deterministic failure.
 3. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
@@ -34,19 +34,22 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 ## Current implementation
 
 - **Current-main reconciliation and review-route normalization are locally green and committed in this commit.** The
-  404-commit drift through main commit `1647ec6f8` is reconciled without restoring removed public repositories,
-  obsolete module lookups, or stale package ownership.
-  B2B Artist and Venue now expose singular nested review resources at `artist/{id}/review` and
+  full 657-commit drift through `origin/main` commit `087a65cf` is reconciled without restoring removed public
+  repositories, obsolete module lookups, or stale package ownership. B2B Artist and Venue expose singular nested
+  review resources at `artist/{id}/review` and
   `venue/{id}/review`; each parent controller owns its resource `RouteSegment`, each review controller owns
-  `RouteSegment = "review"`, and an architecture test enforces controller-name/route-leaf consistency. Current-tenant
-  recent reviews use `organization/{artist|venue}/review/recent`. The shared web review UI receives a route builder at
-  app composition: B2B uses the singular contract while Customer explicitly retains its existing plural contract.
+  `RouteSegment = "review"`, public reads retain current-main throttling, and an architecture test enforces
+  controller-name/route-leaf consistency. Current-tenant recent reviews use
+  `organization/{artist|venue}/review/recent`. The shared web review UI receives a route builder at app composition:
+  B2B uses the singular contract while Customer explicitly retains its existing plural contract. Current-main's
+  camel-case enum wire contract is preserved, including the branch-only withdrawn and cancelled activity cases.
   The venue opportunity-count projection remains behaviourally safe but is logged in
   `api/Concertable.B2B/TECH_DEBT.md` for migration from `IOpportunityRepository` to
   `IOpportunityReadRepository`/`IConcertReadDbContext`; no general `Query` escape hatch was restored. Generated Artist
-  and Venue migrations were re-scaffolded from the merged model. B2B Web builds with 0 warnings/errors; architecture
-  passes 10/10; Artist, Venue, and Concert units pass 18/18, 20/20, and 233/233. Frontend package tests/builds pass,
-  and Customer, Venue, Artist, and Business production builds all pass.
+  and Venue migrations were re-scaffolded from the merged model. The B2B Web build succeeds with 0 errors (the one
+  `UserEntity` constructor warning is present in `origin/main`); the architecture suite passes 10/10 after removing
+  two unused `Reunion` references from the incoming Admin unit-test project; and Venue, Artist, Customer, and Business
+  production builds all pass.
 
 - **Exact-head CI follow-up is locally verified.** PR run
   [`31953565101`](https://github.com/Concertable/concertable/actions/runs/31953565101) passed every frontend carve,
