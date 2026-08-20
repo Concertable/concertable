@@ -4,7 +4,7 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c3923539cd917290aa341aa1ccbb15c4da17e3ee`  _(2026-08-20)_
+**Reviewed up to commit:** `87cdb62ee02cd12a47755fbe72ceb3937cf7f2ef`  _(2026-08-20)_
 
 > Range reviewed: `60acb8f6b..c2d2b0158` (2 commits).
 > All four findings fixed on this branch; no open findings.
@@ -79,3 +79,13 @@ baseline counted non-blank lines rather than being wrong (found while incrementa
 where the same figures are recorded as `DOC5`); and merging `origin/Docs/skill-routes-mapper-coverage`,
 now itself current with `main`, so this branch is 0 behind. Gates after the merge: `plan_graph.py` 0/0,
 `docs_reachability.py` 0 errors, hook tests 14/14.
+
+Re-stamped to `87cdb62ee`. Since the previous stamp the branch gained the plan rewrites Tommy directed —
+Phase 5 (the 28 workflow skills), the two-destination rule quoted from `POLYREPO_ROADMAP` §6, and the
+rewrites of Phases 2 and 3 that followed from it — plus a merge of `origin/main` (now 0 behind, carrying
+the rate-limiting merge). Those are plan/ledger content, and the factual claims in them were checked as
+they were written: `agent-standards` vendors `skill_router.py` through `vendor-hooks.ps1` and ships no
+`skill-routes.json`; §6's wording is quoted verbatim; the per-family skill line counts and the
+zero-Concertable-reference counts are `wc -l` and `grep -c` on the current tree. Gates after the merge:
+`plan_graph.py` 0/0, `docs_reachability.py` 0 errors, hook tests 14/14. Branch diff against `main` is 26
+paths, every one meta.
