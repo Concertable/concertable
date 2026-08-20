@@ -5,19 +5,19 @@
 - Plan: `plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/deal-closed-sum-model`
-- Worktree: not created; next worktree is reserved as
+- Worktree:
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
-- Branch: `Refactor/deal-dispatch-foundation` (reserved; not created)
+- Branch: `Refactor/deal-dispatch-foundation`
 - Planning PR: docs-delivery PR [#658](https://github.com/Concertable/concertable/pull/658) merged as
   `29e7a1ad1d9ecf6bf59e39261ad700625d1ffa52` from head
   `fee8614e014f383a8db7f750fa3bebde1853071f`
 - Implementation PR: not created
-- Base: create from fresh `origin/main` after this planning delivery; no implementation base exists yet
+- Base: `origin/main` at `133b018da8f440ee9343ec6c8b0037a6a5b0b40d`
 - Dependency gates: Phases 0-1 are unblocked. Phase 2 is executed by lifecycle PR #633 after the
   foundation lands; Phase 3 also requires the B2B .NET 11 compiler/runtime/consumer matrix.
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` is suspended until the
   Phase 1 foundation is terminal on `main`.
-- Last reconciled: 2026-08-19 after reversing the over-broad lifecycle blocker
+- Last reconciled: 2026-08-20 after the .NET 10-now, .NET 11-ready decision
 
 ## Current state
 
@@ -36,33 +36,32 @@ The only proven common-interface families are Application `IDealTerms` and Deal 
 inputs, results, or capabilities are genuinely heterogeneous and remain union/match operations.
 Cancellation is direct, payer/payee direction is data, and the dead settlement resolver is deleted.
 
-Net10 uses the same generated factory/facade surface with `IDeal`, catalog diagnostics,
-and an explicit unknown-case fallback. C# 15 changes the parameter to closed `Deal`, removes the
-fallback from generated switches, and promotes `CS8509` to an error. The generator independently
-requires one case implementation for every declared family.
+Net10 deletes `IDeal` immediately and uses an abstract `Deal` record with four sealed direct cases,
+catalog diagnostics, and an explicit unknown-subclass fallback. Runtime namespaces are
+`Concertable.B2B.Deals.*`, allowing consumers to use plain `Deal` without an alias. C# 15 later
+changes the base to `closed Deal`, removes fallback arms, and promotes `CS8509` to an error. The
+generator independently requires one case implementation for every declared family.
 
-No dispatch production code has changed. The generator/analyzer and Deal-owned mapper/updater foundation
-are now the immediately actionable slice. Application terms and lifecycle operation factories consume
-that merged foundation in PR #633; native unions and closed Deal remain later compiler/runtime work.
+The generator/analyzer, Deal-owned mapper/updater migration, and `IDeal` removal are the immediately
+actionable .NET 10 slice. Application terms and lifecycle variant factories consume that merged
+foundation in PR #633; native unions and language-closed Deal remain later compiler/runtime work.
 
 ## Next Steps
 
-Create `Refactor/deal-dispatch-foundation` from fresh `origin/main` in the reserved worktree and execute
-Phases 0-1 only:
+Execute the .NET 10 foundation in the restored worktree:
 
-1. Add the B2B-local incremental generator/analyzer and prove the real Application/Infrastructure
-   two-project topology for both invariant common-interface factories and dedicated heterogeneous union
-   factories. Include negative compile fixtures for missing cases, wrong module/family, invalid aliases,
-   union membership, registration invocation, and invariant misuse.
-2. Migrate only Deal-owned `IDealMapper` and `IDealUpdater` to generated
-   `IDealStrategyFactory<TStrategy>` selection, including contract/entity selectors, typed mismatch,
-   generated registrations, and DI validation.
-3. Do not edit lifecycle PR #633, Application `IDealTerms`, runtime target frameworks, native unions, or
-   the published Deal hierarchy in this foundation PR.
-4. Open a draft PR at the first coherent generator checkpoint, use remote-first validation, review the
-   complete foundation, and carry merge, package publication, and platform sync to terminal green.
-5. Update this ledger with the delivered foundation SHA, change the lifecycle ledger from blocked to its
-   preserved `ApplicationDoorSplitApiTests` continuation, and surface that owner next.
+1. Add the B2B-local incremental generator/analyzer and prove invariant common-interface and dedicated
+   variant factories, including negative compile fixtures for missing cases, invalid catalogs, aliases,
+   wrapper membership, registration invocation, and invariant misuse.
+2. Delete `IDeal`, introduce abstract `Deal`, migrate every B2B consumer, and pluralize runtime
+   namespaces to `Concertable.B2B.Deals.*` without changing project or assembly identities.
+3. Migrate Deal-owned `IDealMapper` and `IDealUpdater` to generated
+   `IDealStrategyFactory<TStrategy>` selection, including contract/entity selectors, generated
+   registrations, and DI validation.
+4. Keep .NET 10/C# 14, fallback arms, JSON polymorphism, `DealType`, and EF discriminator behavior.
+   Do not introduce preview syntax, native unions, or source aliases.
+5. Run focused generator, Deal, Concert, architecture, serialization, and B2B build gates; reconcile the
+   plan graph and checkpoint the coherent foundation.
 
 ## Downstream handoffs
 
