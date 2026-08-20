@@ -131,8 +131,8 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 its suite names, its hook and migration paths — named in a thin `AGENTS.md` on the `Concertable.Payment`
 model. The same applies to `plans/AGENTS.md` (N7).
 
-One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → test-debug (largest; needs the
-parameterisation decided first) → git (plus the `dotagents` overlap) → plan-workflow → `package-cutover`.
+One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → test-debug (largest; its
+parameterisation settled below) → git (plus the `dotagents` overlap) → plan-workflow → `package-cutover`.
 
 **Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
 fresh install, and what stays at root is only values this repo owns.
@@ -146,10 +146,28 @@ merge publish?" from the repo's own publish path filter — which is also where 
 monorepo-shaped value (`api/**`) got re-anchored. Where a value is identical in every repo — the tier
 labels, the vendored hook paths, `scripts/worktrees.ps1` — **state it rather than invent a parameter with
 one value.** The remaining families try that shape first and reach for a named value only where a *path a
-script lives at* genuinely cannot be discovered — still the open question for test-debug, which names
-`scripts/e2e.ps1` and `scripts/docker-health.ps1`. Settle it by deciding whether those scripts should be
-**vendored** the way the hooks already are; if they are, the path is a constant and there is still no values
-file.
+script lives at* genuinely cannot be discovered — which for test-debug is settled below rather than open.
+
+**Test-debug's script question, settled: sort each script by whether its *body* is repo-invariant, not by
+whether its path is.** The family names three repository scripts, not the two this plan first counted —
+`scripts/e2e.ps1` (35 citations), `scripts/integration.ps1` (8, the `integration-debug` entrypoint),
+`scripts/docker-health.ps1` (4):
+
+- `docker-health.ps1` (115 lines) is repo-invariant in full: no suite name, no project path, no `api/`
+  anywhere, and its one Concertable token is a probe container's name. **Vendor it** beside the hooks, and
+  its path becomes a constant every debug doc may name outright — the `merge_review_gate.py` treatment.
+  `vendor-hooks.ps1` filters `*.py` into `.agents/hooks` today, so this adds a second source→target tier
+  under the same provenance manifest.
+- `e2e.ps1` (332) and `integration.ps1` (161) are lists of *this* monorepo's suite projects across four
+  services; neither body ports. **What ports is the invocation grammar** —
+  `./scripts/e2e.ps1 <ui|api> <run|regress|trace>` and `./scripts/integration.ps1` — stated literally on the
+  `scripts/worktrees.ps1` precedent, with each repo owning the body behind it.
+- The per-service subcommands (`ui b2b`, `api customer`) are the only genuinely monorepo-shaped part, and in
+  a carved repo they **cease to exist** rather than needing a value: one service means `ui run` *is*
+  `ui b2b`. The same dissolution as the merge family's `api/**`.
+
+**No values file, a fourth time.** The standard states a contract each repo's entrypoint must satisfy; it
+does not read a variable.
 
 **A skill's name is machine-scoped, not corpus-scoped.** The merge family found `create-gh-pr` already taken
 on the same machine by a contradictory work-repo procedure reached through junctions, and a plugin installs

@@ -11,8 +11,9 @@
 - Dependency/package gates: **the producer merges first — discharged.** agent-standards #7 is `MERGED` at
   `30734a9`, so the four docs this branch's deletions depend on are on that repo's `main`. No open
   `chore/platform-sync-*` PR.
-- Last reconciled: 2026-08-20 after agent-standards #7 merged, from `gh pr view` on it and `gh pr checks`
-  on #676.
+- Last reconciled: 2026-08-20, re-verified at `16d6f63a` — #676 `CLEAN`/`MERGEABLE`, every non-`merge_group`
+  check pass, no auto-merge armed; plugin cache still stale (its `standards/process/` holds the seven
+  original docs, no `review/` and no `merge/`).
 
 ## Current state
 
@@ -67,15 +68,14 @@ dependency.
    sitting in the directory. **Pass condition:** `review-lifecycle` resolves after step 1 on this machine,
    and Tommy has confirmed the same on any other machine he works from.
 
-4. **N1 family 3 — test-debug (1,022 lines): `e2e-ui-debug`, `e2e-api-debug`, `e2e-ui-regress`,
-   `e2e-debug`, `integration-debug`, `reset-test-explorer`.** The largest family left, and the one the plan
-   flags as needing the script-path question settled first. Families 1 and 2 both answered it the same way
-   — no values file — but neither had to name a *repository script*: family 1 needed none, and family 2
-   named `scripts/worktrees.ps1` because it is identical everywhere. This family names `scripts/e2e.ps1`,
-   `scripts/docker-health.ps1` and suite names, and the honest question is whether those scripts should be
-   **vendored from agent-standards** the way the hooks already are (`vendor-hooks.ps1`, provenance-hashed).
-   If they are, the path is a constant and there is still no values file. Decide that before writing the
-   docs.
+4. **N1 family 3 — test-debug (1,022 lines): `e2e-ui-debug` (248), `integration-debug` (229),
+   `e2e-api-debug` (217), `e2e-ui-regress` (141), `e2e-debug` (105), `reset-test-explorer` (82) — now
+   unblocked.** The script-path question the plan flagged is **settled there**: vendor `docker-health.ps1`,
+   state the `e2e.ps1` / `integration.ps1` invocation grammar, no values file. Producer work can start
+   against `agent-standards` `main` (`30734a9`) immediately; the consumer half branches from this repo's
+   `main` **after #676 lands**, so it never stacks on an unmerged family. First producer task is
+   `vendor-hooks.ps1`'s second source→target tier, because the moved docs cannot name
+   `./scripts/docker-health.ps1` as a constant until it is one.
 
 5. **Then N1 families 4–6**, in the plan's order: git (429 lines, plus reconciling `dotagents`'
    `commit-push`/`sync`/`pull-main` overlap — and note `worktree` collides with a skill of that name in
@@ -257,6 +257,16 @@ finding deferred (`PLANS.md` at 248 lines is 3× that repo's eighty-line split r
   A Windows-form `cd C:/Users/…` resolves fine, so the fix is one normalization step in the hook, in
   `agent-standards`, on its own slice. **Not amended onto #7:** that branch is reviewed and green, and a
   hook change is neither this family's content nor covered by its review.
+- **Test-debug's scripts sort three ways, not two — and the plan had miscounted them.** The six skills name
+  `scripts/e2e.ps1` 35 times, `scripts/integration.ps1` 8 (the `integration-debug` entrypoint, which the
+  plan had not counted at all) and `scripts/docker-health.ps1` 4. The settled answer lives in the plan; the
+  discovery that decided it belongs here: `docker-health.ps1` contains no repo path, no suite name and no
+  `api/` anywhere, while `e2e.ps1` and `integration.ps1` are hardcoded lists of this monorepo's suite
+  projects across four services. **Portability is a property of a script's body, not of its path**, which is
+  why both "vendor the scripts" and "parameterise the paths" were the wrong question — the answer splits the
+  three. Also measured, because the family gate depends on it: 131 of these 1,022 lines carry a
+  repo-specific token, against a family-2 diff that carried none. "Leaves behind only values" has real work
+  to do here.
 - **`worktree` will recur as family 4's naming problem.** It exists in `dotagents` *and* in the work repos,
   which is two collisions rather than one, and unlike `create-gh-pr` it has real in-repo citations. Flagged
   now so family 4 budgets for it rather than discovering it mid-slice.
