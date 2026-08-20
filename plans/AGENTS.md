@@ -18,7 +18,7 @@ the mandatory update procedure is
 `plans/launch/LAUNCH_ROADMAP.md` is the driving roadmap for the current effort — most work traces back to one
 of its items, so it is usually the one a landed change has to tick.
 
-## The plan graph is machine-checked
+## The plan hooks are machine gates
 
 ```bash
 python .agents/hooks/plan_graph.py --root <absolute-worktree>
@@ -45,13 +45,9 @@ close-out that only records terminal evidence goes on `Docs/<epic>_<name>_closeo
 
 ## The repo's plan skills
 
-`/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger resolves to its live worktree when
-one exists; otherwise it creates a fresh worktree from current `origin/main`. A plan alone resolves by the
-ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which. Always confirm the
-ledger still matches git/PR reality first. `/continue-roadmap [@plans/<X>_ROADMAP.md] [preferred item]` is the
-epic-level analog — it classifies every outstanding roadmap item against real git/PR/worktree state and
-**creates** the next item's plan rather than resuming one. Reviews route through `/review` or `/big-review`
-before an implementation PR merges, and `/incremental-review` after later code commits.
+`/resume-plan` resumes a ledger; `/continue-roadmap` creates the next roadmap item's plan. Review routes
+`/review` or `/big-review`, then `/incremental-review` after later code commits; a docs/meta-only PR routes
+`/docs-review` and `/merge-docs`. Each skill owns its own resolution rules — read it, don't infer them here.
 
 ## A red suite routes to this repo's debug skill
 

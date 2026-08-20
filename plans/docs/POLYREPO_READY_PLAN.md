@@ -63,7 +63,7 @@ Target `Concertable/agent-standards` (PR [#5](https://github.com/Concertable/age
 - [x] `plans` skill description widened; `handoff` router added; the README charter reworded to say which
   domain is a roster and which is method, and why a fourth process repo was rejected.
 
-**What stayed in-repo, deliberately:** `plans/AGENTS.md` (71 → 79 lines) keeps the `plans/<epic>/`
+**What stayed in-repo, deliberately:** `plans/AGENTS.md` (71 → 75 lines) keeps the `plans/<epic>/`
 layout, `plan_graph.py` and `plan_handoff_stop.py`, `worktrees.ps1 close -PlanManaged`, the debug-skill
 names by tier, `/resume-plan` and `/continue-roadmap`, `initial-migrations.ps1`, the merge-queue E2E
 tier, and the carve's own instance of the breaking-contract rule. That is genuinely per-repo and is what
