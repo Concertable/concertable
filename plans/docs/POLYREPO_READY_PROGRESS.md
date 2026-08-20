@@ -11,13 +11,14 @@
 - Dependency/package gates: **the producer merges first.** This branch deletes the four skill bodies the
   producer publishes; landing this one first leaves the repo with no merge, PR-opening or preflight
   procedure at all. No open `chore/platform-sync-*` PR.
-- Last reconciled: 2026-08-20 after implementing N1 family 2 in both repos, from `gh pr view` on the merged
-  #6/#675, `sync-generated.ps1 -Check`, and the hook runs below.
+- Last reconciled: 2026-08-20 at the family-2 delivery gate — both PRs verified green and current from
+  `gh pr checks`/`gh pr view`, the E2E tier label applied, the two merge invocations handed to Tommy.
 
 ## Current state
 
-**Phase 1 and N1 family 1 are merged in both repos. N1 family 2 — the merge/PR family — is implemented in
-both repos and delivery-gated on the producer PR.**
+**Phase 1 and N1 family 1 are merged in both repos. N1 family 2 — the merge/PR family — is implemented,
+reviewed and verified green in both repos, and now waits only on Tommy running the two merge commands in
+Next Step 2, producer first.**
 
 Producer publishes four docs under `standards/process/merge/` with a router each; consumer (this branch)
 deletes 674 lines — the four skill bodies and their `.claude/skills` stubs — and re-points five citation
@@ -41,10 +42,25 @@ dependency.
    can find, which is why this slice's own docs review had to be run from the moved copy of the procedure.
    Codex needs nothing beyond both repos being on merged `main`.
 
-2. **Land N1 family 2, in this order.** agent-standards #7 merges first, then #676. **This branch lands through `/merge`, not `/merge-docs`** — it edits a comment in
-   `.github/workflows/test.yml` that pointed at a skill file it deletes, and a CI workflow definition fails
-   the meta-only path gate by path even for a comment. That is the gate working, not a problem to route
-   around; the alternative was shipping a known dead pointer. Its docs review is recorded below and clean.
+2. **Land N1 family 2 — both PRs are verified green and current; the two merge invocations are Tommy's.**
+   agent-standards #7 first, then #676:
+
+   ```
+   ! cd C:/Users/TommySeery/source/repos/agent-standards; gh pr merge 7 --merge --delete-branch
+   ! cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-merge-family; gh pr merge 676 --merge --auto
+   ```
+
+   `merge_review_gate.py` refuses an agent-issued merge in this session — it cannot resolve git state
+   (`WinError 267`) for a worktree branch from a session rooted in the main checkout, and in the producer
+   repo it has no Concertable branch to resolve at all. Handing the command over is the queue procedure's
+   own answer to that, and it matches on the command string, so the phrase cannot appear in an agent Bash
+   call either. Both reviews are clean and recorded below. **#676 lands through the queue, not the
+   meta-only path** — it edits a comment in `.github/workflows/test.yml` that pointed at a skill file it
+   deletes, and a CI workflow definition fails the meta-only path gate by path even for a comment. That is
+   the gate working, not a problem to route around; the alternative was shipping a known dead pointer.
+   After #676 lands: nothing publishable changed, so there is no publish run and no `chore/platform-sync-*`
+   PR to own; sync the base, then close this worktree with
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 676 -PlanManaged`.
 
 3. **Then the `^reviews/.*\.md$` route row** (carried over from family 1, unchanged and still deferred). A
    route row naming a skill the plugin cache has not reinstalled hard-blocks every write to `reviews/**`
@@ -119,6 +135,18 @@ N1 family 2, producer (`agent-standards`):
   `PREFLIGHT.md` cites.
 - Names checked collision-free across `dotagents` (32), `react-agents` (14), `agent-standards` (39 before
   this), this repo (22) and Claude Code's built-ins. Three were free; `create-gh-pr` was not.
+
+N1 family 2, delivery gate (2026-08-20):
+
+- agent-standards #7: `verify` pass, `CLEAN`, 0 behind `origin/main`. That repo has no merge queue — its
+  rulesets API answers 403 on a private free plan — so it merges directly rather than through `--auto`.
+- #676: every non-`merge_group` check **pass** — build, `ci-complete`, all seven carves, `fe-boundaries`,
+  `hook-tests`, the full integration matrix; `CLEAN`; 0 behind `origin/main`; PR head equals local
+  `fd9231be`. The four `skipping` rows are the `merge_group`-gated E2E suites plus `review`, which is
+  expected on the PR itself.
+- **E2E tier: `skip-e2e` applied to #676, no `full-e2e`.** No positive trigger — the diff is markdown plus
+  one comment line in `.github/workflows/test.yml`: no UI flow, no HTTP or cross-service contract, no
+  published package shape, no auth or routing behaviour. The hard floor still gates it.
 
 N1 family 2, consumer (this repo):
 
