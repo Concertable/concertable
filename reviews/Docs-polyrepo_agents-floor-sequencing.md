@@ -4,7 +4,7 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `35fbba604071300daf63ac3fdfc139d0e5f5e7cf`  _(2026-08-20)_
+**Reviewed up to commit:** `9506b03a160c` _(2026-08-20)_
 
 > Range reviewed: `origin/main...HEAD` (the branch's own change vs current `origin/main` — three plan/roadmap files).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
