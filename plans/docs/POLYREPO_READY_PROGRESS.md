@@ -5,7 +5,7 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-git-family`
 - Branch: `Docs/docs_polyrepo-ready-git-family`, from `main` at `1176a002f` - N1 family 4, git.
-- PR: this repo - **open this branch's PR**; producer - **agent-standards #9, open at `06405a3`**.
+- PR: this repo - **#679**, open at `c1254eb75`; producer - **agent-standards #9, open at `06405a3`**.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as #676 + agent-standards #7 at `30734a9`; N1 family 3 as **#677, merged 2026-08-20 at
   `1176a002f`** + agent-standards #8 at `2d9a8fe`.
@@ -50,7 +50,7 @@ plan-workflow (203) and `package-cutover` (184).
    under no name. This branch is **meta-only** - every changed path is `.agents/**`, `.claude/**`, `docs/**`
    or `plans/**`, and `scripts/worktrees.ps1` is byte-identical to what was already there (only its
    provenance entry is new) - so it lands through `/merge-docs`. Then close this worktree with
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`.
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 679 -PlanManaged`.
 
 2. **Refresh the plugin cache once more after #9 merges**, for the same reason as last time: the two renamed
    skills resolve under no name until the installed cache carries them, and the old `sync`/`worktree` names
@@ -83,7 +83,7 @@ plan-workflow (203) and `package-cutover` (184).
   `COMMITTING.md` and `BRANCHING.md` - so these are the procedures underneath them, the same split
   `MERGING.md` has from `merge/QUEUE.md`. `scripts/worktrees.ps1` vendored into the existing `scripts`
   tier. `sync-generated.ps1 -Check`: 176 files current, 55 skills, 55 docs.
-- **N1 family 4 consumer - this branch.** The six `.agents/skills/*` bodies and their six `.claude/skills/*`
+- **N1 family 4 consumer - this branch, #679.** The six `.agents/skills/*` bodies and their six `.claude/skills/*`
   stubs deleted - 429 lines. Only **three** citation sites, the fewest of any family, because the hub docs
   cite the Phase-1 *principle* skills (`committing`, `git-branching`) and `scripts/worktrees.ps1` directly,
   not the executables: `docs/INDEX.md` (three rows added, plus a worktree-creation row above the existing
