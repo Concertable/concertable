@@ -8,7 +8,8 @@
 - Worktree:
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
 - Branch: `Refactor/deal-dispatch-foundation`
-- Implementation PR: not created
+- Implementation PR: [#678](https://github.com/Concertable/concertable/pull/678), draft, targeting `main`;
+  verified remote head `e4fdc642d8856c776a7d47f51e1379c6eb1dcf5e`
 - Push state: work head `23bad4f9af115e189e55316960d13073db704c1e` was pushed as the 9-commit
   `1176a002f8e58878f1650b193e7b9ab22daf385c..23bad4f9af115e189e55316960d13073db704c1e`
   range to the new `origin/Refactor/deal-dispatch-foundation` upstream and verified equal locally and
@@ -19,7 +20,7 @@
 - Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after the verified work-head push and before checkpoint transport
+- Last reconciled: 2026-08-20 after the clean pre-merge incremental review, before its checkpoint push
 
 ## Current state
 
@@ -75,8 +76,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-After this checkpoint commit is transported and local and remote-tracking heads are verified equal, run
-`/create-gh-pr` to open the draft feature PR from `Refactor/deal-dispatch-foundation` into `main`.
+Push the clean incremental-review checkpoint through the plan-managed two-leg protocol, require local,
+remote-tracking, and PR heads to agree, then wait for exact-head PR CI and run `/merge`.
 
 ## Separate public-library follow-up
 
@@ -157,6 +158,8 @@ The public library is not implemented or published by the current PR.
 - Incremental review `2e34ce37..bb8aa084`: clean; reviewed watermark is `bb8aa0840`.
 - Post-main-sync incremental review `bb8aa084..beab16bd` (28 commits): clean; native and security-sensitive
   passes found no issues, and both review watermarks are `beab16bd9`.
+- Pre-merge incremental review `beab16bd..e4fdc642` (3 commits): clean; the range contains only plan and
+  review checkpoints, with no runtime or security-sensitive changes; review watermark is `e4fdc642d`.
 
 ## Decisions and discoveries
 
