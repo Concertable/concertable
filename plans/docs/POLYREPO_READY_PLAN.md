@@ -4,7 +4,8 @@
 
 Finish the split the polyrepo cut requires, **before** the cut rather than after it. The restructure
 divided the corpus by portability — generic rules out to `dotagents`/`react-agents`, this system's roster
-to `agent-standards`, the floor in-repo. Right axis, applied as though this repo survives.
+to `agent-standards`, and a third bucket it called "the floor", left in-repo. Right axis, wrong number of
+destinations: that third bucket is the one §6 deletes.
 [`plans/platform/POLYREPO_ROADMAP.md`](../platform/POLYREPO_ROADMAP.md) records the ruling that it does
 not: services become independently-developed repos, so `api/` and a shared `plans/` tree are destinations
 with no future.
@@ -18,8 +19,9 @@ reintroduced at repo scale.
 | Problem | Measure |
 |---|---|
 | ~~Generic plan process sits in a repo with no future~~ — **moved, Phase 1** | `plans/agents/PLAN.md` 233 lines · `PROMPTS.md` 57 · `plans/agents/ROADMAP.md` 34 — **324 lines**, of which 32 carried a Concertable-specific name or command (the 259 first recorded here counted non-blank lines; these are `wc -l` at the time of the move) |
-| Route rows anchored on the monorepo layout | 3 of 37: `^api/…`, `^app/…`, `^plans/…` — no such prefix exists in a service repo |
-| Hub docs open by describing a monorepo | root `AGENTS.md` line 1; `docs/INDEX.md` is a monorepo index |
+| The route table has no home after the cut | 37 rows in root `.agents/skill-routes.json`. `agent-standards` **vendors the hook** (`vendor-hooks.ps1`, provenance-hashed) but ships **no** table — so the table is per-repo data, and 3 rows (`^api/…`, `^app/…`, `^plans/…`) name paths a service repo does not have. The *convention* those 37 rows follow has no owner anywhere |
+| The hub docs are in the deleted root | root `AGENTS.md` (147 lines) and `docs/INDEX.md` — not "they open by describing a monorepo", which is the wording; the problem is every rule in them needs a destination |
+| The 28 workflow skills are in the deleted root | 2,900 lines in `.agents/skills/`, every family platform-wide — Phase 5 |
 
 Six sibling process docs — branching, committing, merging, remote validation, docs-and-debt,
 failing-tests — already moved to `standards/process/`. Plans moved 78 lines and left 259. There is no
@@ -27,9 +29,10 @@ reason for the asymmetry beyond the restructure scoping `PLANS.md` narrowly and 
 which is the same failure that kept the `concertable-` prefix alive on an argument already dead when it
 was read.
 
-**The four layer routes survive the cut unchanged** (`.Application/`, `.Api/`, `.Domain/`,
-`.Infrastructure/`) because they key on architecture rather than location. That is the shape the
-re-anchor should follow, not a second set of prefixes.
+**Rows keyed on architecture port; rows keyed on location don't.** The four layer routes
+(`.Application/`, `.Api/`, `.Domain/`, `.Infrastructure/`) mean the same thing in a service repo; the three
+area floors name monorepo directories and mean nothing there. That is the distinction the convention has to
+encode — not a reason to keep one table alive in two shapes.
 
 ## Decisions taken, so no phase waits on a question
 
@@ -91,14 +94,27 @@ in `plans/`); the `plans` route still fires on a `plans/**/*.md` write; hook tes
 in `agent-standards`; no guidance doc links a moved file (the only surviving mentions are historical
 records in spent ledgers and review files).
 
-### Phase 2 — re-anchor the three monorepo-shaped route rows
+### Phase 2 — give the route table's convention a home; the monorepo rows die with the root
 
-Make the two area floors match both layouts, keyed on the same principle as the layer rows — what a file
-*is*, not where the monorepo happens to put it. A standalone service repo has no `api/` prefix, so an
-anchored floor silently matches nothing there: precisely the failure the floors were added to remove.
+The original framing was "re-anchor the three monorepo-shaped rows so the table works in both shapes". That
+keeps a root table alive in two worlds, which §6 does not allow. The mechanism already splits the way the
+rule requires: `agent-standards` vendors `skill_router.py` into each repo and ships **no** table, so the
+table is per-repo *data* and the hook is the platform-wide *procedure*.
 
-**Gate:** replay every tracked path through the table and confirm 100% coverage **in both shapes** — the
-monorepo tree, and a simulated carved tree with the prefix stripped.
+So the three area-floor rows are not re-anchored — they are values that cease to exist when the root does.
+What is missing is one tier up: **the convention 37 rows follow has no owner.** That every source file is
+gated by an area floor plus a layer route, that every matching row fires rather than the first, that a row
+keyed on location cannot port while one keyed on architecture can, and what a row's `note` is for — all of
+that lives today as prose inside the table's own notes and `docs/INDEX.md`, both in the deleted root, so
+eight repos would hand-write eight tables from no stated rule.
+
+- Publish that convention from `agent-standards` beside the vendored hook, and a template or generator that
+  emits a repo's table from its own layout, so a carved repo's table is derived rather than copied.
+- Keep the layer rows as the portable core; let each repo's own floors name its own top-level directories.
+
+**Gate:** generate the table for a simulated carved service tree from the published convention, replay
+every tracked path in that tree, and require 100% coverage with no row naming a path outside the repo. The
+monorepo's own table only has to keep working until the root is deleted.
 
 ### Phase 3 — re-home the hub docs, rather than re-premise them
 

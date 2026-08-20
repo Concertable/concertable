@@ -42,8 +42,9 @@ reports "no checks reported" until it is retargeted — retarget it the moment #
    once against the monorepo tree, once against a tree with the prefix stripped, and require 100% both
    times. Do it on a branch that has #668's version of the table.
 
-3. **Phases 3, 4 and 5** as the plan states, every artifact answered by the two-destination rule at the top
-   of the plan: platform-wide → `agent-standards`, single-service → that service's repo, nothing stays.
+3. **Phases 2, 3, 4 and 5** as the plan now states — all four were rewritten against §6 after Phase 1
+   shipped, so read the plan rather than any earlier summary of it. Every artifact is answered by the
+   two-destination rule at the top of the plan: platform-wide → `agent-standards`, single-service → that service's repo, nothing stays.
    Phase 5 (all 28 workflow skills, 2,900 lines, none of them single-service) is the largest piece left and
    Phase 4 depends on it — "prove it on one service" is meaningless while a carved Payment repo would have
    no review, merge, or debug skill. Phase 3 is a re-homing pass, not a rewording pass. Do not call the item
@@ -145,6 +146,16 @@ Phase 4 settles), and #668 → an `## Incremental review` section on
   keeps is values — its `scripts/e2e.ps1`, its suite names, its hook and migration paths — named in a thin
   `AGENTS.md` on the `Concertable.Payment` model. This answers the ledger's old "generated or hand-kept?"
   question: neither, the content leaves.
+- **Phase 2 was also written as though the root survives, and is rewritten.** "Re-anchor the three
+  monorepo-shaped rows so the table works in both shapes" keeps one root table alive in two worlds. The
+  mechanism already splits correctly: `agent-standards` vendors `skill_router.py` (provenance-hashed, via
+  `vendor-hooks.ps1`) and ships **no** `skill-routes.json`, so the hook is platform-wide procedure and the
+  table is per-repo data. The three area-floor rows are therefore values that die with the root — nothing to
+  re-anchor. What is actually missing is the **convention** those 37 rows follow (area floor + layer route,
+  every matching row fires, location-keyed rows can't port), which today lives only in the table's own notes
+  and `docs/INDEX.md` — both in the deleted root. Phase 2 now publishes that convention plus a
+  template/generator from `agent-standards`, and its gate generates a carved repo's table rather than
+  replaying the monorepo's.
 - **Phase 3 was rewriting a doomed file.** "Re-premise root `AGENTS.md` so the monorepo reads as packaging,
   not premise" spends effort on a hub that dies with the root. Re-homing its rules by the same test is the
   work; the wording is the cosmetic tier.
