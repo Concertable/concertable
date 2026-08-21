@@ -236,18 +236,22 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: move the single-owner Application API and terminal-decision suites out of Concert.
-Allowed scope: `ApplicationApiTests`, `ApplicationWithdrawRejectApiTests`, Application-owned request/test
-helpers, their own-module friend declarations and project references, and the stale Concert metadata those
-moves make removable.
-Exit gate: the Application integration project builds with the moved suites, the remaining Concert
-integration project retains its 18-error pre-migration frontier without Application API or terminal-decision
-test classes, the module integration-project boundary guard passes, the plan graph reports zero
-errors/warnings, and `git diff --check` passes. Commit and push this bounded Application move before
+Active slice: move the single-owner Booking financial-outcome coverage out of Concert.
+Allowed scope: `ApplicationFinancialOperationApiTests`, the stale `EscrowPaymentProcessorTests`, Booking's
+current acceptance financial processor/API surface, own-module test helpers and friend declarations, and
+the stale Concert metadata those moves make removable.
+Exit gate: the Booking integration project builds with boundary-correct financial success/failure coverage,
+the obsolete Concert processor vocabulary is gone, the remaining Concert integration project has no
+Booking-only financial test class, the module integration-project boundary guard passes, the plan graph
+reports zero errors/warnings, and `git diff --check` passes. Commit and push this bounded Booking move before
 splitting mixed Application/Booking/process suites.
 
 ## Completed work
 
+- Moved `ApplicationApiTests` and `ApplicationWithdrawRejectApiTests` into Application integration tests.
+  Both suites use `ApplicationApiFixture` and the module-owned Application read stance; the withdrawal
+  scenario observes Opportunity reopening through HTTP with a local boundary projection rather than an
+  Opportunity Domain/Infrastructure reference.
 - Published Opportunity/Deal integration ownership checkpoint `d5ac1c35e`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `d5ac1c35e8747097e063c9181f7cb785dc9375f5`. Moved
   `OpportunityApiTests` and its canonical request builder into Opportunity integration tests and
@@ -370,6 +374,9 @@ splitting mixed Application/Booking/process suites.
 
 ## Verification
 
+- Application single-owner move: the Application integration project builds with 0 warnings and 0 errors.
+  The reduced Concert integration project now has exactly 17 known compile errors, one fewer because the
+  stale withdrawal/rejection suite moved and was corrected in its owning project.
 - Opportunity and Deal single-owner move: both owning integration projects build with 0 warnings and 0
   errors. The reduced Concert integration project remains at exactly the prior 18 known compile errors,
   with no new diagnostic. The Concert ownership search finds no Deal/Opportunity test namespace or class.
