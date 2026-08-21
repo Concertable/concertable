@@ -249,7 +249,9 @@ Commit and push this bounded ownership split before moving the complete deal jou
 
 ## Completed work
 
-- Moved `ApplicationFinancialOperationApiTests` into Booking integration tests and replaced the stale
+- Published Booking financial integration ownership checkpoint `51dd489d8`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `51dd489d82834cc7e97b06a1ceda2bc54c0b84e8`. Moved
+  `ApplicationFinancialOperationApiTests` into Booking integration tests and replaced the stale
   `EscrowPaymentProcessorTests` with `AcceptanceFinancialOperationOutcomeProcessorTests`. The rewritten
   test dispatches the current capture-success contract twice through host-neutral harness infrastructure,
   asserts Booking confirmation through the Booking read stance, and proves exactly one Booking-owned inbox
