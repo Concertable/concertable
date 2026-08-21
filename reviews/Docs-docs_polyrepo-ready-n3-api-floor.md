@@ -6,6 +6,8 @@
 
 **Reviewed up to commit:** `3f511247aa772efc58980fa58f32a14fafa804d2`  _(2026-08-21)_
 
+**Security-reviewed up to commit:** `05897d63aa3657c05628129d280fd7b88c08e228`  _(2026-08-21)_ — **no findings.** The diff is 16 markdown docs, one `.agents/skill-routes.json` route row (a path regex + skill names + a note), and two file deletions — no executable code, no auth/input/crypto/deserialization surface. The one security-sensitive path (`api/Concertable.Auth/AGENTS.md`) change removes a markdown inheritance link.
+
 > Range reviewed: `69df07b8..3f511247`.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
