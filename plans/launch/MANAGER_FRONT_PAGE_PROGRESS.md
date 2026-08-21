@@ -34,12 +34,14 @@ ASP.NET development certificate remains by design. No local E2E was run.
 
 The work-head push advanced the remote/PR from `0c09697b9906fc3f34a566a25fdac4771cabef50` through
 `0c09697b..27e51f65c`; refreshed `origin/Feature/launch_dashboard-b2b-consumer` and PR #563 both equal the exact
-reviewed work head. Review transport commit `b741b6123` is local and pending the checkpoint-transport push.
+reviewed work head. Review transport `b741b6123` and push checkpoint `77b23dfc4` were then transported and verified
+with local, remote-tracking, and PR heads equal. PR #563 is ready for review, current with `origin/main` `a364bebbd`,
+and awaiting fresh exact-head CI.
 
 ## Next Steps
 
-1. Push the pending review and checkpoint transport, fetch, and require local, remote-tracking, and PR heads to match.
-2. Require fresh exact-head CI green, complete `/merge`, follow the generated package/platform-sync PR to green and
+1. Transport this readiness checkpoint, then require fresh exact-head CI green on the resulting PR head.
+2. Complete `/merge`, follow the generated package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
 3. From current `origin/main`, record terminal delivery evidence and delete the plan and ledger together in the
@@ -91,7 +93,8 @@ reviewed work head. Review transport commit `b741b6123` is local and pending the
   routed current-main standards. `NAT2` and `NAT3` added Admin Auth/CORS wiring, `CI5` moved Admin onto the shared
   HTTPS/IPv4 setup, and `NAT4` added the AppHost composition regression. No open findings remain.
 - Correctness and security watermarks are both `27e51f65c422959ebda09893abeac603c6fb5a1f`.
-- Review transport: `b741b6123` (pending checkpoint-transport push).
+- Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
+  current with base, and awaiting fresh exact-head CI.
 
 ## Decisions, discoveries, blockers, and deviations
 
