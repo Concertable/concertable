@@ -11,9 +11,10 @@
 
 ## Current state
 
-Implementation, authenticated Phase A.8 acceptance, and incremental review are complete. The local,
-remote-tracking, and PR heads equal `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`; its reviewed work watermark is
-`4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. `origin/main` advanced six commits while exact-head CI was running and
+Implementation and authenticated Phase A.8 acceptance are complete. At the last push checkpoint, the
+remote-tracking and PR heads equalled `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`; its reviewed work watermark was
+`4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. The local branch now also carries the required plan checkpoints and
+current-main reconciliation. `origin/main` advanced six commits while exact-head CI was running and
 was merged cleanly at `99412536cc0f8249cc42771322ba0a706509b666`. The incoming delta restructures architecture
 guidance and advances all services to the already-green `0.1.0-alpha.0.1124` platform pin; it did not overwrite any
 dashboard change. Proportional validation is green; the reconciliation now requires incremental review before its
