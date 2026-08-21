@@ -44,8 +44,10 @@ and adds Admin to the authoritative carve matrix.
 
 ## Next Steps
 
-1. Commit and incrementally review the frontend carve correction, address every finding, then push a fresh exact head.
-2. Require fresh exact-head CI green (including every feed-restored web carve), complete `/merge`, follow the generated package/platform-sync PR to green and
+1. Use the plan-managed two-leg push to publish exact reviewed work head `c2a69d062`, verify PR #563 at that head,
+   then transport the review/ledger checkpoint and verify local, remote-tracking, and PR head equality.
+2. Require fresh exact-head CI green (including every feed-restored web carve), complete `/merge`, follow the generated
+   package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
 3. From current `origin/main`, record terminal delivery evidence and delete the plan and ledger together in the
@@ -101,8 +103,9 @@ and adds Admin to the authoritative carve matrix.
 - Incremental ranges through `c531e4f1a..27e51f65c` were reviewed through both mandatory layers and all mechanically
   routed current-main standards. `NAT2` and `NAT3` added Admin Auth/CORS wiring, `CI5` moved Admin onto the shared
   HTTPS/IPv4 setup, and `NAT4` added the AppHost composition regression. No open findings remain.
-- Correctness and security watermarks are both `27e51f65c422959ebda09893abeac603c6fb5a1f`; the carve correction awaits
-  the required incremental review before push.
+- Incremental range `27e51f65c..c2a69d062` (5 commits) was reviewed through the mandatory native and security layers,
+  all mechanically routed standards, and the six architecture/correctness/test lenses. No findings remain.
+- Correctness and security watermarks are both `c2a69d062d79685c59590e4f94569949fc9d88a9`.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
   `app/scripts/vite-development-https.ts`; this is a real dependency-closure failure and will not be retried unchanged.

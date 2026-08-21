@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `27e51f65c422959ebda09893abeac603c6fb5a1f`  _(2026-08-21)_
-**Security-reviewed up to commit:** `27e51f65c422959ebda09893abeac603c6fb5a1f`  _(2026-08-21)_
+**Reviewed up to commit:** `c2a69d062d79685c59590e4f94569949fc9d88a9`  _(2026-08-21)_
+**Security-reviewed up to commit:** `c2a69d062d79685c59590e4f94569949fc9d88a9`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -140,3 +140,12 @@ security layers plus all mechanically routed standards. The final current-main t
 all five service pins moved consistently to `0.1.0-alpha.0.1120`. Validation passed the B2B AppHost build, all six B2B
 composition tests, the shared-web tests, and Customer, Venue, Artist, Business, and Admin production builds. Local
 automated E2E remained intentionally unrun; the merge queue owns that tier.
+
+## Incremental review — 2026-08-21 (frontend carve correction)
+
+No issues found. The incremental review covered `27e51f65c..c2a69d062` (5 commits) through the mandatory native
+and security layers plus correctness, service isolation, module boundaries, seeding, all mechanically routed
+standards, and changed-behaviour test coverage. The carve keeps feed-only isolation while preserving each surface's
+real `app/...` hierarchy, archives the shared Vite HTTPS helper from the same Git tree, and now includes Admin in the
+CI matrix. The 7 frontend-tooling tests and every dependency boundary passed locally; the package-scoped CI token
+remains responsible for the authoritative standalone restores and builds.
