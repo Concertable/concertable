@@ -5,6 +5,7 @@
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
 **Reviewed up to commit:** `2a76aa1464a025876ddb666606595e30774aee7e`  _(2026-08-21)_
+**Security-reviewed up to commit:** `825e30323e01520e1833337999f34cc7b7f0a489`  _(2026-08-21)_ — docs/route-table only; no code, no runtime, no security-relevant change. Auth/Payment/Contracts paths touched are one-line doc-link repoints.
 
 > Range reviewed: `4a478433a..2a76aa146` (3 commits — the substantive change is the single N4 commit
 > `2a76aa146`; `a364bebbd` + `bd08b0402` are a merged-in `chore/platform-sync-0.1.0-alpha.0.1120` PR
