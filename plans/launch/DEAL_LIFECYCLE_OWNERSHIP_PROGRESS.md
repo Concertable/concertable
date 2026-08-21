@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through current-main reconciliation checkpoint `fccab851de826ebfcce87265a32f20522ce7289c`.
-  Local pre-merge checkpoint `f2f6fff44` preserved the Workers, Concert unit, Opportunity
-  request-builder, and `ApplicationCancelApiTests` recovery frontiers.
+  through `ApplicationDoorSplitApiTests` recovery work head
+  `eeee95ac46e5ed4059e4633c795e71ca8b01f594`. Local, remote-tracking, and PR heads were verified equal;
+  this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
   merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`.
@@ -178,6 +178,15 @@ owned by that file are gone, `git diff --check` passes, and the exact remaining 
 22 errors outside this slice. Published work head `da3d55be6` is verified equal across local, remote,
 and draft PR #633.
 
+The focused `ApplicationDoorSplitApiTests` recovery now reads Application rows through
+`ApplicationReads`, Booking creation and financial-confirmation failure through `BookingReads`, and
+Concert creation only through `ConcertReads`. DoorSplit acceptance asserts the resulting
+`DeferredBooking`; both failed-verification paths assert `BookingState.FinancialConfirmationFailed`.
+The fixture support project now directly references the Admin Domain and Infrastructure assemblies whose
+types it consumes, so a normal dependency build reaches the Concert integration project. The target file
+contributes no diagnostic and the exact remaining integration frontier is 21 errors outside this slice.
+Published work head `eeee95ac4` is verified equal across local, remote, and draft PR #633.
+
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
 PR #633 therefore resumes against `DealDto` and the proven module-local factory pattern, not against a
@@ -194,8 +203,7 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: recover `ApplicationDoorSplitApiTests` onto module-owned Application, Booking, and Concert
-reads and state.
+Active slice: recover `ApplicationFinancialOperationApiTests` onto module-owned Booking financial state.
 Allowed scope: that test file and the minimum directly required fixture/API adaptation exposed by its
 compiler diagnostics.
 Exit gate: the file contributes no compile diagnostic, the Concert integration project establishes the
@@ -207,6 +215,9 @@ selecting the next file.
 - Reconciled the heterogeneous-method landing design: net10 uses keyed DI only inside a dedicated
   marker-returning factory, consumers match honest method-header interfaces and guarded required input,
   and .NET 11 changes that return boundary to a direct native interface union without Dunet wrappers.
+- Published `ApplicationDoorSplitApiTests` recovery work head `eeee95ac4`; Application, Booking, and
+  Concert assertions use their owning read contexts, financial failure uses `BookingState`, the fixture
+  declares its direct Admin references, and the remaining integration frontier is exactly 21 errors.
 - Published current-main reconciliation range `0511c35ca..fccab851d`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `fccab851de826ebfcce87265a32f20522ce7289c`, and the branch was
   0 commits behind `origin/main`.
@@ -306,12 +317,13 @@ selecting the next file.
   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1
   --property:GenerateFullPaths=false --consoleLoggerParameters:ErrorsOnly`: the slice baseline reproduced
-  26 errors; after the `ApplicationCancelApiTests` recovery it produces exactly 22 errors with no
-  diagnostic from that file.
-- The exact remaining 22-error frontier is 14 deleted Concert lifecycle imports, two deleted Concert
+  26 errors; after the `ApplicationCancelApiTests` recovery it produced 22, and after the
+  `ApplicationDoorSplitApiTests` recovery plus direct Admin fixture references it produces exactly 21
+  errors with no diagnostic from either recovered file.
+- The exact remaining 21-error frontier is 13 deleted Concert lifecycle imports, two deleted Concert
   workflow imports, one combined-state reference, two Contract entity references, two Application
-  entity references, and one settlement outcome reference. `ApplicationDoorSplitApiTests.cs` is the
-  next bounded recovery.
+  entity references, and one settlement outcome reference. `ApplicationFinancialOperationApiTests.cs`
+  is the next bounded recovery.
 - `dotnet test
   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 88/88 passed after
