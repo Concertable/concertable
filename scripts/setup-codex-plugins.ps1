@@ -41,6 +41,10 @@ foreach ($marketplace in $marketplaces) {
     }
     Write-Host "adding marketplace '$($marketplace.Name)' ($($marketplace.Source))..."
     codex plugin marketplace add $marketplace.Source
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "'codex plugin marketplace add $($marketplace.Source)' failed (exit $LASTEXITCODE)" -ForegroundColor Red
+        exit 1
+    }
 }
 
 $installedPlugins = (codex plugin list --json | ConvertFrom-Json).installed | ForEach-Object { $_.pluginId }
@@ -51,6 +55,10 @@ foreach ($plugin in $plugins) {
     }
     Write-Host "installing plugin '$plugin'..."
     codex plugin add $plugin
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "'codex plugin add $plugin' failed (exit $LASTEXITCODE)" -ForegroundColor Red
+        exit 1
+    }
 }
 
 Write-Host "Codex plugin setup complete." -ForegroundColor Green
