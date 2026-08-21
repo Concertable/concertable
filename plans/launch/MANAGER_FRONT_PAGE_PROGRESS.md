@@ -12,9 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Merge current `origin/main`, including delivered producer PR [#685](https://github.com/Concertable/concertable/pull/685), into consumer PR [#563](https://github.com/Concertable/concertable/pull/563).
-2. Rebuild the frontend packages and all four SPAs against published `@concertable/web@0.1.0-alpha.0.4658`, refresh the consumer review marker, push an exact head, and require CI green.
-3. Complete the remaining Phase A.8 authenticated seeded venue/artist UX review at desktop, tablet, and mobile widths before consumer delivery.
+1. Commit and review the final current-main consumer reconciliation, push its exact work head to PR [#563](https://github.com/Concertable/concertable/pull/563), and require CI green.
+2. Complete the remaining Phase A.8 authenticated seeded venue/artist UX review at desktop, tablet, and mobile widths before consumer delivery.
 
 ## Reviews
 
@@ -32,6 +31,13 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
+
+- **The final producer/current-main reconciliation is locally green.** Consumer #563 now includes `origin/main`
+  `fbf011ac1`, including platform sync `0.1.0-alpha.0.1103`, delivered producer #685, and the current plan-workflow
+  documentation. Its only conflict was the review provider's missing-provider behavior; resolution keeps the published
+  customer-compatible default while Venue and Artist explicitly compose the singular B2B route builder. The plan graph
+  passes with 0 errors/warnings, shared-web tests pass 31/31, all five frontend package tiers build, and Venue, Artist,
+  Customer, and Business production builds pass against published `@concertable/web@0.1.0-alpha.0.4658`.
 
 - **Review-route producer delivery and publication are complete.** Producer PR
   [#685](https://github.com/Concertable/concertable/pull/685) was reconciled with current main, reviewed with no

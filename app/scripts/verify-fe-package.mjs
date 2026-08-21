@@ -79,7 +79,11 @@ const CHECKS = {
   "@concertable/web": {
     node: [
       'import { cn } from "@concertable/web/lib/utils";',
+      'import { ReviewRouteProvider, b2bReviewBasePath, customerReviewBasePath } from "@concertable/web/features/reviews";',
       'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
+      'if (typeof ReviewRouteProvider !== "function") throw new Error("Missing review route provider export");',
+      'if (b2bReviewBasePath("artist", 12) !== "/artist/12/review") throw new Error("Unexpected B2B review route");',
+      'if (customerReviewBasePath("artist", 12) !== "/artists/12/reviews") throw new Error("Unexpected customer review route");',
     ],
   },
   "@concertable/customer": {

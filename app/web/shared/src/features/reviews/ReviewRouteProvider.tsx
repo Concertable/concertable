@@ -11,7 +11,7 @@ export const b2bReviewBasePath: ReviewBasePath = (type, id) => {
 export const customerReviewBasePath: ReviewBasePath = (type, id) =>
   `/${type}s/${id}/reviews`;
 
-const ReviewRouteContext = createContext<ReviewBasePath | undefined>(undefined);
+const ReviewRouteContext = createContext<ReviewBasePath>(customerReviewBasePath);
 
 type Props = Readonly<{
   basePath: ReviewBasePath;
@@ -27,8 +27,5 @@ export function ReviewRouteProvider({ basePath, children }: Props) {
 }
 
 export function useReviewBasePath() {
-  const basePath = useContext(ReviewRouteContext);
-  if (basePath === undefined)
-    throw new Error("ReviewRouteProvider is required.");
-  return basePath;
+  return useContext(ReviewRouteContext);
 }
