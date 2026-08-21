@@ -1,11 +1,13 @@
 import hashlib
 import importlib.util
 import json
+import sys
 import unittest
 from pathlib import Path
 
 
 HOOKS = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(HOOKS))
 REPO = HOOKS.parents[1]
 MANIFEST = HOOKS / "vendored.json"
 WIRING = (REPO / ".claude" / "settings.json", REPO / ".codex" / "hooks.json")
@@ -15,13 +17,7 @@ DELIVERY_KINDS = ("hook", "invoked")
 
 # The ONE place a half-wired hook is legal, and only with its reason written down. Each entry is
 # outstanding work, not a settled shape: delete it the moment the hook can be wired everywhere.
-SINGLE_HARNESS = {
-    "merge_review_gate.py": (
-        "the gate's SHELL_TOOLS vocabulary holds only Claude's `Bash`. Codex's shell tool name is "
-        "not established, and wiring a matcher the hook ignores is enforcement that is inert while "
-        "looking wired. Add the name to SHELL_TOOLS upstream, wire .codex/hooks.json, drop this row."
-    ),
-}
+SINGLE_HARNESS = {}
 
 
 def normalized(path):

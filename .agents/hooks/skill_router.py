@@ -42,6 +42,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from hook_runtime import claim_invocation, own_payload_root
+
 # Skill descriptions carry non-ASCII punctuation, and this text is what the agent acts on.
 # Windows defaults these streams to cp1252, which renders it as mojibake.
 for _stream in (sys.stdout, sys.stderr):
@@ -131,12 +133,9 @@ def skill_search_dirs(harness):
     """
     home = Path.home()
 
-    root_variable = "CLAUDE_PLUGIN_ROOT" if harness == "claude" else "CODEX_PLUGIN_ROOT"
-    own = os.environ.get(root_variable)
-    if own:
-        yield Path(own) / "skills"
-    # hooks/skill_router.py -> the plugin root that copied it. True in an install, harmless in a repo.
-    yield Path(__file__).resolve().parent.parent / "skills"
+    # The hook's own payload is independent of the harness variable vocabulary. Codex injects
+    # PLUGIN_ROOT; Claude injects CLAUDE_PLUGIN_ROOT; a vendored copy resolves beside itself.
+    yield own_payload_root(__file__) / "skills"
 
     linked_base = claude_config_root(home) if harness == "claude" else home
     for relative in LINKED_SKILL_ROOTS[harness]:
@@ -488,6 +487,9 @@ def main():
         for route in matching_routes(routes, rel, content):
             matched.append((rel, route))
     if not matched:
+        sys.exit(0)
+
+    if not claim_invocation(data, "skill-router"):
         sys.exit(0)
 
     # Deny patterns first: a decidable violation blocks every time, not once per session.
