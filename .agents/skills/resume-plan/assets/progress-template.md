@@ -55,6 +55,6 @@ never restate the branch, gates, checkpoints, or steps here — they live in `##
 be duplicated where they can drift. Keep it verbatim in this fenced block:>
 
 ```
-<cd existing-worktree OR /worktree create Type/epic_name>
+<cd existing-worktree OR /open-worktree Type/epic_name>
 Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
 ```
