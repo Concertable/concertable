@@ -57,11 +57,14 @@ work head. Review transport and the verified-push checkpoint were then transport
 `3d4f9c5ac3669a8e9ebb8087fddaa3e1f46a51a3`. Fresh exact-head CI run `32528668315` proved every frontend
 carve green, then failed the solution build because two dashboard unit-test arrangements still instantiated the
 removed `FlatFeeDeal` type. Both now use the current `FlatFeeDealDto` contract, and the complete Concert unit suite
-passes locally.
+passes locally. The exact reviewed correction work head `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47` was pushed
+from starting remote/PR head `3d4f9c5ac3669a8e9ebb8087fddaa3e1f46a51a3`; refreshed remote-tracking and PR heads
+both equal the reviewed correction.
 
 ## Next Steps
 
-1. Checkpoint the completed compiler-correction review, then push its exact reviewed head in two legs.
+1. Transport the compiler-correction review and verified-work-push checkpoint, then verify local, remote-tracking, and
+   PR head equality.
 2. Require fresh exact-head CI green (including every feed-restored web
    carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
@@ -129,6 +132,9 @@ passes locally.
 - Latest reviewed work-head push: starting remote/PR `6e17b5cdf0067833bda18d6d396e240a31f91b6a`; pushed
   `6e17b5cdf..652fd3aac`; refreshed remote-tracking and PR heads both verified at
   `652fd3aac91e5ba6689530efe6ad113c84a42772`.
+- Compiler-correction work-head push: starting remote/PR `3d4f9c5ac3669a8e9ebb8087fddaa3e1f46a51a3`; pushed
+  `3d4f9c5ac..4c28ab7f7`; refreshed remote-tracking and PR heads both verified at
+  `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`.
 
 ## Reviews
 
@@ -146,6 +152,8 @@ passes locally.
 - Review transport `03cc8ff90` and push checkpoint `3d4f9c5ac` are verified on the remote and PR.
 - Incremental range `652fd3aac..4c28ab7f7` (3 commits) was reviewed through the mandatory native layer and all routed
   standards with no findings; Concert unit tests pass 233/233.
+- Compiler-correction review transport `7484a8d3a` is local and will be carried with the single verified-push
+  checkpoint transport leg.
 - Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
