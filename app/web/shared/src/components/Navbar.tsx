@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProfileMenu, type ProfileMenuItem } from "@/components/ProfileMenu";
 import {
@@ -115,6 +115,13 @@ export function Navbar({
         <div className="hidden lg:block">
           <NavbarSearch />
         </div>
+        <Link
+          to="/find"
+          aria-label="Search"
+          className="hover:bg-white/10 rounded-md p-2 lg:hidden"
+        >
+          <Search className="size-5" />
+        </Link>
         {user && <Mailbox />}
         <ThemeToggle />
         <ProfileMenu items={profileItems} />
