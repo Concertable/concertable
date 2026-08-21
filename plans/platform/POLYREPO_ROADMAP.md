@@ -4,10 +4,10 @@
 > deleted, lives until the epic ships). Each buildable item spins off its own feature plan; the
 > roadmap tier is the `plans` skill.
 >
-> **North star:** [`api/AGENTS.md`](../../api/AGENTS.md) — *"The monorepo is a convenience only. Each
-> service is independently owned and will split into its own repo with its own developers. Design every
-> change as if that split already happened: would this still work if this service lived alone?"* This
-> roadmap tracks the work that makes that literally true.
+> **North star:** [`ARCHITECTURE.md`](../../ARCHITECTURE.md) — *"The monorepo is a convenience only — the
+> backend services are independently-owned microservices and are designed to split into separate repos."*
+> Design every change as if that split already happened: would this still work if this service lived alone?
+> This roadmap tracks the work that makes that literally true.
 >
 > **Definition of done for the epic:** each service (`B2B`, `Customer`, `Auth`, `Payment`, `Search`,
 > `Shared`) builds, tests, **documents, and plans** itself standing alone; every cross-service dependency
@@ -143,7 +143,9 @@ runs first, and now, is the polyrepo-*ready* corpus work
 ([`plans/docs/POLYREPO_READY_PLAN.md`](../docs/POLYREPO_READY_PLAN.md)): re-homing every rule out of the
 doomed nodes so the eventual repos inherit a correct corpus on day one. `api/AGENTS.md` is one of those
 nodes (its N3) and re-homes **well before** the cut — it is not itself launch-gated; only the physical
-split is. Until N3 lands, `api/AGENTS.md` stays as the retained 78-line pointer floor.
+split is. N3 re-homes its content to `Concertable/agent-standards` (the shared-is-the-intersection rule into
+`SERVICE_BOUNDARIES.md`; every other section was already skill-owned) and deletes `api/AGENTS.md` +
+`api/CLAUDE.md`; the backend floor is thereafter the `.agents/skill-routes.json` routes over the `dotnet` plugin.
 
 The remaining sub-decision is still open: whether a true cut restructures to per-service colocation
 (`services/<x>/{api,web,mobile}`) or uses a multi-source mirror assembler.

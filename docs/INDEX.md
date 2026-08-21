@@ -110,7 +110,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
 | DTOs vs `Response` at the controller boundary | skills `dotnet-standards:http-api`, `dotnet:http-api` |
-| Migrations; shared-is-the-intersection; the seeder trigger rule | [`api/AGENTS.md`](../api/AGENTS.md) |
+| Migrations; shared-is-the-intersection; the seeder trigger rule | skills `migrations`, `dotnet:microservice-boundaries`, `dotnet:seeding` |
 
 ## Frontend code (`app/`)
 
