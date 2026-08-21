@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** Fix open `[ ]` findings directly and report what
 > changed. Tick `[x]` as landed.
 
-**Reviewed up to commit:** `a6c96ab625034524a9ba7ba2526dcf8f78cc5624`  _(2026-08-20)_
+**Reviewed up to commit:** `32ce2014907dafc1d67c7fdffdc9465fb28fb675`  _(2026-08-21)_
 
 > Range reviewed: full PR (`merge-base(main)..ec6eeaeeb`). The **consumer/sync half** of the camel-case
 > JSON enum cut-over (producer #595 merged; FE packages republished under the `alpha` tag with camel-case).
