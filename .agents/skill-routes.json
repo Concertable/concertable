@@ -162,6 +162,14 @@
       "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is api/ARCHITECTURE.md."
     },
     {
+      "path": "Concertable\\.(Kernel|Contracts)/.*\\.cs$",
+      "skills": [
+        "dotnet-standards:microservice-boundaries",
+        "dotnet:microservice-boundaries"
+      ],
+      "note": "The universal shared tier every service consumes. Shared code is the intersection of what its consumers need, never the union - an audience-specific member bolted onto a Kernel or Contracts type is the silent, expensive violation."
+    },
+    {
       "path": "Controller\\.cs$",
       "skills": [
         "dotnet-standards:http-api",

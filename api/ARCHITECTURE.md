@@ -81,7 +81,6 @@ inventory.
 - Root [`ARCHITECTURE.md`](../ARCHITECTURE.md) — the system-wide premise (monorepo-of-convenience,
   split-repo future).
 - Root [`AGENTS.md`](../AGENTS.md) — top-of-context rules and pointers.
-- [`AGENTS.md`](./AGENTS.md) — the backend floor.
 - `api/Concertable.X/ARCHITECTURE.md` — per-service architecture docs.
 - [`Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/AGENTS.md`](./Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/AGENTS.md)
   — the simulator pattern in detail.

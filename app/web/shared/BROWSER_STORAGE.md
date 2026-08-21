@@ -1,6 +1,6 @@
 # Browser-storage inventory (engineering)
 
-Every item Concertable's four web SPAs store on a visitor's device, with the lawful basis
+Every item Concertable's five web SPAs store on a visitor's device, with the lawful basis
 each is stored under. This is the engineering record a solicitor turns into the public
 cookie/storage policy — it is not the policy itself, and not legal advice.
 
@@ -26,10 +26,10 @@ PECR reg. 6 requires consent before storing or reading anything on the device, u
 
 | Key | Storage | Owner | Purpose | Duration | Class | SPAs |
 |---|---|---|---|---|---|---|
-| `cookie-consent` | localStorage | first-party | Records the cookie-consent decision so the banner shows once | Persistent until cleared | Necessary | customer, venue, artist, business |
-| `theme` | localStorage | first-party | Light/dark UI preference | Persistent until cleared | Functional | customer, venue, artist |
+| `cookie-consent` | localStorage | first-party | Records the cookie-consent decision so the banner shows once | Persistent until cleared | Necessary | customer, venue, artist, business, admin |
+| `theme` | localStorage | first-party | Light/dark UI preference | Persistent until cleared | Functional | customer, venue, artist, admin |
 | `concertable.active-tenant` | localStorage | first-party | Remembers the manager's selected active tenant across sessions | Persistent until cleared | Functional | venue, artist |
-| `oidc.user:*`, `oidc.*` state | localStorage | oidc-client-ts (store configured by us) | Auth tokens + sign-in / silent-renew state | Session / token lifetime | Necessary | customer, venue, artist |
+| `oidc.user:*`, `oidc.*` state | localStorage | oidc-client-ts (store configured by us) | Auth tokens + sign-in / silent-renew state | Session / token lifetime | Necessary | customer, venue, artist, admin |
 | `__stripe_mid` | cookie | Stripe | Fraud prevention (Radar) machine id during payment | ~1 year | Necessary | customer, venue, artist |
 | `__stripe_sid` | cookie | Stripe | Fraud prevention (Radar) session id during payment | ~30 minutes | Necessary | customer, venue, artist |
 | `m` | cookie (`m.stripe.com`, httpOnly) | Stripe | Fraud-prevention identifier | ~1–2 years | Necessary | customer, venue, artist |
