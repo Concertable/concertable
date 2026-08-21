@@ -1,6 +1,7 @@
 import axios, {
   isAxiosError,
   type AxiosInstance,
+  type CreateAxiosDefaults,
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
@@ -13,8 +14,8 @@ export type ApiClient = AxiosInstance & {
   ): Promise<AxiosResponse<T | null, D>>;
 };
 
-export function createApiClient(): ApiClient {
-  const client = axios.create() as ApiClient;
+export function createApiClient(options?: CreateAxiosDefaults): ApiClient {
+  const client = axios.create(options) as ApiClient;
   client.getOptional = async <T = unknown, D = unknown>(
     url: string,
     config?: AxiosRequestConfig<D>,
