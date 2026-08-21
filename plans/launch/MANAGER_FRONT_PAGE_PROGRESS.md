@@ -61,7 +61,7 @@ passes locally.
 
 ## Next Steps
 
-1. Commit and incrementally review the focused CI compiler correction, then push its exact reviewed head in two legs.
+1. Checkpoint the completed compiler-correction review, then push its exact reviewed head in two legs.
 2. Require fresh exact-head CI green (including every feed-restored web
    carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
@@ -141,9 +141,11 @@ passes locally.
 - Incremental range `c2a69d062..652fd3aac` (17 commits) produced and resolved NAT5: a clean-but-idle platform-sync PR
   could be mistaken for an in-flight queued PR. The correction tail passed the mandatory native and security
   re-review with no further findings.
-- Correctness and security watermarks are both `652fd3aac91e5ba6689530efe6ad113c84a42772`.
+- Correctness watermark is `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`; the security watermark remains
+  `652fd3aac91e5ba6689530efe6ad113c84a42772` because the later delta contains no security-sensitive path.
 - Review transport `03cc8ff90` and push checkpoint `3d4f9c5ac` are verified on the remote and PR.
-- The post-watermark `FlatFeeDealDto` compiler correction still requires incremental review before the next push.
+- Incremental range `652fd3aac..4c28ab7f7` (3 commits) was reviewed through the mandatory native layer and all routed
+  standards with no findings; Concert unit tests pass 233/233.
 - Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include

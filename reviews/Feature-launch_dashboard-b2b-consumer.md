@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `652fd3aac91e5ba6689530efe6ad113c84a42772`  _(2026-08-21)_
+**Reviewed up to commit:** `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`  _(2026-08-21)_
 **Security-reviewed up to commit:** `652fd3aac91e5ba6689530efe6ad113c84a42772`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
@@ -164,3 +164,11 @@ through the mandatory native and security layers plus correctness, service isola
 mechanically routed standards, and changed-behaviour test coverage. The NAT5 correction received a second native and
 security pass with no findings. Local validation passed 46/46 Conversations unit tests, the B2B AppHost build with 0
 errors, 4/4 platform-sync policy cases, workflow YAML parsing, and the plan graph at 0 errors and 0 warnings.
+
+## Incremental review — 2026-08-21 (CI compiler correction)
+
+No issues found. The incremental review covered `652fd3aac..4c28ab7f7` (3 commits) through the mandatory native layer,
+all mechanically routed standards, and the six repository lenses. The range contains review/push checkpoints plus the
+two test arrangements corrected from the removed `FlatFeeDeal` type to the current `FlatFeeDealDto` contract. The
+Concert unit suite passed 233/233. No security-sensitive path changed, so the existing security watermark remains the
+applicable security review boundary.
