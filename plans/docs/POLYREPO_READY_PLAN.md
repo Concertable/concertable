@@ -109,7 +109,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 |---|---|---|---|---|
 | ~~N1~~ **done** | `.agents/skills/` — all 28 skills moved (6 of 6 families) | 3,285 lines | platform-wide, across `agent-process` + `dotnet` plugins | per-repo values: script paths, suite names |
 | ~~N2~~ **done** | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* (`SKILL_ROUTES.md`, skill `skill-routes`) + a generator (`gen_skill_routes.py`) | the table itself: per-repo data; `_comment` repointed |
-| N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
+| ~~N3~~ **done** | `api/AGENTS.md` + `api/CLAUDE.md` deleted | 78 | agent-standards (shared-is-the-intersection → `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) | nothing |
 | N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
 | N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
 | N6 | `docs/` — `INDEX.md` 188 · `USP.md` 203 · `DEEP_RESEARCH_PROMPT_GUIDE.md` 81 · `OVERVIEW.md` 55 · `REMOTE_VALIDATION.md` 27 | 554 | mixed — see N6 | nothing |
@@ -118,7 +118,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 
 **One node per slice, in this order.** ~~N1 first~~ and ~~N2~~ are **done**: every hub below N1 points *at*
 skills, so re-homing a hub before its targets have addresses writes pointers to nowhere; N2 was independent
-and ran alongside. N3–N6 + N7a follow. N7b waits on an external decision. N8 is last and is the only evidence.
+and ran alongside. ~~N3~~ **done**; N4–N6 + N7a follow. N7b waits on an external decision. N8 is last and is the only evidence.
 
 ### N1 — the 28 workflow skills (3,285 lines)
 
@@ -222,12 +222,28 @@ hand-write eight tables from no stated rule.
 **Gate:** generate the table for a simulated carved tree from the published convention, replay every
 tracked path in that tree, require 100% coverage and no row naming a path outside the repo.
 
-### N3 — `api/AGENTS.md` + `api/CLAUDE.md` (78 lines)
+### N3 — `api/AGENTS.md` + `api/CLAUDE.md` (78 lines) ✅ **done**
 
-§6 names this node explicitly: *"there is no `api/` node in a polyrepo."* It is already pointers-only with
-no `@`-imports, so this is a re-home, not a rewrite: the pointers that are platform-wide (the service
-roster, the boundary rule, which skill owns what) go to `agent-standards`; anything naming one service was
-already pushed down in roadmap 4a/4b. Nothing stays.
+§6 names this node explicitly: *"there is no `api/` node in a polyrepo."* It was already pointers-only with
+no `@`-imports, so this was a re-home, not a rewrite.
+
+**The finding: four of the five floor sections were already skill-owned.** Microservices/roster →
+`microservice-boundaries` (`SERVICE_BOUNDARIES.md`), seeding → `seeding` (`SEEDING.md`), migrations →
+`migrations` (`MIGRATIONS.md`), source-generated logging → the generic `logging` skill in `dotagents`. Only
+**"Shared code is the intersection, never the union"** had no canonical home — it was referenced by
+`MULTITENANCY.md` and `HTTP_CLIENTS.md` but stated only in `api/AGENTS.md`, and no route row fired on the
+shared tier, so its "silent and expensive" trigger lived only in the always-loaded floor.
+
+- **Producer (agent-standards #15):** the Concertable-specific statement of the rule lands in
+  `SERVICE_BOUNDARIES.md` (the `microservice-boundaries` roster doc); the generic principle already lived in
+  the paired `dotnet-standards` `SERVICE_BOUNDARIES.md`. A CANONICAL route row fires
+  `microservice-boundaries` on `Concertable\.(Kernel|Contracts)/.*\.cs$` — the universal shared tier only,
+  not a service's own `*.Contracts` — so the rule keeps its trigger at the violation site. Carve-clean.
+- **Consumer (this repo):** the same route row added to `.agents/skill-routes.json` (37 → 38);
+  `api/AGENTS.md` + `api/CLAUDE.md` deleted; every inbound guidance-doc link repointed (root `AGENTS.md`,
+  `docs/INDEX.md`, `api/ARCHITECTURE.md`, the four service `AGENTS.md` inheritance lines, Deal/Search/Payment
+  `ARCHITECTURE.md`, the roadmap north star). The backend floor is thereafter the route table over the
+  `dotnet` plugin.
 
 ### N4 — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525)
 
