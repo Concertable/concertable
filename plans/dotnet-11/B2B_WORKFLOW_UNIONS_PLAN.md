@@ -11,14 +11,14 @@ Payment, and Auth builds.
 
 The former plan to replace `IConcertWorkflow` with a cross-stage union over concrete DI implementations
 is rejected. The approved lifecycle design deletes that workflow and gives each module contextual
-operations. This runtime plan owns small closed internal value unions. The downstream Deal plan may use
-module-local implementation unions for heterogeneous operations, but no union owns cross-module
-workflow state, performs keyed dependency resolution, or crosses a published boundary.
+methods. This runtime plan owns small closed internal value unions and enables a module-local method
+factory to return a direct native union of existing DI method-header interfaces. No union owns
+cross-module workflow state, performs keyed dependency resolution, or crosses a published boundary.
 
 `@plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md` owns the separate Deal decision: a closed record hierarchy,
-native unions for heterogeneous internal operation values, and generated invariant module factories for
-the terms, mapper, and updater families that already share one honest interface. Executors and steps do
-not use that common-interface factory. This plan must establish
+direct native interface unions for heterogeneous internal method headers, and invariant module factories
+for the terms, mapper, and updater families that already share one honest interface. Executors and steps
+do not use that common-interface factory. This plan must establish
 the native-union runtime/toolchain and whether a C# 15-compiled `Deal.Contracts` can retain net10 assets,
 including which consumers require a compiler/runtime retarget. It does not perform that breaking
 published-package cut-over or reclassify the Deal operations itself.
@@ -74,8 +74,9 @@ contract.
 
 Do not use native unions in this runtime plan for:
 
-- step implementations or DI-resolved services; the downstream Deal plan owns the separate
-  module-local implementation-union cut-over after this plan proves the compiler/runtime matrix;
+- concrete step implementations or keyed service resolution; the downstream Deal plan owns changing a
+  module-local factory return type from its net10 marker interface to a direct union of method-header
+  interfaces after this plan proves the compiler/runtime matrix;
 - database columns or persistence DTOs in place of an explicit module-owned discriminator;
 - a replacement workflow/process aggregate;
 - integration events, protobuf, persistence, HTTP contracts, or published packages;
@@ -85,9 +86,18 @@ Do not use native unions in this runtime plan for:
 
 The published Deal sum uses a closed hierarchy instead of a native union because it has genuine shared
 members, ordinary reference identity, TPT/class-polymorphism alignment, and an established tagged
-`$type` JSON contract. Heterogeneous Deal-operation values use native unions. The proven uniform
-terms, mapper, and updater operations remain named calls selected through generated invariant module
-factories; their selection switches and registrations are never repeated in application source.
+`$type` JSON contract. A heterogeneous Deal-varying method uses a direct native union of its existing
+method-header interfaces, for example `union Accept(IStandardAccept, IPrepaidAccept)`. Its consumer uses
+ordinary exhaustive type-pattern matching; a `when` guard may narrow required request input, with the
+unguarded arm returning the typed validation Result. The proven uniform terms, mapper, and updater
+operations remain named calls selected through invariant module factories; their selection switches and
+registrations are never repeated in application source.
+
+The native union has no Dunet case records, `.Value` wrappers, or service-bearing adapter records. Each
+header may retain multiple DI implementations. No concrete implementation may implement more than one
+header in the same union, because C# permits overlapping interface cases but that overlap would make
+dispatch order-sensitive. A later compile-time switch-dispatch package may replace the net10 keyed
+factory internals without changing the method interfaces, native union, or consumer shape.
 
 Do not manufacture unions for types that are already honestly represented by an enum or ordinary
 value object. The selected .NET 11 direction requires native unions for the closed journey projection
@@ -135,9 +145,9 @@ inspection proves published B2B contracts still carry net10 assets.
 1. Add the internal journey-stage native union at the owning read boundary.
 2. Use exhaustive matching and focused tests for every case.
 3. Add only the case-specific module state, trigger, and operation-outcome unions accepted by Phase 0.
-4. Keep module-owned state machines and aggregate ownership unchanged. Do not preserve a provisional
-   Deal-keyed executor/step resolver merely because it exists in the landed layout, and do not convert
-   the downstream Deal plan's same-interface terms, mapper, or updater families into unions.
+4. Keep module-owned state machines and aggregate ownership unchanged. Replace keyed resolution outside
+   factories, but preserve the method-header interfaces and their DI implementations. Do not convert the
+   downstream Deal plan's same-interface terms, mapper, or updater families into unions.
 5. Delete superseded value abstractions in the same checkpoint; do not retain parallel models.
 
 Gate: this plan's unions remain internal value models, and no module/runtime dependency direction
@@ -157,8 +167,8 @@ changes.
 
 - B2B runtime and every required reverse consumer compile on a supported .NET 11 SDK.
 - Published B2B Contracts remain net10-compatible and other services build independently.
-- This runtime plan's unions contain values rather than DI service implementations; the downstream Deal
-  plan owns any module-local heterogeneous-operation implementation unions.
+- This runtime plan's value unions contain values. The downstream Deal plan separately owns direct native
+  unions of module-local DI method-header interfaces; those unions never resolve services themselves.
 - Application, Booking, and Concert retain independent state machines and contextual operations.
 - Native unions model the internal combined journey projection and every proven case-specific module
   state, trigger, or operation outcome with exhaustive coverage.

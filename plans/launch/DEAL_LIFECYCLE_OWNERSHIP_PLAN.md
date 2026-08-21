@@ -222,20 +222,31 @@ names rather than repeating the aggregate name:
 | Booking | `IConfirmStep`, `ICancelStep` |
 | Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-Deal-varying operations are classified by invocation shape. A genuine same-interface family is selected
-through the module's invariant Deal strategy factory. An operation whose implementations require
-different parameters, results, or capabilities gets a dedicated operation factory returning a closed
-operation union. Its consumer matches the operation kind, never the four Deal cases:
+Deal-varying methods are classified by invocation shape. A genuine same-interface family is selected
+through the module's invariant Deal strategy factory. A method whose implementations require different
+parameters, results, or capabilities gets one interface per honest method header. Each header may have
+multiple keyed DI implementations. A dedicated factory resolves the selected implementation and returns
+the shared marker interface; its consumer matches the method header, never the four Deal cases:
 
 ```csharp
-await acceptFactory.Create(deal).Match(
-    captureEscrow => captureEscrow.Value.AcceptAsync(application, cancellationToken),
-    paid => paid.Value.AcceptAsync(
-        application,
-        RequirePaymentMethod(paymentMethodId),
-        cancellationToken),
-    depositEscrow => depositEscrow.Value.AcceptAsync(application, cancellationToken));
+return acceptFactory.Create(deal) switch
+{
+    IStandardAccept method =>
+        await method.AcceptAsync(application, cancellationToken),
+    IPrepaidAccept method when paymentMethodId is not null =>
+        await method.AcceptAsync(application, paymentMethodId, cancellationToken),
+    IPrepaidAccept =>
+        new AcceptApplicationError.PaymentMethodRequired(),
+    _ =>
+        throw new UnreachableException()
+};
 ```
+
+`IPrepaidAccept.AcceptAsync` requires a non-null payment method. The guarded arm narrows the nullable
+request input and the remaining prepaid arm returns the established typed validation failure. No helper
+throws or manufactures a required value from missing input. The final net10 arm represents invalid
+factory composition and is therefore an unreachable invariant failure, not an expected application
+outcome.
 
 The Deal dispatch foundation is terminal on `main`. It delivered the Deal module's validated invariant
 net10 factory for the honest `IDealMapper` and `IDealUpdater` families; the production generator and
@@ -244,23 +255,28 @@ generated machinery exists or reaching into Deal's internal factory implementati
 
 Application `IDealTerms` remains a genuine same-interface family. Application Infrastructure owns its
 equivalent invariant factory and complete `DealType` registration catalog. Heterogeneous lifecycle
-operations instead use dedicated non-generic factories returning module-local Dunet unions over their
-concrete implementations, with typed constructor injection and one Deal-to-operation mapping. Multiple
-Deal cases may deliberately map to one operation case.
+methods instead use a module-local marker such as `IAccept`, honest method-header interfaces such as
+`IStandardAccept` and `IPrepaidAccept`, and a dedicated non-generic factory. Multiple Deal cases may
+deliberately select different keyed implementations of the same method header.
 
-Because this union names concrete DI implementations, it and its factory remain in the owning module's
-Infrastructure assembly beside the effectful consumer. It must not make Application reference
-Infrastructure or turn a cross-module fact into a service carrier.
+On net10, keyed DI is an implementation detail of that factory. `IKeyedServiceProvider` must not escape
+into the executor or another consumer, and validated module composition must prove exact `DealType`
+coverage. The method-header interfaces remain in the owning module beside the consumer; concrete
+implementations and keyed registrations remain in Infrastructure without making Application reference
+Infrastructure or turning a cross-module fact into a service carrier.
 
-The .NET 11 follow-up preserves the factory and call-site semantics and replaces each Dunet wrapper with
-a native union against `closed Deal`. The compiler then enforces the operation-union match and closed
-Deal switch. Neither design contains an
-`IWorkflowStepResolver`, `IStepResolver<TStep>`, `IKeyedServiceProvider`, global workflow bundle, or
-four-Deal executor switch.
+The .NET 11 follow-up preserves the method interfaces, implementations, factory, and call-site semantics,
+but changes the factory return boundary to a direct native type union such as
+`union Accept(IStandardAccept, IPrepaidAccept)`. The compiler then enforces the method-header match with
+no Dunet case records, `.Value` wrappers, or default arm. A future compile-time dispatch package may
+replace the factory's keyed implementation while preserving that public shape. Neither design contains
+an `IWorkflowStepResolver`, `IStepResolver<TStep>`, global workflow bundle, or four-Deal executor switch.
+No concrete implementation may implement more than one header in the same native union because that
+would make type-pattern selection ambiguous even though the language permits overlapping cases.
 
 `IApplicationDealStrategyFactory<TStrategy>` remains separate and applies only to genuine Application
-strategy families such as `IDealTerms`. It is not reused as `IApplicationDealStrategyFactory<Accept>`:
-the union cases do not share one substitutable invocation, so `Accept` is not a strategy family.
+strategy families such as `IDealTerms`. It is not reused for `Accept`: the method headers do not share
+one substitutable invocation, so `Accept` is not a strategy family.
 
 Cancel and Complete use separate executors because each is one named Concert lifecycle operation with
 its own validation, persistence, transaction, IO, and typed failure contract. Uniform creation remains
@@ -483,10 +499,10 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [ ] After the compile-recovery frontier is green, apply the landed validated invariant-factory pattern
   to Application `IDealTerms`. Application owns its marker, factory, catalog, registrations, and exact
   `DealType` coverage; it does not reference Deal Infrastructure internals.
-- [ ] Give each genuinely heterogeneous operation one dedicated net10 factory returning a Dunet union
-  over its concrete implementations. Keep mapping once at the module composition boundary, allow
-  deliberate many-Deal-to-one-operation aliases, match by operation case, and remove keyed service-
-  provider lookup from consumers.
+- [ ] Give each genuinely heterogeneous method one marker interface, one interface per honest method
+  header, and one dedicated net10 factory. Keep keyed lookup and the Deal mapping inside the factory,
+  allow deliberate many-Deal-to-one-header aliases and multiple keyed implementations per header, match
+  by header type, and remove keyed service-provider lookup from consumers.
 - [ ] Do not convert honest same-interface families to operation unions or erase heterogeneous
   invocations behind a manufactured common interface.
 
@@ -520,10 +536,10 @@ operations or request a whole workflow.
   holder exposing all steps.
 - Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
   aggregate prefixes inside their module.
-- Heterogeneous Deal-varying operations resolve once through module-local dedicated factories and match
-  by operation case; no executor repeats a four-Deal switch or resolves keyed services.
-- Every current Deal case has exact, independently tested net10 factory coverage, with an explicit
-  fallback for open `IDeal` and no false claim of native exhaustiveness.
+- Heterogeneous Deal-varying methods resolve once through module-local dedicated factories and match by
+  method-header type; no executor repeats a four-Deal switch or resolves keyed services.
+- Every current `DealDto` case has exact, independently tested net10 factory coverage, with an explicit
+  invariant fallback and no false claim of native exhaustiveness.
 - Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
   callback order is idempotent.
 - Opportunity acceptance uses an atomic claim, so concurrent Applications cannot both become accepted.
@@ -553,6 +569,7 @@ operations or request a whole workflow.
 - identifier-only Booking confirmation or confirmation that reloads a live Application aggregate;
 - payment outcome contracts that combine success/failure with nullable case-specific fields;
 - a global or cross-module union over DI services, or any union that performs service location; a
-  module-local dedicated factory returning its closed heterogeneous operation implementations is allowed;
+  module-local factory may return the selected method-header abstraction, with keyed service location
+  confined to its net10 implementation and replaced by a direct interface union on .NET 11;
 - any Rust lifecycle, settlement, or Deal decision engine;
 - backwards synchronous calls or a command cycle hidden behind facades, DTOs, events, or Contracts.

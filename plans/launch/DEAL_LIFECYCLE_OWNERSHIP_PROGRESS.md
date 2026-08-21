@@ -181,8 +181,9 @@ and draft PR #633.
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
 PR #633 therefore resumes against `DealDto` and the proven module-local factory pattern, not against a
-nonexistent generated factory. Heterogeneous lifecycle operations retain their dedicated-factory/Dunet
-union target after the compile-recovery frontier is green.
+nonexistent generated factory. After the compile-recovery frontier is green, heterogeneous lifecycle
+methods use keyed implementations behind dedicated factories and method-header interfaces on net10;
+their .NET 11 return boundary becomes a direct native union of those interfaces.
 
 Terminal current main `d0b8f616f` is reconciled into the preserved module carve. All 45 merge conflicts
 are resolved without restoring obsolete Concert-owned Application, Booking, Contract, or workflow
@@ -203,6 +204,9 @@ selecting the next file.
 
 ## Completed work
 
+- Reconciled the heterogeneous-method landing design: net10 uses keyed DI only inside a dedicated
+  marker-returning factory, consumers match honest method-header interfaces and guarded required input,
+  and .NET 11 changes that return boundary to a direct native interface union without Dunet wrappers.
 - Published current-main reconciliation range `0511c35ca..fccab851d`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `fccab851de826ebfcce87265a32f20522ce7289c`, and the branch was
   0 commits behind `origin/main`.
@@ -553,18 +557,25 @@ selecting the next file.
 - Local state machines may use different structures; no common lifecycle interface is required.
 - Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
   need Application/Booking/Concert prefixes internally.
-- The dispatch investigation is concluded. Honest same-interface families use generated module-specific
-  invariant strategy factories. Heterogeneous lifecycle operations use dedicated non-generic factories
-  returning Dunet implementation unions on net10 and native implementation unions on .NET 11. The
-  consumer matches acceptance/confirmation/completion kind, not four Deal cases; deliberate aliases let
-  multiple Deals share one implementation. Neither path uses `IKeyedServiceProvider` or a global workflow.
-- `IApplicationDealStrategyFactory<TStrategy>` is not reused for `Accept`: an implementation union whose
-  cases have different invocations is not a strategy family. The dedicated name is `IAcceptFactory`, not
-  `IAcceptStepFactory`.
+- The dispatch investigation is concluded. Honest same-interface families use module-specific invariant
+  strategy factories. Heterogeneous lifecycle methods use one marker plus one interface per honest method
+  header. On net10, a dedicated factory confines keyed service resolution and returns the selected marker;
+  consumers pattern-match the header type. On .NET 11, its return boundary becomes a direct native union
+  such as `union Accept(IStandardAccept, IPrepaidAccept)`, with exhaustive type-pattern matching and no
+  wrapper records. Deliberate aliases may map multiple Deals to implementations of one header, and each
+  header may have multiple keyed implementations. Neither path restores a global workflow.
+- `IApplicationDealStrategyFactory<TStrategy>` is not reused for `Accept`: its method headers have
+  different invocations and do not form one substitutable strategy family. The dedicated name is
+  `IAcceptFactory`, not `IAcceptStepFactory`.
+- A prepaid method requires a non-null payment method. The consumer uses
+  `when paymentMethodId is not null` to invoke it and returns the typed payment-method-required Result in
+  the remaining prepaid arm. It does not use a throwing `RequirePaymentMethod` helper or make the method
+  parameter nullable.
 - PR #633 owns the best-effort net10 heterogeneous-operation conversion after its compile-recovery
-  frontier is green, but only after the Deal foundation lands. It consumes the generated
-  common-interface and dedicated-operation factory machinery directly. The downstream Deal plan retains
-  the later .NET 11 native/closed compiler-enforced cut-over.
+  frontier is green. It builds the module-local marker, method-header interfaces, validated mapping, and
+  dedicated factory over the keyed-DI foundation already available on net10; no generated factory
+  machinery exists. The downstream Deal plan retains the later .NET 11 native/closed compiler-enforced
+  cut-over.
 - Generic transition plumbing may be shared only when it has no domain knowledge. Strategy
   registrations, transition tables, capabilities, and selector instances remain module-local.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
@@ -581,10 +592,11 @@ selecting the next file.
   reorder, or merge Application, Booking, and Concert.
 - .NET 11 native unions are the selected mechanism for justified closed internal values after the
   module split, including the combined journey projection and module-local state, trigger, or
-  operation-outcome shapes with case-specific data. Separate module-local implementation unions may
-  contain the owning heterogeneous operation implementations. Neither form creates shared lifecycle
-  ownership or preserves Deal-keyed service resolution; persistence maps each module's discriminator
-  explicitly.
+  operation-outcome shapes with case-specific data. A heterogeneous method factory may return a direct
+  native union of its method-header interfaces. No concrete implementation may implement multiple headers
+  in the same union. Neither form creates shared lifecycle ownership; persistence maps each module's
+  discriminator explicitly, and the future compile-time dispatch package replaces keyed factory
+  internals without changing the call-site abstraction.
 - Rust is not an implementation option for this lifecycle, Deal behaviour, or settlement work. The
   obsolete Rust engine plan was deleted rather than retained as a paused alternative.
 - Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.
@@ -616,8 +628,8 @@ selecting the next file.
 
 - Waiting plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
   Gate: this lifecycle implementation must land before the .NET 11 plan applies native unions to the
-  resulting closed value shapes and enables module-local dedicated factories to return native
-  implementation unions without restoring the rejected god-workflow model.
+  resulting closed value shapes and enables module-local dedicated factories to return direct native
+  unions of their method-header interfaces without restoring the rejected god-workflow model.
 - Completed prerequisite owner: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
   PR #678 and platform-sync PR #694 are terminal on `main`. PR #633 consumes `DealDto` and the proven
   validated module-local factory pattern; no generated Application or operation-factory surface exists.
