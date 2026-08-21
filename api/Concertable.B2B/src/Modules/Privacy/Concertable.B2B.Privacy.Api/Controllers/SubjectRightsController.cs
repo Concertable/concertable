@@ -1,7 +1,9 @@
 using Concertable.B2B.Privacy.Application.DTOs;
 using Concertable.B2B.Privacy.Application.Interfaces;
+using Concertable.B2B.Tenant.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Concertable.B2B.Privacy.Api.Controllers;
 
@@ -10,6 +12,7 @@ namespace Concertable.B2B.Privacy.Api.Controllers;
 /// Admin module owns — a DSAR is an operator action, not a self-service one. The polished operator UI is the
 /// admin console's tenant when it lands; this is the backend it drives.</summary>
 [Authorize(Policy = "Admin")]
+[EnableRateLimiting(RateLimitPolicies.Sensitive)]
 [ApiController]
 internal sealed class SubjectRightsController : ControllerBase
 {

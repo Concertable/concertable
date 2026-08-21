@@ -220,6 +220,7 @@ public static class B2BWebHostExtensions
             builder.AddRateLimitPolicy(RateLimitPolicies.Messaging, new RateLimitWindow { PermitLimit = 20, WindowSeconds = 60 }, perUser: true);
             builder.AddRateLimitPolicy(RateLimitPolicies.Checkout, new RateLimitWindow { PermitLimit = 10, WindowSeconds = 60 }, perUser: true);
             builder.AddRateLimitPolicy(RateLimitPolicies.ProfileImage, new RateLimitWindow { PermitLimit = 20, WindowSeconds = 60 }, perUser: true);
+            builder.AddRateLimitPolicy(RateLimitPolicies.Sensitive, new RateLimitWindow { PermitLimit = 10, WindowSeconds = 60 }, perUser: true);
             return builder;
         }
     }
