@@ -8,8 +8,9 @@
   `C:/Users/TommySeery/source/repos/agent-standards.worktrees/Docs/polyrepo-ready-n3-shared-intersection`.
 - Branch: `Docs/docs_polyrepo-ready-n3-api-floor` (consumer); `Docs/polyrepo-ready-n3-shared-intersection`
   (producer). Both close after their PRs merge.
-- PRs: **N3 producer agent-standards [#15](https://github.com/Concertable/agent-standards/pull/15) OPEN**;
-  N3 consumer this repo — opening after producer merges + reprovision. Prior: N2 producer **#12 MERGED**,
+- PRs: **N3 producer agent-standards [#15](https://github.com/Concertable/agent-standards/pull/15) MERGED**
+  (`084e0e3`); **N3 consumer this repo [#698](https://github.com/Concertable/concertable/pull/698) OPEN**
+  (meta-only, ACC2 fixed); **N3 code/CI follow-up** (ACC1 `.yml` + ACC3 `.cs`) — branch pending. Prior: N2 producer **#12 MERGED**,
   N2 consumer **#695 MERGED**; cross-harness producers **agent-standards #13**, **dotagents #3**,
   **react-agents #1** MERGED; consumer **#696 MERGED**.
 - Dependency/package gates: **this diff DOES touch `api/**`** (deletes `api/AGENTS.md` + `api/CLAUDE.md`,
@@ -46,13 +47,16 @@ durable home before close-out (Codex-only utility).
 
 ## Next Steps
 
-1. **Merge N3 producer #15** (agent-standards) via its normal green path, then **reprovision this machine**
-   (`scripts/provision-agent-standards.ps1`) and start fresh sessions so the updated `SERVICE_BOUNDARIES.md`
-   is installed.
-2. **Open + merge the N3 consumer PR** (this branch) via `/merge-docs` (admin-merge bypasses the queue's
-   E2E). **Then own the `chore/platform-sync-*` PR** the consumer merge triggers to green/merged — it is
-   non-breaking (markdown-only under `api/**`), so it should auto-merge, but confirm it.
-3. **Then N4** — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525): cross-service
+1. **Admin-merge N3 consumer #698** via `/merge-docs` (meta-only; admin-merge bypasses the queue's E2E).
+   **Then own the `chore/platform-sync-*` PR** it triggers to green — non-breaking (markdown under `api/**`),
+   should auto-merge, but confirm.
+2. **Land the N3 code/CI follow-up** (branch `Fix/polyrepo-ready-n3-code-floor-refs`): remove `api/AGENTS.md`
+   from `.github/workflows/claude-review.yml:34` (ACC1) and repoint `StripeAccountController.cs:12`'s comment
+   off the deleted `api/CLAUDE.md` (ACC3). Touches `.yml` + `.cs` → **normal merge queue** (E2E), not
+   `/merge-docs`. Own its platform-sync too. Then delete `reviews/Docs-docs_polyrepo-ready-n3-api-floor.md`.
+3. **Reprovision this machine** (`scripts/provision-agent-standards.ps1`) + fresh sessions so the merged
+   `SERVICE_BOUNDARIES.md` (with the intersection rule) is installed. (Producer #15 already merged.)
+4. **Then N4** — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525): cross-service
    by definition, platform-wide in full, the largest single doc left; every service repo needs it day one.
    N5 (root `AGENTS.md`), N6 (`docs/` — carries the open product-narrative question for Tommy: `OVERVIEW.md`,
    `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are neither platform standard nor service-specific — surface,
@@ -100,10 +104,22 @@ Consumer (this repo):
 
 ## Reviews
 
-**N3 — self-checked, no review file yet.** Producer is a roster-doc addition (the rule's generic half already
-existed in `dotagents`) plus one route row proven by the committed gate test + monorepo/carve replay; consumer
-is a route-row addition, two deletions, and mechanical link repointing verified by `docs_reachability.py` =
-0 errors. A `/docs-review` over both halves can run before merge as prior slices did.
+**N3 consumer — docs-reviewed (independent agent), 3 Lens-A findings, all real dead references the deletion
+creates.** File: `reviews/Docs-docs_polyrepo-ready-n3-api-floor.md`.
+- **ACC2 (MED, docs)** — `api/Concertable.Search/ARCHITECTURE.md:60` still cited `(api/AGENTS.md)` (line 12 was
+  repointed, line 60 missed; inline code, so reachability didn't catch it). **Fixed in #698** → repointed to
+  the `microservice-boundaries` skill.
+- **ACC1 (HIGH, `.yml`)** — `.github/workflows/claude-review.yml:34` still tells the PR-review bot to read the
+  deleted `api/AGENTS.md`. **ACC3 (LOW, `.cs`)** — `StripeAccountController.cs:12` XML comment cites the deleted
+  `api/CLAUDE.md`. Both are **out of #698's meta-only scope** (CI + source) — fixing them here would drag the
+  docs re-home through the queue's E2E. Routed to a dedicated code/CI follow-up PR (see Next Steps); they are
+  N3 completion work, not deferred debt.
+- Reviewer verified clean: reachability 0 errors, route JSON 38 rows, the shared-tier regex matches the real
+  universal tier and over-matches no per-service `*.Contracts`, every deliberate repoint target exists, the
+  north-star quote matches root `ARCHITECTURE.md` verbatim, no sibling still asserts an `api/`-level floor.
+
+Producer #15 self-checked: roster-doc addition (generic half already in `dotagents`) + one route row proven by
+the committed gate test and monorepo/carve replay.
 
 ## Decisions, discoveries, blockers, and deviations
 
