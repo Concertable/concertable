@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through `ApplicationFinancialOperationApiTests` recovery work head
-  `59a5326e1628ea6d887ca5411ecfde30180642c2`. Local, remote-tracking, and PR heads were verified equal;
+  through `ApplicationFlatFeeApiTests` recovery work head
+  `757703caae5b809ead600d455f919d7a21fca86d`. Local, remote-tracking, and PR heads were verified equal;
   this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -179,7 +179,7 @@ owned by that file are gone, `git diff --check` passes, and the exact remaining 
 and draft PR #633.
 
 The focused `ApplicationDoorSplitApiTests` recovery now reads Application rows through
-`ApplicationReads`, Booking creation and financial-confirmation failure through `BookingReads`, and
+`ApplicationDb`, Booking creation and financial-confirmation failure through `BookingDb`, and
 Concert creation only through `ConcertReads`. DoorSplit acceptance asserts the resulting
 `DeferredBooking`; both failed-verification paths assert `BookingState.ConfirmationFailed`.
 The fixture support project now directly references the Admin Domain and Infrastructure assemblies whose
@@ -192,6 +192,19 @@ boundary. A pending acceptance operation maps to `AwaitingConfirmation`; a rejec
 `ConfirmationFailed`. Both diagnostics owned by that file are gone, `git diff --check`
 passes, and the exact remaining integration frontier is 19 errors outside this slice. Published work head
 `59a5326e1` is verified equal across local, remote, and draft PR #633.
+
+Booking's financial state vocabulary is now `AwaitingConfirmation` and `ConfirmationFailed`; the
+redundant `Financial` qualifier was removed from both the internal state and public response status.
+Booking unit tests pass 15/15 and the Application API Release build passes with 0 warnings and 0 errors
+at published work head `84c57fb4d`.
+
+The focused `ApplicationFlatFeeApiTests` recovery now reads Application and Booking state through their
+own module contexts, asserts `BookingState.ConfirmationFailed` for both payment-failure arrival orders,
+and leaves Concert assertions on `ConcertReads`. Direct subtype queries use `Set<StandardApplication>()`.
+The raw Application and Booking fixture handles are provisionally named `ApplicationDb` and `BookingDb`;
+the missing canonical module-owned integration assertion surface is recorded in B2B technical debt for
+discussion. The target file contributes no diagnostic and the exact remaining integration frontier is
+18 errors outside this slice. Published work head `757703caa` is on the draft PR branch.
 
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
@@ -209,7 +222,7 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: recover `ApplicationFlatFeeApiTests` onto module-owned Application, Booking, and Concert
+Active slice: recover `ApplicationVenueHireApiTests` onto module-owned Application, Booking, and Concert
 types, reads, and state.
 Allowed scope: that test file and the minimum directly required fixture/API adaptation exposed by its
 compiler diagnostics.
@@ -227,6 +240,11 @@ selecting the next file.
   declares its direct Admin references, and the remaining integration frontier is exactly 21 errors.
 - Published `ApplicationFinancialOperationApiTests` recovery work head `59a5326e1`; its response model
   uses Booking-owned financial state and the remaining integration frontier is exactly 19 errors.
+- Published Booking state-vocabulary simplification work head `84c57fb4d`; the internal and public
+  financial states are now `AwaitingConfirmation` and `ConfirmationFailed`.
+- Published `ApplicationFlatFeeApiTests` recovery work head `757703caa`; Application and Booking
+  assertions use their owning contexts, both financial-failure arrival orders assert Booking state,
+  and the remaining integration frontier is exactly 18 errors.
 - Published current-main reconciliation range `0511c35ca..fccab851d`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `fccab851de826ebfcce87265a32f20522ce7289c`, and the branch was
   0 commits behind `origin/main`.
@@ -328,11 +346,12 @@ selecting the next file.
   --property:GenerateFullPaths=false --consoleLoggerParameters:ErrorsOnly`: the slice baseline reproduced
   26 errors; after the `ApplicationCancelApiTests` recovery it produced 22, and after the
   `ApplicationDoorSplitApiTests` recovery plus direct Admin fixture references it produced 21, and after
-  the `ApplicationFinancialOperationApiTests` recovery it produces exactly 19 errors with no diagnostic
-  from any recovered file.
-- The exact remaining 19-error frontier is 12 deleted Concert lifecycle imports, two deleted Concert
+  the `ApplicationFinancialOperationApiTests` recovery it produced 19, and after the
+  `ApplicationFlatFeeApiTests` recovery it produces exactly 18 errors with no diagnostic from any
+  recovered file.
+- The exact remaining 18-error frontier is 11 deleted Concert lifecycle imports, two deleted Concert
   workflow imports, two Contract entity references, two Application entity references, and one settlement
-  outcome reference. `ApplicationFlatFeeApiTests.cs` is the next bounded recovery.
+  outcome reference. `ApplicationVenueHireApiTests.cs` is the next bounded recovery.
 - `dotnet test
   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 88/88 passed after
