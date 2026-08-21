@@ -17,10 +17,11 @@
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
-- Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
+- Current-main merge commit: `a190d4552`, merging `origin/main` at
+  `42f760994e15c909c9e56ffb3fde045210457bbf`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after diagnosing the queue failure and locally fixing Workers composition
+- Last reconciled: 2026-08-21 after current-main sync and local Workers composition verification
 
 ## Current state
 
@@ -43,11 +44,11 @@ The production generator projects, analyzer references, attributes, anchors, and
 dependency have been removed from this branch. The complete prototype remains recoverable from
 `Spike/net11-closed-dispatch` at `785cd8040`, including the incomplete same-pass attribute-source redesign.
 
-The full-E2E merge group exposed a pre-existing `origin/main` Workers composition defect: the User
-module's `CredentialRegisteredHandler` requires `IAdminModule`, but B2B Workers did not reference or
-register Admin Infrastructure. All four `ConcertFinishedTests` timed out while Workers repeatedly crashed
-with that DI validation error. The local uncommitted fix adds the Admin Infrastructure project reference,
-registers `AddAdminModule(configuration)`, and adds a host-backed validated-service-provider unit test.
+The full-E2E merge group exposed a pre-existing Workers composition defect: the User module's
+`CredentialRegisteredHandler` requires `IAdminModule`, but B2B Workers did not reference or register Admin
+Infrastructure. Current `main` has since landed the required dependency and a stronger production-host
+composition suite. Merging that state exposed duplicate Admin references and registrations from the two
+concurrent fixes; this branch now reconciles them to one and removes its superseded lightweight unit test.
 
 The plan now separates three delivery stages:
 
@@ -82,7 +83,10 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Paused: Tommy — Start Docker Desktop and wait until it shows Running; resume when `scripts/docker-health.ps1` passes so the targeted `ConcertFinishedTests` E2E class can verify the local Workers fix before review, commit, push, and requeue.
+Incrementally review the committed post-main-sync reconciliation from reviewed watermark `e4fdc642d`,
+focusing on PR-owned commits and the net branch diff against current `origin/main`. If clean, update and
+commit the review artifact, publish that reviewed head through the plan-managed two-leg push, wait for
+exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
 
 ## Separate public-library follow-up
 
@@ -157,11 +161,12 @@ The public library is not implemented or published by the current PR.
   failed in `e2e-api-tests`: the four `ConcertFinishedTests` timed out in `WorkersFixture.TriggerAsync`;
   diagnostics showed Workers crashing because `IAdminModule` was not registered. UI E2E was not run after
   the API gate failed.
-- Local B2B Workers unit tests after the composition fix: 6 passed, 0 failed, including the new full
-  validated-service-provider regression test.
-- Local targeted API E2E is not started: `scripts/docker-health.ps1` and `docker ps -a` both hung without
-  usable output, proving Docker is not healthy enough to launch the stack. The health probe was stopped
-  without retrying.
+- Current-main B2B production-host composition tests after Workers deduplication: 5 passed, 0 failed,
+  including strict Functions-host validation and the explicit missing-`IAdminModule` regression.
+- Current-main Deal unit tests after the sync and Workers reconciliation: 57 passed, 0 failed.
+- `scripts/docker-health.ps1` passed a fresh-container host-to-container data round trip. The one targeted
+  `ConcertFinishedTests` run then stopped at fixture startup because Aspire reported the Docker runtime
+  unhealthy; no scenario executed and the environment-failed E2E was not retried.
 
 ## Reviews
 
