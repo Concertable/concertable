@@ -5,10 +5,10 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `44440b7cb` _(2026-08-21)_
-**Security-reviewed up to commit:** `44440b7cb` _(2026-08-21)_
+**Reviewed up to commit:** `82f1fb498` _(2026-08-21)_
+**Security-reviewed up to commit:** `82f1fb498` _(2026-08-21)_
 
-> Range reviewed: `42f76099..44440b7cb`.
+> Range reviewed: `42f76099..82f1fb498`.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -42,6 +42,15 @@
   against the actual standard after this branch's history showed it had been skipped. Fixed in both
   files; the DbContext-scoping `CreateScope()` calls in `UserProvisioningTests.cs` used purely for
   assertion reads are a different, legitimate use and were left as-is.
+
+- [x] **NAT3 — HIGH — correctness (CI-caught)** — `api/Concertable.B2B/tests/Concertable.B2B.CompositionTests/B2BCompositionTests.cs`
+  `Functions_MissingAdminModule_FailsWithUnresolvedDependency` asserted the **Workers** host fails
+  composition without `IAdminModule` — true under the old registration-time-grant design this branch's
+  #651 merge resolution correctly moved away from. `IAdminModule`'s only real consumer is now
+  `UserController.Me()` in the **Web** host, so Workers has nothing to lose and the test silently
+  stopped exercising anything (caught by CI's `composition-tests` job going red, not by local review).
+  Fixed: renamed to `Web_MissingAdminModule_FailsWithUnresolvedDependency`, asserting against the Web
+  host build instead. Verified: `Concertable.B2B.CompositionTests` 5/5 green.
 
 No further findings — checked correctness, microservice/module boundaries, C# conventions
 (`csharp-style`, `csharp-naming`), and test tier placement (`unit-testing`, `integration-testing`)
