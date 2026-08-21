@@ -255,7 +255,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Venue legal details on booking confirmation emails + invoices `launch/venue-legal-on-emails`
 - [ ] Online Safety Act report-content button + email destination live `launch/osa-report-content` — **live:** in-app report button on inbound messages, structured safety-inbox email, persisted report record, reporter acknowledgement, admin hide/restore/resolve. **Outstanding:** the always-available published `report@`/`safety@` address on the footer legal pages, which depends on the solicitor-gated Privacy/T&Cs page routes above
 - [x] Music licence attestation captured in Org setup form
-- [ ] GDPR erasure + data export routes live, with the HMRC-retention split documented `launch/gdpr-subject-rights`
+- [ ] GDPR erasure + data export routes live, with the HMRC-retention split documented (see "Build — MVP blockers")
 - [ ] Admin console reachable in production, with a real admin provisioning path (see "Build — MVP blockers")
 
 ### Operational
