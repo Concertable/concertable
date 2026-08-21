@@ -100,7 +100,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 
 | # | Node | Size | Destination | Leaves behind |
 |---|---|---|---|---|
-| N1 | `.agents/skills/` — 12 skills left of 28 | **816** of 3,285 lines | platform-wide, three families left of six | per-repo values: script paths, suite names |
+| ~~N1~~ **done** | `.agents/skills/` — all 28 skills moved (6 of 6 families) | 3,285 lines | platform-wide, across `agent-process` + `dotnet` plugins | per-repo values: script paths, suite names |
 | N2 | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* + a generator | the table itself: per-repo data |
 | N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
 | N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
@@ -125,14 +125,14 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 | ~~`e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer`~~ **done** | 1,022 | Every repo debugs a red suite by tier. Landed as six `standards/process/testing/` docs with every name kept. `docker-health.ps1` vendored through a new second tier of `vendor-hooks.ps1`; `e2e.ps1` and `integration.ps1` stayed, their invocation grammar stated and their own usage listings used as the discovery mechanism |
 | ~~`commit` · `commit-all` · `push` · `pull` · `sync` · `worktree`~~ **done** | 429 | Every repo commits, pushes, pulls and isolates a branch. Landed as six `standards/process/git/` docs. **"Zero lines name this repo" was wrong** — five skills held none, but `worktree` named Concertable in its own description and carried `scripts/worktrees.ps1`, the platform-sync gate and two sibling skill names; the script turned out repo-invariant and was vendored, so the doc kept the citation as a constant. `sync` → `sync-checkout` and `worktree` → `open-worktree` on the `create-gh-pr` precedent |
 | ~~`resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt`~~ **done** (+ `auto-memory` deferred) | 203 | The executable counterparts of the `plans` skill Phase 1 already moved. Landed as four `standards/process/` docs — `plan/RESUME.md`, `plan/CONTINUE_ROADMAP.md`, `plan/UPDATE_ROADMAP.md`, `TECHDEBT.md` — plus a fifth, `plan/CHECKPOINT.md`, routed by a **new** `plan-checkpoint` skill: the 138-line checkpoint procedure (was `resume-plan/references/plan-progress-checkpoint.md`) with the progress-ledger template folded in, since the generator routes every doc. `auto-memory` stays in-repo — a Codex-only feature toggle that Codex, loading no plugin, could no longer resolve if moved (deferred with the Codex machine-setup decision) |
-| `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed |
+| ~~`package-cutover`~~ **done** | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed. Landed as `standards/dotnet/PACKAGE_CUTOVER.md` in the **dotnet** plugin (not agent-process) — a .NET/NuGet/EF mechanic irrelevant to React repos, and the runnable counterpart to `dotnet:packages`. Cross-references re-pointed to `PACKAGES.md`, `process/PLANS.md`, `data/MIGRATIONS.md`, `process/plan/CHECKPOINT.md`; name kept, no route row (invoked by name only) |
 
 **Single-service: none.** That is the finding. What a carved repo keeps is *values* — its `scripts/e2e.ps1`,
 its suite names, its hook and migration paths — named in a thin `AGENTS.md` on the `Concertable.Payment`
 model. The same applies to `plans/AGENTS.md` (N7).
 
 One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → ~~test-debug~~ → ~~git~~ →
-~~plan-workflow~~ → `package-cutover`.
+~~plan-workflow~~ → ~~`package-cutover`~~. **All six N1 families are moved.**
 
 **Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
 fresh install, and what stays at root is only values this repo owns.

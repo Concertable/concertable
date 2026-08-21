@@ -3,78 +3,81 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-plan-workflow-family`
-- Branch: `Docs/docs_polyrepo-ready-plan-workflow-family`, from `main` at `c39077f1a` — N1 family 5, plan-workflow.
-- PR: producer **agent-standards #10 — MERGED** (`main` at `9437795`); consumer this repo **#687 — open**,
-  meta-only, `CLEAN`/`MERGEABLE`, all checks green. #687 needs only its admin-merge (see Next Steps 1).
-- Dependency/package gates: none. No open `chore/platform-sync-*` PR — #687 touches no `api/**` path, so it
-  triggers no publish. **Plugin-cache refresh is pending** (Next Steps 2) — the renamed/new skills resolve
-  under no name until the installed cache carries them.
-- Last reconciled: 2026-08-21, after #10 merged and a `--auto` attempt on #687 mis-routed it into the
-  full-E2E queue (cancelled and corrected to the admin-merge path — see Next Steps 1 and `## Decisions`).
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-package-cutover-family`
+- Branch: `Docs/docs_polyrepo-ready-package-cutover-family`, from `main` at `fbf011ac1` — N1 family 6, package-cutover.
+- PR: producer **agent-standards #11 — open** (`verify` running); consumer this repo — branch pushed
+  (deletion committed), plan+ledger edits to commit, then open its PR. Family 5 landed: producer #10 + consumer
+  **#687 MERGED** (`main` at `fbf011ac1`).
+- Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
+  **Plugin-cache refresh is pending** (Next Steps 2) — the family-5 plan skills, the new `plan-checkpoint`, and
+  now `package-cutover` resolve under no name until the installed cache carries them.
+- Last reconciled: 2026-08-21, after landing family 5 (#10 + #687) and authoring family 6 (agent-standards
+  #11 + this branch). **N1 is complete — all six families moved.**
 
 ## Current state
 
-**Phase 1 and N1 families 1–4 are merged in both repos.** Review (#675 + agent-standards #6), merge/PR
-(#676 + #7), test-debug (#677 + #8) and git (#679 + #9) all landed; `main` is at `c39077f1a` and
-agent-standards `main` at `9437795`.
+**Phase 1 and N1 families 1–5 are merged in both repos.** Review (#675 + agent-standards #6), merge/PR
+(#676 + #7), test-debug (#677 + #8), git (#679 + #9) and plan-workflow (#687 + #10) all landed; `main` is
+at `fbf011ac1` and agent-standards `main` at `b283d44`.
 
-**N1 family 5 — plan-workflow — is authored on both sides and open.** agent-standards **#10**: four docs
-under `standards/process/` (`plan/RESUME.md` ← `resume-plan`, `plan/CONTINUE_ROADMAP.md` ←
-`continue-roadmap`, `plan/UPDATE_ROADMAP.md` ← `update-roadmap`, `TECHDEBT.md` ← `techdebt`) plus a fifth,
-`plan/CHECKPOINT.md`, routed by a **new** `plan-checkpoint` skill — the 138-line plan-progress checkpoint
-procedure (was `resume-plan/references/plan-progress-checkpoint.md`) with the progress-ledger template
-folded in as a routed section. This repo's **#687** is the consumer half: the four skill bodies + `.claude`
-stubs deleted, the checkpoint/template files under `resume-plan/` gone, and `.agents/commands/techdebt.md`
-+ `.claude/commands/techdebt.md` deleted (the last repository command — both command dirs are now gone).
-Three citation sites re-pointed (`plans/AGENTS.md`, `package-cutover`, `.agents/README.md`).
+**N1 family 6 — package-cutover — is authored on both sides.** agent-standards **#11**:
+`standards/dotnet/PACKAGE_CUTOVER.md` routed by the `package-cutover` skill, homed in the **dotnet** plugin
+(not agent-process) — it is a .NET/NuGet/EF mechanic (CS7069, EF re-scaffold, `dotnet build`) irrelevant to
+React repos, and the runnable counterpart to what `dotnet:packages` already owns. Cross-references
+re-pointed to docs that exist in agent-standards: `PACKAGES.md` + `process/PLANS.md` (the why),
+`data/MIGRATIONS.md` (re-scaffold), `process/plan/CHECKPOINT.md` (the plan-progress checkpoint) — replacing
+`api/ARCHITECTURE.md` and the `plans` skill, neither reachable from a standards doc. This branch is the
+consumer half: `.agents/skills/package-cutover/` + its `.claude` stub deleted. **No rename, no route row**
+(invoked by name only), and root `AGENTS.md`/`docs/INDEX.md` never cited it — the only citations
+(`docs/REMOTE_VALIDATION.md`, `PIPELINE_DEBT.md`) reference it by name, which survives the move untouched.
 
-**`auto-memory` stays in-repo, by decision** (see Next Steps and `## Decisions`): a Codex-only feature
-toggle that Codex, loading no agent-standards plugin, could no longer resolve if moved.
+**`auto-memory` stays in-repo, by decision** (see `## Decisions`): a Codex-only feature toggle that Codex,
+loading no agent-standards plugin, could no longer resolve if moved.
 
-**Remaining N1: `package-cutover` only** (family 6, 184 lines). Its checkpoint citation was already
-re-pointed to the indirect form in #687, so family 6 need only move its body and fix any remaining
-citations. N2–N8 untouched.
+**N1 is complete — all 28 workflow skills moved across six families.** What remains: N2–N8.
 
 ## Next Steps
 
-1. **agent-standards #10 is MERGED; land #687 next — via ADMIN-MERGE, not `--auto`.** The producer merged
-   (agent-standards `main` at `9437795`), so the consumer is safe to land. #687 is **meta-only** — every
-   changed path is `.agents/**`, `.claude/**`, `plans/**`, `reviews/**` — so it lands through `/merge-docs`,
-   whose Step 5 **admin-merges to bypass the merge queue**. It must NOT go through `--auto`: the queue's
-   `merge_group` runs full E2E on a meta-only diff (the path-filter has no diff base inside a merge_group, so
-   E2E does not skip unless the `skip-e2e` label is present), and a raw `--auto` this turn enqueued it, ran
-   full E2E, hung on `e2e-ui-tests`, and dropped out of the queue (auto-merge disabled). That orphaned
-   `merge_group` run was cancelled; #687 is now `OPEN`/`CLEAN`/`MERGEABLE`, no label, auto off. The correct
-   commands, in order:
+1. **Land family 6 — producer agent-standards #11 first, then this branch's consumer PR.** The producer
+   must merge first, as every family: the consumer deletes the skill body, so a consumer merged alone leaves
+   the procedure reachable under no name. #11 is a standards-only diff → merges when `verify` is green (that
+   repo has no queue; it merges directly). This branch is **meta-only** (`.agents/**`, `.claude/**`,
+   `plans/**`) → the `/merge-docs` admin-merge path, same as #687. Open this branch's PR, then:
    ```bash
-   gh -R Concertable/concertable pr edit  687 --add-label skip-e2e     # belt-and-braces for any queue fallback
-   gh -R Concertable/concertable pr merge 687 --merge --admin          # bypass the queue; no --delete-branch
+   gh -R Concertable/agent-standards pr merge 11  --merge --delete-branch
+   gh -R Concertable/concertable    pr edit  693 --add-label skip-e2e
+   gh -R Concertable/concertable    pr merge 693 --merge --admin
    ```
    Then `git checkout main && git pull --ff-only origin main` and close this worktree with
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 687 -PlanManaged`.
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 693 -PlanManaged`.
 
-   **Blocked on authorization — the same wall families 2–4 hit.** The auto-mode classifier refused both
-   `gh pr edit --add-label` and `gh pr merge --admin` this turn (it allowed `--auto` and `gh run cancel`
-   only). So an agent tool here cannot land it the meta-only way. **Merge needs Tommy to run the two commands
-   above, approve them interactively, or add a permission rule.**
+   **Merge authorization:** Tommy runs the merges (or approves interactively). This session decided **not**
+   to add a blanket `gh pr merge` permission rule — the classifier stays the hard gate; Tommy approves each
+   merge. The agent cannot edit its own permission allowlist (classifier blocks self-escalation), so a rule,
+   if ever wanted, is Tommy's to add via `/permissions`.
 
-2. **Refresh the plugin cache after #10 merges** — Tommy's one command. The new `plan-checkpoint` and the
-   moved plan skills resolve under no name until the installed cache carries them, and the cache currently
-   holds stale snapshots (see `## Decisions`).
+2. **Refresh the plugin cache once family 6 merges** — Tommy's one command. `package-cutover` (now
+   `dotnet:package-cutover`), the family-5 plan skills, and `plan-checkpoint` resolve under no name until the
+   installed cache carries them. This is now a **two-family** backlog (families 5 + 6).
 
-3. **Then N1 family 6 — `package-cutover` (184 lines)** — the last N1 family. Move its body to
-   `standards/dotnet/` or `standards/process/` (it is the published-contract cut-over mechanic; decide its
-   home when authoring), keep the `plan-checkpoint` indirection #687 already installed, and re-point any
-   remaining citations.
-
-4. **Then N2** (route-table convention) can run in parallel; **N3–N6** and **N7a** after N1; **N7b** when
-   roadmap §4c unblocks; **N8** last as the only evidence. N6 still carries the open question for Tommy:
-   `OVERVIEW.md`, `USP.md` and `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform
-   standard nor service-specific.
+3. **N2 next (route-table convention), then N3–N6 + N7a** — N1 no longer blocks them. N6 still carries the
+   open question for Tommy: `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative,
+   neither platform standard nor service-specific — surface, don't invent a home. **N7b** waits on roadmap
+   §4c; **N8** last as the only evidence, and must include the Codex delivery gap.
 
 ## Completed work
 
+- **N1 family 6 producer — agent-standards #11.** `standards/dotnet/PACKAGE_CUTOVER.md` (the mechanic) +
+  `.agents/skills/package-cutover/SKILL.md` (the router); the dotnet plugin ships it automatically because
+  `payloads.json` maps the `dotnet` domain to it, so no manifest/README change was needed (README does not
+  enumerate per-domain docs). Generator current (**61 skills / 61 docs**, 194 files), hook tests **161/161**,
+  plugin router rewrote to a valid relative path, all four cross-links resolve, `package-cutover`
+  collision-free across every repo on the machine.
+- **N1 family 6 consumer — this branch.** `.agents/skills/package-cutover/` + its `.claude/skills/` stub
+  deleted (committed and pushed early — see `## Decisions` on the worktree-deletion incident). No route row
+  (invoked by name only), no rename, no hub cited it — the surviving references
+  (`docs/REMOTE_VALIDATION.md`, `PIPELINE_DEBT.md`) are by name and still resolve. Plan + ledger updated to
+  mark N1 complete.
 - **N1 family 5 producer — agent-standards #10.** Five docs, one router each; `plan-checkpoint` is the only
   new skill name (collision-checked free across every repo on the machine). The progress-ledger template
   folded into `CHECKPOINT.md` inside a `~~~markdown` fence, because the generator routes every `standards/`
@@ -94,6 +97,25 @@ citations. N2–N8 untouched.
   `sync-checkout` and `worktree` → `open-worktree`, `worktrees.ps1` vendored.
 
 ## Verification
+
+Family 6, producer (agent-standards #11):
+- `.agents/sync-generated.ps1 -Check` → **current, 61 skills / 61 docs** (194 files); 4 written on the
+  authoring run (`.claude` stub, plugin doc copy, plugin router, `dotnet/INDEX.md`).
+- Hook tests **161/161**. Plugin router rewrote to `../../standards/dotnet/PACKAGE_CUTOVER.md`. Description
+  carries no colon-space (generator would reject).
+- All four cross-links from the new doc resolve: `PACKAGES.md`, `../process/PLANS.md`, `data/MIGRATIONS.md`,
+  `../process/plan/CHECKPOINT.md`. INDEX row present with the H1 title and `package-cutover` skill.
+- `package-cutover` collision-free across `~/.claude`, `~/.agents`, `~/.codex`, `dotagents`, `react-agents`,
+  `agent-starter-kit`, the work repos — nowhere else on the machine.
+
+Family 6, consumer (this repo):
+- `docs_reachability.py --root <worktree>` → **0 errors, 25 warnings** — the same set as the family-5
+  baseline (all pre-existing `plans/` dangles); nothing added or removed by this diff.
+- `plan_graph.py --root <worktree>` → 0 errors, 0 warnings. Hook tests **19/19**.
+- No route row names `package-cutover` (there never was one); no surviving reference to the deleted skill
+  **path** — the two by-name references resolve unchanged.
+- **Meta-only holds** — changed top-level paths are `.agents`, `.claude`, `plans`. No `api/**`, no workflow
+  file → the `/merge-docs` path, no publish/`chore/platform-sync-*`.
 
 Family 5, producer (agent-standards #10):
 - `.agents/sync-generated.ps1 -Check` → **current, 60 skills / 60 docs** (191 files). 16 files written on the
@@ -120,7 +142,13 @@ Family 5, consumer (this repo, #687):
 
 ## Reviews
 
-**Clean, no findings.** `reviews/Docs-docs_polyrepo-ready-plan-workflow-family.md` covers both halves —
+**Family 6 — low review surface, self-checked; no review file yet.** The consumer is a pure deletion; the
+producer doc is the vetted skill body verbatim with only four cross-references re-pointed (all verified to
+resolve) and the E2E-tier pointer restated as "the `merge` skill's Step 4" (matches root `AGENTS.md`). A
+`/docs-review` over both halves can still be run from the moved copy `standards/process/review/DOCS.md` if
+wanted before merge, as prior families did while the cache is stale.
+
+**Family 5 — clean, no findings.** `reviews/Docs-docs_polyrepo-ready-plan-workflow-family.md` covers both halves —
 consumer `c39077f1a..2b92ca18d` and producer `9437795..260f7f68` (agent-standards #10); the producer carries
 a companion pointer. All six lenses clean plus the `CHECKPOINT.md` fence-nesting and anchor checks, verified
 a second time in an independent fresh context. Run from the moved copy `standards/process/review/DOCS.md`,
@@ -128,6 +156,26 @@ since the session's active plugin snapshot lacks `docs-review`.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **package-cutover went to the `dotnet` plugin, not `agent-process`.** The plan left the home open
+  (`standards/dotnet/` or `standards/process/`). It is decisively .NET/NuGet/EF — CS7069, EF re-scaffold,
+  `dotnet build`, `PackageReference` — and would be noise in a React service repo, which `agent-process`
+  (installed everywhere) would give it. `dotnet:packages` already owns the *why* ("a published contract
+  change is a two-step release"); package-cutover is its runnable execution procedure, so they are siblings
+  under the dotnet plugin. Domain→plugin is by `payloads.json` (`dotnet` → dotnet plugin), so a doc under
+  `standards/dotnet/` ships correctly with no manifest edit.
+- **A background cleanup process deleted the family-6 worktree mid-authoring — commit early.** After the
+  producer was pushed and the consumer files deleted (but not yet committed), another Claude Code process
+  ran a startup worktree cleanup and `rm`'d the freshly-created worktree, taking the uncommitted consumer
+  deletions and plan/ledger edits with it (the branch existed only locally, so it went too). The producer
+  (already pushed as #11) was untouched. Recovery: recreate the worktree from `origin/main`, redo the
+  deletion, **commit and push it immediately** so the branch is durable on origin, then redo the doc edits.
+  Lesson for the remaining nodes: in a repo where concurrent sessions prune worktrees, commit+push the
+  irreversible core of a slice before doing the longer ledger prose, not after.
+- **First family with a values question that genuinely dissolves rather than ports.** The doc names
+  `api/Concertable.slnx`, `./initial-migrations.ps1` and the `Concertable.*` package families. Per the
+  calibration set by `PACKAGES.md`/`MIGRATIONS.md`, agent-standards **is** Concertable's roster and names
+  these freely; the re-scaffold defers to `data/MIGRATIONS.md` (which owns `./initial-migrations.ps1`) rather
+  than restating it. No values file — sixth family, sixth time.
 - **A meta-only consumer must ADMIN-MERGE, never `--auto` — the queue runs E2E on it.** This turn a raw
   `gh pr merge 687 --merge --auto` enqueued #687 into the normal queue; inside the `merge_group` the
   path-filter has no diff base, so E2E did **not** skip — `e2e-api-tests` passed, `e2e-ui-tests` ran for
@@ -177,6 +225,6 @@ since the session's active plugin snapshot lacks `docs-review`.
 ## Resume prompt
 
 ```
-cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-plan-workflow-family
+cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-package-cutover-family
 Read @plans/docs/POLYREPO_READY_PLAN.md and @plans/docs/POLYREPO_READY_PROGRESS.md and do what its `## Next Steps` says.
 ```
