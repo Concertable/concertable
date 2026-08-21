@@ -7,14 +7,15 @@
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563)
 - Dependency/package gates: producer packages are published; this API-changing consumer merge must complete its generated platform-sync follow-through
-- Last reconciled: 2026-08-21 against `origin/main` `20012d1a8`
+- Last reconciled: 2026-08-21 against `origin/main` `20012d1a8`; current base `2323c77e7` is pending reconciliation
 
 ## Current state
 
-Implementation, authenticated Phase A.8 acceptance, current-main reconciliation, and incremental review are complete.
-The exact reviewed work head is `27e51f65c422959ebda09893abeac603c6fb5a1f`. It includes current-main merge
-`3a9cc268e`, the later platform-sync-only merge `27e51f65c`, the preserved dashboard validation fixes in `276360edb`,
-the final acceptance fixes in `10dcd9313`, and the review corrections in `c531e4f1a`, `9a07f342f`, and `4d74f773d`:
+Implementation, authenticated Phase A.8 acceptance, and incremental review are complete. The local,
+remote-tracking, and PR heads equal `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`; its reviewed work watermark is
+`4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. Current-main reconciliation was complete through `20012d1a8`, but
+`origin/main` advanced six commits to `2323c77e7` while exact-head CI was running. PR #563 must absorb that base,
+rebuild, pass incremental review, and receive fresh exact-head CI before queue admission. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -61,12 +62,17 @@ passes locally. The exact reviewed correction work head `4c28ab7f7305f4fec2ffa91
 from starting remote/PR head `3d4f9c5ac3669a8e9ebb8087fddaa3e1f46a51a3`; refreshed remote-tracking and PR heads
 both equal the reviewed correction.
 
+Compiler-correction review transport `7484a8d3a` and push checkpoint `3ebc4722f` are now transported; local,
+remote-tracking, and PR heads were verified equal at `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`. Fresh CI run
+`32529834454` has a green solution build, workflow policy tests, hooks, frontend boundaries, platform pack, every
+frontend carve, and its completed backend jobs, with no failures; remaining unit/composition jobs are still pending.
+This run cannot authorize queue admission because refreshed `origin/main` is now six commits ahead.
+
 ## Next Steps
 
-1. Transport the compiler-correction review and verified-work-push checkpoint, then verify local, remote-tracking, and
-   PR head equality.
-2. Require fresh exact-head CI green (including every feed-restored web
-   carve), complete `/merge`, follow the generated
+1. Merge current `origin/main` `2323c77e7`, resolve to current-main contracts, rebuild the affected graph, run the
+   plan graph, and incrementally review the complete reconciliation delta.
+2. Push the exact reviewed head, require fresh exact-head CI green, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
@@ -104,6 +110,9 @@ both equal the reviewed correction.
 - Fresh CI run `32528668315`: workflow tests, hooks, frontend boundaries, platform pack, and all seven frontend carves
   passed; the solution build failed on two stale `FlatFeeDeal` test arrangements. After replacing them with
   `FlatFeeDealDto`, Concert unit tests pass 233/233 locally.
+- Fresh CI run `32529834454` at exact PR head `3ebc4722f`: all completed jobs are green, including the corrected full
+  solution build; backend unit/composition jobs remain pending. Base currency was rechecked during the run and found
+  `origin/main` six commits ahead at `2323c77e7`, so this run is evidence only and will not be used to enqueue.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj` — restored the current
   `0.1.0-alpha.0.1120` platform pin and succeeded with 0 errors; pre-existing CS0628 and vulnerability-feed warnings
   remain.
@@ -135,6 +144,8 @@ both equal the reviewed correction.
 - Compiler-correction work-head push: starting remote/PR `3d4f9c5ac3669a8e9ebb8087fddaa3e1f46a51a3`; pushed
   `3d4f9c5ac..4c28ab7f7`; refreshed remote-tracking and PR heads both verified at
   `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`.
+- Final transport at this base: review transport `7484a8d3a` and verified-push checkpoint `3ebc4722f`; local,
+  remote-tracking, and PR heads all verified at `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`.
 
 ## Reviews
 
@@ -152,12 +163,9 @@ both equal the reviewed correction.
 - Review transport `03cc8ff90` and push checkpoint `3d4f9c5ac` are verified on the remote and PR.
 - Incremental range `652fd3aac..4c28ab7f7` (3 commits) was reviewed through the mandatory native layer and all routed
   standards with no findings; Concert unit tests pass 233/233.
-- Compiler-correction review transport `7484a8d3a` is local and will be carried with the single verified-push
-  checkpoint transport leg.
-- Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
-- Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
-  current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
-  `app/scripts/vite-development-https.ts`; this is a real dependency-closure failure and will not be retried unchanged.
+- Compiler-correction review transport `7484a8d3a` and checkpoint `3ebc4722f` are verified on the remote and PR.
+- Review readiness is temporarily withdrawn solely because `origin/main` advanced to `2323c77e7`; the resulting
+  reconciliation delta requires incremental review before merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
