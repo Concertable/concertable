@@ -24,8 +24,8 @@ surface.
   `bfbfd863c02399bd77b499428465d1fc3585f119`, published Payment Contracts and Client in platform
   `0.1.0-alpha.0.1061`, and platform-sync PR #645 merged as
   `ab6d560c11fbf0b015cce00d8489e5da132acd9f`.
-- This plan is reconciled to `origin/main` commit `1176a002f8e58878f1650b193e7b9ab22daf385c`.
-  The current service package pin has advanced to `0.1.0-alpha.0.1086`; `.1061` is the shipped
+- This plan is reconciled to `origin/main` commit `69df07b8b1ff36e98e82a0c6938b7bb849ee4383`.
+  The current service package pin has advanced to `0.1.0-alpha.0.1108`; `.1061` is the shipped
   dependency evidence, not a pin to restore.
 - PR #597 added provider-neutral identities, session kinds, normalized states, terminal/retry/failure
   dispositions, `PaymentSessionDescriptor`, `PaymentOperationSnapshot`, the
@@ -270,7 +270,7 @@ published compatibility tests remain green.
 **Green gate:** focused provider/domain/integration tests pass, the provider inventory is current, and the
 smallest affected Payment Web/Infrastructure/UnitTests projects build with zero errors.
 
-### Phase 3 - Publish the backend session-operation API
+### Phase 3 - Publish the backend session-operation API ✅ DONE (2026-08-21)
 
 - Add the request contracts, protobuf service/methods, server implementation, Client interface/adapter,
   mapping and DI/routing needed for create/replay, explicit retry, and status read.

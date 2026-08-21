@@ -7,41 +7,32 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against fetched `origin/main` `1176a002f8e58878f1650b193e7b9ab22daf385c`, branch checkpoint `this commit`, current Payment platform pin `0.1.0-alpha.0.1086`, and the green Phase 2 implementation
+- Last reconciled: `2026-08-21` against fetched `origin/main` `69df07b8b1ff36e98e82a0c6938b7bb849ee4383`, branch checkpoint `this commit`, current Payment platform pin `0.1.0-alpha.0.1108`, and the green Phase 3 implementation
 
 ## Current state
 
-Phase 1 is green in this commit: Payment now owns the durable session operation/attempt aggregate,
-canonical versioned request fingerprint, race-safe initial and next-attempt reservation, repository/EF
-wiring, re-scaffolded initial migration, and focused domain/SQL integration coverage. The canonical
-migration wrapper, Payment Web build, all 501 Payment unit tests, and all five focused persistence tests
-pass. No Stripe call, public RPC, worker, webhook expansion, or consumer code has been added.
+Phases 1 through 3 are green in this commit. Payment owns the durable session operation/attempt aggregate,
+canonical versioned request fingerprint, race-safe reservation and revision history, provider-neutral Stripe
+execution and refresh, and the additive backend-only `PaymentSessionOperations` gRPC and typed Client
+surface for create/replay, explicit retry, and owner-scoped status read. The route requires `ServiceToken`,
+typed failures round-trip exhaustively, and the public status snapshot contains no secrets, provider IDs, raw
+statuses, or diagnostics. Every legacy RPC remains live; no worker, webhook migration, Customer/B2B consumer,
+or frontend change is present.
 
-Phase 2 is green in this commit. Payment now has the provider-neutral session
-adapter, real and deterministic fake Stripe implementations, deterministic create keys/metadata, durable
-create/replay/refresh/retry orchestration, immutable bind-and-normalize behavior, restricted rejection
-diagnostics, provider inventory coverage, and focused unit/integration tests. No public RPC, worker, webhook
-migration, or consumer code is present. The exact-tree Payment Web/Infrastructure and UnitTests builds pass
-with zero warnings and errors, and all 511 Payment unit tests pass. Docker Desktop's Linux engine is healthy,
-and all seven focused SQL-backed service tests pass.
+The exact-tree Payment Web and UnitTests builds pass with zero warnings and errors, all 521 Payment unit tests
+pass, and all 12 focused SQL-backed session service/gRPC tests pass against Docker Desktop's Linux engine.
 
 The roadmap item remains unchecked. All implementation must stay inside Payment until the producer PR has
 merged, its packages have published, and the generated platform-sync PR is green and merged.
 
 ## Next Steps
 
-Implement Phase 3 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
+Start Phase 4 with the repository review workflow:
 
-1. Reconcile this Phase 2 commit with current `origin/main`, then re-read the plan, Payment provider guidance,
-   and routed protobuf/HTTP/testing skills against the updated provider-contract baseline.
-2. Add the additive backend request contracts, protobuf session-operation service and methods, server
-   implementation, Client interface/adapter, mapping, DI, and routing for create/replay, explicit retry,
-   and status read.
-3. Enforce service-token authentication, opaque owner scoping, exhaustive typed-error mapping, additive
-   protobuf numbering, and the smallest secret-free status response while keeping every legacy RPC live.
-4. Extend focused gRPC, contract, mapper, frozen-package compatibility, public API, message-URN, protobuf
-   descriptor, and provider-inventory coverage; run the required generators/invariants and smallest Phase 3
-   green gate, update this ledger, and commit without starting Phase 4.
+1. Run `/review` over the full implementation branch against current `origin/main` and record the review
+   artifact, range, watermark, and every finding in this ledger.
+2. Do not open or update the producer PR until the review is clean; route findings through the repository's
+   serial address-review workflow, then run the required incremental review over later fix commits.
 
 ## Completed work
 
@@ -65,6 +56,9 @@ Implement Phase 3 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
   replay, and optimistic concurrency.
 - Implemented the Phase 2 provider adapter and orchestration, including deterministic fault injection,
   restricted rejection diagnostics, and focused provider/unit/SQL-backed integration coverage.
+- Implemented the additive Phase 3 backend request contracts, protobuf service, authenticated server route,
+  typed Client adapter, owner scoping, exhaustive error/enum mapping, provider-inventory detection, and
+  focused gRPC, compatibility, contract, mapper, and adapter coverage.
 
 ## Verification
 
@@ -72,7 +66,7 @@ Implement Phase 3 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
 - GitHub: PR #597 is merged at `bfbfd863c02399bd77b499428465d1fc3585f119`; PR #645 is merged at
   `ab6d560c11fbf0b015cce00d8489e5da132acd9f` for platform `0.1.0-alpha.0.1061`.
 - Branch-time platform gate: no open `chore/platform-sync-*` PR was present.
-- Current package baseline: all service pins are `0.1.0-alpha.0.1086` on `origin/main`.
+- Current package baseline: all service pins are `0.1.0-alpha.0.1108` on `origin/main`.
 - `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state`: 0 errors and 0 warnings.
 - `git diff --cached --check`: passed for the two staged planning files.
 - `dotnet build src\\Concertable.Payment.Web\\Concertable.Payment.Web.csproj --no-restore`: succeeded with
@@ -103,11 +97,28 @@ Implement Phase 3 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
 - Environment recovery check: the unrelated B2B/MSBuild process tree had cleared, `docker info` reached
   Docker Desktop's Linux engine at server version `29.6.2`, and `dotnet --info` completed in 2.6 seconds.
 - Exact-tree focused `PaymentSessionServiceTests`: 7 passed, 0 failed, 0 skipped against Testcontainers SQL.
+- Final current-main reconciliation: fetched `origin/main` remained
+  `69df07b8b1ff36e98e82a0c6938b7bb849ee4383`; the branch is 5 commits ahead and 0 behind before this
+  checkpoint.
+- Final exact-tree `dotnet build src\Concertable.Payment.Web\Concertable.Payment.Web.csproj --no-restore
+  --disable-build-servers`: succeeded with 0 warnings and 0 errors.
+- Final exact-tree `dotnet build tests\Concertable.Payment.UnitTests\Concertable.Payment.UnitTests.csproj
+  --no-restore --disable-build-servers`: succeeded with 0 warnings and 0 errors; this compiles the Contracts,
+  Client, Domain, Application, Infrastructure, compatibility fixture, and provider test adapter.
+- Final exact-tree `dotnet test tests\Concertable.Payment.UnitTests\Concertable.Payment.UnitTests.csproj
+  --no-build --no-restore`: 521 passed, 0 failed, 0 skipped, including frozen-package compatibility, public
+  API, message URN, protobuf descriptor, client/server mapper, error terminal, and provider-inventory guards.
+- Final exact-tree focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests`: 12 passed, 0 failed,
+  0 skipped against Testcontainers SQL. The first restricted run could not access Docker's named pipe;
+  `docker info` then proved Docker Desktop Linux server `29.6.2`, and the authorized unchanged rerun was green.
+- `git diff --check`: passed; `python .agents/hooks/plan_graph.py --root
+  C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state`: 0 errors
+  and 0 warnings before the final ledger checkpoint.
 
 ## Reviews
 
-No implementation or plan review has run. `/review` is the first delivery gate after all implementation
-phases are green.
+All implementation phases are green. No implementation review has run; `/review` is the first Phase 4
+delivery gate.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -126,6 +137,9 @@ phases are green.
   explicit retry of a policy-eligible unchanged operation.
 - Consumer work is delivery-gated on this producer's published package version and merged generated
   platform-sync PR.
+- The new service is backend-only and additive. It accepts Payment vocabulary and opaque owner IDs, resolves
+  provider bindings inside Payment, and exposes no Customer/B2B workflow type; no consumer calls it in this
+  producer checkpoint.
 - The first canonical migration retry exposed missing NuGet assets in the fresh worktree. Restoring
   `Concertable.slnx` resolved the prerequisite; the subsequent full wrapper run succeeded.
 - The original optimistic-concurrency test also inserted two successor attempts, so SQL reached the
