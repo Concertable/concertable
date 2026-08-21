@@ -53,12 +53,15 @@ supersession guard treated every clean PR as in-flight. It now preserves only a 
 armed, with the state decision isolated in a repository-owned helper and exercised by the required CI aggregate.
 The exact reviewed work head `652fd3aac91e5ba6689530efe6ad113c84a42772` was pushed from starting remote/PR
 head `6e17b5cdf0067833bda18d6d396e240a31f91b6a`; refreshed remote-tracking and PR heads both equal the reviewed
-work head.
+work head. Review transport and the verified-push checkpoint were then transported and verified at
+`3d4f9c5ac3669a8e9ebb8087fddaa3e1f46a51a3`. Fresh exact-head CI run `32528668315` proved every frontend
+carve green, then failed the solution build because two dashboard unit-test arrangements still instantiated the
+removed `FlatFeeDeal` type. Both now use the current `FlatFeeDealDto` contract, and the complete Concert unit suite
+passes locally.
 
 ## Next Steps
 
-1. Transport the review commit and verified-work-push checkpoint, then verify local, remote-tracking, and PR head
-   equality.
+1. Commit and incrementally review the focused CI compiler correction, then push its exact reviewed head in two legs.
 2. Require fresh exact-head CI green (including every feed-restored web
    carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
@@ -95,6 +98,9 @@ work head.
   (two pre-existing vulnerability-feed availability warnings); the plan graph remained at 0 errors and 0 warnings.
 - Platform-sync supersession policy tests passed 4/4, both touched workflow YAML files parsed successfully, and the
   helper passed Node syntax validation.
+- Fresh CI run `32528668315`: workflow tests, hooks, frontend boundaries, platform pack, and all seven frontend carves
+  passed; the solution build failed on two stale `FlatFeeDeal` test arrangements. After replacing them with
+  `FlatFeeDealDto`, Concert unit tests pass 233/233 locally.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj` — restored the current
   `0.1.0-alpha.0.1120` platform pin and succeeded with 0 errors; pre-existing CS0628 and vulnerability-feed warnings
   remain.
@@ -136,8 +142,8 @@ work head.
   could be mistaken for an in-flight queued PR. The correction tail passed the mandatory native and security
   re-review with no further findings.
 - Correctness and security watermarks are both `652fd3aac91e5ba6689530efe6ad113c84a42772`.
-- Review transport commit `03cc8ff90` is local and will be carried with the single verified-push checkpoint
-  transport leg.
+- Review transport `03cc8ff90` and push checkpoint `3d4f9c5ac` are verified on the remote and PR.
+- The post-watermark `FlatFeeDealDto` compiler correction still requires incremental review before the next push.
 - Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
