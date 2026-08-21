@@ -124,7 +124,7 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 | ~~`merge` · `merge-docs` · `pr-preflight` · `create-gh-pr`~~ **done** | 634 | Every repo has a queue, a docs bypass, a preflight, PRs. Landed as four `standards/process/merge/` docs. `create-gh-pr` became `open-pr`: a plugin installs per machine, and that name already belonged to a contradictory work-repo procedure |
 | ~~`e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer`~~ **done** | 1,022 | Every repo debugs a red suite by tier. Landed as six `standards/process/testing/` docs with every name kept. `docker-health.ps1` vendored through a new second tier of `vendor-hooks.ps1`; `e2e.ps1` and `integration.ps1` stayed, their invocation grammar stated and their own usage listings used as the discovery mechanism |
 | ~~`commit` · `commit-all` · `push` · `pull` · `sync` · `worktree`~~ **done** | 429 | Every repo commits, pushes, pulls and isolates a branch. Landed as six `standards/process/git/` docs. **"Zero lines name this repo" was wrong** — five skills held none, but `worktree` named Concertable in its own description and carried `scripts/worktrees.ps1`, the platform-sync gate and two sibling skill names; the script turned out repo-invariant and was vendored, so the doc kept the citation as a constant. `sync` → `sync-checkout` and `worktree` → `open-worktree` on the `create-gh-pr` precedent |
-| `resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt` · `auto-memory` | 203 | The executable counterparts of the `plans` skill Phase 1 already moved |
+| ~~`resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt`~~ **done** (+ `auto-memory` deferred) | 203 | The executable counterparts of the `plans` skill Phase 1 already moved. Landed as four `standards/process/` docs — `plan/RESUME.md`, `plan/CONTINUE_ROADMAP.md`, `plan/UPDATE_ROADMAP.md`, `TECHDEBT.md` — plus a fifth, `plan/CHECKPOINT.md`, routed by a **new** `plan-checkpoint` skill: the 138-line checkpoint procedure (was `resume-plan/references/plan-progress-checkpoint.md`) with the progress-ledger template folded in, since the generator routes every doc. `auto-memory` stays in-repo — a Codex-only feature toggle that Codex, loading no plugin, could no longer resolve if moved (deferred with the Codex machine-setup decision) |
 | `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed |
 
 **Single-service: none.** That is the finding. What a carved repo keeps is *values* — its `scripts/e2e.ps1`,
@@ -132,7 +132,7 @@ its suite names, its hook and migration paths — named in a thin `AGENTS.md` on
 model. The same applies to `plans/AGENTS.md` (N7).
 
 One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → ~~test-debug~~ → ~~git~~ →
-plan-workflow → `package-cutover`.
+~~plan-workflow~~ → `package-cutover`.
 
 **Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
 fresh install, and what stays at root is only values this repo owns.
