@@ -22,4 +22,10 @@ internal sealed class UserModule : IUserModule
 
     public Task<Option<ManagerDto>> GetManagerByIdAsync(Guid userId) =>
         userService.GetManagerByIdAsync(userId);
+
+    public Task EraseAsync(Guid subjectId, CancellationToken ct = default) =>
+        userService.EraseAsync(subjectId, ct);
+
+    public Task<Option<UserExport>> ExportAsync(Guid subjectId, CancellationToken ct = default) =>
+        userService.ExportAsync(subjectId, ct);
 }

@@ -84,6 +84,8 @@ Invoke-ScaffoldIfChanged -Context TenantDbContext -Project Concertable.B2B/src/M
 
 Invoke-ScaffoldIfChanged -Context AdminDbContext -Project Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
+Invoke-ScaffoldIfChanged -Context PrivacyDbContext -Project Concertable.B2B/src/Modules/Privacy/Concertable.B2B.Privacy.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
+
 Invoke-ScaffoldIfChanged -Context ArtistDbContext -Project Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
 Invoke-ScaffoldIfChanged -Context VenueDbContext -Project Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations

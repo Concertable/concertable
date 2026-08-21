@@ -51,6 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IMembershipService, MembershipService>();
         services.AddScoped<IInvitationService, InvitationService>();
+        services.AddScoped<ITenantErasureService, TenantErasureService>();
         services.AddScoped<ITenantModule, TenantModule>();
 
         services.AddScoped<TenantContext>();

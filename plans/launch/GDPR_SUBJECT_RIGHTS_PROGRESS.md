@@ -10,16 +10,23 @@
   sign-off (swim-lane A, tracked in `LAUNCH_CHECKLIST.md` Phase 2). This gates **merge, not
   implementation** (see `## Decisions`). Cross-service delivery is multi-PR, producer-first, all additive —
   no published-contract shape change, so no expand/contract gate.
-- Last reconciled: 2026-08-21, plan authored on a fresh worktree off `origin/main` (`7f59fe27b`).
+- Last reconciled: 2026-08-21, Phase 1 implemented (Privacy module + 4 facade extensions + unit suite green +
+  full B2B solution builds 0/0); migrations scaffold + PR open outstanding.
 
 ## Current state
 
-Plan and this ledger written; no implementation yet (this was a write-the-plan task). The worktree was
-created off fresh `origin/main`, clean. The subject surface was mapped exhaustively across Auth, B2B,
-Customer, Payment and Search and is captured as the retain-vs-erase table in the plan; the design orchestrates
-erasure/export through each service's own facade + integration events only, per
-`../../api/ARCHITECTURE.md`. Erasure/export/soft-delete/retention machinery is confirmed **absent** across
-`api/` — a green field.
+**Phase 1 in progress.** Step 1 (docs) is **done**: the standing `plans/launch/GDPR_SUBJECT_RIGHTS.md`
+compliance doc (retain-vs-erase register + one-calendar-month DSAR SLA + `[LEGAL]`/`[DECIDE]` sign-off
+checklist, mirroring `OSA_COMPLIANCE.md`) is written, and B2B `Modules/Deal/LEGAL_REQUIREMENTS.md` item 8 is
+flipped ABSENT → DESIGNED, linking that doc (relative link verified to resolve). Steps 2–5 (code + tests) are
+the remaining build.
+
+The B2B patterns were mapped exhaustively (module facades, the `FinishExecutor`/`ConcertFinishedFunction`/
+`ISelfBillingAgreementGate` fail-closed shape, the `LifecycleState`/`FrozenDictionary` state machine, the
+`TenantScopedRepository`/alias persistence, the Admin-module scaffolding + `[Authorize(Policy="Admin")]`
+authority, `initial-migrations.ps1`). The subject surface + retain-vs-erase table are in the plan; the design
+orchestrates erasure/export through each module's own facade only, per `../../api/ARCHITECTURE.md`.
+Erasure/export/soft-delete/retention machinery is confirmed **absent** across `api/` — a green field.
 
 The roadmap marker was de-duplicated: `` `launch/gdpr-subject-rights` `` was carried on **two** checklist
 lines (the §"Build" blocker and the §7 launch-ready gate); the §7 gate line was reworded to reference the
@@ -29,28 +36,19 @@ not shipped.
 
 ## Next Steps
 
-Implement **Phase 1** of `plans/launch/GDPR_SUBJECT_RIGHTS_PLAN.md` — B2B-local erasure & export behind the
-fail-closed gate — in this worktree:
+**Phase 1 is implemented; source compiles (the B2B Web project builds 0/0) and the Privacy unit suite is
+green (20/20).** Remaining to close the phase, in this worktree:
 
-1. Write the standing `plans/launch/GDPR_SUBJECT_RIGHTS.md` compliance doc (the plan's retain-vs-erase table
-   + the one-calendar-month DSAR SLA + a `[LEGAL]`/`[DECIDE]` sign-off checklist, mirroring
-   `OSA_COMPLIANCE.md`) and update `../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md` item 8
-   from ABSENT to the ratified design.
-2. Add the `SubjectErasureRequest` aggregate + state machine and the fail-closed erasure-gate abstraction in
-   B2B, gating on what B2B can see today (un-expired `SelfBillingAgreementEntity`; unsettled/`Booked`
-   concerts). Load the `multitenancy`, `persistence`, `keyed-strategies`, `result-carriers`, `seeding` and
-   `migrations` skills before touching entities.
-3. Add erasure + export facade members to `IUserModule`, `ITenantModule`, `IConcertModule`,
-   `IConversationsModule` applying the table's B2B rows — ERASE `UserEntity`; SEVER membership under the
-   last-owner invariant; scrub `ParticipantProfile`; SEVER `MessageEntity.Content`; leave **every** RETAIN
-   row (invoices, contracts, self-billing, `ESignature`) untouched.
-4. Expose the reachable admin-gated `POST /api/…/subject-erasure` + `GET /api/…/subject-export`; assemble the
-   JSON export bundle from the B2B module fragments.
-5. Verification gate: unit tests (state machine, gate defer outcomes, last-owner invariant); integration
-   tests (clean subject anonymised while every RETAIN row is unchanged; obligated subject defers; export
-   bundle scope). Run `./initial-migrations.ps1` from `api/` and `python .agents/hooks/plan_graph.py --root <worktree>`.
-6. Open a draft PR, commit the Phase 1 checkpoint (plan + ledger included), then route the PR through
-   `/review` before any delivery step.
+1. Confirm the full `Concertable.B2B.slnx` build is 0 errors (a build over the whole solution incl. both new
+   Privacy test projects was in flight at last checkpoint).
+2. Run `./initial-migrations.ps1` from `api/` to scaffold `PrivacyDbContext`'s `InitialCreate` (model change —
+   re-scaffold, never additive) and confirm no other context's migration id drifts.
+3. Run `python .agents/hooks/plan_graph.py --root <worktree>` (0 errors expected).
+4. Open a **draft PR**, commit the Phase 1 checkpoint (plan + this ledger + compliance doc included), then
+   route through `/review`.
+5. **Integration-suite validation is the merge queue's job** (Testcontainers/Docker-gated — not run on the
+   workstation). `SubjectRightsApiTests` is written and compiles; it asserts the three plan scenarios via the
+   public module facades against the canonical `SeedState`. See the RETAIN-strengthening deviation note.
 
 ## Completed work
 
@@ -58,18 +56,72 @@ fail-closed gate — in this worktree:
   `origin/main` (`7f59fe27b`), clean.
 - Roadmap `launch/gdpr-subject-rights` marker de-duplicated to a single canonical (unchecked) build-blocker
   line so the plan graph resolves exactly one marker.
+- **Step 1 (docs):** `plans/launch/GDPR_SUBJECT_RIGHTS.md` compliance doc written; `LEGAL_REQUIREMENTS.md`
+  item 8 flipped ABSENT → DESIGNED (link verified).
+- **New `Concertable.B2B.Privacy` module** (Domain/Application/Infrastructure/Api + Unit/Integration tests):
+  `SubjectErasureRequestEntity` aggregate + `ErasureState`/`ErasureTrigger`/`ErasureStateMachine` (FrozenDictionary,
+  fail-closed) + `ErasureTransitionError`; `ISubjectErasureService` (owns the aggregate/repo/UoW), `IErasureGate`,
+  `ISubjectExporter`; `PrivacyDbContext : DbContextBase` (unscoped) + config/factory/provider/schema + repo alias;
+  migrate-only Dev/Test seeders; `SubjectRightsController` `[Authorize(Policy="Admin")]` at `POST /api/subject-erasure/{id}`
+  + `GET /api/subject-export/{id}`. Wired into `.slnx`, `B2BWebHostExtensions` (AddPrivacyApi + AddPrivacyDevSeeder),
+  base `ApiFixture` (AddPrivacyTestSeeder), and `initial-migrations.ps1`.
+- **Per-module facade additions** (delegating, zero cross-module queries): User `EraseAsync`/`ExportAsync` +
+  domain `Anonymise` + `UserExport`; Tenant `SeverMembershipsAsync` (wound-down detection)/`PurgePendingInvitationsAsync`
+  via a focused `TenantErasureService` + repo finders; Conversations `SeverAuthoredMessagesAsync`
+  (`MessageEntity.SeverAuthor`)/`ScrubParticipantProfilesAsync`/`ExportAsync` via `ConversationsErasureService` +
+  a privileged participant-profile repo + `MessageExport`; Concert `HasLiveObligationsAsync` (`ConcertObligationGate`
+  over the unfiltered read stance) + `ExportAsync` (`ConcertRecordsExporter` + `ConcertExportMappers`) +
+  `ConcertRecordsExport`/`InvoiceExport`/`ContractExport`/`SelfBillingAgreementExport`; `IConcertReadDbContext`
+  gained `Applications`/`Invoices`/`Contracts`.
+- **Tests:** Privacy unit suite 20/20 green (state machine edges + fail-closed, entity, `ErasureTransitionError`
+  definition contract, gate, erasure-service orchestration incl. defer-vs-complete and email-before-erase ordering).
+  `SubjectRightsApiTests` integration written (clean→completed+anonymised, obligated→deferred+intact, export scope,
+  admin-gate reachability) — validates in the merge queue.
 
 ## Verification
 
-- `python .agents/hooks/plan_graph.py --root <worktree>`: pending this checkpoint (baseline over the tree
-  before the ledger was added: 0 errors, 0 warnings).
+- `dotnet build Concertable.B2B/Concertable.B2B.slnx`: **0 errors, 4 warnings** (whole solution incl. Privacy
+  module + both new test projects + fixtures).
+- Privacy unit suite (`dotnet test …Privacy.UnitTests`): **20/20 passed**.
+- `./initial-migrations.ps1`: run in progress at this checkpoint (scaffolds `PrivacyDbContext.InitialCreate`).
+- `python .agents/hooks/plan_graph.py --root <worktree>`: pending this checkpoint.
+- Integration suite: Testcontainers-gated — not run on the workstation; validates in the merge queue.
 
 ## Reviews
 
-None yet — no code committed.
+None yet — Phase 1 PR not yet opened; route through `/review` once opened.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **A new `Concertable.B2B.Privacy` vertical-slice module owns the erasure orchestration** (the scalable
+  answer over bolting GDPR domain logic onto Admin). It holds the `SubjectErasureRequest` aggregate + state
+  machine, the fail-closed erasure gate, the export assembler, and the admin-gated controller. Layers:
+  `Privacy.Domain` (aggregate + `ErasureState`/`ErasureTrigger` + `ErasureStateMachine`), `Privacy.Application`
+  (service/repo/gate/eraser interfaces, `RequestErasureError`, `SubjectExportBundle`, the `ErasureOutcome`
+  success-side enum), `Privacy.Infrastructure` (`PrivacyDbContext : DbContextBase` — unscoped, admin-operated,
+  subject-`Guid`-keyed; repo alias on `Guid`; gate/eraser/service impls; DI), `Privacy.Api` (controller). No
+  `Privacy.Contracts` yet (no cross-module consumer until Phase 2/5 — YAGNI per module-structure).
+- **All data mutation is delegated to the four owning modules via new facade members** (zero cross-module
+  queries): `IUserModule` ERASE `UserEntity` (new domain `Anonymise()` nulls Address/Location/Avatar +
+  tombstones Email) + export fragment; `ITenantModule` SEVER memberships under the last-owner invariant +
+  PURGE pending invitations + sole-trader tax handling + export; `IConversationsModule` scrub
+  `ParticipantProfile` (re-project to pseudonym) + SEVER `MessageEntity` author link + export;
+  `IConcertModule` `HasLiveObligationsAsync(tenantIds)` for the gate (Booked/AwaitingSettlement applications +
+  current `SelfBillingAgreementEntity`) + RETAIN-only export fragment (invoices/contracts, untouched).
+- **The gate orchestrates:** Privacy → `ITenantModule.GetMembershipsAsync(userId)` → tenantIds →
+  `IConcertModule.HasLiveObligationsAsync(tenantIds)`; `false`→proceed, live→`Deferred` (never throws),
+  mirroring `FinishExecutor`'s success-side `Deferred…` outcome. Payment obligations join the gate in Phase 4.
+- **Admin gate reused, not reinvented:** the controller is `[Authorize(Policy="Admin")]` against the existing
+  data-driven `AdminProfiles` policy (owned by the Admin module, present in the Web host + integration
+  fixtures); Privacy does not define a second admin concept and does not reference `Admin.Api`.
+- **Integration tests use public-facade read-back; the "RETAIN byte-for-byte" assertion is partial.** The
+  canonical `SeedState` seeds **no** invoice/contract/self-billing rows (those are created at Accept/Finish,
+  never seeded), so there is no financial RETAIN row to assert survives a *completed* erasure. The suite
+  proves RETAIN the reachable way — the obligated-subject test asserts a deferred erasure leaves **every** row
+  intact — but the stronger "clean subject anonymised *while a financial row it owns survives*" case needs a
+  seeded/hand-built `SelfBillingAgreementEntity` (expired, so it is not itself a live obligation). Deferred as
+  a Phase-1 integration follow-up rather than shipped as a blind, unrunnable seed (the Testcontainers suite is
+  not runnable on this workstation; it validates in the merge queue).
 - **Pre-merge delivery gate (does NOT block implementation).** The solicitor sign-off is a delivery gate,
   not a hard blocker — the design is against the *known* HMRC six-year financial retention, so implementation
   proceeds now and every retain-vs-erase call is recorded for the solicitor to confirm. Recorded in the

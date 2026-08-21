@@ -112,6 +112,16 @@
     <Project Path="src/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj" />
     <Project Path="src/Modules/Venue/Tests/Concertable.B2B.Venue.UnitTests/Concertable.B2B.Venue.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/Modules/Privacy/">
+    <Project Path="src/Modules/Privacy/Concertable.B2B.Privacy.Api/Concertable.B2B.Privacy.Api.csproj" />
+    <Project Path="src/Modules/Privacy/Concertable.B2B.Privacy.Application/Concertable.B2B.Privacy.Application.csproj" />
+    <Project Path="src/Modules/Privacy/Concertable.B2B.Privacy.Domain/Concertable.B2B.Privacy.Domain.csproj" />
+    <Project Path="src/Modules/Privacy/Concertable.B2B.Privacy.Infrastructure/Concertable.B2B.Privacy.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Privacy/Tests/">
+    <Project Path="src/Modules/Privacy/Tests/Concertable.B2B.Privacy.IntegrationTests/Concertable.B2B.Privacy.IntegrationTests.csproj" />
+    <Project Path="src/Modules/Privacy/Tests/Concertable.B2B.Privacy.UnitTests/Concertable.B2B.Privacy.UnitTests.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Concertable.B2B.CompositionTests/Concertable.B2B.CompositionTests.csproj" />
     <Project Path="tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />

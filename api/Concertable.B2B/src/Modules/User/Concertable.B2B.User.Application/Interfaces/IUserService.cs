@@ -11,4 +11,6 @@ internal interface IUserService
     Task<IReadOnlyList<UserDto>> GetByIdsAsync(IEnumerable<Guid> ids);
     Task<IReadOnlyDictionary<Guid, string>> GetEmailsByIdsAsync(IEnumerable<Guid> ids);
     Task<Option<ManagerDto>> GetManagerByIdAsync(Guid userId);
+    Task EraseAsync(Guid subjectId, CancellationToken ct = default);
+    Task<Option<UserExport>> ExportAsync(Guid subjectId, CancellationToken ct = default);
 }

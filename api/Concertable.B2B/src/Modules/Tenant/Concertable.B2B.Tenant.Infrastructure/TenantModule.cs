@@ -3,10 +3,12 @@ namespace Concertable.B2B.Tenant.Infrastructure;
 internal sealed class TenantModule : ITenantModule
 {
     private readonly ITenantService service;
+    private readonly ITenantErasureService erasureService;
 
-    public TenantModule(ITenantService service)
+    public TenantModule(ITenantService service, ITenantErasureService erasureService)
     {
         this.service = service;
+        this.erasureService = erasureService;
     }
 
     public Task<Option<TenantDto>> GetByIdAsync(Guid id, CancellationToken ct = default) =>
@@ -29,4 +31,10 @@ internal sealed class TenantModule : ITenantModule
         decimal gross,
         CancellationToken ct = default) =>
         service.GetVatCalculationAsync(tenantId, gross, ct);
+
+    public Task<IReadOnlyList<Guid>> SeverMembershipsAsync(Guid userId, CancellationToken ct = default) =>
+        erasureService.SeverMembershipsAsync(userId, ct);
+
+    public Task PurgePendingInvitationsAsync(string email, CancellationToken ct = default) =>
+        erasureService.PurgePendingInvitationsAsync(email, ct);
 }

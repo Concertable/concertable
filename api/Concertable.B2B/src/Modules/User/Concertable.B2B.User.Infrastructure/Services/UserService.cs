@@ -87,4 +87,24 @@ internal sealed class UserService : IUserService
 
         return new ManagerDto { Id = user.Id, Email = user.Email, Avatar = user.Avatar };
     }
+
+    public async Task EraseAsync(Guid subjectId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(subjectId, ct);
+        if (user is null)
+            return;
+
+        user.Anonymise($"erased-{subjectId:N}@erased.concertable.invalid");
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync(ct);
+    }
+
+    public async Task<Option<UserExport>> ExportAsync(Guid subjectId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(subjectId, ct);
+        if (user is null)
+            return null;
+
+        return user.ToUserExport();
+    }
 }

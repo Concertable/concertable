@@ -9,6 +9,9 @@ internal interface IConcertReadDbContext
 {
     IQueryable<ConcertEntity> Concerts { get; }
     IQueryable<OpportunityEntity> Opportunities { get; }
+    IQueryable<ApplicationEntity> Applications { get; }
+    IQueryable<InvoiceEntity> Invoices { get; }
+    IQueryable<ContractEntity> Contracts { get; }
     IQueryable<SelfBillingAgreementEntity> SelfBillingAgreements { get; }
     IQueryable<ConcertRatingProjection> ConcertRatingProjections { get; }
     IQueryable<ArtistRatingProjection> ArtistRatingProjections { get; }
