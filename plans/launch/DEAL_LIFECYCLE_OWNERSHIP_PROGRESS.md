@@ -248,8 +248,10 @@ Commit and push this bounded ownership split before moving the complete deal jou
 
 ## Completed work
 
-- Moved `ArtistDashboardCountsTests` into Artist integration tests and replaced direct `IConcertModule`
-  service location with before/after assertions through `/api/artist-dashboard/kpis`.
+- Published Artist dashboard integration ownership checkpoint `0d926e5e0`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `0d926e5e00fbbda6ed4fa1546cd100041d1b84eb`. Moved
+  `ArtistDashboardCountsTests` into Artist integration tests and replaced direct `IConcertModule` service
+  location with before/after assertions through `/api/artist-dashboard/kpis`.
 - Published Booking financial integration ownership checkpoint `51dd489d8`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `51dd489d82834cc7e97b06a1ceda2bc54c0b84e8`. Moved
   `ApplicationFinancialOperationApiTests` into Booking integration tests and replaced the stale
