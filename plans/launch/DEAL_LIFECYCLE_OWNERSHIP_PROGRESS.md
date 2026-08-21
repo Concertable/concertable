@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through integration-test ownership audit work head
-  `f80f8cbb1ca8ebe33f9e023ba3b06d20d03d0936`. Local, remote-tracking, and PR heads were verified equal;
+  through Concert integration fixture-contraction work head
+  `897ef9e894a46b212e2eeab76eac6f8afc47c860`. Local, remote-tracking, and PR heads were verified equal;
   this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -247,6 +247,14 @@ Infrastructure assembly. A mechanical project-reference guard will enforce that 
 `ApplicationDb`/`BookingDb` surface and the corresponding TECH_DEBT entry are removed after the moved
 coverage is green, not renamed or hidden behind another resolver.
 
+Concert's fixture topology is now corrected. `ConcertApiFixture` is module-local and resolves only
+Concert's production write/read stance and Concert-owned operation drivers; Application and Booking
+contexts, generic reads, foreign repositories, and the test-facing service provider are absent. The
+shared fixture no longer owns a Concert fixture or Concert persistence. Concert assertions use only
+Concert entities, while the full VenueHire posting/outbox journey and exact cross-module cancellation
+refund assertion live in B2B Process. The Concert and Process integration projects build with 0 errors,
+and the focused integration-project boundary guard passes.
+
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
 PR #633 therefore resumes against `DealDto` and the proven module-local factory pattern, not against a
@@ -263,22 +271,27 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: remove the remaining multi-context and service-location surface from the Concert integration
-suite. Reclassify every remaining `ConcertReads.Set<ApplicationEntity>()`, `BookingEntity`, generic
-`ReadDbContext`, and `fixture.Services` use by the assertion's real owner; move complete journeys to B2B
-Process and keep only Concert persistence and deliberate host-harness observations in Concert tests.
-Allowed scope: the Concert integration fixture and tests, B2B Process coverage, strongly typed Concert-owned
-fixture helpers, stale project references/IVTs/usings, and shared harness visibility made removable by the
-contraction. Do not edit aggregate transition tables or state-machine implementation files owned by the
-parallel state-machine slice.
-Exit gate: `ConcertApiFixture` resolves only Concert persistence; no Concert test resolves Application or
-Booking persistence, repositories, `IServiceProvider`, or a generic context; the shared `ApiFixture` exposes
-only host-neutral harness operations; remaining Concert and Process projects build as far as the known
-Concert-owned compile frontier permits; the architecture guard, plan graph, and `git diff --check` pass.
+Active slice: remove the remaining public `ApiFixture.Services` surface. Reclassify the Admin, Artist,
+Tenant, User, and Venue integration assertions currently creating scopes from it; expose only owning-module
+typed context/read helpers on their module-local fixtures, and move any complete multi-module assertion to
+B2B Process through HTTP or Contracts. Remove the public service-provider property once the last consumer
+is gone.
+Allowed scope: those module integration fixtures/tests, their owning test-project references/IVTs, the
+host-neutral shared harness, and the integration-project architecture guard. Do not edit aggregate
+transition tables or state-machine implementation files owned by the parallel state-machine slice.
+Exit gate: no integration test accesses `IServiceProvider` or a generic context; each module fixture resolves
+only its own real production context/read stance; the shared `ApiFixture` has no public service-provider
+surface; affected projects build; the architecture guard, plan graph, and `git diff --check` pass.
 Commit and push in bounded checkpoints.
 
 ## Completed work
 
+- Published Concert fixture-contraction checkpoint `897ef9e89`; local HEAD, the remote branch, and PR
+  #633 `headRefOid` all equalled `897ef9e894a46b212e2eeab76eac6f8afc47c860`. Replaced the shared
+  multi-context fixture with a module-local Concert fixture, removed Application/Booking persistence and
+  repository service location, converted retained assertions to Concert-owned state, and moved the
+  posting/outbox journey to B2B Process. Concert and Process build with 0 errors; the focused architecture
+  guard passes 1/1, the plan graph reports 0 errors and 0 warnings, and `git diff --check` passes.
 - Published cancellation integration ownership checkpoint `5e98d6b31`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `5e98d6b31554635c0c1e38ce3f161366434c8d0c`.
   Deleted the stale Concert `ApplicationCancelApiTests`, added the accepted-withdraw guard and pending
