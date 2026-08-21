@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against fetched `origin/main` `69df07b8b1ff36e98e82a0c6938b7bb849ee4383`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, branch checkpoint `this commit`, and current Payment platform pin `0.1.0-alpha.0.1108`
+- Last reconciled: `2026-08-21` against current `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, incremental review watermark `e7f2e36a8415752bf3aea04630f568f53b417179`, branch checkpoint `this commit`, and current Payment platform pin `0.1.0-alpha.0.1108`
 
 ## Current state
 
@@ -20,8 +20,11 @@ statuses, or diagnostics. Every legacy RPC remains live; no worker, webhook migr
 or frontend change is present.
 
 The full review and required Payment security layer are recorded in
-`reviews/Feature-payments_payment-session-state.md` through that exact implementation head. Three findings
-remain open: retry cancellation is not convergent under a duplicate race, retry participant scoping exposes
+`reviews/Feature-payments_payment-session-state.md`. After current `origin/main` advanced through the N3
+guidance/meta-only merge, the branch merged it without runtime overlap and the incremental native, security,
+docs, route, architecture, and lifecycle lenses remained clean through
+`e7f2e36a8415752bf3aea04630f568f53b417179`. Three implementation findings remain open: retry cancellation
+is not convergent under a duplicate race, retry participant scoping exposes
 payer credentials to a payee, and retry can cancel a provider object before proving the attempt is eligible.
 No producer PR may be opened until those findings are resolved and the later fix commits pass incremental
 review.
@@ -40,7 +43,7 @@ Resolve the open review work order before opening the producer PR:
    through its strictly serial, one-finding-per-fresh-context workflow, updating this ledger with each fixing
    commit and verification result.
 2. After all fixes are committed, run `/incremental-review` from the recorded
-   `7e165607881895c735ac60055d9c479c336b7278` watermark through the final fix head. Do not open or update the
+   `e7f2e36a8415752bf3aea04630f568f53b417179` watermark through the final fix head. Do not open or update the
    producer PR until that incremental review is clean and the ledger records the clean watermark.
 
 ## Completed work
@@ -70,6 +73,9 @@ Resolve the open review work order before opening the producer PR:
   focused gRPC, compatibility, contract, mapper, and adapter coverage.
 - Reviewed the full six-commit implementation range and its Payment security-sensitive paths through
   `7e165607881895c735ac60055d9c479c336b7278`; the work order records three open findings for serial repair.
+- Merged current `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6` after its concurrent N3
+  guidance/meta-only advance and completed a clean incremental review through the resulting branch head
+  `e7f2e36a8415752bf3aea04630f568f53b417179`; the already-owned upstream `ACC1` was not duplicated.
 
 ## Verification
 
@@ -128,12 +134,21 @@ Resolve the open review work order before opening the producer PR:
 - Full review range: `69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`
   (6 commits, 52 changed files); native, security, correctness, service-isolation, module-boundary,
   persistence, language/framework, protobuf, and changed-behaviour test lenses completed.
+- Current-main reconciliation: merged `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6`
+  with no conflicts and no Payment runtime overlap; `git rev-list --left-right --count HEAD...origin/main`
+  reported the branch ahead and 0 behind before this checkpoint.
+- Incremental review range:
+  `7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`
+  (6 commits); no new Payment findings, security layer clean, and the upstream N3 `ACC1` remains registered
+  in its owning plan rather than duplicated.
 
 ## Reviews
 
-Full review artifact: `reviews/Feature-payments_payment-session-state.md`. Reviewed and security-reviewed up
-to `7e165607881895c735ac60055d9c479c336b7278` on `2026-08-21`, range
-`69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`.
+Full review artifact: `reviews/Feature-payments_payment-session-state.md`. The implementation review covers
+`69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`;
+the clean current-main incremental review covers
+`7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`.
+Reviewed and security-reviewed up to `e7f2e36a8415752bf3aea04630f568f53b417179` on `2026-08-21`.
 
 - `NAT1` open, medium: make predecessor cancellation converge when duplicate retries race.
 - `SEC1` open, high: restrict secret-bearing retry to the persisted payer owner and test payee rejection.
