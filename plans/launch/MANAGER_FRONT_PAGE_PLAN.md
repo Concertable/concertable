@@ -1,13 +1,12 @@
 # Manager Front Page Plan
 
-## Progress (2026-08-15, B2B consumer checkpoint 4)
+## Progress (2026-08-21, final consumer acceptance)
 
 **Branch:** `Feature/launch_dashboard-b2b-consumer` — draft PR [#563](https://github.com/Concertable/concertable/pull/563).
 
-**Phase A UI and Phase B implementation are complete.** The live-data cutover and focused tests are committed in
-`e4054a7e6`; the optional-wire-contract correction is committed in `01c9fbff6`. The required additive
-`@concertable/b2b` exports are published in `0.1.0-alpha.0.3689`. Exact-head draft CI, the authenticated Phase A.8
-UX review, and branch review remain before merge.
+**Implementation and Phase A.8 are complete.** The live-data cutover, focused tests, authenticated Venue/Artist
+desktop-tablet-mobile acceptance, application mutations, and contract download are green. Incremental review,
+exact-head CI, merge, platform sync, and lifecycle closeout remain.
 
 See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session decisions that supersede this plan in conflict.
 
@@ -100,7 +99,7 @@ Each remaining endpoint has a clear docking point. Order by independence:
 | A.5 | Venue widgets + page + route | ✅ |
 | A.6 | Artist widgets + page; layout diverged from venue (NextConcertHero, ApplicationsPipeline, no Settlements/Open opps) | ✅ |
 | A.7 | Stripe + Profile-Health banners | ✅ Done via overview widgets |
-| A.8 | Authenticated live-data UX freeze; application actions; responsive review | ⏳ Pending seeded venue/artist review at desktop, tablet, and mobile widths |
+| A.8 | Authenticated live-data UX freeze; application actions; responsive review | ✅ Venue and Artist passed at 1440×1000, 834×1112, and 390×844; mutations and contract download exercised |
 
 **Session-2 deltas (committed in 5fb54e96):**
 
@@ -113,11 +112,7 @@ Each remaining endpoint has a clear docking point. Order by independence:
 - **Page wrapper** drops `max-w-7xl` for full-bleed; `DashboardCard` is `h-full` so paired rows align.
 - BE endpoint refinement: dashboard controller only owns aggregations (`overview`, `kpis`, `activity`). Plain lists (`applications`, `inbox`, `upcoming-concerts`, `settlements`, `recommended-opportunities`) hit canonical resource controllers filtered to "me". Updates Round-trip plans below.
 
-**Open Phase A todo:**
-
-- **A.8 UX freeze** — run the authenticated seeded B2B stack, inspect `/_venue/` and `/_artist/` as the corresponding
-  managers, verify desktop/tablet/mobile layouts, and exercise application actions and contract download. The fixture
-  personas and guard bypass are no longer valid because Phase C now uses the real API end to end.
+**Open Phase A todo:** none.
 
 **Key divergences from original plan** (codified in FEEDBACK.md):
 
