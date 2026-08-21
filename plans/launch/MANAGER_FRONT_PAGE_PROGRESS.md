@@ -51,11 +51,14 @@ ambient outbox unit of work because the message and `TenantActivityRecordedEvent
 unit test now pins that exception explicitly. Incremental review also found that current main's platform-sync
 supersession guard treated every clean PR as in-flight. It now preserves only a clean PR with auto-merge actually
 armed, with the state decision isolated in a repository-owned helper and exercised by the required CI aggregate.
+The exact reviewed work head `652fd3aac91e5ba6689530efe6ad113c84a42772` was pushed from starting remote/PR
+head `6e17b5cdf0067833bda18d6d396e240a31f91b6a`; refreshed remote-tracking and PR heads both equal the reviewed
+work head.
 
 ## Next Steps
 
-1. Checkpoint the completed review, push the exact reviewed head in two legs, and verify local, remote-tracking, and PR
-   head equality.
+1. Transport the review commit and verified-work-push checkpoint, then verify local, remote-tracking, and PR head
+   equality.
 2. Require fresh exact-head CI green (including every feed-restored web
    carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
@@ -117,6 +120,9 @@ armed, with the state decision isolated in a repository-owned helper and exercis
 - Carve-correction work-head push: starting remote/PR `97765c2b1e59c239064f03c643563fb0c4dcb4c5`; pushed
   `97765c2b1..c2a69d062`; refreshed remote-tracking and PR heads both verified at
   `c2a69d062d79685c59590e4f94569949fc9d88a9`.
+- Latest reviewed work-head push: starting remote/PR `6e17b5cdf0067833bda18d6d396e240a31f91b6a`; pushed
+  `6e17b5cdf..652fd3aac`; refreshed remote-tracking and PR heads both verified at
+  `652fd3aac91e5ba6689530efe6ad113c84a42772`.
 
 ## Reviews
 
@@ -130,6 +136,8 @@ armed, with the state decision isolated in a repository-owned helper and exercis
   could be mistaken for an in-flight queued PR. The correction tail passed the mandatory native and security
   re-review with no further findings.
 - Correctness and security watermarks are both `652fd3aac91e5ba6689530efe6ad113c84a42772`.
+- Review transport commit `03cc8ff90` is local and will be carried with the single verified-push checkpoint
+  transport leg.
 - Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
