@@ -249,7 +249,8 @@ Booking migrations.
 
 ## Completed work
 
-- Established the corrected integration-test topology: Application, Booking, Opportunity, Deal, and B2B
+- Published integration-test topology checkpoint `36e460bd5`; local HEAD, the remote branch, and PR #633
+  `headRefOid` all equalled `36e460bd57920cb9c94abc3e5e512a69fe2067d8`. Application, Booking, Opportunity, Deal, and B2B
   Process integration projects now have local fixtures, collections, tier metadata, guidance siblings,
   solution entries, and required own-module friend access. Application and Booking gained real
   module-owned, read-only production DbContext stances; their fixtures expose only those stances. The B2B
