@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c531e4f1abdf383c53711b8f261963091b739ebe`  _(2026-08-21)_
-**Security-reviewed up to commit:** `c531e4f1abdf383c53711b8f261963091b739ebe`  _(2026-08-21)_
+**Reviewed up to commit:** `27e51f65c422959ebda09893abeac603c6fb5a1f`  _(2026-08-21)_
+**Security-reviewed up to commit:** `27e51f65c422959ebda09893abeac603c6fb5a1f`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -116,3 +116,27 @@ No other findings survived the confidence filter. The incremental review covered
 module boundaries, seeding, routed language/framework conventions, and changed-behaviour test coverage. Security
 review found no auth, CORS, development-certificate/private-key, tenant-scope, action-exposure, secret, or supply-chain
 issue. The shared package and all four consuming web builds passed after the fix.
+
+## Incremental review — 2026-08-21 (current-main reconciliation)
+
+- [x] **NAT2 — HIGH — native/correctness** — `api/Concertable.Auth/src/Concertable.Auth.Hosting/AppHostExtensions.cs:29`
+  Current main launched the Admin SPA on port 5178 without registering its local Auth redirect, logout redirect, or
+  allowed origin. Admin now receives the same host-owned local SPA client configuration as the other authenticated
+  surfaces.
+- [x] **NAT3 — HIGH — native/correctness** — `api/Concertable.B2B/src/Concertable.B2B.Hosting/AppHostExtensions.cs:37`
+  Current main launched Admin against B2B without allowing its origin. B2B now includes the exact Admin origin in its
+  local CORS configuration.
+- [x] **CI5 — HIGH — build/configuration** — `app/web/admin/vite.config.ts:6`
+  Admin still depended on the removed per-repository `plugin-basic-ssl` setup and failed its production build after
+  reconciliation. It now uses the shared ASP.NET development-certificate helper and explicit IPv4 binding, and the
+  obsolete dependency is removed from its manifest and lockfile.
+- [x] **NAT4 — MEDIUM — native/test coverage** — `api/Concertable.B2B/tests/Concertable.B2B.CompositionTests/B2BCompositionTests.cs:96`
+  The host had no regression pinning the SPA resource ports to their Auth and backend origins. The new composition
+  test enumerates the complete B2B web roster and verifies every port, authenticated redirect/origin, and B2B CORS
+  origin from the real AppHost model.
+
+No open findings remain. The incremental review covered `c531e4f1a..27e51f65c` (58 commits) through the native and
+security layers plus all mechanically routed standards. The final current-main tail was platform-sync PR #709 only;
+all five service pins moved consistently to `0.1.0-alpha.0.1120`. Validation passed the B2B AppHost build, all six B2B
+composition tests, the shared-web tests, and Customer, Venue, Artist, Business, and Admin production builds. Local
+automated E2E remained intentionally unrun; the merge queue owns that tier.
