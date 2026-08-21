@@ -5,10 +5,10 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) remains
-  at `0511c35cadca144c7614b27596575eb66692bc62`. Local pre-merge checkpoint `f2f6fff44`
-  preserves the Workers, Concert unit, Opportunity request-builder, and `ApplicationCancelApiTests`
-  recovery frontiers.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
+  through current-main reconciliation checkpoint `fccab851de826ebfcce87265a32f20522ce7289c`.
+  Local pre-merge checkpoint `f2f6fff44` preserved the Workers, Concert unit, Opportunity
+  request-builder, and `ApplicationCancelApiTests` recovery frontiers.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
   merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`.
@@ -203,6 +203,9 @@ selecting the next file.
 
 ## Completed work
 
+- Published current-main reconciliation range `0511c35ca..fccab851d`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `fccab851de826ebfcce87265a32f20522ce7289c`, and the branch was
+  0 commits behind `origin/main`.
 - Published `ApplicationCancelApiTests` recovery range `f64d5fe32..da3d55be6`; its four diagnostics are
   gone, the remaining integration frontier is exactly 22 errors, and local, remote, and PR heads matched.
 - Recovered `OpportunityRequestBuilders` onto the Opportunity-owned request namespace in its prior
