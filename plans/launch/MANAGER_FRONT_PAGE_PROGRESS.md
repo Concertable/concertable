@@ -17,8 +17,9 @@ integration runner wedged inside `actions/cache@v4` before downloading artifacts
 was exhausted and the run was cancelled once. `origin/main` then advanced 16 commits to `7f107d98b`; that base was
 merged cleanly in `2a0db5198`, preserving every dashboard change and known local fix. Proportional validation and the
 mandatory native/security incremental review are green at exact reviewed work head
-`98b526b57d1c5d9ea6f609e290f982094bff2d8b`. The remote/PR still carry the earlier transported head `8a6086b07`;
-the reviewed reconciliation tail is intentionally awaiting its two-leg push. The delivered work includes:
+`98b526b57d1c5d9ea6f609e290f982094bff2d8b`. The exact reviewed work head was pushed from `8a6086b07`; refreshed
+remote-tracking and PR heads both equal `98b526b57d1c5d9ea6f609e290f982094bff2d8b`. The review transport is the only
+remaining local tail. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -73,7 +74,7 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Push exact reviewed work head `98b526b57d`, transport its review/checkpoint, and require fresh exact-head CI green.
+1. Transport the review and verified-push checkpoint, then require fresh exact-head CI green.
 2. Recheck base currency, re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -168,6 +169,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
   artifact download or test execution. The capped infrastructure wait was exhausted, the wedged run was cancelled
   once, and GitHub removed #563 from the queue. Main then proved 16 commits ahead at `7f107d98b`; no stale re-enqueue
   will be attempted.
+- Second reconciliation work-head push: starting remote/PR `8a6086b07f1185bc4338c22d6e1cd844fce232ce`;
+  pushed `8a6086b07..98b526b57`; refreshed remote-tracking and PR heads both verified at
+  `98b526b57d1c5d9ea6f609e290f982094bff2d8b`.
 
 ## Reviews
 
