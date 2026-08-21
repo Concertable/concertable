@@ -248,7 +248,9 @@ splitting mixed Application/Booking/process suites.
 
 ## Completed work
 
-- Moved `OpportunityApiTests` and its canonical request builder into Opportunity integration tests and
+- Published Opportunity/Deal integration ownership checkpoint `d5ac1c35e`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `d5ac1c35e8747097e063c9181f7cb785dc9375f5`. Moved
+  `OpportunityApiTests` and its canonical request builder into Opportunity integration tests and
   moved `DealApiTests` into Deal integration tests. Both suites now use their owning fixtures and current
   module contracts; Concert has no Deal or Opportunity test namespace/class. The temporary lifecycle
   request helper left for not-yet-moved journey tests is explicitly Application-local and is removed when
