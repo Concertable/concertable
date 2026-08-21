@@ -6,13 +6,13 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through `ApplicationFlatFeeApiTests` recovery work head
-  `757703caae5b809ead600d455f919d7a21fca86d`. Local, remote-tracking, and PR heads were verified equal;
+  through integration-test ownership audit work head
+  `f80f8cbb1ca8ebe33f9e023ba3b06d20d03d0936`. Local, remote-tracking, and PR heads were verified equal;
   this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
   merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`.
-- Last reconciled: 2026-08-21 while merging terminal foundation state `d0b8f616f` into PR #633
+- Last reconciled: 2026-08-21 after publishing the integration-test ownership audit
 
 ## Current state
 
@@ -250,6 +250,9 @@ topology checkpoint before moving test bodies.
 
 ## Completed work
 
+- Published integration-test ownership audit range `3204e8abd..f80f8cbb1`; local HEAD, the remote
+  branch, and PR #633 `headRefOid` all equalled
+  `f80f8cbb1ca8ebe33f9e023ba3b06d20d03d0936` after the work-head push.
 - Audited every test and helper in `Concertable.B2B.Concert.IntegrationTests` by actual operation and
   assertion purpose; recorded the per-file split and the module/process target topology in the plan.
 - Reconciled the heterogeneous-method landing design: net10 uses keyed DI only inside a dedicated
@@ -354,6 +357,8 @@ topology checkpoint before moving test bodies.
 
 ## Verification
 
+- Integration-test ownership audit: `python .agents/hooks/plan_graph.py --root .` reports 0 errors and
+  0 warnings; `git diff --check` passes.
 - Current-main reconciliation: no unmerged paths or conflict markers remain, and `git diff --check`
   passes.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj
