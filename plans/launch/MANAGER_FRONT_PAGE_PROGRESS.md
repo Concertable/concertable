@@ -40,12 +40,13 @@ with local, remote-tracking, and PR heads equal. PR #563 is ready for review and
 carve flattened the SPA subtree and omitted `app/scripts/vite-development-https.ts`, so Venue's legitimate
 app-relative helper import could not resolve on Linux. The correction now preserves the isolated `app/<surface>`
 layout, archives the shared helper from the same Git tree, covers all five web SPAs with a no-network regression,
-and adds Admin to the authoritative carve matrix.
+and adds Admin to the authoritative carve matrix. The exact reviewed correction work head `c2a69d062` was pushed
+from starting remote/PR head `97765c2b1`; refreshed remote-tracking and PR heads both equal
+`c2a69d062d79685c59590e4f94569949fc9d88a9`.
 
 ## Next Steps
 
-1. Use the plan-managed two-leg push to publish exact reviewed work head `c2a69d062`, verify PR #563 at that head,
-   then transport the review/ledger checkpoint and verify local, remote-tracking, and PR head equality.
+1. Transport the review and verified-work-push checkpoint, then verify local, remote-tracking, and PR head equality.
 2. Require fresh exact-head CI green (including every feed-restored web carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -96,6 +97,9 @@ and adds Admin to the authoritative carve matrix.
 - Work-head push: starting remote/PR `0c09697b9906fc3f34a566a25fdac4771cabef50`; pushed range
   `0c09697b..27e51f65c`; refreshed remote-tracking and PR heads both verified at
   `27e51f65c422959ebda09893abeac603c6fb5a1f`.
+- Carve-correction work-head push: starting remote/PR `97765c2b1e59c239064f03c643563fb0c4dcb4c5`; pushed
+  `97765c2b1..c2a69d062`; refreshed remote-tracking and PR heads both verified at
+  `c2a69d062d79685c59590e4f94569949fc9d88a9`.
 
 ## Reviews
 
@@ -106,6 +110,7 @@ and adds Admin to the authoritative carve matrix.
 - Incremental range `27e51f65c..c2a69d062` (5 commits) was reviewed through the mandatory native and security layers,
   all mechanically routed standards, and the six architecture/correctness/test lenses. No findings remain.
 - Correctness and security watermarks are both `c2a69d062d79685c59590e4f94569949fc9d88a9`.
+- Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
   `app/scripts/vite-development-https.ts`; this is a real dependency-closure failure and will not be retried unchanged.
