@@ -11,8 +11,13 @@
   this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
-  merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`.
-- Last reconciled: 2026-08-21 after publishing the integration-test ownership audit
+  merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`. The
+  additive Kernel state-machine API is implemented on draft producer PR
+  [#719](https://github.com/Concertable/concertable/pull/719) at exact head
+  `6535690418c340e4f63ddf7662123a1360eab045`. Its merge, package publication, and generated
+  platform-sync version remain the Phase 5 consumer gate; the current integration-test ownership
+  slices remain implementable while that delivery chain runs.
+- Last reconciled: 2026-08-21 after opening the verified Kernel producer PR
 
 ## Current state
 
@@ -24,6 +29,28 @@ Application, Booking, and Concert will become independent modules with their own
 model, contextual step contracts, and module-local keyed selection. There is no umbrella process entity,
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
+
+The transition mechanism is now resolved. `Concertable.Kernel` owns one stateless immutable
+`IStateMachine<TState, TTrigger>` backed by a frozen transition table. Its `Transition` method returns
+`Result<TState, TransitionError<TState, TTrigger>>`: success carries the real next state and rejection
+carries the common parameterized machine error. There is no `Try`/`out` API, fabricated default state,
+extra outcome generic, mutable configuration, persistence, events, callbacks, DI, or module knowledge.
+
+Application, Booking, and Concert each own their configured machine, state, trigger, and semantic
+aggregate operations. Aggregates privately observe the transition Result, mutate themselves only from
+its success value, and raise their own domain events. Application and Infrastructure never calculate or
+assign the next state. Operations return the common transition error directly when it is their complete
+failure contract; otherwise they compose it into a closed operation-owned error union. Shared error/state
+inheritance, open error catalogs, and `Result<T, IError>` are rejected.
+
+Kernel references Reunion deliberately because Result is part of this pure domain API. Producer PR #719
+implements the fixed surface and frozen lookup, pins Reunion in the Shared closure, and keeps Kernel's
+Reunion reference private in package metadata so no consumer can rely on it transitively. Its focused
+Release suite and package metadata gate are green; exact-head CI, review, merge, publication, and platform
+sync remain. The B2B machine adoption stays on PR #633 after the published version is recorded. Payment
+PR #707 may reuse only the immutable edge lookup while retaining its provider-specific validation and
+transition semantics. Moving the abstraction into the Reunion repository is rejected; a standalone
+state-machine NuGet remains only a possible later extraction after the API is proven in both consumers.
 
 This is a modular-monolith boundary inside the single B2B deployment, not an independently deployable
 service split. Its concrete value is compile-time enforcement of the one-way
@@ -236,18 +263,66 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: split Contract API coverage between Application consent/signature ownership and Booking's
-immutable Contract ownership.
-Allowed scope: `ContractApiTests`, Application/Booking-owned boundary helpers, own-module friend
-declarations/project references, and the stale Concert metadata the split makes removable.
-Exit gate: Application and Booking integration projects build with their owned cases; Contract
-formation, metadata, PDF, and snapshot assertions use only Booking persistence while consent/signature and
-fingerprint validation use only Application persistence; the remaining Concert project has neither test
-class; the module integration-project boundary guard passes; the plan graph and `git diff --check` pass.
-Commit and push this bounded ownership split before moving the complete deal journeys.
+Active slice: split `ApplicationCancelApiTests` by lifecycle-stage owner. Pre-accept withdrawal/guards belong
+to Application, pre-Concert cancellation/refund and late-capture compensation belong to Booking, and complete
+cross-module or opportunity-reopening journeys belong to B2B Process; post-creation cancellation remains
+Concert-owned.
+Allowed scope: the stale Concert `ApplicationCancelApiTests`, Application/Booking/Process integration suites,
+Booking-owned cancellation outcome handling required by the recovered behaviour, boundary-only helpers, and
+stale Concert metadata made removable by the split.
+Exit gate: every current cancellation assertion is represented at its owning boundary; Booking alone owns
+pre-Concert cancellation state and refund outcomes; tests do not use foreign contexts or service-provider
+access; cancellation stage, late capture, permissions, HATEOAS, notification, and opportunity-reopening
+coverage is preserved or corrected to the current public route; the three owning projects build, the
+architecture guard, plan graph, and `git diff --check` pass. Commit and push in bounded checkpoints.
 
 ## Completed work
 
+- Opened draft Kernel producer PR [#719](https://github.com/Concertable/concertable/pull/719) at exact
+  local, remote-tracking, and PR head `6535690418c340e4f63ddf7662123a1360eab045`. Producer commit
+  `33ee4dd1199b7a9ed3f84d1ca0b0eacde3eddc95` adds the immutable Result-based state machine and its
+  focused behavioural coverage; merge commit `653569041` reconciles current `origin/main` before
+  publication.
+- Published tenant-scoping integration ownership checkpoint `58c72d03b`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `58c72d03b793a1dca40b76f8030b125bebc4b8fc`. Split the
+  six former Concert cases across Application tenant stamping/visibility, Booking's unscoped module read
+  stance, Concert's public read, and B2B Process tenant-propagation/organization-action journeys. Removed
+  repository service location, foreign generic context reads, and the now-unused lifecycle request builder.
+- Published Booking cancellation ownership checkpoint `5b5155926`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `5b5155926a5136ffee6fe0071eb99f20c2a574dc`. Added the
+  missing Booking-owned refund success/rejection processor and seven Booking integration cases covering
+  cancellation from awaiting confirmation and confirmation failure, no-held-escrow cancellation, late
+  capture compensation, rejected refund, confirmed-state guarding, and artist authorization. Booking and
+  Concert now consume only refund operation IDs owned by their lifecycle stage.
+- Published Versus integration ownership checkpoint `db13a175c`; local HEAD, the remote branch, and PR
+  #633 `headRefOid` all equalled `db13a175c58dcd3ec41be0cd58c1d6daef420e77`. Moved four
+  Application-owned checkout, creation, and duplicate-accept cases into Application tests and five
+  complete verify-payment journeys into B2B Process tests. The stale Concert lifecycle failure assertion
+  is now the current Booking `ConfirmationFailed` boundary plus no-Concert and notification assertions.
+- Published VenueHire integration ownership checkpoint `7dbbea977`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `7dbbea9777e549f6c44b63e655b261aa944c0785`. Moved five
+  Application-owned checkout, prepaid-application, and duplicate-accept cases into Application tests and
+  four complete acceptance/payment journeys into B2B Process tests. The escrow command's Booking ID is
+  derived from the public Application cancel action before confirmation, preserving the exact cross-module
+  assertion without Booking persistence access.
+- Published DoorSplit integration ownership checkpoint `ccb9ff0a8`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `ccb9ff0a8143c9dc78f33abf83e07b76f75735ad`. Moved four
+  Application-owned checkout, validation, creation, and duplicate-accept cases into Application
+  integration tests and six complete deferred-payment journeys into B2B Process integration tests.
+  Both payment/Accept arrival orders, confirmation failure, the public Concert identity across webhook
+  redelivery, Booking state, Concert creation, and notifications remain asserted through boundaries.
+- Published FlatFee integration ownership checkpoint `98ee00aeb`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `98ee00aeb9a5b012d0e57b81513cdb2d6b143ed4`. Moved the four
+  Application-owned checkout, validation, creation, and duplicate-accept cases into Application
+  integration tests and the four payment/Accept/Booking/Concert journeys into B2B Process integration
+  tests. Every cross-module assertion now uses HTTP or Contracts; the original eight facts remain.
+- Published Contract integration ownership checkpoint `f398121c6`; local HEAD, the remote branch, and PR
+  #633 `headRefOid` all equalled `f398121c6606b1b12900bcd04ffcc55abcd188f2`. Split all 16
+  `ContractApiTests` cases by owner: six Application consent, signature, fingerprint, and
+  HATEOAS cases now use only `ApplicationApiFixture`; ten immutable Contract snapshot, signature, PDF, and
+  metadata cases now use only `BookingApiFixture`. Opportunity creation/update and Application setup cross
+  module boundaries through HTTP, replacing the old `IDealModule` service location and Concert multi-context
+  reads without dropping an assertion.
 - Published Artist dashboard integration ownership checkpoint `0d926e5e0`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `0d926e5e00fbbda6ed4fa1546cd100041d1b84eb`. Moved
   `ArtistDashboardCountsTests` into Artist integration tests and replaced direct `IConcertModule` service
@@ -387,6 +462,36 @@ Commit and push this bounded ownership split before moving the complete deal jou
 
 ## Verification
 
+- Kernel producer PR #719 exact head: `Concertable.Kernel.UnitTests` passed 246/246 in Release;
+  successful Result, typed rejection, duplicate-edge rejection, mutable-input snapshotting, and
+  concurrent reads are covered. Packing `Concertable.Kernel` at the same head produced a `.nuspec`
+  with no Reunion dependency, and `git diff --check` passed.
+- Tenant-scoping ownership split: Application, Booking, and Process integration projects build with 0
+  warnings and 0 errors; the focused `IntegrationTestBoundaryTests` guard passes. Concert remains at exactly
+  13 unrelated known compile errors and its retained tenant test reads only the public Concert endpoint.
+- Booking cancellation ownership: Booking integration tests and Concert infrastructure build with 0 warnings
+  and 0 errors; the focused `IntegrationTestBoundaryTests` guard passes. The new Booking suite asserts only
+  Booking's real read stance after initiating cancellation through the public Booking route.
+- Versus ownership split: Application and Process integration projects each build with 0 warnings and
+  0 errors; all nine original facts remain and the focused `IntegrationTestBoundaryTests` guard passes.
+  Removing the final deal-specific Application file reduces the Concert integration frontier from 14 to
+  exactly 13 known compile errors.
+- VenueHire ownership split: Application and Process integration projects each build with 0 warnings and
+  0 errors; all nine original facts remain and the focused `IntegrationTestBoundaryTests` guard passes.
+  Removing the stale VenueHire Application file reduces the Concert integration frontier from 15 to exactly
+  14 known compile errors.
+- DoorSplit ownership split: Application and Process integration projects each build with 0 warnings and
+  0 errors; all ten original facts remain and the focused `IntegrationTestBoundaryTests` guard passes.
+  The reduced Concert integration frontier remains exactly 15 known compile errors because the removed
+  DoorSplit Application file contributed no diagnostic before the move.
+- FlatFee ownership split: Application and Process integration projects each build with 0 warnings and
+  0 errors; the focused `IntegrationTestBoundaryTests` guard passes. The reduced Concert integration
+  frontier remains exactly 15 known compile errors because the removed FlatFee file contributed no
+  diagnostic before the move.
+- Contract ownership split: Application and Booking integration projects each build with 0 warnings and 0
+  errors; the 6 Application and 10 Booking facts preserve the original 16 cases. The reduced Concert
+  integration frontier is exactly 15 known compile errors, down from 17 because the stale Contract file is
+  gone.
 - Artist dashboard move: the Artist integration project restores and builds with 0 warnings and 0 errors.
 - Booking financial-outcome move: the Booking integration project builds with 0 warnings and 0 errors;
   the stale `EscrowPaymentProcessor` test/class vocabulary is absent.
@@ -663,8 +768,33 @@ Commit and push this bounded ownership split before moving the complete deal jou
 - DTO placement follows audience: internal service results belong in Application; only deliberate
   cross-module shapes belong in Contracts. Purpose-built mapped read shapes are projections/snapshots,
   not contexts.
-- One state machine exists per owning aggregate/module, not per individual enum value.
-- Local state machines may use different structures; no common lifecycle interface is required.
+- One configured state machine exists per owning aggregate/module, not per individual enum value or
+  `DealType`.
+- The common `IStateMachine<TState, TTrigger>` is a stateless Result-based Kernel algorithm boundary,
+  not a common lifecycle contract. Configured machines, states, triggers, and tables remain module-local.
+- `Transition` returns `Result<TState, TransitionError<TState, TTrigger>>`. Success always carries the
+  real next state; rejection carries the common concrete machine error. There is no `Try`/`out` shape,
+  default state, exception for an ordinary missing edge, or additional outcome generic.
+- `TransitionError<TState, TTrigger>` is a concrete parameterized state-machine failure, not an
+  inheritance base. It may be returned directly when complete or composed into a closed operation-owned
+  error union when the operation has additional failures.
+- Shared `NotFound`/transition-error bases, `IState` markers, state inheritance, open error catalogs, and
+  `Result<T, IError>` are rejected because they erase exhaustive operation failure contracts.
+- Aggregates alone mutate lifecycle state. Callers select semantic operations and persist their
+  outcomes; they never calculate a target state, inject or resolve a machine into an entity, or invoke
+  a generic public transition command.
+- The state machine is built once from a copied frozen table and stores no current entity state. It has
+  no mutation API, callbacks, entry/exit actions, persistence, messaging, retries, or service resolution.
+- Opportunity's atomic `Open -> Filled` claim remains a conditional persistence operation. Its remaining
+  state changes are audited before deciding whether they form a genuine aggregate machine; symmetry is
+  not sufficient.
+- The old per-`DealType` Concert machine is not restored. Application, Booking, and Concert legal edges
+  are independent of the Deal implementation selected inside an operation.
+- Kernel package publication is an external-artifact prerequisite: deliver the shared producer
+  checkpoint and published platform version, then consume it from PR #633. This does not split B2B
+  ownership implementation into another PR.
+- Payment PR #707 is a downstream candidate for the same immutable edge lookup, without moving Payment
+  validation, duplicate handling, terminal-state rules, or transition outcomes into Kernel.
 - Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
   need Application/Booking/Concert prefixes internally.
 - The dispatch investigation is concluded. Honest same-interface families use module-specific invariant

@@ -183,8 +183,49 @@ resolution: each module maps its persistence discriminator explicitly and retain
 
 ## 5. State machines and contextual names
 
-Each module owns its own transition vocabulary and implementation. The types may use the same short
-names because their module namespace is the context:
+Application, Booking, and Concert each own an explicit immutable state-machine definition. The
+shared mechanism is an algorithm, not a shared lifecycle: it knows how to look up one closed
+`(state, trigger) -> next state` edge and nothing about B2B stages, persistence, events, operations,
+or `DealType`.
+
+`Concertable.Kernel` owns the reusable surface:
+
+```csharp
+public interface IStateMachine<TState, TTrigger>
+    where TState : notnull
+    where TTrigger : notnull
+{
+    Result<TState, TransitionError<TState, TTrigger>> Transition(
+        TState current,
+        TTrigger trigger);
+}
+
+public sealed record TransitionError<TState, TTrigger>(
+    TState Current,
+    TTrigger Trigger);
+```
+
+Its immutable implementation copies the supplied transitions into one
+`FrozenDictionary<(TState, TTrigger), TState>` during construction, rejects duplicate edges, and has
+no registration or mutation API after construction. It carries no current entity state. It has no
+entry/exit actions, callbacks, persistence, event publication, dependency injection, service
+resolution, retries, or asynchronous behaviour. `Transition` always returns a real Result value: an
+accepted edge carries the real next `TState`; a missing edge carries the common parameterized
+`TransitionError`, never `default(TState)`, an `out` value, or an exception. Duplicate edges and other
+invalid machine construction remain programmer/composition exceptions. A module may hold one static,
+thread-safe instance; the persisted current state always remains on each entity.
+
+Kernel references Reunion deliberately because Result is part of this pure domain API. Every consuming
+service also references Reunion directly at the compatible version; no consumer relies on a transitive
+carrier reference. The Kernel producer checkpoint must therefore reconcile the existing package rule,
+package metadata, and architecture guard that currently forbid Kernel from exposing Reunion. That is a
+deliberate dependency-policy correction, not a reason to move Concertable's state-machine ownership into
+the Reunion repository.
+
+Each module owns its state, trigger, immutable edge declaration, and aggregate operations. The common
+`TransitionError<TState, TTrigger>` is the complete failure contract of the generic machine and is not
+an inheritance base. The types may use the same short names because their module namespace is the
+context:
 
 ```text
 Application.Domain.Lifecycle.State
@@ -200,13 +241,57 @@ Concert.Domain.Lifecycle.Trigger
 Concert.Domain.Lifecycle.StateMachine
 ```
 
-They do not implement a common lifecycle interface or inherit from an umbrella state machine. A
-module may use an explicit transition table, aggregate methods, or a .NET 11 native union when that
-best expresses its closed local states, triggers, or outcomes. Similar syntax is not a reason to force
-identical structure.
+These independent definitions use `IStateMachine<TState, TTrigger>` but do not inherit behaviour or
+share a configured machine, transition table, state, trigger, error, or selector. A future .NET 11
+native union may improve a module's closed state, trigger, or outcome vocabulary without changing the
+ownership or the shared lookup boundary.
 
-A tiny generic transition primitive may be extracted only after real duplication is demonstrated. It
-must contain no B2B state, trigger, `DealType`, module reference, transition table, or ownership rule.
+The aggregate owns enforcement. Callers invoke intent-named operations such as `Accept`, `Confirm`,
+`BeginCancellation`, or `CompleteSettlement`; they do not invoke a public generic `Transition` method.
+Each aggregate funnels those operations through one private transition helper, observes the returned
+Result, mutates its own state only from the success value, then updates operation-specific data and
+raises domain events. A rejected Result leaves state, auxiliary facts, and events unchanged.
+Application and Infrastructure may choose an operation and persist its outcome, but may never
+calculate a target state and hand it to the entity. The entity never resolves the machine from DI,
+saves itself, publishes to a bus, or calls another module.
+
+An aggregate or operation returns `TransitionError<TState, TTrigger>` directly when that is its complete
+expected failure contract. An operation that has additional failures owns a closed error union with a
+nested transition-rejection case and forwards the common transition error's meaning. It does not widen
+to `IError`, inherit from a shared error base, or introduce a wrapper when the transition error alone is
+sufficient. Shared `NotFound` bases, shared error catalogs, `IState` markers, and state inheritance are
+rejected: operation-owned errors and unconstrained module-owned state/trigger types remain exhaustive.
+
+Operation-specific prerequisites remain outside the generic lookup. Identity/correlation checks,
+required payment evidence, provider references, terms, timestamps, financial metadata, idempotency,
+and event payload construction stay in the owning aggregate operation. The machine decides only
+whether the requested state edge exists.
+
+Opportunity's `Open -> Filled` claim must be audited separately. Its concurrency invariant is an
+atomic conditional persistence write and cannot be replaced by loading an entity and consulting an
+in-memory machine. Opportunity should use the shared primitive only for genuine aggregate-owned
+transitions that remain after that claim/reopen design is final, never merely for symmetry.
+
+The old per-`DealType` Concert `LifecycleStateMachine` is not restored. It combined stage ownership
+and selected four configured machines by `DealType`; the new design has one configured machine per
+owning aggregate/module because `DealType` changes operation behaviour, not legal stage order.
+
+The additive Kernel API is delivered as a small Concertable shared-package producer checkpoint first,
+with focused tests and a published platform version compatible with the consuming Reunion baseline.
+PR #633 may validate locally with `UseLocalCore=true` or an exact producer artifact, but committed
+consumer verification waits for the published Kernel package and reconciled platform pin. After that
+release is available, Application, Booking, and Concert adopt it on this same module-refactor PR. This
+is the genuine external-artifact exception to the otherwise single-PR refactor; it is not authority to
+split the B2B ownership work.
+
+Extracting the proven primitive into an independent state-machine NuGet package remains a possible
+future decision after both B2B and Payment exercise the API. It is not part of this plan and creates no
+work in the Reunion repository.
+
+Payment PR #707's intent/refund allowed-transition maps are a downstream candidate for the same
+primitive. Payment keeps its provider observation validation, terminal-state protection, duplicate
+classification, context selection, freshness rules, and transition result types. Reuse is limited to
+the immutable allowed-edge lookup and creates no B2B-to-Payment dependency.
 
 ## 6. Deal-type behaviour and step resolution
 
@@ -549,6 +634,18 @@ Gate: Concert can validate and complete every operation from its own state plus 
 
 - [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
+- [ ] Deliver the additive Kernel `IStateMachine<TState, TTrigger>`,
+  `TransitionError<TState, TTrigger>`, and immutable frozen-table implementation through its shared
+  package producer checkpoint; reconcile Kernel's direct Reunion dependency rule, reject duplicate
+  edges, and prove the input collection cannot mutate the constructed machine.
+- [ ] After package publication, add independent Application, Booking, and Concert state, trigger, and
+  configured-machine definitions. Preserve the approved legal edges and return the common transition
+  error for every other state/trigger pair.
+- [ ] Route every aggregate lifecycle operation through one private transition helper. Keep semantic
+  public/internal methods, operation-specific validation, state mutation, auxiliary data mutation, and
+  domain-event raising on the aggregate; remove direct target-state assignment from callers.
+- [ ] Audit Opportunity's Open/Filled/reopen flow. Keep the atomic conditional claim at persistence;
+  adopt the shared primitive only for remaining aggregate-owned lifecycle transitions.
 - [ ] Add local `State`, `Trigger`, `StateMachine`, the minimum provisional keyed-selection seams,
   named operation facades, and contextual step contracts only where each module needs them.
 - [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
@@ -565,8 +662,17 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [ ] Do not convert honest same-interface families to operation unions or erase heterogeneous
   invocations behind a manufactured common interface.
 
-Gate: each command invokes one module-owned operation; no service can resolve another module's
-operations or request a whole workflow.
+State-machine verification includes focused package tests for successful Result values, typed rejected
+Results, duplicate-edge rejection, immutable snapshotting, and concurrent reads; exhaustive module
+tests that enumerate every state/trigger pair; aggregate tests proving failed transitions leave state,
+auxiliary facts, and domain events unchanged; and an architecture/convention guard that fails
+lifecycle-state assignment outside the owning aggregate's construction/hydration and private transition
+path. Payment PR #707, if still open when the package publishes, replaces only its allowed-edge tables
+and reruns its complete provider-transition matrix.
+
+Gate: each command invokes one module-owned operation; every lifecycle mutation is accepted by that
+module's immutable machine and applied by its aggregate; no service calculates a target state, resolves
+a machine or another module's operations, or requests a whole workflow.
 
 ### Phase 6 — projections, compatibility, and delivery
 
@@ -590,6 +696,11 @@ operations or request a whole workflow.
   named after one downstream entity while owning the entire chain.
 - Application, Booking, and Concert own independent state and transitions; no combined lifecycle state
   or separately persisted process root exists.
+- The shared Kernel machine is stateless, immutable, domain-neutral, deliberately Result-based, free of
+  infrastructure dependencies, and contains no configured B2B or Payment transition.
+- Application, Booking, and Concert aggregates expose semantic operations, funnel lifecycle mutation
+  through their private transition path, and leave state, auxiliary facts, and events unchanged when an
+  edge is rejected.
 - The runtime dependency graph is Contracts-only and acyclic, with no backwards command/control flow.
 - There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
   holder exposing all steps.
@@ -624,7 +735,15 @@ operations or request a whole workflow.
   executing Concert-owned step families;
 - combining Cancel and Complete behind one multi-operation `IConcertExecutor` rather than preserving
   one cohesive executor per named lifecycle operation;
-- one shared resolver, registry, workflow definition, state enum, or state machine for all modules;
+- one shared configured resolver, registry, workflow definition, state enum, transition table, or
+  lifecycle machine for all modules; the stateless generic Kernel lookup algorithm is deliberately
+  shared;
+- a machine that stores entity state, resolves services, performs persistence, invokes callbacks, owns
+  entry/exit actions, or publishes events;
+- Application or Infrastructure calculating a next state and passing it into an aggregate;
+- public generic `entity.Transition(...)` command surfaces in place of semantic aggregate operations;
+- shared/inherited state markers, transition-error bases, `NotFound` bases, open error catalogs, or
+  `Result<T, IError>` used to avoid operation-owned closed failure contracts;
 - identifier-only Booking confirmation or confirmation that reloads a live Application aggregate;
 - payment outcome contracts that combine success/failure with nullable case-specific fields;
 - a global or cross-module union over DI services, or any union that performs service location; a
