@@ -237,21 +237,24 @@ await acceptFactory.Create(deal).Match(
     depositEscrow => depositEscrow.Value.AcceptAsync(application, cancellationToken));
 ```
 
-PR #633 pauses at its current committed recovery checkpoint until the Deal dispatch foundation is
-terminal on `main`. After it resumes, it consumes the delivered generator directly: a module-local Dunet
-union whose cases contain concrete operation implementations, a generated dedicated factory such as
-`IAcceptFactory`, typed constructor injection, one generated Deal-to-operation mapping, and Dunet's
-exhaustive `.Match(...)` over the operation cases. Multiple Deal cases may deliberately map to one
-operation case. The net10 factory retains an unknown-`IDeal` fallback and generated catalog diagnostics;
-net10 does not claim native compiler exhaustiveness.
+The Deal dispatch foundation is terminal on `main`. It delivered the Deal module's validated invariant
+net10 factory for the honest `IDealMapper` and `IDealUpdater` families; the production generator and
+analyzer prototype was deliberately removed. PR #633 must consume that proven pattern without claiming
+generated machinery exists or reaching into Deal's internal factory implementation.
+
+Application `IDealTerms` remains a genuine same-interface family. Application Infrastructure owns its
+equivalent invariant factory and complete `DealType` registration catalog. Heterogeneous lifecycle
+operations instead use dedicated non-generic factories returning module-local Dunet unions over their
+concrete implementations, with typed constructor injection and one Deal-to-operation mapping. Multiple
+Deal cases may deliberately map to one operation case.
 
 Because this union names concrete DI implementations, it and its factory remain in the owning module's
 Infrastructure assembly beside the effectful consumer. It must not make Application reference
 Infrastructure or turn a cross-module fact into a service carrier.
 
-The .NET 11 follow-up preserves the factory and call-site semantics, replaces the Dunet wrapper with a
-native union, and regenerates the module catalog against `closed Deal`. The compiler then enforces both
-the operation-union match and generated Deal switch. Neither design contains an
+The .NET 11 follow-up preserves the factory and call-site semantics and replaces each Dunet wrapper with
+a native union against `closed Deal`. The compiler then enforces the operation-union match and closed
+Deal switch. Neither design contains an
 `IWorkflowStepResolver`, `IStepResolver<TStep>`, `IKeyedServiceProvider`, global workflow bundle, or
 four-Deal executor switch.
 
@@ -477,16 +480,18 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
   mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
   replacement.
-- [ ] After the Deal foundation gate opens and the compile-recovery frontier is green, consume its
-  generator for Application `IDealTerms` and for dedicated net10 operation factories plus Dunet unions
-  over heterogeneous concrete implementations. Keep mapping once at the module composition boundary,
-  allow deliberate many-Deal-to-one-operation aliases, match by operation case, and remove keyed
-  service-provider lookup.
-- [ ] Do not convert honest same-interface families to operation unions or introduce an interim
-  handwritten factory. Use the delivered invariant module strategy factory directly.
+- [ ] After the compile-recovery frontier is green, apply the landed validated invariant-factory pattern
+  to Application `IDealTerms`. Application owns its marker, factory, catalog, registrations, and exact
+  `DealType` coverage; it does not reference Deal Infrastructure internals.
+- [ ] Give each genuinely heterogeneous operation one dedicated net10 factory returning a Dunet union
+  over its concrete implementations. Keep mapping once at the module composition boundary, allow
+  deliberate many-Deal-to-one-operation aliases, match by operation case, and remove keyed service-
+  provider lookup from consumers.
+- [ ] Do not convert honest same-interface families to operation unions or erase heterogeneous
+  invocations behind a manufactured common interface.
 
-Gate: each command resolves one local step; no service can resolve another module's steps or request a
-whole workflow.
+Gate: each command invokes one module-owned operation; no service can resolve another module's
+operations or request a whole workflow.
 
 ### Phase 6 — projections, compatibility, and delivery
 

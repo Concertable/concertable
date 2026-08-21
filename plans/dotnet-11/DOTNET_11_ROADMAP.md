@@ -6,23 +6,25 @@
 >
 > **Current decision:** first deliver the net10 Deal generator plus mapper/updater foundation, then
 > complete the Application, Booking, and Concert module split that consumes it. The first .NET 11
-> adoption slice is the B2B runtime after that module split lands. Native unions will model closed internal values, beginning with the
-> combined journey projection and proven case-specific module states, triggers, and operation
-> outcomes and module-local heterogeneous operation choices, but never a global workflow bundle,
-> cross-module lifecycle ownership, service location, or DI dispatch inside the union.
+> adoption slice is the B2B runtime after that module split lands. Native unions will model closed
+> internal values, beginning with the combined journey projection and proven case-specific module
+> states, triggers, and operation outcomes. The later Deal cut-over uses module-local implementation
+> unions for heterogeneous operations without restoring cross-module workflow ownership or service
+> location.
 
 ## How to continue this roadmap
 
-The selected item is blocked behind the lifecycle ownership implementation. Continue that actionable
-owner directly:
+The selected item is blocked behind the lifecycle ownership implementation, which is itself suspended
+behind the actionable Deal dispatch foundation. Continue that foundation owner directly:
 
 ```text
-/resume-plan @plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md
+/resume-plan @plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md
 ```
 
-The B2B owner will open and surface the blocked .NET 11 ledger. Do not resume that blocked ledger
-directly, and do not start another .NET 11 service slice until this one establishes the package, CI,
-hosting, and toolchain conventions.
+The Deal owner will reopen the lifecycle ledger after the foundation lands; the lifecycle owner then
+opens this blocked .NET 11 ledger. Do not resume either blocked ledger directly, and do not start
+another .NET 11 service slice until this one establishes the package, CI, hosting, and toolchain
+conventions.
 
 ## Status
 
@@ -45,11 +47,10 @@ hosting, and toolchain conventions.
   [`B2B_WORKFLOW_UNIONS_PLAN.md`](B2B_WORKFLOW_UNIONS_PLAN.md) and
   [`B2B_WORKFLOW_UNIONS_PROGRESS.md`](B2B_WORKFLOW_UNIONS_PROGRESS.md). Upgrade the B2B runtime and
   reverse build/test closure while keeping published cross-service contracts net10-compatible. Add
-  the journey-stage union and the case-specific module state, trigger, and operation-outcome unions justified after the
-  lifecycle split; allow concrete implementation unions only behind module-local dedicated typed
-  factories, never as a restored cross-module workflow. Record the supported C# 15
-  compiler/target matrix needed by the downstream Deal representation cut-over and the native-union
-  syntax/runtime gate for its heterogeneous operation values.
+  the journey-stage union and the case-specific module state, trigger, and operation-outcome unions
+  justified after the lifecycle split. This runtime slice keeps its unions value-only while recording
+  the supported C# 15 compiler/target matrix and native-union syntax/runtime gate needed by the
+  downstream Deal representation and module-local implementation-union cut-over.
 
 ### Blocked follow-up
 
@@ -104,13 +105,13 @@ ReUnion integration + B2B typed-result delivery
 - The B2B runtime and every direct reverse build/test consumer compile on a supported .NET 11 SDK.
 - Customer, Search, Payment, and Auth remain independently buildable on net10 against published B2B
   contract packages.
-- Application, Booking, and Concert retain independent state machines and contextual operations; no
-  native union performs service resolution or recreates a workflow bundle, heterogeneous lifecycle
-  operations use dedicated factories plus union matches, and the Deal workstream replaces honest
-  same-interface selection with its generated invariant module factory.
+- Application, Booking, and Concert retain independent state machines and contextual operations;
+  heterogeneous lifecycle operations use module-local implementation unions and matches without
+  service location, and the Deal workstream replaces honest same-interface selection with its generated
+  invariant module factory.
 - Native unions model the combined journey projection and proven case-specific module states,
-  triggers, operation outcomes, and approved module-local heterogeneous operation choices with
-  exhaustive coverage.
+  triggers, and operation outcomes with exhaustive coverage. Only the later Deal-owned heterogeneous
+  operation unions contain runtime implementations, and they remain inside the owning module.
 - The B2B preview slice and its generated platform-sync PR are merged with full merge-queue E2E green.
 - The GA follow-up is merged, B2B Workers are supported by the target host, and the preview deployment
   restriction is gone.

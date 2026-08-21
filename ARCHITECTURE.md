@@ -10,4 +10,4 @@ split into separate repos. That premise and the rules it imposes live with the c
 - **Web (`app/web/`)** — per-surface SPAs (customer, venue, artist, business): [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Mobile (`app/mobile/`)** — React Native (Expo) apps, b2b + customer: [`app/mobile/AGENTS.md`](./app/mobile/AGENTS.md).
 
-See root `CLAUDE.md` for top-of-context rules and pointers.
+See root [`AGENTS.md`](./AGENTS.md) for top-of-context rules and pointers.

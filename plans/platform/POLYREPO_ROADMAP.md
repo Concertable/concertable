@@ -1,8 +1,8 @@
 # Polyrepo Roadmap — services as genuinely standalone repos
 
 > **Roadmap** for the polyrepo epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never
-> deleted, lives until the epic ships). Each buildable item spins off its own feature plan; see
-> [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> deleted, lives until the epic ships). Each buildable item spins off its own feature plan; the
+> roadmap tier is the `plans` skill.
 >
 > **North star:** [`api/AGENTS.md`](../../api/AGENTS.md) — *"The monorepo is a convenience only. Each
 > service is independently owned and will split into its own repo with its own developers. Design every
@@ -125,7 +125,30 @@ tech-debt N7: "a full 6-service history rewrite for a split-repo future nothing 
 gated on §6. (`mirror.yml` still references a `POLYREPO_COMPLETION.md` that no longer exists; fix or drop
 that reference as part of this stream.)
 
-## 6. End-state shape — 🔴 undecided (the deciding gate)
+## 6. End-state shape — ✅ decided 2026-08-18: a true one-way cut
+
+**Tommy's ruling: the monorepo goes.** Services become independently-developed repos, not buildable
+read-only mirrors. This unblocks §4c and settles the guidance question that was blocked behind it: there
+is no `api/` node in a polyrepo, so `api/agents/` and `api/AGENTS.md` are destinations with no future.
+Everything in them re-homes to `standards/` (platform-wide, inherited by every service repo) or to the
+owning service's repo. **Done 2026-08-19:** `api/agents/` and `app/agents/` are deleted, the generic half
+lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's roster in
+`Concertable/agent-standards`, all delivered as plugins; `api/AGENTS.md` is 78 lines of pointers with no
+`@`-imports. `docs/INDEX.md` maps topic to owner.
+
+**When the cut runs — gated on the launch plan.** Executing the cut — creating the service repos and
+deleting the monorepo — does **not** begin until the entire launch plan
+([`plans/launch/LAUNCH_ROADMAP.md`](../launch/LAUNCH_ROADMAP.md)) is delivered; that is months out. What
+runs first, and now, is the polyrepo-*ready* corpus work
+([`plans/docs/POLYREPO_READY_PLAN.md`](../docs/POLYREPO_READY_PLAN.md)): re-homing every rule out of the
+doomed nodes so the eventual repos inherit a correct corpus on day one. `api/AGENTS.md` is one of those
+nodes (its N3) and re-homes **well before** the cut — it is not itself launch-gated; only the physical
+split is. Until N3 lands, `api/AGENTS.md` stays as the retained 78-line pointer floor.
+
+The remaining sub-decision is still open: whether a true cut restructures to per-service colocation
+(`services/<x>/{api,web,mobile}`) or uses a multi-source mirror assembler.
+
+### Original framing (kept for the trade-off it records)
 
 The open architecture decisions (D-A / D-B in [`POLYREPO_FULLSTACK_PLAN.md`](POLYREPO_FULLSTACK_PLAN.md)):
 
@@ -151,3 +174,6 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
   and `ARCHITECTURE.md` for Payment + Search (Search + Messaging `AGENTS.md` and Messaging `ARCHITECTURE.md`
   skipped — nothing service-specific). Docs-reviewed (3 accuracy findings fixed). Owning plan
   `SERVICE_DOC_LOCALITY_*` deleted; git history is the archive. **4c** (plans-tree relocation) remains, gated on §6.
+- **2026-08-20 — Cut execution gated on launch.** The one-way cut (repo creation + monorepo deletion) waits
+  for the entire launch plan to ship. The polyrepo-ready corpus re-home (`POLYREPO_READY_PLAN.md`, incl.
+  `api/AGENTS.md` N3) is the prerequisite that runs first and is not launch-gated.

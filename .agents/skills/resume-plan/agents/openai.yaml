@@ -1,4 +1,0 @@
-interface:
-  display_name: "Resume Plan"
-  short_description: "Recover plan status and the exact next step"
-  default_prompt: "Use $resume-plan to continue actionable plan work or tell me exactly how to clear its blocker."

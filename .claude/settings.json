@@ -6,7 +6,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/merge-review-gate.py\"",
+            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/merge_review_gate.py\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/skill_router.py\"",
             "timeout": 15
           }
         ]
@@ -23,5 +33,32 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "agent-process@agent-standards": true,
+    "dotnet@agent-standards": true,
+    "react@agent-standards": true,
+    "dotnet-standards@dotagents": true,
+    "react-standards@react-agents": true
+  },
+  "extraKnownMarketplaces": {
+    "agent-standards": {
+      "source": {
+        "source": "github",
+        "repo": "Concertable/agent-standards"
+      }
+    },
+    "dotagents": {
+      "source": {
+        "source": "github",
+        "repo": "tomjseery/dotagents"
+      }
+    },
+    "react-agents": {
+      "source": {
+        "source": "github",
+        "repo": "tomjseery/react-agents"
+      }
+    }
   }
 }

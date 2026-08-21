@@ -15,15 +15,15 @@
 ## Current state
 
 No .NET 11 implementation exists. The previous design proposed unions over concrete workflow step
-services. That global target is superseded: the lifecycle refactor deletes the cross-stage workflow and
-gives Application, Booking, and Concert independent state machines and contextual operations. Native
-unions are selected for small closed internal values and module-local heterogeneous operation choices
-returned by dedicated typed factories. They never recreate the workflow bundle or resolve DI.
+services. That target is superseded: the lifecycle refactor deletes the cross-stage workflow and gives
+Application, Booking, and Concert independent state machines and contextual operations. Native unions
+are selected for small closed internal values, beginning with the read-only combined journey
+projection and extending only to proven case-specific module states, triggers, and operation outcomes.
 
-The separate Deal plan selected a published closed record hierarchy, native unions for heterogeneous
-internal operations, and generated invariant module factories for the honest same-interface terms,
-mapper, and updater families. Lifecycle executors and steps are union/match operations, not factory
-families. This plan
+The separate Deal plan selected a published closed record hierarchy, module-local implementation unions
+for heterogeneous internal operations, and generated invariant module factories for the honest
+same-interface terms, mapper, and updater families. Lifecycle executors and steps use dedicated
+factories plus union matches, not the common-interface strategy factory. This plan
 owns the prerequisite C# 15 native-union/runtime and compiler/target/consumer matrix; the Deal plan owns
 its later internal-value migration, breaking package cut-over, and classification of provisional keyed
 selectors.
@@ -40,16 +40,16 @@ Resume when: Current `main` contains the delivered lifecycle split and the lifec
 ## Completed work
 
 - Established the B2B runtime/net10 Contracts compatibility boundary and SDK/Functions risks.
-- Rejected unions over DI step implementations after the lifecycle ownership decision.
-- Replanned the work as a runtime upgrade with native unions for closed internal values and approved
-  module-local heterogeneous operation choices, never a global workflow or service locator.
+- Rejected the cross-stage union over DI step implementations after the lifecycle ownership decision.
+- Replanned this work as a runtime upgrade with native unions for closed internal values; the downstream
+  Deal plan owns module-local heterogeneous-operation implementation unions.
 - Registered the Deal dispatch/representation plan as a downstream consumer of the supported C# 15
   native-union/runtime and target matrix.
 
 ## Verification
 
 - Published B2B Contracts have net10 consumers and cannot become net11-only in this slice.
-- Native unions do not resolve keyed services or DI lifetimes; dedicated typed factories own construction.
+- Native unions do not resolve keyed services or DI lifetimes.
 - No runtime verification applies while the implementation worktree is blocked and absent.
 
 ## Reviews
@@ -60,8 +60,9 @@ a fresh docs review before implementation.
 ## Decisions, discoveries, blockers, and deviations
 
 - The runtime upgrade is the platform gate for native union adoption.
-- Native unions model closed values and approved module-local operation choices; the journey-stage
-  projection is the first runtime-plan-owned use.
+- This plan's native unions model closed values; the journey-stage projection is the first required use.
+- The Deal plan may later use native unions over module-local heterogeneous operation implementations;
+  those unions do not restore the rejected cross-module workflow or service location.
 - The lifecycle split owns state architecture; the Deal plan owns replacement of its provisional
   selectors after delivery with generated same-interface factories, unions, direct calls, or data.
 - Published Contracts and persisted/wire models remain union-free in this runtime PR.
