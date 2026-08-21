@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through Admin/Tenant integration fixture-ownership work head
-  `f1e7dca088d6d60f7a0c6bc27ca181e8667e68da`. Local, remote-tracking, and PR heads were verified equal;
+  through complete module integration fixture-ownership work head
+  `e196fddb1bf7227ae8eb4496b897bf781b73d187`. Local, remote-tracking, and PR heads were verified equal;
   this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -271,21 +271,30 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: remove the remaining public `ApiFixture.Services` surface. Reclassify the Artist, User, and
-Venue integration assertions currently creating scopes from it; expose only owning-module
-typed context/read helpers on their module-local fixtures, and move any complete multi-module assertion to
-B2B Process through HTTP or Contracts. Remove the public service-provider property once the last consumer
-is gone.
-Allowed scope: those module integration fixtures/tests, their owning test-project references/IVTs, the
-host-neutral shared harness, and the integration-project architecture guard. Do not edit aggregate
-transition tables or state-machine implementation files owned by the parallel state-machine slice.
-Exit gate: no integration test accesses `IServiceProvider` or a generic context; each module fixture resolves
-only its own real production context/read stance; the shared `ApiFixture` has no public service-provider
-surface; affected projects build; the architecture guard, plan graph, and `git diff --check` pass.
+Active slice: close the integration-test topology and B2B build gates. Audit the solution/project roster,
+remaining namespaces, project references, IVTs, collection fixtures, and test-tier metadata for stale
+Concert ownership or missing module integration projects; then build the full B2B solution and address only
+topology/composition fallout.
+Allowed scope: integration-test topology metadata and compile fixes caused by the ownership moves. The shared
+`ApiFixture.Services` host-harness capability remains available; module fixtures inherit it and resolve only
+their own `dbContext`/`readDbContext` stance. Do not edit aggregate transition tables or state-machine
+implementation files owned by the parallel state-machine slice.
+Exit gate: the shared fixture project contains only host-neutral `ApiFixture`; every module fixture is local;
+all required integration projects are in `Concertable.B2B.slnx`; the full B2B solution, architecture tests,
+plan graph, and `git diff --check` pass without local integration or E2E execution.
 Commit and push in bounded checkpoints.
 
 ## Completed work
 
+- Published remaining-fixture ownership checkpoint `e196fddb1`; local HEAD, the remote branch, and PR
+  #633 `headRefOid` all equalled `e196fddb1bf7227ae8eb4496b897bf781b73d187`. Moved User's fixture out
+  of the shared harness, added module-local Artist and Venue fixtures, converted their persistence
+  assertions to owning read contexts, and moved the complete Admin registration journey to B2B Process.
+  Standardized fixture fields on `dbContext`/`readDbContext`, retained the inherited public service provider
+  as a host-harness capability, and removed the resolved fixture TECH_DEBT item. Artist, Venue, Application,
+  Booking, Admin, Tenant, User, Concert, and Process integration projects compile with 0 errors; the focused
+  architecture guard passes 1/1, the plan graph reports 0 errors and 0 warnings, and `git diff --check`
+  passes.
 - Published Admin/Tenant fixture-ownership checkpoint `f1e7dca08`; local HEAD, the remote branch, and
   PR #633 `headRefOid` all equalled `f1e7dca088d6d60f7a0c6bc27ca181e8667e68da`. Moved both module
   fixtures out of the shared harness, replaced test service location with typed owning-module operation
