@@ -16,8 +16,8 @@ remote-tracking, and PR heads equal `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`; 
 `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. `origin/main` advanced six commits while exact-head CI was running and
 was merged cleanly at `99412536cc0f8249cc42771322ba0a706509b666`. The incoming delta restructures architecture
 guidance and advances all services to the already-green `0.1.0-alpha.0.1124` platform pin; it did not overwrite any
-dashboard change. The reconciliation now requires proportional validation and incremental review before its exact
-head can be pushed for fresh CI. The delivered work includes:
+dashboard change. Proportional validation is green; the reconciliation now requires incremental review before its
+exact head can be pushed for fresh CI. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -72,8 +72,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Rebuild the affected graph against platform `0.1.0-alpha.0.1124`, run the plan graph, and incrementally review the
-   complete reconciliation delta through merge `99412536c`.
+1. Incrementally review the complete current-main reconciliation delta through merge `99412536c` and address every
+   finding.
 2. Push the exact reviewed head, require fresh exact-head CI green, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -109,6 +109,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 - `python .agents/hooks/plan_graph.py --root <worktree>` — 0 errors and 0 warnings after the review checkpoint.
 - Current-main reconciliation: Conversations unit tests passed 46/46; the B2B AppHost build succeeded with 0 errors
   (two pre-existing vulnerability-feed availability warnings); the plan graph remained at 0 errors and 0 warnings.
+- Current-main `2323c77e7` reconciliation: the B2B AppHost restored platform `0.1.0-alpha.0.1124` and built with 0
+  errors; Conversations tests passed 46/46; Concert tests passed 233/233; the plan graph passed with 0 errors and 0
+  warnings. The known Venue activity URL and both dashboard payout-status inventory calls remain present.
 - Platform-sync supersession policy tests passed 4/4, both touched workflow YAML files parsed successfully, and the
   helper passed Node syntax validation.
 - Fresh CI run `32528668315`: workflow tests, hooks, frontend boundaries, platform pack, and all seven frontend carves
