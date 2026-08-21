@@ -7,15 +7,17 @@
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563)
 - Dependency/package gates: producer packages are published; this API-changing consumer merge must complete its generated platform-sync follow-through
-- Last reconciled: 2026-08-21 against `origin/main` `20012d1a8`; current base `2323c77e7` is pending reconciliation
+- Last reconciled: 2026-08-21 against `origin/main` `2323c77e7` in merge `99412536c`
 
 ## Current state
 
 Implementation, authenticated Phase A.8 acceptance, and incremental review are complete. The local,
 remote-tracking, and PR heads equal `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`; its reviewed work watermark is
-`4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. Current-main reconciliation was complete through `20012d1a8`, but
-`origin/main` advanced six commits to `2323c77e7` while exact-head CI was running. PR #563 must absorb that base,
-rebuild, pass incremental review, and receive fresh exact-head CI before queue admission. The delivered work includes:
+`4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. `origin/main` advanced six commits while exact-head CI was running and
+was merged cleanly at `99412536cc0f8249cc42771322ba0a706509b666`. The incoming delta restructures architecture
+guidance and advances all services to the already-green `0.1.0-alpha.0.1124` platform pin; it did not overwrite any
+dashboard change. The reconciliation now requires proportional validation and incremental review before its exact
+head can be pushed for fresh CI. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -70,8 +72,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Merge current `origin/main` `2323c77e7`, resolve to current-main contracts, rebuild the affected graph, run the
-   plan graph, and incrementally review the complete reconciliation delta.
+1. Rebuild the affected graph against platform `0.1.0-alpha.0.1124`, run the plan graph, and incrementally review the
+   complete reconciliation delta through merge `99412536c`.
 2. Push the exact reviewed head, require fresh exact-head CI green, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -92,6 +94,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 - Reconciled with current main `20012d1a8`; the sole conflict was `MessageService.cs`, resolved by retaining the
   dashboard's atomic message-plus-outbox transaction while accepting main's `InsertAsync` conversions everywhere
   they satisfy the single-staged-write contract.
+- Reconciled cleanly with current main `2323c77e7` in merge `99412536c`; the incoming six commits are architecture
+  guidance cleanup plus the green `0.1.0-alpha.0.1124` platform sync, and all known dashboard fixes remain intact.
 - Preserved and committed the Payment provider inventory and Venue activity integration URL corrections in
   `276360edb`; the supplied pre-resume runs were Payment unit tests 489/489 and Venue integration tests 31/31.
 - Phase A.8 Browser acceptance passed for authenticated seeded Venue and Artist dashboards at 1440×1000, 834×1112,
