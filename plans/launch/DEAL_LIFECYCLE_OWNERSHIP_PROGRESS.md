@@ -236,18 +236,24 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: move the single-owner Booking financial-outcome coverage out of Concert.
-Allowed scope: `ApplicationFinancialOperationApiTests`, the stale `EscrowPaymentProcessorTests`, Booking's
-current acceptance financial processor/API surface, own-module test helpers and friend declarations, and
-the stale Concert metadata those moves make removable.
-Exit gate: the Booking integration project builds with boundary-correct financial success/failure coverage,
-the obsolete Concert processor vocabulary is gone, the remaining Concert integration project has no
-Booking-only financial test class, the module integration-project boundary guard passes, the plan graph
-reports zero errors/warnings, and `git diff --check` passes. Commit and push this bounded Booking move before
-splitting mixed Application/Booking/process suites.
+Active slice: move the Artist dashboard integration coverage out of Concert, then split Contract API
+coverage between Application consent/signature ownership and Booking's immutable Contract ownership.
+Allowed scope: `ArtistDashboardCountsTests`, `ContractApiTests`, their owning module fixtures/helpers,
+own-module friend declarations/project references, and the stale Concert metadata those moves make
+removable.
+Exit gate: Artist, Application, and Booking integration projects build with their owned cases; Contract
+formation, metadata, PDF, and snapshot assertions use only Booking persistence while consent/signature and
+fingerprint validation use only Application persistence; the remaining Concert project has neither test
+class; the module integration-project boundary guard passes; the plan graph and `git diff --check` pass.
+Commit and push this bounded ownership split before moving the complete deal journeys.
 
 ## Completed work
 
+- Moved `ApplicationFinancialOperationApiTests` into Booking integration tests and replaced the stale
+  `EscrowPaymentProcessorTests` with `AcceptanceFinancialOperationOutcomeProcessorTests`. The rewritten
+  test dispatches the current capture-success contract twice through host-neutral harness infrastructure,
+  asserts Booking confirmation through the Booking read stance, and proves exactly one Booking-owned inbox
+  acknowledgment through Booking's real production context. No test receives a service provider.
 - Published Application integration ownership checkpoint `9b28ce842`; local HEAD, the remote branch, and
   PR #633 `headRefOid` all equalled `9b28ce842b8143b74c9cbf56e75c866a7a62b69c`. Moved
   `ApplicationApiTests` and `ApplicationWithdrawRejectApiTests` into Application integration tests.
@@ -376,6 +382,8 @@ splitting mixed Application/Booking/process suites.
 
 ## Verification
 
+- Booking financial-outcome move: the Booking integration project builds with 0 warnings and 0 errors;
+  the stale `EscrowPaymentProcessor` test/class vocabulary is absent.
 - Application single-owner move: the Application integration project builds with 0 warnings and 0 errors.
   The reduced Concert integration project now has exactly 17 known compile errors, one fewer because the
   stale withdrawal/rejection suite moved and was corrected in its owning project.
