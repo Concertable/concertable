@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`  _(2026-08-21)_
-**Security-reviewed up to commit:** `652fd3aac91e5ba6689530efe6ad113c84a42772`  _(2026-08-21)_
+**Reviewed up to commit:** `c6cc262b8dddcec7108d987d04d4940c891d38e4`  _(2026-08-21)_
+**Security-reviewed up to commit:** `c6cc262b8dddcec7108d987d04d4940c891d38e4`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -172,3 +172,18 @@ all mechanically routed standards, and the six repository lenses. The range cont
 two test arrangements corrected from the removed `FlatFeeDeal` type to the current `FlatFeeDealDto` contract. The
 Concert unit suite passed 233/233. No security-sensitive path changed, so the existing security watermark remains the
 applicable security review boundary.
+
+## Incremental review — 2026-08-21 (final current-main reconciliation)
+
+- [x] **COR4 — LOW — correctness/plan state** — `plans/launch/MANAGER_FRONT_PAGE_PROGRESS.md:15`
+  The reconciliation checkpoint still claimed the local head equalled the last pushed remote and PR heads after local
+  merge/checkpoint commits had been created. It now records `3ebc4722f` as the last pushed state and distinguishes the
+  subsequent local reconciliation tail, preventing a resumed delivery from treating unpushed work as remote.
+
+No other findings survived the confidence filter. The incremental review covered `4c28ab7f7..c6cc262b8` (13 commits)
+through the mandatory native and security layers, every mechanically routed current-main standard, and correctness,
+service isolation, module boundaries, seeding, language/framework conventions, and changed-behaviour test coverage.
+The incoming six base commits only relocate architecture guidance and advance all five package pins consistently to
+`0.1.0-alpha.0.1124`. The correction tail received a second native and security pass with no findings. Validation
+passed the B2B AppHost build with 0 errors, Conversations 46/46, Concert 233/233, and the plan graph at 0 errors and 0
+warnings. No local E2E was run; the merge queue owns that tier.

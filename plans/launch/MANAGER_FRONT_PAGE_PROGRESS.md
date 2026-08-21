@@ -17,8 +17,8 @@ remote-tracking and PR heads equalled `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`
 current-main reconciliation. `origin/main` advanced six commits while exact-head CI was running and
 was merged cleanly at `99412536cc0f8249cc42771322ba0a706509b666`. The incoming delta restructures architecture
 guidance and advances all services to the already-green `0.1.0-alpha.0.1124` platform pin; it did not overwrite any
-dashboard change. Proportional validation is green; the reconciliation now requires incremental review before its
-exact head can be pushed for fresh CI. The delivered work includes:
+dashboard change. Proportional validation and incremental review are green; exact reviewed reconciliation work head
+`c6cc262b8dddcec7108d987d04d4940c891d38e4` can now be pushed for fresh CI. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -73,9 +73,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Incrementally review the complete current-main reconciliation delta through merge `99412536c` and address every
-   finding.
-2. Push the exact reviewed head, require fresh exact-head CI green, complete `/merge`, follow the generated
+1. Transport the final review and verified-push checkpoint around exact reviewed work head `c6cc262b8`, then require
+   fresh exact-head CI green.
+2. Complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
@@ -172,8 +172,10 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 - Incremental range `652fd3aac..4c28ab7f7` (3 commits) was reviewed through the mandatory native layer and all routed
   standards with no findings; Concert unit tests pass 233/233.
 - Compiler-correction review transport `7484a8d3a` and checkpoint `3ebc4722f` are verified on the remote and PR.
-- Review readiness is temporarily withdrawn solely because `origin/main` advanced to `2323c77e7`; the resulting
-  reconciliation delta requires incremental review before merge.
+- Incremental range `4c28ab7f7..c6cc262b8` (13 commits) was reviewed through the mandatory native and security layers,
+  all routed current-main standards, and all six repository lenses. `COR4` corrected the ledger's stale claim that
+  local, remote, and PR heads still matched after creating the reconciliation tail. No other findings remain; both
+  correction-tail re-reviews were clean. Correctness and security watermarks are `c6cc262b8dddcec7108d987d04d4940c891d38e4`.
 
 ## Decisions, discoveries, blockers, and deviations
 
