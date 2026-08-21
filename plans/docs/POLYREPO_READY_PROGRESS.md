@@ -7,7 +7,8 @@
 - Branch: `Docs/docs_polyrepo-ready-cross-harness-delivery`, from `origin/main` at `1e26f8244`, layered on
   N2 consumer branch `Docs/docs_polyrepo-ready-route-table-convention` at `a3bdd42e8`.
 - PRs: N2 producer **agent-standards #12 — open**, N2 consumer **this repo #695 — open**; cross-harness
-  producers **agent-standards #13**, **dotagents #3**, **react-agents #1 — draft**; consumer PR pending.
+  producers **agent-standards #13**, **dotagents #3**, **react-agents #1 — draft**; consumer **this repo
+  #696 — draft**.
 - Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
   The current machine is provisioned and verified for both harnesses; `skill-routes` itself joins the cache
   after N2 producer #12 merges and provisioning is rerun.
