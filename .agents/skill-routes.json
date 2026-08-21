@@ -89,6 +89,13 @@
       ]
     },
     {
+      "path": "\\.CompositionTests[^/]*/.*\\.cs$",
+      "skills": [
+        "composition-testing"
+      ],
+      "note": "The composition-test tier builds each host's real production registration graph without starting it, then ValidateComposition proves the roots ValidateOnBuild cannot. Every executable host is covered here or declares a CompositionValidationExclusion."
+    },
+    {
       "path": "\\.csproj$",
       "content_requires": "<IsTestProject>\\s*true",
       "skills": [
@@ -159,7 +166,7 @@
         "dotnet-standards:microservice-boundaries",
         "dotnet:microservice-boundaries"
       ],
-      "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is api/ARCHITECTURE.md."
+      "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is the microservice-boundaries skill."
     },
     {
       "path": "Concertable\\.(Kernel|Contracts)/.*\\.cs$",

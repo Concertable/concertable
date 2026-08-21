@@ -1,6 +1,6 @@
 # Concertable
 
-Concertable connects venues, artists and fans around live music ([`docs/OVERVIEW.md`](./docs/OVERVIEW.md) — the product in one page). It is a monorepo (a convenience, not the architecture) with a `.NET` microservices backend in `api/` and frontend surfaces in `app/`. The backend services own their runtime; cross-service deps are Contracts-only; standalone AppHosts are canonical. **Read [`api/ARCHITECTURE.md`](./api/ARCHITECTURE.md) before designing anything that crosses a service boundary.** Forgetting this leads to re-monolithing the system.
+Concertable connects venues, artists and fans around live music ([`docs/OVERVIEW.md`](./docs/OVERVIEW.md) — the product in one page). It is a monorepo (a convenience, not the architecture) with a `.NET` microservices backend in `api/` and frontend surfaces in `app/`. The backend services own their runtime; cross-service deps are Contracts-only; standalone AppHosts are canonical. **Read the `microservice-boundaries` skill before designing anything that crosses a service boundary** (its design rationale and decision history are the `microservices-architecture` skill). Forgetting this leads to re-monolithing the system.
 
 **No standard lives in this repo — not for code, not for process.** How work gets done is a set of
 load-on-demand skills: `git-branching`, `committing`, `merging`, `remote-validation`, `plans`,
