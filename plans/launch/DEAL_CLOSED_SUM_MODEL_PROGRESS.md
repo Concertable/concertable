@@ -10,9 +10,9 @@
 - Branch: `Refactor/deal-dispatch-foundation`
 - Implementation PR: [#678](https://github.com/Concertable/concertable/pull/678), open and ready, targeting `main`;
   queue-ejected after API E2E failure; verified work head
-  `f26b537a3a362237130b166b7f633e4dd2c8bfea`
-- Push state: reviewed work head `f26b537a3a362237130b166b7f633e4dd2c8bfea` was pushed as
-  `ad1de76998d3916ba11028eb625357aad91feb11..f26b537a3a362237130b166b7f633e4dd2c8bfea` and verified equal
+  `a3591ccaf04720cc89c58318744c8e676146311c`
+- Push state: reviewed work head `a3591ccaf04720cc89c58318744c8e676146311c` was pushed as
+  `ce2d1624ccb799aacdc856ee6ac342590d7c5429..a3591ccaf04720cc89c58318744c8e676146311c` and verified equal
   locally, at `origin/Refactor/deal-dispatch-foundation`, and on PR #678; this ledger commit is the
   checkpoint-transport leg
 - Prototype branch: `Spike/net11-closed-dispatch`
@@ -84,8 +84,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-After this final current-main review commit, publish the reviewed head through the plan-managed two-leg
-push, wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
+After this checkpoint-transport commit is pushed and local, remote-tracking, and PR heads are verified
+equal, wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
 
 ## Separate public-library follow-up
 
