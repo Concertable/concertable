@@ -12,8 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Deliver the already-green review-route producer PR [#685](https://github.com/Concertable/concertable/pull/685), then verify its exact-merge `publish-fe-packages` run publishes a new `@concertable/web` alpha containing the review-route exports.
-2. Merge the resulting current `main` into #563, rebuild and push its exact head, require CI green, and complete the remaining Phase A.8 authenticated seeded venue/artist UX review before consumer delivery.
+1. Merge current `origin/main`, including delivered producer PR [#685](https://github.com/Concertable/concertable/pull/685), into consumer PR [#563](https://github.com/Concertable/concertable/pull/563).
+2. Rebuild the frontend packages and all four SPAs against published `@concertable/web@0.1.0-alpha.0.4658`, refresh the consumer review marker, push an exact head, and require CI green.
+3. Complete the remaining Phase A.8 authenticated seeded venue/artist UX review at desktop, tablet, and mobile widths before consumer delivery.
 
 ## Reviews
 
@@ -31,6 +32,18 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
+
+- **Review-route producer delivery and publication are complete.** Producer PR
+  [#685](https://github.com/Concertable/concertable/pull/685) was reconciled with current main, reviewed with no
+  findings, and locally passed 31 shared-web tests, all five frontend package builds, and all four SPA production
+  builds. Exact-head CI run
+  [`32473228969`](https://github.com/Concertable/concertable/actions/runs/32473228969) passed 69 jobs plus its
+  completion sentinel. Because the PR changes a published public package shape and routing behavior, merge-group run
+  [`32474592295`](https://github.com/Concertable/concertable/actions/runs/32474592295) ran and passed the hard floor,
+  API E2E, and UI E2E before #685 merged as `e795b22bb7b93f12c4e7f07e14f306ef6dc148c1`. Exact-merge frontend
+  publication run [`32477431679`](https://github.com/Concertable/concertable/actions/runs/32477431679) then
+  published and feed-verified `@concertable/web@0.1.0-alpha.0.4658`, including the route-provider exports. The PR was
+  app-only, so no platform-sync PR is expected.
 
 - **Reconciled consumer work-head push verified.** Starting remote and PR head
   `d59bc7ac9a73020babe5f870f493bb30501e9fa9` advanced to merge work head
