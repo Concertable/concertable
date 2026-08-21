@@ -64,5 +64,5 @@ fix → re-run loop, and its own tier table names the skill for each red suite.
   queue failure, through that tier's debug skill.
 - A refactor that changes a **published** `Concertable.*` contract is a breaking package change and cannot
   land in one PR — B2B and Customer compile against the published packages, not the source beside them (the
-  carve: [`../api/ARCHITECTURE.md`](../api/ARCHITECTURE.md)). Capture it in its own plan; the expand/contract
+  carve: the `packages` skill). Capture it in its own plan; the expand/contract
   shape is the `plans` skill.

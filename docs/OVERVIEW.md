@@ -31,7 +31,7 @@ through Stripe at all.
 ## Five services
 
 The monorepo is a convenience; each service is independently owned. Full topology and what may depend on
-what: [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md).
+what: the `microservice-boundaries` skill.
 
 | Service | Owns |
 |---|---|
