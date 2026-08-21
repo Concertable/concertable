@@ -5,10 +5,11 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `43c29d85c` _(2026-08-21)_
-**Security-reviewed up to commit:** `43c29d85c` _(2026-08-21)_
+**Reviewed up to commit:** `a8ae9bb5d` _(2026-08-21)_
+**Security-reviewed up to commit:** `a8ae9bb5d` _(2026-08-21)_
 
-> Range reviewed: `4a478433a..43c29d85c` (1 commit).
+> Range reviewed: `4a478433a..a8ae9bb5d` (3 commits — the merge from `origin/main` is a clean,
+> non-conflicting pull of unrelated pin bumps; no new content to review).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
