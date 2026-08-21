@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `bb0e6f3f4b911066a9982e85e40da7e541bf1df7`  _(2026-08-21)_
-**Security-reviewed up to commit:** `bb0e6f3f4b911066a9982e85e40da7e541bf1df7`  _(2026-08-21)_
+**Reviewed up to commit:** `c531e4f1abdf383c53711b8f261963091b739ebe`  _(2026-08-21)_
+**Security-reviewed up to commit:** `c531e4f1abdf383c53711b8f261963091b739ebe`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -104,3 +104,15 @@ customer-compatible default with explicit Venue and Artist overrides. The securi
 manager permissions, and authenticated controller boundaries. Local validation passed the plan graph, all five
 frontend package tiers, 31 shared-web tests, and all four SPA production builds. Environment-dependent integration
 and end-to-end coverage remains assigned to exact-head CI.
+
+## Incremental review — 2026-08-21
+
+- [x] **NAT1 — MEDIUM — native/correctness** — `app/web/shared/src/components/Navbar.tsx:115`
+  Responsive navigation hid the desktop autocomplete below `lg` without retaining a search entry point. Tablet and
+  mobile now receive an accessible compact link to the universal `/find` route, while desktop keeps autocomplete.
+
+No other findings survived the confidence filter. The incremental review covered
+`bb0e6f3f4..c531e4f1a` (46 commits) through the native and security layers plus correctness, service isolation,
+module boundaries, seeding, routed language/framework conventions, and changed-behaviour test coverage. Security
+review found no auth, CORS, development-certificate/private-key, tenant-scope, action-exposure, secret, or supply-chain
+issue. The shared package and all four consuming web builds passed after the fix.

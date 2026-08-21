@@ -11,8 +11,9 @@
 
 ## Current state
 
-Implementation and authenticated Phase A.8 acceptance are complete. The branch contains the current-main merge
-`2900c2c40`, the preserved dashboard validation fixes in `276360edb`, and an uncommitted final QA correction set:
+Implementation, authenticated Phase A.8 acceptance, and incremental review are complete. The branch contains the
+current-main merge `2900c2c40`, the preserved dashboard validation fixes in `276360edb`, the final acceptance fixes in
+`10dcd9313`, and the responsive-search review correction in `c531e4f1a`:
 
 - all four Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -30,16 +31,12 @@ ASP.NET development certificate remains by design. No local E2E was run.
 
 ## Next Steps
 
-1. Commit the final QA corrections and this plan checkpoint.
-2. Run `/incremental-review` from the existing watermark in
-   `reviews/Feature-launch_dashboard-b2b-consumer.md`, mechanically load current-main routed standards, resolve every
-   finding, and stamp both markers to the exact reviewed head.
-3. Run the final plan graph and proportional non-E2E validation, then use the plan-managed two-leg push protocol to
+1. Run the final plan graph and proportional non-E2E validation, then use the plan-managed two-leg push protocol to
    publish and verify the exact reviewed work head and ledger transport head on PR #563.
-4. Require fresh exact-head CI green, complete `/merge`, follow the generated package/platform-sync PR to green and
+2. Require fresh exact-head CI green, complete `/merge`, follow the generated package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
-5. From current `origin/main`, record terminal delivery evidence and delete the plan and ledger together in the
+3. From current `origin/main`, record terminal delivery evidence and delete the plan and ledger together in the
    required docs-only closeout change.
 
 ## Completed work
@@ -59,13 +56,12 @@ ASP.NET development certificate remains by design. No local E2E was run.
 
 ## Verification
 
-- `python .agents/hooks/plan_graph.py --root <worktree>` — 0 errors and 0 warnings before the final ledger compaction;
-  rerun required after this checkpoint.
+- `python .agents/hooks/plan_graph.py --root <worktree>` — 0 errors and 0 warnings after the review checkpoint.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj --no-restore` — succeeded
   on the final contract-seed working tree with 0 errors; two NU1900 vulnerability-feed warnings were environmental.
-- `npm run build --workspace @concertable/web` — succeeded after shared responsive corrections.
-- `npm run build --workspace @concertable/web-venue` and `@concertable/web-artist` — succeeded; existing chunk-size
-  warnings only.
+- `npm run build --workspace @concertable/web` followed by Customer, Venue, Artist, and Business web builds — all
+  succeeded after the responsive-search review correction; existing chunk-size warnings only.
+- `npm test --workspace @concertable/web` — 5 files and 31 tests passed after the review correction.
 - Live readiness probes returned Auth discovery 200 with Venue CORS and B2B `/api/auth/me` preflight with the same
   allowed origin.
 - Browser Phase A.8 — passed as recorded under Completed work. The attempted Venue checkout correctly exposed a
@@ -76,9 +72,9 @@ ASP.NET development certificate remains by design. No local E2E was run.
 ## Reviews
 
 - Review artifact: `reviews/Feature-launch_dashboard-b2b-consumer.md`.
-- Existing correctness/security watermark: `bb0e6f3f4b911066a9982e85e40da7e541bf1df7`.
-- The current-main reconciliation and final QA corrections after that watermark require `/incremental-review`; no
-  merge action is next until that review is clean and both markers are restamped.
+- Incremental range `bb0e6f3f4..c531e4f1a` (46 commits) was reviewed through both mandatory layers and all routed
+  standards. `NAT1` restored a compact search entry point below `lg`; no other findings survived.
+- Correctness and security watermarks are both `c531e4f1abdf383c53711b8f261963091b739ebe`.
 
 ## Decisions, discoveries, blockers, and deviations
 
