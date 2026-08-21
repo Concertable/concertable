@@ -3,32 +3,28 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-n3-api-floor`
-  (consumer, this slice). Producer worktree:
-  `C:/Users/TommySeery/source/repos/agent-standards.worktrees/Docs/polyrepo-ready-n3-shared-intersection`.
-- Branch: `Docs/docs_polyrepo-ready-n3-api-floor` (consumer); `Docs/polyrepo-ready-n3-shared-intersection`
-  (producer). Both close after their PRs merge.
-- PRs: **N3 producer agent-standards [#15](https://github.com/Concertable/agent-standards/pull/15) MERGED**
-  (`084e0e3`); **N3 consumer this repo [#698](https://github.com/Concertable/concertable/pull/698) OPEN**
-  (meta-only, ACC2 fixed); **N3 code/CI follow-up** (ACC1 `.yml` + ACC3 `.cs`) — branch pending. Prior: N2 producer **#12 MERGED**,
-  N2 consumer **#695 MERGED**; cross-harness producers **agent-standards #13**, **dotagents #3**,
-  **react-agents #1** MERGED; consumer **#696 MERGED**.
-- Dependency/package gates: **this diff DOES touch `api/**`** (deletes `api/AGENTS.md` + `api/CLAUDE.md`,
-  edits several `api/**/*.md`). `publish-packages` triggers on `api/**` regardless of file type, so the
-  consumer merge **will** republish (MinVer bump) and open a `chore/platform-sync-*` PR. It is
-  **non-breaking** — no published type shape changed — so the sync PR auto-merges green; whoever merges the
-  consumer owns it to green. This is the first polyrepo-ready slice that trips platform-sync.
-- Last reconciled: 2026-08-21, N3 implemented in both worktrees; producer #15 open, consumer pending.
-  **N3 is delivery-ready; next slice after it lands is N4.**
+- Worktree: none after this close-out merges. (This checkpoint runs from
+  `Concertable.worktrees/Docs/docs_polyrepo-ready-n3-closeout`; the N3 delivery worktrees are closed.)
+- Branch: none after this close-out merges; create a fresh plan-managed branch from `origin/main` for N4.
+- PRs: **N3 all MERGED** — producer agent-standards [#15](https://github.com/Concertable/agent-standards/pull/15)
+  (`084e0e3`); consumer [#698](https://github.com/Concertable/concertable/pull/698) (`7f59fe27`); code/CI
+  follow-up [#700](https://github.com/Concertable/concertable/pull/700) (ACC1 `.yml` + ACC3 `.cs`). Platform-sync
+  PRs #699 + #705 MERGED; final cascade sync #706 non-breaking, auto-merging. Prior: N2 **#12 + #695**,
+  cross-harness **agent-standards #13 / dotagents #3 / react-agents #1 / #696** — all MERGED.
+- Dependency/package gates: none open. N3 tripped platform-sync (deleting/editing `api/**/*.md` and one
+  `api/**/*.cs` comment republished via the coarse `api/**` filter); every resulting sync was **non-breaking**
+  (no published type shape changed) and auto-merged. No red sync, no `platform-sync-broken` issue.
+- Last reconciled: 2026-08-21 — **N3 terminal.** All five N3 PRs merged, machine reprovisioned to `084e0e3`,
+  delivery worktrees closed. **N4 is the next slice.**
 
 ## Current state
 
-**N3 (`api/AGENTS.md` + `api/CLAUDE.md`, 78 lines) is implemented on both sides; producer #15 is open,
-consumer PR pending its merge + machine reprovision.** The finding: four of the five floor sections were
-already skill-owned — microservices/roster → `microservice-boundaries` (`SERVICE_BOUNDARIES.md`), seeding →
-`seeding`, migrations → `migrations`, source-generated logging → the generic `dotagents:logging`. Only
-**"Shared code is the intersection, never the union"** had no canonical home (referenced by `MULTITENANCY.md`
-and `HTTP_CLIENTS.md`, stated only in `api/AGENTS.md`) and no route row on the shared tier.
+**N3 (`api/AGENTS.md` + `api/CLAUDE.md`) is complete and merged — this checkpoint closes it out.** The finding:
+four of the five floor sections were already skill-owned — microservices/roster → `microservice-boundaries`
+(`SERVICE_BOUNDARIES.md`), seeding → `seeding`, migrations → `migrations`, source-generated logging → the
+generic `dotagents:logging`. Only **"Shared code is the intersection, never the union"** had no canonical home
+(referenced by `MULTITENANCY.md` and `HTTP_CLIENTS.md`, stated only in `api/AGENTS.md`) and no route row on the
+shared tier.
 
 - **Producer (agent-standards #15):** Concertable-specific statement of the rule added to
   `standards/dotnet/structure/SERVICE_BOUNDARIES.md` (the generic principle already lives in the paired
@@ -47,16 +43,7 @@ durable home before close-out (Codex-only utility).
 
 ## Next Steps
 
-1. **Admin-merge N3 consumer #698** via `/merge-docs` (meta-only; admin-merge bypasses the queue's E2E).
-   **Then own the `chore/platform-sync-*` PR** it triggers to green — non-breaking (markdown under `api/**`),
-   should auto-merge, but confirm.
-2. **Land the N3 code/CI follow-up** (branch `Fix/polyrepo-ready-n3-code-floor-refs`): remove `api/AGENTS.md`
-   from `.github/workflows/claude-review.yml:34` (ACC1) and repoint `StripeAccountController.cs:12`'s comment
-   off the deleted `api/CLAUDE.md` (ACC3). Touches `.yml` + `.cs` → **normal merge queue** (E2E), not
-   `/merge-docs`. Own its platform-sync too. Then delete `reviews/Docs-docs_polyrepo-ready-n3-api-floor.md`.
-3. **Reprovision this machine** (`scripts/provision-agent-standards.ps1`) + fresh sessions so the merged
-   `SERVICE_BOUNDARIES.md` (with the intersection rule) is installed. (Producer #15 already merged.)
-4. **Then N4** — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525): cross-service
+1. **Begin N4 in a fresh plan-managed worktree from `origin/main`** — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525): cross-service
    by definition, platform-wide in full, the largest single doc left; every service repo needs it day one.
    N5 (root `AGENTS.md`), N6 (`docs/` — carries the open product-narrative question for Tommy: `OVERVIEW.md`,
    `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are neither platform standard nor service-specific — surface,
@@ -65,9 +52,10 @@ durable home before close-out (Codex-only utility).
 
 ## Completed work
 
-- **N3 — `api/AGENTS.md` re-home (this slice).** Producer #15 + consumer (this branch). Route table 37 → 38;
-  the shared-is-the-intersection rule homed in `SERVICE_BOUNDARIES.md`; both floor files deleted; all inbound
-  links repointed. See Current state.
+- **N3 — `api/AGENTS.md` re-home. Terminal.** Producer #15 + consumer #698 + code/CI follow-up #700 (ACC1
+  `.yml` bot-prompt read-list, ACC3 `.cs` comment citation). Route table 37 → 38; the shared-is-the-intersection
+  rule homed in `SERVICE_BOUNDARIES.md`; both floor files deleted; all inbound links (docs, `.yml`, `.cs`)
+  repointed. Platform-sync #699/#705 merged, #706 auto-merging (all non-breaking). Machine reprovisioned.
 - **N2 — route-table convention.** Producer #12: `standards/process/SKILL_ROUTES.md` (skill `skill-routes`)
   + carve-time generator `.agents/gen_skill_routes.py` + gate test; `--kind monorepo` reproduced the live
   37-row table exactly, `dotnet-service` carve clean, `react-app` refused. Consumer #695: `_comment`
@@ -104,19 +92,16 @@ Consumer (this repo):
 
 ## Reviews
 
-**N3 consumer — docs-reviewed (independent agent), 3 Lens-A findings, all real dead references the deletion
-creates.** File: `reviews/Docs-docs_polyrepo-ready-n3-api-floor.md`.
-- **ACC2 (MED, docs)** — `api/Concertable.Search/ARCHITECTURE.md:60` still cited `(api/AGENTS.md)` (line 12 was
-  repointed, line 60 missed; inline code, so reachability didn't catch it). **Fixed in #698** → repointed to
-  the `microservice-boundaries` skill.
-- **ACC1 (HIGH, `.yml`)** — `.github/workflows/claude-review.yml:34` still tells the PR-review bot to read the
-  deleted `api/AGENTS.md`. **ACC3 (LOW, `.cs`)** — `StripeAccountController.cs:12` XML comment cites the deleted
-  `api/CLAUDE.md`. Both are **out of #698's meta-only scope** (CI + source) — fixing them here would drag the
-  docs re-home through the queue's E2E. Routed to a dedicated code/CI follow-up PR (see Next Steps); they are
-  N3 completion work, not deferred debt.
+**N3 — all findings addressed and merged; both review files deleted in this close-out.** The consumer branch
+was docs-reviewed by an independent agent (3 Lens-A dead-reference findings, all created by the deletion);
+#700 had a self-review (2 comment/prompt-text lines, no findings) with a security marker (touched a workflow).
+- **ACC2 (MED, docs)** — `api/Concertable.Search/ARCHITECTURE.md:60` still cited `(api/AGENTS.md)` — fixed in
+  #698 (repointed to `microservice-boundaries`).
+- **ACC1 (HIGH, `.yml`)** + **ACC3 (LOW, `.cs`)** — `claude-review.yml` bot read-list and a
+  `StripeAccountController.cs` comment cited the deleted floor docs; out of #698's meta scope, fixed in #700.
 - Reviewer verified clean: reachability 0 errors, route JSON 38 rows, the shared-tier regex matches the real
-  universal tier and over-matches no per-service `*.Contracts`, every deliberate repoint target exists, the
-  north-star quote matches root `ARCHITECTURE.md` verbatim, no sibling still asserts an `api/`-level floor.
+  universal tier and over-matches no per-service `*.Contracts`, the north-star quote matches root
+  `ARCHITECTURE.md` verbatim, no sibling still asserts an `api/`-level floor.
 
 Producer #15 self-checked: roster-doc addition (generic half already in `dotagents`) + one route row proven by
 the committed gate test and monorepo/carve replay.
@@ -155,5 +140,5 @@ the committed gate test and monorepo/carve replay.
 
 ```
 cd C:/Users/TommySeery/source/repos/Concertable
-Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. Merge N3 producer agent-standards #15, reprovision, open + merge the N3 consumer PR via /merge-docs and own its platform-sync PR to green, then begin N4 in a fresh plan-managed worktree from origin/main.
+Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. N3 is terminal. Create a fresh plan-managed worktree from origin/main for N4 (api/ARCHITECTURE.md + api/docs/MICROSERVICES_ARCHITECTURE.md → agent-standards, platform-wide), then do what the ledger's `## Next Steps` says.
 ```
