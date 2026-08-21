@@ -54,8 +54,9 @@ armed, with the state decision isolated in a repository-owned helper and exercis
 
 ## Next Steps
 
-1. Re-review the NAT5 correction, restamp the reconciled current-main tail, and checkpoint the completed review.
-2. Push the exact reviewed head in two legs and require fresh exact-head CI green (including every feed-restored web
+1. Checkpoint the completed review, push the exact reviewed head in two legs, and verify local, remote-tracking, and PR
+   head equality.
+2. Require fresh exact-head CI green (including every feed-restored web
    carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -125,10 +126,10 @@ armed, with the state decision isolated in a repository-owned helper and exercis
   HTTPS/IPv4 setup, and `NAT4` added the AppHost composition regression. No open findings remain.
 - Incremental range `27e51f65c..c2a69d062` (5 commits) was reviewed through the mandatory native and security layers,
   all mechanically routed standards, and the six architecture/correctness/test lenses. No findings remain.
-- Incremental range `c2a69d062..1ce24bb0b` produced NAT5: a clean-but-idle platform-sync PR could be mistaken for an
-  in-flight queued PR. The correction is implemented and locally validated; the correction tail still requires the
-  mandatory native/security re-review before the watermarks move.
-- Correctness and security watermarks are both `c2a69d062d79685c59590e4f94569949fc9d88a9`.
+- Incremental range `c2a69d062..652fd3aac` (17 commits) produced and resolved NAT5: a clean-but-idle platform-sync PR
+  could be mistaken for an in-flight queued PR. The correction tail passed the mandatory native and security
+  re-review with no further findings.
+- Correctness and security watermarks are both `652fd3aac91e5ba6689530efe6ad113c84a42772`.
 - Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include

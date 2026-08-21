@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c2a69d062d79685c59590e4f94569949fc9d88a9`  _(2026-08-21)_
-**Security-reviewed up to commit:** `c2a69d062d79685c59590e4f94569949fc9d88a9`  _(2026-08-21)_
+**Reviewed up to commit:** `652fd3aac91e5ba6689530efe6ad113c84a42772`  _(2026-08-21)_
+**Security-reviewed up to commit:** `652fd3aac91e5ba6689530efe6ad113c84a42772`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -158,3 +158,9 @@ remains responsible for the authoritative standalone restores and builds.
   preserved indefinitely. Protect only a clean PR with a non-null `autoMergeRequest`, close clean-but-idle PRs, and
   pin both states with a repository workflow-policy test. The classifier now owns that decision, its four-state table
   runs in the required CI aggregate, and the operational workflow installs the same Node runtime used by the test.
+
+No other findings survived the confidence filter. The incremental review covered `c2a69d062..652fd3aac` (17 commits)
+through the mandatory native and security layers plus correctness, service isolation, module boundaries, seeding, all
+mechanically routed standards, and changed-behaviour test coverage. The NAT5 correction received a second native and
+security pass with no findings. Local validation passed 46/46 Conversations unit tests, the B2B AppHost build with 0
+errors, 4/4 platform-sync policy cases, workflow YAML parsing, and the plan graph at 0 errors and 0 warnings.
