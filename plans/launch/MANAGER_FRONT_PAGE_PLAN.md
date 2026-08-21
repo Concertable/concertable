@@ -4,9 +4,9 @@
 
 **Branch:** `Feature/launch_dashboard-b2b-consumer` — draft PR [#563](https://github.com/Concertable/concertable/pull/563).
 
-**Implementation and Phase A.8 are complete.** The live-data cutover, focused tests, authenticated Venue/Artist
-desktop-tablet-mobile acceptance, application mutations, and contract download are green. Incremental review,
-exact-head CI, merge, platform sync, and lifecycle closeout remain.
+**Implementation, Phase A.8, current-main reconciliation, and incremental review are complete.** The live-data cutover,
+focused tests, authenticated Venue/Artist desktop-tablet-mobile acceptance, application mutations, contract download,
+and all review corrections are green. Exact-head CI, merge, platform sync, and lifecycle closeout remain.
 
 See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session decisions that supersede this plan in conflict.
 
