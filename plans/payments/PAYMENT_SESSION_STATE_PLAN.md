@@ -255,7 +255,7 @@ and a pending or failed platform-sync PR.
 focused domain/integration tests and the smallest affected Payment builds pass; provider-contract and
 published compatibility tests remain green.
 
-### Phase 2 - Implement durable provider execution and status refresh
+### Phase 2 - Implement durable provider execution and status refresh ✅ DONE (2026-08-21)
 
 - Add the provider-neutral session adapter, deterministic idempotency-key builder, PaymentIntent and
   SetupIntent option mapping, provider retrieval/cancellation, and real/fake implementations.

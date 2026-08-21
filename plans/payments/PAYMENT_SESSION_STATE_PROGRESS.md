@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-20T21:29:57+01:00` against fetched `origin/main` `1176a002f8e58878f1650b193e7b9ab22daf385c`, branch checkpoint `this commit`, current Payment platform pin `0.1.0-alpha.0.1086`, GitHub PR #597/#645 state, and the green Phase 1 implementation
+- Last reconciled: `2026-08-21` against fetched `origin/main` `1176a002f8e58878f1650b193e7b9ab22daf385c`, branch checkpoint `this commit`, current Payment platform pin `0.1.0-alpha.0.1086`, and the green Phase 2 implementation
 
 ## Current state
 
@@ -17,24 +17,31 @@ wiring, re-scaffolded initial migration, and focused domain/SQL integration cove
 migration wrapper, Payment Web build, all 501 Payment unit tests, and all five focused persistence tests
 pass. No Stripe call, public RPC, worker, webhook expansion, or consumer code has been added.
 
+Phase 2 is green in this commit. Payment now has the provider-neutral session
+adapter, real and deterministic fake Stripe implementations, deterministic create keys/metadata, durable
+create/replay/refresh/retry orchestration, immutable bind-and-normalize behavior, restricted rejection
+diagnostics, provider inventory coverage, and focused unit/integration tests. No public RPC, worker, webhook
+migration, or consumer code is present. The exact-tree Payment Web/Infrastructure and UnitTests builds pass
+with zero warnings and errors, and all 511 Payment unit tests pass. Docker Desktop's Linux engine is healthy,
+and all seven focused SQL-backed service tests pass.
+
 The roadmap item remains unchecked. All implementation must stay inside Payment until the producer PR has
 merged, its packages have published, and the generated platform-sync PR is green and merged.
 
 ## Next Steps
 
-Implement Phase 2 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
+Implement Phase 3 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
 
-1. Re-read the plan and Payment provider guidance, load the routed Stripe/HTTP/testing skills, and verify
-   this Phase 1 commit still matches the branch, current `origin/main`, and provider-contract baseline.
-2. Add the provider-neutral session adapter, deterministic create idempotency key and metadata builders,
-   PaymentIntent/SetupIntent create/retrieve/legal-cancel mapping, and focused real/fake implementations.
-3. Implement reserve-before-create, immutable bind-and-normalize, bound/unbound replay, response-only
-   secret handling, current-provider refresh, and explicit retry orchestration through the shipped
-   normalizers/evaluators. Do not add public RPCs, workers, webhook migrations, or consumer code.
-4. Add deterministic fault injection and focused coverage for every crash window, simultaneous
-   replay/conflict, one-provider-object convergence, secret non-persistence, unknown-status safety, and
-   legal cancellation; run Phase 2's smallest green gate, update this ledger, and commit without starting
-   Phase 3.
+1. Reconcile this Phase 2 commit with current `origin/main`, then re-read the plan, Payment provider guidance,
+   and routed protobuf/HTTP/testing skills against the updated provider-contract baseline.
+2. Add the additive backend request contracts, protobuf session-operation service and methods, server
+   implementation, Client interface/adapter, mapping, DI, and routing for create/replay, explicit retry,
+   and status read.
+3. Enforce service-token authentication, opaque owner scoping, exhaustive typed-error mapping, additive
+   protobuf numbering, and the smallest secret-free status response while keeping every legacy RPC live.
+4. Extend focused gRPC, contract, mapper, frozen-package compatibility, public API, message-URN, protobuf
+   descriptor, and provider-inventory coverage; run the required generators/invariants and smallest Phase 3
+   green gate, update this ledger, and commit without starting Phase 4.
 
 ## Completed work
 
@@ -56,6 +63,8 @@ Implement Phase 2 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
 - Added focused unit and SQL-backed integration coverage for validation, fingerprint stability/versioning,
   concurrent replay/conflict, monotonic revisions, immutable/unique provider binding, duplicate predecessor
   replay, and optimistic concurrency.
+- Implemented the Phase 2 provider adapter and orchestration, including deterministic fault injection,
+  restricted rejection diagnostics, and focused provider/unit/SQL-backed integration coverage.
 
 ## Verification
 
@@ -82,6 +91,18 @@ Implement Phase 2 of `PAYMENT_SESSION_STATE_PLAN.md` as one green checkpoint:
   `20260820191431_InitialCreate` and unrelated migration identities were unchanged.
 - Focused `OperationRowVersion_ConcurrentUpdates_RejectsSecondWriter`: 1 passed, 0 failed, 0 skipped.
 - Focused `PaymentSessionPersistenceTests`: 5 passed, 0 failed, 0 skipped against Testcontainers SQL.
+- Phase 2 provider-inventory focus: 58 passed, 0 failed, 0 skipped.
+- Exact-tree `dotnet build src\\Concertable.Payment.Web\\Concertable.Payment.Web.csproj --no-restore
+  --disable-build-servers`: succeeded with 0 warnings and 0 errors; this compiled Infrastructure as a project
+  dependency.
+- Exact-tree `dotnet build tests\\Concertable.Payment.UnitTests\\Concertable.Payment.UnitTests.csproj
+  --no-restore --disable-build-servers`: succeeded with 0 warnings and 0 errors.
+- Exact-tree `dotnet test tests\\Concertable.Payment.UnitTests\\Concertable.Payment.UnitTests.csproj
+  --no-build --no-restore`: 511 passed, 0 failed, 0 skipped.
+- `docker info`: succeeded against Docker Desktop's Linux engine before the focused integration retry.
+- Environment recovery check: the unrelated B2B/MSBuild process tree had cleared, `docker info` reached
+  Docker Desktop's Linux engine at server version `29.6.2`, and `dotnet --info` completed in 2.6 seconds.
+- Exact-tree focused `PaymentSessionServiceTests`: 7 passed, 0 failed, 0 skipped against Testcontainers SQL.
 
 ## Reviews
 
@@ -110,6 +131,12 @@ phases are green.
 - The original optimistic-concurrency test also inserted two successor attempts, so SQL reached the
   unique-predecessor constraint before the operation row-version check. The test now isolates two scalar
   updates to the same operation row and proves the second writer receives `DbUpdateConcurrencyException`.
+- Phase 2 keeps Stripe SDK types in Infrastructure. Unknown or illegal observations bind the provider object
+  when necessary, retain restricted diagnostics, schedule reconciliation, and return `ProviderUnavailable`
+  without changing normalized state.
+- The earlier Testcontainers fixture failure was environmental: an unrelated B2B run held 14 MSBuild workers
+  and starved the regex engine during static image parsing. After that process tree cleared, the unchanged
+  exact-tree focused suite passed all seven scenarios; no application fix or timeout increase was needed.
 
 ## Resume prompt
 
