@@ -50,6 +50,13 @@ encode — not a reason to keep one table alive in two shapes.
 3. **Out of scope: `POLYREPO_ROADMAP` item 4c.** Where a `launch` plan spanning four services physically
    lives is contentious and gated on that roadmap's §6. How to *write* a plan has no locality question,
    so it does not wait behind it.
+4. **Cross-harness standards delivery is an immediate prerequisite, not work deferred to N8.** Deleting
+   the in-repo skill copies exposed that Claude Code and Codex did not share an installation mechanism:
+   Claude had stale plugin snapshots and Codex had none of the standards plugins. Each standards repo now
+   authors the manifest schema its harness requires; one provisioning command installs or refreshes all
+   five plugins in both harnesses; and the router verifies every skill named by a repo's route table against
+   the active harness only. This is independent of N2's per-repo table generator and was delivered early so
+   ordinary code work can load its conventions now. N8 still proves the final carved repo end to end.
 
 ## The only two destinations
 
@@ -100,8 +107,8 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 
 | # | Node | Size | Destination | Leaves behind |
 |---|---|---|---|---|
-| N1 | `.agents/skills/` — 12 skills left of 28 | **816** of 3,285 lines | platform-wide, three families left of six | per-repo values: script paths, suite names |
-| N2 | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* + a generator | the table itself: per-repo data |
+| ~~N1~~ **done** | `.agents/skills/` — all 28 skills moved (6 of 6 families) | 3,285 lines | platform-wide, across `agent-process` + `dotnet` plugins | per-repo values: script paths, suite names |
+| ~~N2~~ **done** | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* (`SKILL_ROUTES.md`, skill `skill-routes`) + a generator (`gen_skill_routes.py`) | the table itself: per-repo data; `_comment` repointed |
 | N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
 | N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
 | N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
@@ -109,9 +116,9 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
 | N8 | *(gate)* prove one carved service standalone | — | — | — |
 
-**One node per slice, in this order.** N1 first: every hub below it points *at* skills, so re-homing a hub
-before its targets have addresses writes pointers to nowhere. N2 is independent and can run in parallel.
-N3–N6 follow N1. N7 waits on an external decision. N8 is last and is the only evidence.
+**One node per slice, in this order.** ~~N1 first~~ and ~~N2~~ are **done**: every hub below N1 points *at*
+skills, so re-homing a hub before its targets have addresses writes pointers to nowhere; N2 was independent
+and ran alongside. N3–N6 + N7a follow. N7b waits on an external decision. N8 is last and is the only evidence.
 
 ### N1 — the 28 workflow skills (3,285 lines)
 
@@ -124,15 +131,15 @@ Concertable" (which is what produced a keep-bucket in an earlier draft of this p
 | ~~`merge` · `merge-docs` · `pr-preflight` · `create-gh-pr`~~ **done** | 634 | Every repo has a queue, a docs bypass, a preflight, PRs. Landed as four `standards/process/merge/` docs. `create-gh-pr` became `open-pr`: a plugin installs per machine, and that name already belonged to a contradictory work-repo procedure |
 | ~~`e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer`~~ **done** | 1,022 | Every repo debugs a red suite by tier. Landed as six `standards/process/testing/` docs with every name kept. `docker-health.ps1` vendored through a new second tier of `vendor-hooks.ps1`; `e2e.ps1` and `integration.ps1` stayed, their invocation grammar stated and their own usage listings used as the discovery mechanism |
 | ~~`commit` · `commit-all` · `push` · `pull` · `sync` · `worktree`~~ **done** | 429 | Every repo commits, pushes, pulls and isolates a branch. Landed as six `standards/process/git/` docs. **"Zero lines name this repo" was wrong** — five skills held none, but `worktree` named Concertable in its own description and carried `scripts/worktrees.ps1`, the platform-sync gate and two sibling skill names; the script turned out repo-invariant and was vendored, so the doc kept the citation as a constant. `sync` → `sync-checkout` and `worktree` → `open-worktree` on the `create-gh-pr` precedent |
-| ~~`resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt`~~ **done** (+ `auto-memory` deferred) | 203 | The executable counterparts of the `plans` skill Phase 1 already moved. Landed as four `standards/process/` docs — `plan/RESUME.md`, `plan/CONTINUE_ROADMAP.md`, `plan/UPDATE_ROADMAP.md`, `TECHDEBT.md` — plus a fifth, `plan/CHECKPOINT.md`, routed by a **new** `plan-checkpoint` skill: the 138-line checkpoint procedure (was `resume-plan/references/plan-progress-checkpoint.md`) with the progress-ledger template folded in, since the generator routes every doc. `auto-memory` stays in-repo — a Codex-only feature toggle that Codex, loading no plugin, could no longer resolve if moved (deferred with the Codex machine-setup decision) |
-| `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed |
+| ~~`resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt`~~ **done** (+ `auto-memory` deferred) | 203 | The executable counterparts of the `plans` skill Phase 1 already moved. Landed as four `standards/process/` docs — `plan/RESUME.md`, `plan/CONTINUE_ROADMAP.md`, `plan/UPDATE_ROADMAP.md`, `TECHDEBT.md` — plus a fifth, `plan/CHECKPOINT.md`, routed by a **new** `plan-checkpoint` skill: the 138-line checkpoint procedure (was `resume-plan/references/plan-progress-checkpoint.md`) with the progress-ledger template folded in, since the generator routes every doc. `auto-memory` stays in-repo for now; the cross-harness delivery removes its former Codex-plugin blocker, so criterion 1 must still give that Codex-only utility a durable home before close-out. |
+| ~~`package-cutover`~~ **done** | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed. Landed as `standards/dotnet/PACKAGE_CUTOVER.md` in the **dotnet** plugin (not agent-process) — a .NET/NuGet/EF mechanic irrelevant to React repos, and the runnable counterpart to `dotnet:packages`. Cross-references re-pointed to `PACKAGES.md`, `process/PLANS.md`, `data/MIGRATIONS.md`, `process/plan/CHECKPOINT.md`; name kept, no route row (invoked by name only) |
 
 **Single-service: none.** That is the finding. What a carved repo keeps is *values* — its `scripts/e2e.ps1`,
 its suite names, its hook and migration paths — named in a thin `AGENTS.md` on the `Concertable.Payment`
 model. The same applies to `plans/AGENTS.md` (N7).
 
 One family per slice, ordered by cost of duplication: ~~review~~ → ~~merge/PR~~ → ~~test-debug~~ → ~~git~~ →
-~~plan-workflow~~ → `package-cutover`.
+~~plan-workflow~~ → ~~`package-cutover`~~. **All six N1 families are moved.**
 
 **Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
 fresh install, and what stays at root is only values this repo owns.
@@ -180,7 +187,22 @@ instead of this repo's and junctioned sixteen untracked skill directories into a
 a stale copy of a skill that now ships from the plugin. `sync-checkout` and `open-worktree` resolve it, and
 `git/WORKTREE.md` states the junction hazard as a rule.
 
-### N2 — the route table's convention (37 rows)
+### N2 — the route table's convention (37 rows) ✅ **done**
+
+**Shipped** (producer agent-standards #12, consumer this repo). The convention landed as
+`standards/process/SKILL_ROUTES.md` (skill `skill-routes`), and the "template or generator" question was
+decided — **generator**: `.agents/gen_skill_routes.py`, a carve-time tool (the routing-table analog of
+`vendor-hooks.ps1`) that carries the canonical rows once and emits a repo's table for its `--kind`,
+re-anchoring the one `.cs` area floor and dropping the other stack's rows. Its gate test replays a simulated
+carved dotnet-service tree through the real matcher; the strongest check is that `--kind monorepo` reproduces
+this repo's live 37-row table exactly. The consumer only repoints the table's `_comment` at the convention.
+
+**Two corrections to the framing below.** (1) `^plans/` is **not** an area floor that "ceases to exist" — it,
+`^reviews/` and `^.agents/skills/` name directories every repo has, so they port verbatim; only `^api/` and
+`^app/` are location floors, and only the `.cs` one re-anchors for a .NET service (the react floor and rows
+are dropped). (2) The react rows carry `app/` *mid-pattern*, not just as a prefix, so a carved frontend
+repo's table is genuinely blocked on the frontend carve seam (§6/§4c) — the generator refuses `--kind
+react-app` rather than emit wrong rows, an input added to N8's dependencies.
 
 The mechanism already splits the way §6 requires: `agent-standards` vendors `skill_router.py` through
 `vendor-hooks.ps1` (provenance-hashed) and ships **no** table, so the hook is platform-wide procedure and
@@ -262,22 +284,27 @@ Done when both hold, **verified rather than asserted**:
    from the tree. (N7b — the plan-document tree — and the cut itself are separate, gated on roadmap §4c/§6.)
 2. **Every moved rule still resolves from Codex *and* Claude Code, no less accessibly than before.**
    Accessibility is lazy by design: opening a file fires the write-time router over
-   `.agents/skill-routes.json`, which loads the matching skill on demand — a convention is never *missing*,
-   only loaded when its path is touched. So the per-node gate is two facts Claude checks itself, **no live
-   Codex session required**:
+   `.agents/skill-routes.json`, which names the matching skill before the first write. A convention is never
+   allowed to be *missing*: the route remains blocked on every attempt until the active harness can resolve
+   every owning skill. The per-node gate is therefore three mechanical facts:
    - **Routing fires:** `python .agents/hooks/skill_router.py --skills-for <path>` returns the expected
      skill(s) for a representative path of each moved family — e.g. a `*.UnitTests/*.cs` still resolves
      `unit-testing`, a repository still resolves `persistence`. The always-loaded floor (root `AGENTS.md`,
      the `api/AGENTS.md` pointers, the former `CODE_CONVENTIONS`/`RESULT_PATTERN` content now in
      `dotnet-standards`) is covered by its own route rows.
-   - **The resolved skill has content in both read locations:** the canonical `.agents/skills/<skill>` that
-     `dotagents` syncs to `~/.agents/skills/` (what a Codex session reads) and the Claude plugin cache/stubs.
+   - **Both active installations are complete:**
+     `scripts/provision-agent-standards.ps1 -VerifyOnly -Repository <repo>` succeeds for Claude and Codex,
+     proving every unique skill named by that repo's table resolves from that harness's installed plugins.
+   - **Both plugin formats validate:** the Claude marketplace/plugin manifests and the Codex
+     marketplace/plugin manifests pass their own harness validators; one generated schema is not passed to
+     two incompatible loaders.
 
-   A rule that stops resolving, or resolves to content absent from either location, fails the node.
+   A rule that stops resolving, resolves only through the other harness's cache, or is absent from either
+   active installation fails the node.
 
-N8 demonstrates criterion 1 on a carved service. Criterion 2 is checked per node at move time by the two
-mechanical checks above; a single live **Codex end-to-end smoke** — open a representative file in a real
-Codex session and confirm the convention loads — runs once at the end (with N8), not per node.
+N8 demonstrates criterion 1 on a carved service and repeats criterion 2 against that service's generated
+table. Live Claude and Codex session smokes remain final evidence, but plugin packaging, provisioning, and
+fail-closed routing are already delivered prerequisites rather than work left until N8.
 
 ## Explicitly not in scope
 

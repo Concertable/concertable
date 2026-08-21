@@ -1,20 +1,15 @@
 {
   "_comment": [
-    "Path -> owning skills. The ONLY place this mapping lives; a new concern is a new row here, not",
-    "another paragraph in an AGENTS.md nobody reads. skill_router.py enforces it on Write/Edit, and",
-    "the review skill reads the same table so a review cannot miss what an author was required to load.",
+    "Path -> the skills to load before writing that path; this table is the only place the mapping lives.",
+    "EVERY matching row fires, not the first: the area floors and layer routes always apply and a",
+    "specific row below ADDS to them. skill_router.py enforces it on write and the review reads the same",
+    "table, so a review cannot miss what an author was required to load.",
     "",
-    "EVERY matching row fires, not the first. So the table is layered on purpose: the two area floors",
-    "and the four layer rows at the top always apply, and a specific row below ADDS to them rather than",
-    "replacing them. That is what makes coverage total - routing on filename suffix only ever covers the",
-    "names someone thought to enumerate, and a `Mappers.cs` rule silently missed every `XMapper.cs`.",
-    "Prefer a row keyed on the layer or area a file lives in; reach for a name-shaped row only to refine.",
-    "",
-    "path    : regex matched against the repo-relative POSIX path.",
-    "skills  : must be invoked before writing this file. `plugin:skill` where a generic standard and this system's roster share a name - both load, and the plugin says which is which. A name with one home stays bare. The router quotes each skill's own description rather than restating rules, so there is exactly one copy.",
-    "note    : optional; shown with the row when it fires. For why a row exists, not for restating a rule.",
-    "deny    : regex matched against the content being written. A hit is a hard block, not a nudge -",
-    "          only put mechanically-decidable violations here."
+    "The convention this table follows - the layered floor+route model, why a row keyed on a top-level",
+    "directory cannot port to a carved repo while one keyed on architecture ports verbatim, and the field",
+    "semantics (path, skills, content_requires, note, deny) - is standards/process/SKILL_ROUTES.md in",
+    "Concertable/agent-standards (skill `skill-routes`). A carved service repo derives its table from that",
+    "convention's generator (.agents/gen_skill_routes.py --kind dotnet-service) rather than hand-copying one."
   ],
   "routes": [
     {
