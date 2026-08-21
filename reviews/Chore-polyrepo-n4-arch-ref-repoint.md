@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `fe38af163d0bc6791c35a727e5b0f8b54b831167`  _(2026-08-21)_
+**Reviewed up to commit:** `231dbd41463ccfea2ac1956c1eb8f284e6ed164b`  _(2026-08-21)_
 
-**Security-reviewed up to commit:** `fe38af163d0bc6791c35a727e5b0f8b54b831167`  _(2026-08-21)_
+**Security-reviewed up to commit:** `231dbd41463ccfea2ac1956c1eb8f284e6ed164b`  _(2026-08-21)_
 
 > Range reviewed: `a364bebb..fe38af16` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -33,3 +33,17 @@ Lenses checked:
 - **Lens D — data seeding:** N/A — no code.
 - **Lens E — language/framework conventions:** edits are repoints of existing comments/strings, not new commentary; `packages` skill is the correct rule owner.
 - **Lens F — test coverage:** N/A — no behaviour added or altered.
+
+## Incremental review — 2026-08-21
+
+> Range reviewed: `fe38af16..231dbd41` (clean `origin/main` merge for merge-queue currency).
+
+**No new findings — all three layers clear.**
+
+The only branch commit added since the prior watermark is the currency merge of `origin/main`
+(`231dbd414`); it resolved with no conflicts. The three-dot diff `origin/main...HEAD` confirms HEAD
+carries nothing beyond `main` except this branch's already-reviewed N4 non-doc repoints (the five
+service `Directory.Build.props`/`.targets`, the five `*.Hosting.csproj`, and `claude-review.yml`) plus
+this review file — no evil-merge content. Every code change pulled in by the merge (B2B service/test
+refactors, messaging tests, `platform-sync.yml`) is already-reviewed work landed on `main` via #710/#711/#712.
+No branch-authored code, contract, or behaviour changed in this range.
