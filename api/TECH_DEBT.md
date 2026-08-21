@@ -268,21 +268,26 @@ gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the
 identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
 relied-upon control.
 
-### Anonymous mutating/detail endpoints found by the rate-limiting sweep
+### Many read endpoints are anonymous-by-omission across B2B and Payment
 
-The rate-limiting endpoint sweep classified every HTTP endpoint and found three reachable
-unauthenticated that should not be. They are an authorization concern, not a throttling one, so the
-rate-limiting work left them as-is and logged them here:
+Auditing the three endpoints named by the rate-limiting sweep (now fixed — Payment `GET /api/Transaction`
+carries `[Authorize]`; the B2B blob upload/delete endpoints were dead code and were removed; `GET
+api/blob/download` is deliberately `[AllowAnonymous]` because it serves the public marketplace images every
+surface renders) surfaced that the problem is far wider. Roughly thirty controller actions in B2B and Payment
+carry neither a class- nor method-level `AuthorizeAttribute` (`[Authorize]`, `[HasPermission]`, `[Admin]`) nor
+an explicit `[AllowAnonymous]`, so they are reachable unauthenticated. Some are legitimately public
+(artist/venue/concert details, reviews), but several expose private business or financial data and almost
+certainly should not be — e.g. `GET api/application/{id}/contract(/pdf)`, `GET api/concert/{id}/invoice(/pdf)`,
+`GET api/application/{id}/financial-operation`, the `.../ownership` checks, and `GET api/deal/{id}`.
+Public-vs-private is a per-endpoint call.
 
-- **B2B `DELETE api/blob/{fileName}`** (`Concertable.B2B.Web/Controllers/BlobController.Delete`) — deletes a
-  blob with no `[Authorize]`. Anonymous callers can delete stored files.
-- **B2B `GET api/blob/download/{blobName}`** (same controller, `Download`) — streams any blob by name with no
-  authorization.
-- **Payment `GET /api/Transaction`** (`Concertable.Payment.Api/Controllers/TransactionController.GetPurchases`)
-  — the controller has no class- or action-level `[Authorize]` (contrast `StripeAccountController`, which is
-  `[Authorize]`), so transaction listings are anonymous.
+The mutating side is now guarded: `ControllerBoundaryTests.Mutating_endpoints_declare_authorization_explicitly`
+fails the build if any POST/PUT/PATCH/DELETE action in B2B is neither authorized nor explicitly
+`[AllowAnonymous]`. No equivalent guard exists for reads, because a read guard needs each public read tagged
+`[AllowAnonymous]` first.
 
-**Resolves when:** each endpoint carries the correct authorization (blob delete/download gated to the owning
-tenant; `TransactionController` requires an authenticated caller scoped to its own transactions), with tests
-proving an anonymous request is rejected.
+**Resolves when:** every anonymous-by-omission read is classified — private reads gain the correct
+`[Authorize]`/`[HasPermission]` (scoped to the caller's own tenant/resource), genuinely public reads gain an
+explicit `[AllowAnonymous]` — with tests proving an anonymous request is rejected on the private ones; then a
+read-side arch guard mirrors the mutating one so no endpoint is reachable anonymously by omission again.
 
