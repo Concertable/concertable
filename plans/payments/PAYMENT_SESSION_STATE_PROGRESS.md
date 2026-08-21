@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against current `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, incremental review watermark `e7f2e36a8415752bf3aea04630f568f53b417179`, NAT1 fixing commit `this commit`, and current Payment platform pin `0.1.0-alpha.0.1108`
+- Last reconciled: `2026-08-21` against current `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, incremental review watermark `e7f2e36a8415752bf3aea04630f568f53b417179`, NAT1 fixing commit `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, SEC1 fixing commit `this commit`, and current Payment platform pin `0.1.0-alpha.0.1108`
 
 ## Current state
 
@@ -23,16 +23,17 @@ The full review and required Payment security layer are recorded in
 `reviews/Feature-payments_payment-session-state.md`. After current `origin/main` advanced through the N3
 guidance/meta-only merge, the branch merged it without runtime overlap and the incremental native, security,
 docs, route, architecture, and lifecycle lenses remained clean through
-`e7f2e36a8415752bf3aea04630f568f53b417179`. NAT1 is resolved in this commit: a losing duplicate retry now
+`e7f2e36a8415752bf3aea04630f568f53b417179`. NAT1 is resolved in
+`9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`: a losing duplicate retry now
 re-reads provider truth after cancellation fails and accepts only a confirmed canceled predecessor before
-reserving or replaying the successor. Two implementation findings remain open: retry participant scoping exposes
-payer credentials to a payee, and retry can cancel a provider object before proving the attempt is eligible.
-No producer PR may be opened until those findings are resolved and the later fix commits pass incremental
-review.
+reserving or replaying the successor. SEC1 is resolved in this commit: retry authorization now accepts only
+the persisted payer owner, while participant-wide authorization remains on the secret-free status read. One
+implementation finding remains open: retry can cancel a provider object before proving the attempt is eligible.
+No producer PR may be opened until SEC2 is resolved and the fix commits pass incremental review.
 
-The NAT1 exact-tree Payment IntegrationTests build passes with zero warnings and errors, and all eight
-SQL-backed `PaymentSessionServiceTests` pass against Docker Desktop's Linux engine, including the deterministic
-duplicate-cancellation race.
+The SEC1 exact-tree Payment IntegrationTests build passes with zero warnings and errors. The focused payee
+retry regression passes and proves the failure is indistinguishable from an unknown operation without any
+Stripe call; all nine SQL-backed `PaymentSessionServiceTests` pass against Docker Desktop's Linux engine.
 
 The roadmap item remains unchecked. All implementation must stay inside Payment until the producer PR has
 merged, its packages have published, and the generated platform-sync PR is green and merged.
@@ -41,9 +42,10 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 Resolve the open review work order before opening the producer PR:
 
-1. Continue `/address-review reviews/Feature-payments_payment-session-state.md`; address `SEC1`, then `SEC2`
-   through its strictly serial, one-finding-per-fresh-context workflow, updating this ledger with each fixing
-   commit and verification result. NAT1 is resolved in this commit.
+1. Continue `/address-review reviews/Feature-payments_payment-session-state.md`; address `SEC2` through its
+   strictly serial, one-finding-per-fresh-context workflow, updating this ledger with its fixing commit and
+   verification result. NAT1 is resolved in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`; SEC1 is resolved in
+   this commit.
 2. After all fixes are committed, run `/incremental-review` from the recorded
    `e7f2e36a8415752bf3aea04630f568f53b417179` watermark through the final fix head. Do not open or update the
    producer PR until that incremental review is clean and the ledger records the clean watermark.
@@ -78,9 +80,12 @@ Resolve the open review work order before opening the producer PR:
 - Merged current `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6` after its concurrent N3
   guidance/meta-only advance and completed a clean incremental review through the resulting branch head
   `e7f2e36a8415752bf3aea04630f568f53b417179`; the already-owned upstream `ACC1` was not duplicated.
-- Resolved NAT1 in this commit by making a losing predecessor cancellation re-read provider truth and converge
-  on a confirmed canceled state before successor reservation/replay, with deterministic concurrent SQL-backed
-  coverage.
+- Resolved NAT1 in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4` by making a losing predecessor cancellation
+  re-read provider truth and converge on a confirmed canceled state before successor reservation/replay, with
+  deterministic concurrent SQL-backed coverage.
+- Resolved SEC1 in this commit by restricting the secret-bearing retry path to the persisted payer owner while
+  retaining participant-wide authorization on secret-free status reads, with SQL-backed coverage proving a
+  payee receives the same unknown result as a missing operation and makes no Stripe call.
 
 ## Verification
 
@@ -153,6 +158,17 @@ Resolve the open review work order before opening the producer PR:
 - NAT1 checkpoint: `git diff --check` passed; `python .agents/hooks/plan_graph.py --root
   C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state` reported
   0 errors and 0 warnings.
+- SEC1 exact-tree `dotnet build tests\Concertable.Payment.IntegrationTests\Concertable.Payment.IntegrationTests.csproj
+  --no-restore --disable-build-servers`: succeeded with 0 warnings and 0 errors.
+- SEC1 focused exact-match payee retry integration test: 1 passed, 0 failed, 0 skipped. The first restricted
+  run could not access Docker's named pipe; `docker ps` then succeeded with authorized daemon access and the
+  unchanged exact test passed against Testcontainers SQL.
+- SEC1 sibling regression scope, `PaymentSessionServiceTests`: 9 passed, 0 failed, 0 skipped against
+  Testcontainers SQL.
+- SEC1 focused payer-authorized gRPC retry regression: 1 passed, 0 failed, 0 skipped against Testcontainers SQL.
+- SEC1 checkpoint: `git diff --check` passed; `python .agents/hooks/plan_graph.py --root
+  C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state` reported
+  0 errors and 0 warnings.
 
 ## Reviews
 
@@ -162,10 +178,11 @@ the clean current-main incremental review covers
 `7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`.
 Reviewed and security-reviewed up to `e7f2e36a8415752bf3aea04630f568f53b417179` on `2026-08-21`.
 
-- `NAT1` resolved in this commit, medium: a cancellation-race loser re-reads provider truth and accepts a
-  confirmed canceled predecessor before successor reservation/replay; deterministic concurrent SQL-backed
-  coverage passes.
-- `SEC1` open, high: restrict secret-bearing retry to the persisted payer owner and test payee rejection.
+- `NAT1` resolved in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, medium: a cancellation-race loser re-reads
+  provider truth and accepts a confirmed canceled predecessor before successor reservation/replay;
+  deterministic concurrent SQL-backed coverage passes.
+- `SEC1` resolved in this commit, high: secret-bearing retry accepts only the persisted payer owner; a payee
+  receives the indistinguishable unknown-operation result without calling Stripe.
 - `SEC2` open, medium: prove retry eligibility before cancellation and test nonterminal/authorized attempts.
 
 ## Decisions, discoveries, blockers, and deviations
