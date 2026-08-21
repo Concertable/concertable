@@ -5,9 +5,9 @@
 - Roadmap item: `payments/payment-session-state`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state`
 - Branch: `Feature/payments_payment-session-state`
-- PR: not opened
+- PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against current `origin/main` `2323c77e74bc58bbde6394c360af673c402a8b5f`, merge head `268b48c47196cf446244c1c32c126a0807a79290`, incremental review watermark `8fe54fc665afc7bcd0e66948c75dfdf88761c011`, and Payment platform pin `0.1.0-alpha.0.1124`
+- Last reconciled: `2026-08-21` against current `origin/main` `2323c77e74bc58bbde6394c360af673c402a8b5f`, merge head `268b48c47196cf446244c1c32c126a0807a79290`, incremental review watermark `8fe54fc665afc7bcd0e66948c75dfdf88761c011`, verified pushed work and draft-PR head `46330f02811b7b42a6b881513b75bf7c5717efdc`, and Payment platform pin `0.1.0-alpha.0.1124`
 
 ## Current state
 
@@ -41,6 +41,9 @@ are clean through the reconciled implementation head `8fe54fc665afc7bcd0e66948c7
 is green. Current `origin/main` is merged through `2323c77e74bc58bbde6394c360af673c402a8b5f`; the branch is 0 commits
 behind and the Payment platform pin is `0.1.0-alpha.0.1124`.
 
+Draft PR #721 is open against `main`. Before checkpoint transport, local HEAD, the remote branch, and the PR
+head all equaled `46330f02811b7b42a6b881513b75bf7c5717efdc`; its `changes` and `hook-tests` checks were pending.
+
 The reconciled exact tree builds Payment Web and UnitTests with zero warnings or errors, all 521 Payment unit
 tests pass, and all 18 focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests` pass against
 Docker Desktop's Linux engine. The focused run exposed one stale gRPC test setup: it persisted a future failed
@@ -52,7 +55,10 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Run `/open-pr` for the draft producer PR from the clean, reviewed implementation head.
+When explicitly authorized, run `/merge` for draft PR #721. Apply the merge workflow fresh: confirm exact-head
+CI and review state, reconcile current `origin/main` and repeat affected verification/review if the branch is
+behind, select the required E2E tier, mark ready and enqueue, confirm `MERGED`, then own package publication
+and the generated platform-sync PR through green and merged. Do not begin consumer work before that sync lands.
 
 ## Completed work
 
@@ -219,6 +225,7 @@ Run `/open-pr` for the draft producer PR from the clean, reviewed implementation
   (72 commits): native and security layers clean; both current-main merges have no conflict-resolution delta;
   architecture, service-boundary, persistence, language/framework, changed-behaviour coverage, docs ownership,
   routed-skill, and plan/review lifecycle lenses clean.
+- Opened draft PR #721 from verified work head `46330f02811b7b42a6b881513b75bf7c5717efdc`.
 
 ## Reviews
 
