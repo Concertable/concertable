@@ -75,6 +75,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | C# naming — suffix table, `Projection`, `Response`/`Dto`, `XMappers`, evaluators, frozen tables | skill `csharp-naming` |
 | Comments and XML doc mechanics | skill `comments` (the default-to-none policy is global) |
 | DI registration, dependency-holders, lifetimes | skill `dependency-injection` |
+| Executable host inventory, strict provider validation and dynamic activation-root coverage | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Logging — source-generated `Log.cs`, probes included | skill `logging` |
 | Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
 | Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `dotnet-standards:persistence` |
@@ -152,6 +153,7 @@ diagnostic or test name, not an argument.
 | Private instance fields camelCase, no underscore | `.editorconfig` naming rule | **No** — IDE only; no `EnforceCodeStyleInBuild` is set |
 | File-scoped namespaces, `IDE0130` | `.editorconfig` | **No** — same reason |
 | Keyed-strategy coverage and no service location | `DealStrategyArchitectureTests`, plus `RequireAll`/`RequireExactly` at composition | Yes |
+| Every executable .NET host has strict provider validation and real composition-test coverage or a reviewed exclusion | `ExecutableHostInventory` + the `composition-tests` CI matrix | Yes |
 | No legacy Result carriers; no Dunet in shared production | `ReunionArchitectureTests`, `TypedResultArchitectureTests` | Yes |
 | One read-context contract, one generic read repository | `RepositoryArchitectureTests` | Yes |
 | Service boundaries hold when carved | `EnforceServiceBoundary` + the `carve-*` CI jobs | Yes |
