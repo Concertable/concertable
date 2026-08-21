@@ -18,8 +18,8 @@
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
-- Current-main merge commit: `a190d4552`, merging `origin/main` at
-  `42f760994e15c909c9e56ffb3fde045210457bbf`
+- Current-main merge commit: `7d367b671`, merging `origin/main` at
+  `8bfc169ea9b11c7fccd505a2d6cd101c1c3c2e5c`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
 - Last reconciled: 2026-08-21 after the verified reviewed-work-head push and before checkpoint transport
@@ -84,8 +84,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-After this checkpoint-transport commit is pushed and local, remote-tracking, and PR heads are verified
-equal, wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
+After this final current-main review commit, publish the reviewed head through the plan-managed two-leg
+push, wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
 
 ## Separate public-library follow-up
 
@@ -163,6 +163,8 @@ The public library is not implemented or published by the current PR.
 - Current-main B2B production-host composition tests after Workers deduplication: 5 passed, 0 failed,
   including strict Functions-host validation and the explicit missing-`IAdminModule` regression.
 - Current-main Deal unit tests after the sync and Workers reconciliation: 57 passed, 0 failed.
+- `dotnet build api/Concertable.slnx --nologo` after the final current-main sync: succeeded with 0 errors
+  and 12 warnings.
 - `scripts/docker-health.ps1` passed a fresh-container host-to-container data round trip. The one targeted
   `ConcertFinishedTests` run then stopped at fixture startup because Aspire reported the Docker runtime
   unhealthy; no scenario executed and the environment-failed E2E was not retried.
@@ -182,6 +184,9 @@ The public library is not implemented or published by the current PR.
 - Queue-fix/current-main incremental review `e4fdc642..c4a536f8`: clean after isolating the three PR-owned
   commits and checking the net branch diff against `origin/main@42f760994`; both review watermarks are
   `c4a536f8b`.
+- Final current-main incremental review `c4a536f8..7d367b67`: clean; the range contains only the prior
+  ledger transport checkpoint and a conflict-free upstream package-pin/review merge, with no PR-owned
+  runtime or security-sensitive change; both review watermarks are `7d367b671`.
 
 ## Decisions and discoveries
 

@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c4a536f8b`  _(2026-08-21)_
-**Security-reviewed up to commit:** `c4a536f8b`  _(2026-08-21)_
+**Reviewed up to commit:** `7d367b671`  _(2026-08-21)_
+**Security-reviewed up to commit:** `7d367b671`  _(2026-08-21)_
 
 > Range reviewed: `133b018d..2e34ce37` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -41,3 +41,9 @@ No issues found. Reviewed `e4fdc642..c4a536f8` by isolating the three PR-owned c
 delta removes duplicate Admin project/module registration while retaining the required dependency; the
 superseded local unit test is replaced by current main's stricter production-host composition coverage.
 No security-sensitive behavior changed.
+
+## Incremental review — 2026-08-21 (final current-main sync)
+
+No issues found. Reviewed `c4a536f8..7d367b67`; the range contains the ledger transport checkpoint and
+a conflict-free merge of `origin/main@8bfc169ea`. The upstream delta only advances service package pins
+and adds its own review artifact. No PR-owned runtime or security-sensitive behavior changed.
