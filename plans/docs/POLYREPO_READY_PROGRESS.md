@@ -3,21 +3,22 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Fix/CrossHarnessStandardsDelivery`
-- Branch: `Docs/docs_polyrepo-ready-cross-harness-delivery`, from `origin/main` at `1e26f8244`, layered on
-  N2 consumer branch `Docs/docs_polyrepo-ready-route-table-convention` at `a3bdd42e8`.
+- Worktree: none after this checkpoint merges; the completed cross-harness delivery worktree is closed.
+- Branch: none after this checkpoint merges; create a fresh plan-managed branch from `origin/main` for N3.
 - PRs: N2 producer **agent-standards #12 MERGED** (`d175b8b`), N2 consumer **this repo #695 MERGED**
   (`2650f5c`); cross-harness producers **agent-standards #13 MERGED** (`e685095`), **dotagents #3 MERGED**
-  (`e5ca9cc`), **react-agents #1 MERGED** (`c9a973d`); consumer **this repo #696 — open**.
+  (`e5ca9cc`), **react-agents #1 MERGED** (`c9a973d`); consumer **this repo #696 MERGED** (`b1ea4209`).
 - Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
   The current machine is provisioned from the merged GitHub marketplaces and verified for both harnesses.
 - Last reconciled: 2026-08-21, after merging N2 (#12 + #695), all three cross-harness producers, and
-  refreshing both harnesses from those merged revisions. **Only consumer #696 remains in this delivery.**
+  cross-harness consumer #696; both harnesses were refreshed from the merged producer revisions and the
+  completed delivery worktree was closed. **N3 is the next plan slice.**
 
 ## Current state
 
-**Phase 1 and all of N1 (six families, 28 skills) are merged in both repos.** `main` is at `1e26f8244`,
-agent-standards `main` at `e8fd22f` (includes family-6 producer #11). Family 6 (package-cutover) landed as
+**Phase 1 and all of N1 (six families, 28 skills) are merged in both repos.** Concertable `main` includes
+cross-harness consumer merge `b1ea4209`; agent-standards `main` includes cross-harness producer merge
+`e685095`. Family 6 (package-cutover) landed as
 producer #11 + consumer #693; `package-cutover` homed in the **dotnet** plugin as `dotnet:package-cutover`.
 
 **N2 — the route-table convention — is merged on both sides.**
@@ -30,7 +31,7 @@ producer #11 + consumer #693; `package-cutover` homed in the **dotnet** plugin a
   the one `.cs` area floor to the repo root and dropping the react rows, `--kind monorepo` reproduces the
   platform's own table. **`react-app` is refused** until the frontend carve seam (roadmap §6/§4c) is decided —
   the react rows carry `app/` mid-pattern, so generating one now would name paths that repo does not have.
-- **Consumer (this branch):** the table's `_comment` shrinks from restating the model + field semantics to a
+- **Consumer (this repo #695):** the table's `_comment` shrinks from restating the model + field semantics to a
   pointer at the convention home, per one-rule-one-home. Routes unchanged (37); comment-only.
 
 **Generator/template decision (Tommy): generator.** "Run a script, get a correct table" is the only shape the
@@ -48,14 +49,11 @@ criterion 1 still requires a durable home for this Codex-only utility before clo
 
 ## Next Steps
 
-1. **Land consumer #696 through the normal queue.** Its net diff includes executable
-   `scripts/provision-agent-standards.ps1`, so it is not meta-only. No end-to-end positive trigger applies;
-   use `skip-e2e`, retain the hard-floor build/hooks, and close this plan-managed worktree after merge.
-
-2. **Start new Claude and Codex sessions.** The installed catalogues now point at the merged producer
+1. **Start new Claude and Codex sessions.** The installed catalogues now point at the merged producer
    revisions; existing sessions retain the snapshot they started with.
 
-3. **N3–N6 + N7a next** — N1/N2 no longer block them. N6 still carries the open question for Tommy:
+2. **Create a fresh plan-managed worktree from `origin/main` and begin N3.** Continue N3–N6 + N7a — N1/N2
+   no longer block them. N6 still carries the open question for Tommy:
    `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard
    nor service-specific — surface, don't invent a home. **N7b** waits on roadmap §4c; **N8** last as the only
    carved-repo evidence; it repeats the already-delivered Claude/Codex checks against the carved table. The
@@ -75,7 +73,7 @@ criterion 1 still requires a durable home for this Codex-only utility before clo
   `.agents/hooks/tests/test_gen_skill_routes.py` (11 tests). Generator current at **62 skills / 62 docs** (197
   files), hook suite **161 → 172**, plugin router rewrote to a valid relative path, description colon-space
   clean, INDEX row present, `skill-routes` collision-free across every repo on the machine.
-- **N2 consumer — this branch.** `.agents/skill-routes.json` `_comment` repointed to the convention; routes
+- **N2 consumer — this repo #695.** `.agents/skill-routes.json` `_comment` repointed to the convention; routes
   unchanged (37), JSON valid, router resolves representative paths. Committed and pushed early (worktree-prune
   lesson). Plan + ledger updated.
 - **N1 — all six families, merged both repos.** Family 1 review (#675 + agent-standards #6): seven `review/`
@@ -169,6 +167,6 @@ comment-only edit. A `/docs-review` over both halves can be run from the moved c
 ## Resume prompt
 
 ```
-cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Fix/CrossHarnessStandardsDelivery
-Read @plans/docs/POLYREPO_READY_PLAN.md and @plans/docs/POLYREPO_READY_PROGRESS.md and do what its `## Next Steps` says.
+cd C:/Users/TommySeery/source/repos/Concertable
+Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. Create a fresh plan-managed worktree from origin/main for N3, then do what the ledger's `## Next Steps` says.
 ```
