@@ -5,8 +5,7 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-route-table-convention`
 - Branch: `Docs/docs_polyrepo-ready-route-table-convention`, from `origin/main` at `1e26f8244` — N2, route-table convention.
-- PR: producer **agent-standards #12 — open** (`verify` running); consumer this repo — branch pushed (core
-  `_comment` change committed), plan+ledger edits to commit, then open its PR.
+- PR: producer **agent-standards #12 — open** (`verify` running); consumer **this repo #695 — open** (meta-only).
 - Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
   **Plugin-cache refresh is pending** — the family-5 plan skills, `plan-checkpoint`, `package-cutover`
   (`dotnet:package-cutover`), and now `skill-routes` resolve under no name until the installed cache carries
@@ -48,14 +47,14 @@ longer resolve if moved to a plugin it does not load.
    yet on `main`. #12 is a standards-only diff → merges when `verify` is green (that repo has no queue; it
    merges directly). This branch is **meta-only** (`.agents/**`, `plans/**`) → the `/merge-docs` admin-merge
    path (bypass the queue; the queue runs E2E on a normal enqueue even for meta-only — see `## Decisions`).
-   Open this branch's PR, then (numbers: #12 producer, `<consumer-PR>` this branch):
+   Producer #12, consumer #695:
    ```bash
-   gh -R Concertable/agent-standards pr merge 12 --merge --delete-branch
-   gh -R Concertable/concertable    pr edit  <consumer-PR> --add-label skip-e2e
-   gh -R Concertable/concertable    pr merge <consumer-PR> --merge --admin
+   gh -R Concertable/agent-standards pr merge 12  --merge --delete-branch
+   gh -R Concertable/concertable    pr edit  695 --add-label skip-e2e
+   gh -R Concertable/concertable    pr merge 695 --merge --admin
    ```
    Then `git checkout main && git pull --ff-only origin main` and close this worktree with
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <consumer-PR> -PlanManaged`.
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 695 -PlanManaged`.
 
    **Merge authorization:** Tommy runs the merges (or approves interactively). The classifier stays the hard
    gate; no blanket `gh pr merge` permission was added.
