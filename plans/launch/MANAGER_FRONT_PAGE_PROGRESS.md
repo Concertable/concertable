@@ -11,15 +11,14 @@
 
 ## Current state
 
-Implementation and authenticated Phase A.8 acceptance are complete. At the last push checkpoint, the
-remote-tracking and PR heads equalled `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`; its reviewed work watermark was
-`4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`. The local branch now also carries the required plan checkpoints and
-current-main reconciliation. `origin/main` advanced six commits while exact-head CI was running and
-was merged cleanly at `99412536cc0f8249cc42771322ba0a706509b666`. The incoming delta restructures architecture
-guidance and advances all services to the already-green `0.1.0-alpha.0.1124` platform pin; it did not overwrite any
-dashboard change. Proportional validation and incremental review are green. Exact reviewed reconciliation work head
-`c6cc262b8dddcec7108d987d04d4940c891d38e4` was pushed from `3ebc4722f`; refreshed remote-tracking and PR heads both
-equal the reviewed work head. The delivered work includes:
+Implementation and authenticated Phase A.8 acceptance are complete. PR #563 was current, freshly green, and entered
+the merge queue at `8a6086b07f1185bc4338c22d6e1cd844fce232ce`; API E2E and both UI E2E blocks passed, but a Venue
+integration runner wedged inside `actions/cache@v4` before downloading artifacts or executing tests. The capped wait
+was exhausted and the run was cancelled once. `origin/main` then advanced 16 commits to `7f107d98b`; that base was
+merged cleanly in `2a0db5198`, preserving every dashboard change and known local fix. Proportional validation and the
+mandatory native/security incremental review are green at exact reviewed work head
+`98b526b57d1c5d9ea6f609e290f982094bff2d8b`. The remote/PR still carry the earlier transported head `8a6086b07`;
+the reviewed reconciliation tail is intentionally awaiting its two-leg push. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -74,9 +73,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Incrementally review the clean 16-commit current-main reconciliation through merge `2a0db5198`, then push and
-   require fresh exact-head CI green.
-2. Re-enqueue with `full-e2e`, complete `/merge`, follow the generated
+1. Push exact reviewed work head `98b526b57d`, transport its review/checkpoint, and require fresh exact-head CI green.
+2. Recheck base currency, re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
@@ -192,6 +190,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
   all routed current-main standards, and all six repository lenses. `COR4` corrected the ledger's stale claim that
   local, remote, and PR heads still matched after creating the reconciliation tail. No other findings remain; both
   correction-tail re-reviews were clean. Correctness and security watermarks are `c6cc262b8dddcec7108d987d04d4940c891d38e4`.
+- Incremental range `c6cc262b8..98b526b57` (22 commits) was reviewed through both mandatory layers, every mechanically
+  routed current-main standard, and all six repository lenses with no findings. Correctness and security watermarks
+  are `98b526b57d1c5d9ea6f609e290f982094bff2d8b`.
 
 ## Decisions, discoveries, blockers, and deviations
 

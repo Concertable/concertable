@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c6cc262b8dddcec7108d987d04d4940c891d38e4`  _(2026-08-21)_
-**Security-reviewed up to commit:** `c6cc262b8dddcec7108d987d04d4940c891d38e4`  _(2026-08-21)_
+**Reviewed up to commit:** `98b526b57d1c5d9ea6f609e290f982094bff2d8b`  _(2026-08-22)_
+**Security-reviewed up to commit:** `98b526b57d1c5d9ea6f609e290f982094bff2d8b`  _(2026-08-22)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -187,3 +187,15 @@ The incoming six base commits only relocate architecture guidance and advance al
 `0.1.0-alpha.0.1124`. The correction tail received a second native and security pass with no findings. Validation
 passed the B2B AppHost build with 0 errors, Conversations 46/46, Concert 233/233, and the plan graph at 0 errors and 0
 warnings. No local E2E was run; the merge queue owns that tier.
+
+## Incremental review — 2026-08-22 (second current-main reconciliation)
+
+No findings survived the confidence filter. The incremental review covered
+`c6cc262b8dddcec7108d987d04d4940c891d38e4..98b526b57d1c5d9ea6f609e290f982094bff2d8b`
+(22 commits) through the mandatory native and security layers, every mechanically routed current-main standard, and
+correctness, service isolation, module boundaries, seeding, language/framework conventions, and changed-behaviour
+test coverage. The incoming 16 commits split Admin persistence capabilities by entity and repoint stale split-repo
+build/workflow metadata; the two Admin repositories deliberately share the same scoped `AdminDbContext`, preserving
+atomic invitation/profile saves. No dashboard file conflicted or was overwritten. Validation passed the B2B AppHost
+build with 0 errors, Admin 32/32, Conversations 46/46, Concert 233/233, and the plan graph at 0 errors and 0 warnings.
+No local E2E was run; the merge queue owns that tier.
