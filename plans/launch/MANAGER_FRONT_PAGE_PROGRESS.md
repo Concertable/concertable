@@ -7,7 +7,7 @@
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563)
 - Dependency/package gates: producer packages are published; this API-changing consumer merge must complete its generated platform-sync follow-through
-- Last reconciled: 2026-08-21 against `origin/main` `2323c77e7` in merge `99412536c`; current base `7f107d98b` is pending reconciliation
+- Last reconciled: 2026-08-22 against `origin/main` `7f107d98b` in merge `2a0db5198`
 
 ## Current state
 
@@ -74,8 +74,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Merge current `origin/main` `7f107d98b`, validate and incrementally review its 16-commit delta, then push and
-   require fresh exact-head CI green.
+1. Validate and incrementally review the clean 16-commit current-main reconciliation through merge `2a0db5198`, then
+   push and require fresh exact-head CI green.
 2. Re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -98,6 +98,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
   they satisfy the single-staged-write contract.
 - Reconciled cleanly with current main `2323c77e7` in merge `99412536c`; the incoming six commits are architecture
   guidance cleanup plus the green `0.1.0-alpha.0.1124` platform sync, and all known dashboard fixes remain intact.
+- Reconciled cleanly with current main `7f107d98b` in merge `2a0db5198`; the incoming runtime delta splits the Admin
+  repository by entity capability and the remaining changes repoint split-repo build metadata. No dashboard file
+  conflicted or was overwritten.
 - Preserved and committed the Payment provider inventory and Venue activity integration URL corrections in
   `276360edb`; the supplied pre-resume runs were Payment unit tests 489/489 and Venue integration tests 31/31.
 - Phase A.8 Browser acceptance passed for authenticated seeded Venue and Artist dashboards at 1440×1000, 834×1112,
