@@ -21,8 +21,8 @@ gateway page, not a manager app) and no production path to create or rotate an a
 
 This plan builds both: a real provisioning mechanism, and the console SPA that drives it plus the two
 existing backends. Downstream: unblocks `launch/tenant-verification` (evidence-review UI) and the
-post-launch admin-audit-log item. Out of scope: tenant-verification's evidence upload/state machine,
-the audit log itself.
+post-launch admin-audit-log item, and **hosts the `launch/gdpr-subject-rights` DSAR operator UI**
+(Phase 5). Out of scope: tenant-verification's evidence upload/state machine, the audit log itself.
 
 ## Design decisions
 
@@ -207,6 +207,27 @@ path. Phases 3-4 wire the two already-shipped backends into the same shell.
   `PATCH /api/Venue/{id}/approve`.
 - **Verification gate:** integration test for the new pending-approval query/endpoint; focused
   component/hook tests for the approve action.
+
+### Phase 5 — Subject-rights (DSAR) UI
+
+Discovered via `launch/gdpr-subject-rights`: its erasure + portable-export backend is built UI-agnostic
+with this console as the intended operator surface, so the DSAR panel belongs here.
+
+- A `features/subjectRights/` feature (standard `adminApi.ts` + hooks + page): a **DSAR request queue** —
+  subject (email/`sub`), request type, state, and request age against the **one-calendar-month** statutory
+  SLA — with the **deferred-reason** surfaced so the operator sees why an erasure is held (a live financial
+  obligation) and knows the hourly sweep will finish it.
+- **Erasure** → `POST /api/subject-erasure/{sub}` (render the returned state). **Export** →
+  `GET /api/subject-export/{sub}`, a JSON **file download**, reusing the existing
+  `responseType:"arraybuffer"` → blob → `anchor.download` mutation hook (the self-billing/invoice
+  PDF-download template) with no new download plumbing.
+- **Genuinely new backend, not just UI wiring:** a paginated `GET` list of erasure requests to populate the
+  queue — only `POST /api/subject-erasure/{sub}` exists today. Add the query + an `[Admin]`-gated `GET`
+  endpoint on Privacy's `SubjectRightsController`, mirroring Phase 4's venue pending-approval addition.
+- **Verification gate:** integration test for the new list endpoint; focused component/hook tests for the
+  erasure/export/queue actions; the admin app build green.
+
+The GDPR plan's design decision 5 pins the backend consumption contract this phase consumes.
 
 ## Non-goals
 

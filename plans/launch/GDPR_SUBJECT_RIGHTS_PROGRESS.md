@@ -5,21 +5,42 @@
 - Roadmap item: `launch/gdpr-subject-rights`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_gdpr-subject-rights`
 - Branch: `Feature/launch_gdpr-subject-rights`
-- PR: not opened
+- PR: [#707](https://github.com/Concertable/concertable/pull/707) (draft)
 - Dependency/package gates: **Pre-merge delivery gate** — solicitor retention-policy / retain-vs-erase
   sign-off (swim-lane A, tracked in `LAUNCH_CHECKLIST.md` Phase 2). This gates **merge, not
   implementation** (see `## Decisions`). Cross-service delivery is multi-PR, producer-first, all additive —
   no published-contract shape change, so no expand/contract gate.
-- Last reconciled: 2026-08-21, Phase 1 implemented (Privacy module + 4 facade extensions + unit suite green +
-  full B2B solution builds 0/0); migrations scaffold + PR open outstanding.
+- Last reconciled: 2026-08-22, Phase 1 non-Concert work built + pushed to draft #707; **now PAUSED** — the
+  Concert-side reads collide with the `launch/deal-lifecycle-ownership` module carve (see `## Next Steps`).
 
 ## Current state
 
-**Phase 1 in progress.** Step 1 (docs) is **done**: the standing `plans/launch/GDPR_SUBJECT_RIGHTS.md`
-compliance doc (retain-vs-erase register + one-calendar-month DSAR SLA + `[LEGAL]`/`[DECIDE]` sign-off
-checklist, mirroring `OSA_COMPLIANCE.md`) is written, and B2B `Modules/Deal/LEGAL_REQUIREMENTS.md` item 8 is
-flipped ABSENT → DESIGNED, linking that doc (relative link verified to resolve). Steps 2–5 (code + tests) are
-the remaining build.
+**Phase 1 is built and pushed to draft #707, but is now PAUSED — blocked by the
+`launch/deal-lifecycle-ownership` module carve (see `## Next Steps`).** Step 1 (docs) is done: the
+standing `plans/launch/GDPR_SUBJECT_RIGHTS.md` compliance doc + the `LEGAL_REQUIREMENTS.md` item-8 flip. The
+code (new `Concertable.B2B.Privacy` module + four module-facade extensions + unit/integration suites) is
+committed and pushed; `PrivacyDbContext.InitialCreate` is scaffolded.
+
+Naming/design refactors landed on the branch after the first build: the obligation `Gate` → `Checker`
+(`ISubjectObligationChecker`); broad-facade export methods carry their subject where it adds information
+(`IConcertModule.ExportRecordsAsync`, `IConversationsModule.ExportMessagesAsync`; `IUserModule.ExportAsync`
+stays bare — the subject is redundant); the two endpoints are rate-limited (`RateLimitPolicies.Sensitive`).
+The **export was re-shaped to a real file download**: `ISubjectExporter.ExportAsync` now returns a
+`FileDownload` (composed straight into an indented-JSON file, `Content-Disposition` via the controller's
+`File(...)`), the unconsumed `SubjectExportBundle` aggregate DTO was deleted, and the integration test now
+deserialises the downloaded file. The **consumption contract is pinned** in the plan (design decision 5) and
+the DSAR operator UI is written into `launch/admin-console` as Phase 5 (which also owns the new `GET`
+erasure-list endpoint the queue needs). The shared `FileDownload` + `ToFileResult()` consolidation is logged
+in `api/Concertable.Shared/TECH_DEBT.md` (publish-first, deferred).
+
+**Blocker discovered 2026-08-22:** the Concert-side reads — the obligation check (reads `Application` +
+self-billing) and the records export (reads `Invoice`/`Contract`/self-billing), plus the `IConcertModule`
+fragment additions — are built against the current monolithic Concert module, which
+`launch/deal-lifecycle-ownership` (PR #633 chain) is decomposing into Opportunity/Application/Booking/Concert.
+That carve decides `Invoice`/`Contract`/self-billing module placement *during* the carve and deletes
+`IConcertModule`-as-umbrella, so the Concert fragment must be rebuilt against the new boundaries afterwards.
+The in-flight Concert-fragment naming rework (records service/DTO) was reverted to the last buildable commit
+rather than finished, since its target module does not exist yet.
 
 The B2B patterns were mapped exhaustively (module facades, the `FinishExecutor`/`ConcertFinishedFunction`/
 `ISelfBillingAgreementGate` fail-closed shape, the `LifecycleState`/`FrozenDictionary` state machine, the
@@ -36,19 +57,22 @@ not shipped.
 
 ## Next Steps
 
-**Phase 1 is implemented; source compiles (the B2B Web project builds 0/0) and the Privacy unit suite is
-green (20/20).** Remaining to close the phase, in this worktree:
+Blocked: GDPR Phase 1's Concert-coupled work — the obligation check (reads `Application` + self-billing) and
+the records export (reads `Invoice`/`Contract`/self-billing), plus the `IConcertModule` fragment additions —
+is built against the current monolithic Concert module. Finalizing or reviewing it now is premature: the
+deal-lifecycle carve decides those entities' module homes and dissolves `IConcertModule`.
+Blocked by: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` (PR #633 chain; itself paused pending the
+Deal-dispatch foundation on `main`).
+Unblock action: the carve lands and settles where `Invoice`/`Contract`/self-billing/`Application` live; GDPR's
+obligation-check + records-read then move to the new module facades — the carve's Phase 2 re-homes every
+consumer of those entities, and GDPR's reads are such consumers.
+Resume when: the deal-lifecycle carve has merged to `main` and entity placement is settled — then rebuild the
+Concert fragment against the new module boundaries and route #707 through `/review`.
 
-1. Confirm the full `Concertable.B2B.slnx` build is 0 errors (a build over the whole solution incl. both new
-   Privacy test projects was in flight at last checkpoint).
-2. Run `./initial-migrations.ps1` from `api/` to scaffold `PrivacyDbContext`'s `InitialCreate` (model change —
-   re-scaffold, never additive) and confirm no other context's migration id drifts.
-3. Run `python .agents/hooks/plan_graph.py --root <worktree>` (0 errors expected).
-4. Open a **draft PR**, commit the Phase 1 checkpoint (plan + this ledger + compliance doc included), then
-   route through `/review`.
-5. **Integration-suite validation is the merge queue's job** (Testcontainers/Docker-gated — not run on the
-   workstation). `SubjectRightsApiTests` is written and compiles; it asserts the three plan scenarios via the
-   public module facades against the canonical `SeedState`. See the RETAIN-strengthening deviation note.
+Everything else stands and needs no rework: the `Concertable.B2B.Privacy` module core (erasure
+aggregate/state machine/gate, admin route, unit + integration tests), the `SubjectExporter` file-download
+shape, the User/Tenant/Conversations fragments, and the plan/ledger/tech-debt edits. **#707 stays a draft —
+do not `/review` or merge until the Concert side is rebuilt.**
 
 ## Completed work
 

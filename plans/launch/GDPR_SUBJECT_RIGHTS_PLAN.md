@@ -164,6 +164,23 @@ of the admin console (`launch/admin-console`) when it lands; wiring it there is 
 implementation dependency — the backend is fully testable without it. A self-service "delete my account"
 consumer flow beyond the required route is out of scope (§ Non-goals).
 
+**Consumption contract — fixed here, the consuming UI deferred.** The output shape both routes hand back is
+pinned now, even though the console that calls them lands later; a producer with an undecided output is not a
+shippable phase:
+
+- **Erasure** — `POST /api/subject-erasure/{subjectId}` returns the `SubjectErasureRequestDto` state
+  (`Completed`, or `Deferred` + `DeferralReason`) as **inline JSON**, synchronous and re-drivable; the panel
+  renders the state and the deferral reason.
+- **Export** — `GET /api/subject-export/{subjectId}` returns a **downloadable JSON file** (`FileDownload` →
+  `File(...)` with `Content-Disposition`), synchronous, matching the platform's existing PDF-download
+  convention so the console reuses the shared `arraybuffer → blob` download hook instead of re-inventing it.
+  It is **not** inline JSON, and there is **no** materialised export DTO — nothing consumes it as a typed
+  object, so the module fragments are composed straight into the serialised file (only the per-module
+  fragments are typed).
+- The console's **erasure-queue view** needs a paginated `GET` list of erasure requests, which does **not**
+  exist yet (only the `POST` does). That endpoint is genuinely new backend, delivered with the DSAR panel —
+  `launch/admin-console` Phase 5, not this plan.
+
 ### 6. The durable compliance record outlives this plan
 
 The ratified retain-vs-erase table + the **DSAR response SLA** (UK GDPR statutory: **one calendar month**,
@@ -198,8 +215,8 @@ never additive migrations). The merge-queue owns the E2E gate; no phase runs E2E
   assembled from B2B module fragments (Auth + Payment fragments land in Phases 2/4).
 - **Verification gate:** unit tests for the state machine, the gate's defer outcomes, and the last-owner
   invariant; integration tests proving (a) a clean subject's B2B rows are anonymised while **every** RETAIN
-  row is byte-for-byte unchanged, (b) a subject with a live obligation **defers**, (c) the export bundle
-  contains exactly the subject's B2B data. `./initial-migrations.ps1`; `plan_graph.py`.
+  row is byte-for-byte unchanged, (b) a subject with a live obligation **defers**, (c) the downloaded export
+  file contains exactly the subject's B2B data. `./initial-migrations.ps1`; `plan_graph.py`.
 
 ### Phase 2 — Auth credential erasure + the fan-out
 
