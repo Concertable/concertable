@@ -6,8 +6,9 @@ Concertable connects venues, artists and fans around live music ([`docs/OVERVIEW
 load-on-demand skills: `git-branching`, `committing`, `merging`, `remote-validation`, `plans`,
 `failing-tests`, `docs-and-debt`, the review family (`review`, `docs-review`, `big-review`,
 `big-review-all`, `incremental-review`, `address-review`, `review-lifecycle`), the merge/PR family
-(`open-pr`, `pr-preflight`, `merge`, `merge-docs`) and the test-debug family (`integration-debug`,
-`e2e-api-debug`, `e2e-ui-debug`, `e2e-ui-regress`, `e2e-debug`, `reset-test-explorer`). What stays here is only
+(`open-pr`, `pr-preflight`, `merge`, `merge-docs`), the test-debug family (`integration-debug`,
+`e2e-api-debug`, `e2e-ui-debug`, `e2e-ui-regress`, `e2e-debug`, `reset-test-explorer`) and the git family
+(`commit`, `commit-all`, `push`, `pull`, `sync-checkout`, `open-worktree`). What stays here is only
 what is true of *Concertable* — its real
 labels, workflows, scripts and commands, plus the few invariants whose violation is silent and
 expensive enough not to wait for a skill invocation.

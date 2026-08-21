@@ -336,7 +336,7 @@ def expected_pointer(path):
         opener_path = str(Path(declared_worktree).resolve())
         opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
     elif owner_branch:
-        opener = f"/worktree create {owner_branch}"
+        opener = f"/open-worktree {owner_branch}"
     else:
         opener_path = str(root)
         opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
