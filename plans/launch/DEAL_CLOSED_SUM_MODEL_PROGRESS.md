@@ -9,11 +9,12 @@
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
 - Branch: `Refactor/deal-dispatch-foundation`
 - Implementation PR: [#678](https://github.com/Concertable/concertable/pull/678), open and ready, targeting `main`;
-  queue-ejected after API E2E failure; verified remote head
-  `ad1de76998d3916ba11028eb625357aad91feb11`
-- Push state: reviewed work head `0a0958719cd44cdb29e8228bacaa8c464c485642` was pushed and verified
-  equal locally, at `origin/Refactor/deal-dispatch-foundation`, and on PR #678; this ledger commit is
-  the checkpoint-transport leg
+  queue-ejected after API E2E failure; verified work head
+  `f26b537a3a362237130b166b7f633e4dd2c8bfea`
+- Push state: reviewed work head `f26b537a3a362237130b166b7f633e4dd2c8bfea` was pushed as
+  `ad1de76998d3916ba11028eb625357aad91feb11..f26b537a3a362237130b166b7f633e4dd2c8bfea` and verified equal
+  locally, at `origin/Refactor/deal-dispatch-foundation`, and on PR #678; this ledger commit is the
+  checkpoint-transport leg
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
@@ -21,7 +22,7 @@
   `42f760994e15c909c9e56ffb3fde045210457bbf`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-21 after current-main sync and local Workers composition verification
+- Last reconciled: 2026-08-21 after the verified reviewed-work-head push and before checkpoint transport
 
 ## Current state
 
@@ -83,8 +84,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-After this review checkpoint commit, publish the reviewed head through the plan-managed two-leg push,
-wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
+After this checkpoint-transport commit is pushed and local, remote-tracking, and PR heads are verified
+equal, wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
 
 ## Separate public-library follow-up
 
