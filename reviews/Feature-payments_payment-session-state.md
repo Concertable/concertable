@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9751bd838c73e5b392d5a2890b03346a1a7c6932`  _(2026-08-21)_
-**Security-reviewed up to commit:** `9751bd838c73e5b392d5a2890b03346a1a7c6932`  _(2026-08-21)_
+**Reviewed up to commit:** `6bf01d7b465f1cb41667ac3543755eee839d629d`  _(2026-08-21)_
+**Security-reviewed up to commit:** `6bf01d7b465f1cb41667ac3543755eee839d629d`  _(2026-08-21)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -40,3 +40,12 @@ The native correctness, reuse, efficiency, and error-handling pass was clean. Th
 `SEC3`: a persisted terminal failure can bypass normalization and permit cancellation against stale active
 or unknown provider truth. The remaining architecture, persistence, language/framework, test-coverage,
 docs ownership, and plan/review lifecycle lenses were clean.
+
+## Incremental review — 2026-08-21
+
+> Range reviewed: `9751bd83..6bf01d7b` (1 commit).
+
+No new findings. The native correctness, reuse, efficiency, and error-handling pass; the security pass over
+terminal-state normalization, retry eligibility, payer authorization, cancellation ordering and races,
+provider identity/status handling, and secret exposure; and the architecture, persistence,
+language/framework, changed-behaviour coverage, docs ownership, and plan/review lifecycle lenses were clean.
