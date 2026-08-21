@@ -104,3 +104,18 @@ Verified, not assumed:
 retyped or removed with its callers, the three package references are dropped, and the arch guard is
 widened from `Functional/` to the whole Kernel so the carrier cannot come back. Publish-first: the
 overload removal is breaking, so it migrates through a platform sync.
+
+### No shared file-download type or terminal, so modules duplicate both
+
+Every download endpoint hand-rolls a per-module `FileDownload` record (`byte[] Content, string FileName,
+string ContentType`) and inlines `File(x.Content, x.ContentType, x.FileName)` at the controller — Concert
+carries its own copy (four controller sites) and Privacy added a second copy for the GDPR subject export.
+There is no shared file-payload DTO and no `FileDownload → IActionResult` terminal beside the existing
+`Reunion.AspNetCore` result terminals in `Concertable.Shared.Api/Results`, so each new "return a file"
+endpoint re-invents both the type and the framework call.
+
+**Resolves when:** a `FileDownload` record lands in `Concertable.Contracts` (module Application layers
+build it) and a `ToFileResult()` terminal lands in `Concertable.Shared.Api/Results` next to the other
+terminals, both published, and Concert + Privacy migrate to them with their per-module copies deleted.
+Publish-first: a two-package contract addition consumed cross-service migrates through a platform sync, not
+a bare edit — which is why it is deferred here rather than folded into the feature that surfaced it.
