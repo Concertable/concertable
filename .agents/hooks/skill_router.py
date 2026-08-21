@@ -53,41 +53,49 @@ ROUTES_FILE = ".agents/skill-routes.json"
 # Lowercased, because the two harnesses do not agree on casing or on names. Claude writes through
 # Write/Edit/MultiEdit/NotebookEdit; Codex writes through apply_patch, and matching only Claude's
 # vocabulary is how this hook spent its first life doing nothing at all in a Codex session.
-WRITE_TOOLS = {
+CLAUDE_WRITE_TOOLS = {
     "write",
     "edit",
     "multiedit",
     "notebookedit",
+}
+CODEX_WRITE_TOOLS = {
     "apply_patch",
     "edit_file",
     "write_file",
     "multi_edit",
 }
+WRITE_TOOLS = CLAUDE_WRITE_TOOLS | CODEX_WRITE_TOOLS
 PATH_KEYS = ("file_path", "notebook_path", "path", "filepath")
 # An apply_patch envelope names its files inside the patch body, so a key lookup alone sees none of them.
 PATCH_FILE_TARGET = re.compile(r"\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*([^\r\n]+)", re.IGNORECASE)
 PATCH_ADDED_LINE = re.compile(r"^\+(?!\+\+)(.*)$", re.MULTILINE)
 QUERY_FLAG = "--skills-for"
+VERIFY_FLAG = "--verify-install"
 # Junction/copy deployment: one flat namespace per harness root.
-LINKED_SKILL_ROOTS = (".agents/skills", ".claude/skills")
-# Plugin deployment: <harness>/plugins/cache/<marketplace>/<plugin>/<version>/skills/<name>/SKILL.md.
-# Both harnesses use that shape under their own home, and a plugin's skills are NOT in the roots above -
-# so resolving only those reports every plugin-installed skill as missing.
-PLUGIN_CACHE_ROOTS = (".claude/plugins/cache", ".codex/plugins/cache")
+LINKED_SKILL_ROOTS = {
+    "claude": ("skills",),
+    "codex": (".agents/skills", ".codex/skills"),
+}
+CODEX_PLUGIN_CACHE = ".codex/plugins/cache"
 # Some uninstall paths leave the cache directory behind carrying this marker. It is a useful hint but
 # NOT a reliable one: removing a marketplace dropped its plugins from the manifest while leaving the
 # whole payload in the cache with no marker at all. So the manifest below is the authority where one
 # exists, and this only filters what the directory walk turns up.
 ORPHAN_MARKER = ".orphaned_at"
-CLAUDE_INSTALL_MANIFEST = ".claude/plugins/installed_plugins.json"
 
 
-def manifest_install_roots():
+def claude_config_root(home):
+    configured = os.environ.get("CLAUDE_CONFIG_DIR")
+    return Path(configured) if configured else home / ".claude"
+
+
+def manifest_install_roots(home):
     """Claude's authoritative installed set. None when unreadable, meaning fall back to walking.
 
     A cache directory is evidence a plugin WAS installed, never that it still is.
     """
-    manifest = Path.home() / CLAUDE_INSTALL_MANIFEST
+    manifest = claude_config_root(home) / "plugins" / "installed_plugins.json"
     try:
         data = json.loads(manifest.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
@@ -106,7 +114,16 @@ def manifest_install_roots():
     return roots
 
 
-def skill_search_dirs():
+def active_harness(tool_name):
+    lowered = tool_name.lower()
+    if lowered in CLAUDE_WRITE_TOOLS:
+        return "claude"
+    if lowered in CODEX_WRITE_TOOLS:
+        return "codex"
+    return None
+
+
+def skill_search_dirs(harness):
     """Every directory that may hold `<name>/SKILL.md`, nearest delivery first.
 
     Ordered own-plugin, then linked roots, then other plugins: the first is exact and needs no globbing,
@@ -114,36 +131,37 @@ def skill_search_dirs():
     """
     home = Path.home()
 
-    own = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    root_variable = "CLAUDE_PLUGIN_ROOT" if harness == "claude" else "CODEX_PLUGIN_ROOT"
+    own = os.environ.get(root_variable)
     if own:
         yield Path(own) / "skills"
     # hooks/skill_router.py -> the plugin root that copied it. True in an install, harmless in a repo.
     yield Path(__file__).resolve().parent.parent / "skills"
 
-    for relative in LINKED_SKILL_ROOTS:
-        yield home / relative
+    linked_base = claude_config_root(home) if harness == "claude" else home
+    for relative in LINKED_SKILL_ROOTS[harness]:
+        yield linked_base / relative
 
-    manifest_roots = manifest_install_roots()
-    if manifest_roots is not None:
-        for root in manifest_roots:
-            yield root / "skills"
+    if harness == "claude":
+        manifest_roots = manifest_install_roots(home)
+        if manifest_roots is not None:
+            for root in manifest_roots:
+                yield root / "skills"
+            return
+        cache = claude_config_root(home) / "plugins" / "cache"
+    else:
+        cache = home / CODEX_PLUGIN_CACHE
 
-    for relative in PLUGIN_CACHE_ROOTS:
-        # Claude's installs are already covered authoritatively above; walking its cache as well would
-        # resurrect uninstalled payloads that no longer appear in the manifest.
-        if manifest_roots is not None and relative.startswith(".claude/"):
+    if not cache.is_dir():
+        return
+    try:
+        versions = sorted(cache.glob("*/*/*"))
+    except OSError:
+        return
+    for version in versions:
+        if (version / ORPHAN_MARKER).exists():
             continue
-        cache = home / relative
-        if not cache.is_dir():
-            continue
-        try:
-            versions = sorted(cache.glob("*/*/*"))
-        except OSError:
-            continue
-        for version in versions:
-            if (version / ORPHAN_MARKER).exists():
-                continue
-            yield version / "skills"
+        yield version / "skills"
 
 
 def repo_relative(path, cwd):
@@ -241,7 +259,7 @@ def plugin_of(skills_dir):
     return parent.name
 
 
-def skill_description(name):
+def skill_description(name, harness):
     """The skill's own description, so the rule text has exactly one home.
 
     A name may be plugin-qualified (`dotnet:persistence`). It has to be able to be: a local roster and
@@ -251,7 +269,7 @@ def skill_description(name):
     home, which is every utility and every route that names only one side.
     """
     wanted_plugin, _, bare = name.rpartition(":")
-    for root in skill_search_dirs():
+    for root in skill_search_dirs(harness):
         if wanted_plugin and plugin_of(root) != wanted_plugin:
             continue
         skill = root / bare / "SKILL.md"
@@ -389,9 +407,41 @@ def query(argv):
     return 0
 
 
+def verify_install(argv):
+    index = argv.index(VERIFY_FLAG)
+    harness = argv[index + 1].lower() if len(argv) > index + 1 else ""
+    if harness not in {"claude", "codex"}:
+        print(f"usage: {VERIFY_FLAG} <claude|codex>")
+        return 2
+
+    cwd = os.getcwd()
+    root = find_repo_root(cwd)
+    try:
+        routes = load_routes(root) if root else None
+    except RoutesUnusable as error:
+        print(f"SKILL ROUTER - {error}")
+        return 2
+    if routes is None:
+        print(f"no readable {ROUTES_FILE} above {cwd} - no installation to verify")
+        return 2
+
+    names = sorted({name for route in routes for name in route.get("skills") or []})
+    missing = [name for name in names if skill_description(name, harness) is None]
+    if missing:
+        print(f"{harness} is missing {len(missing)} of {len(names)} routed skill(s):")
+        for name in missing:
+            print(f"  {name}")
+        return 2
+
+    print(f"{harness} resolves all {len(names)} routed skill(s) from {ROUTES_FILE}")
+    return 0
+
+
 def main():
     if QUERY_FLAG in sys.argv[1:]:
         sys.exit(query(sys.argv[1:]))
+    if VERIFY_FLAG in sys.argv[1:]:
+        sys.exit(verify_install(sys.argv[1:]))
 
     try:
         data = json.load(sys.stdin)
@@ -399,7 +449,10 @@ def main():
         sys.exit(0)
 
     tool_name = data.get("tool_name")
-    if not isinstance(tool_name, str) or tool_name.lower() not in WRITE_TOOLS:
+    if not isinstance(tool_name, str):
+        sys.exit(0)
+    harness = active_harness(tool_name)
+    if harness is None:
         sys.exit(0)
 
     tool_input = data.get("tool_input") or {}
@@ -456,34 +509,51 @@ def main():
         if key in seen:
             continue
         pending.append((rel, route))
-        seen.add(key)
 
     if not pending:
         sys.exit(0)
 
-    save_seen(session, seen)
+    descriptions = {}
+    missing = set()
+    for _, route in pending:
+        for name in route.get("skills") or []:
+            if name not in descriptions:
+                descriptions[name] = skill_description(name, harness)
+            if descriptions[name] is None:
+                missing.add(name)
 
     lines = ["SKILL ROUTER - a standard owns this path, and it has not been loaded this session:", ""]
     for rel, route in pending:
         lines += [f"  {rel}", ""]
         for name in route.get("skills") or []:
-            desc = skill_description(name)
+            desc = descriptions[name]
             lines.append(f"  * {name}")
             if desc:
                 lines.append(f"      {desc}")
             else:
                 lines.append(
-                    "      NOT INSTALLED - no SKILL.md in this plugin, under ~/.agents/skills or "
-                    "~/.claude/skills, or in any installed plugin. A route pointing at a missing skill "
-                    "is a deployment fault, not a reason to proceed."
+                    f"      NOT INSTALLED FOR {harness.upper()} - no SKILL.md is available to the "
+                    "active harness. A route pointing at a missing skill is a deployment fault, not "
+                    "a reason to proceed."
                 )
         if route.get("note"):
             lines.append(f"      NOTE: {route['note']}")
-    lines += [
-        "",
-        "Invoke the skill(s) above, then repeat this write. The file was NOT written. This fires once "
-        "per path pattern per session, so it will not interrupt you again for this route.",
-    ]
+    if missing:
+        lines += [
+            "",
+            f"Install or enable the missing skill(s) for {harness}, then start a new session. The file "
+            "was NOT written. This route remains blocked on every attempt until every owning skill "
+            "is available.",
+        ]
+    else:
+        for _, route in pending:
+            seen.add(route.get("path"))
+        save_seen(session, seen)
+        lines += [
+            "",
+            "Invoke the skill(s) above, then repeat this write. The file was NOT written. This fires "
+            "once per path pattern per session, so it will not interrupt you again for this route.",
+        ]
     sys.stderr.write("\n".join(lines))
     sys.exit(2)
 
