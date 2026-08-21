@@ -31,6 +31,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Branching — `<Type>/<Name>` casing, branching from `origin/main`, refactors that stay on their feature branch | skill `git-branching` |
 | The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
 | When to commit, when to push, fewest safe merges | skill `committing` |
+| Committing procedure — slicing by workstream, or the whole tree in one commit | skills `commit`, `commit-all` |
+| Pushing a head and proving the remote carries it; pulling and recovering a failed pull | skills `push`, `pull` |
+| Bringing a checkout up to date — a stale `origin/HEAD`, a branch that already shipped, drift against the default | skill `sync-checkout` |
 | Ready-for-review ≠ merge authorization | [`AGENTS.md`](../AGENTS.md) |
 | Merge procedure — currency check, enqueue, the four terminal states, sync follow-through | skill `merge` (the reasoning behind each state: skill `merging`) |
 | Opening a PR, and the read-only gate that clears a branch first | skills `open-pr`, `pr-preflight` |
@@ -49,6 +52,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
 | Code comments — default to none | global agent instructions (mechanics: skill `comments`) |
 | Doc locality and `CLAUDE.md` siblings as enforced here | [`AGENTS.md`](../AGENTS.md) "Per-area guidance" |
+| Creating, inspecting or closing one worktree | skill `open-worktree` |
 | Worktree cleanup | [`AGENTS.md`](../AGENTS.md) + `scripts/worktrees.ps1` |
 
 ## Architecture — what may depend on what
@@ -71,6 +75,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | C# naming — suffix table, `Projection`, `Response`/`Dto`, `XMappers`, evaluators, frozen tables | skill `csharp-naming` |
 | Comments and XML doc mechanics | skill `comments` (the default-to-none policy is global) |
 | DI registration, dependency-holders, lifetimes | skill `dependency-injection` |
+| Executable host inventory, strict provider validation and dynamic activation-root coverage | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Logging — source-generated `Log.cs`, probes included | skill `logging` |
 | Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
 | Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `dotnet-standards:persistence` |
@@ -148,6 +153,7 @@ diagnostic or test name, not an argument.
 | Private instance fields camelCase, no underscore | `.editorconfig` naming rule | **No** — IDE only; no `EnforceCodeStyleInBuild` is set |
 | File-scoped namespaces, `IDE0130` | `.editorconfig` | **No** — same reason |
 | Keyed-strategy coverage and no service location | `DealStrategyArchitectureTests`, plus `RequireAll`/`RequireExactly` at composition | Yes |
+| Every executable .NET host has strict provider validation and real composition-test coverage or a reviewed exclusion | `ExecutableHostInventory` + the `composition-tests` CI matrix | Yes |
 | No legacy Result carriers; no Dunet in shared production | `ReunionArchitectureTests`, `TypedResultArchitectureTests` | Yes |
 | One read-context contract, one generic read repository | `RepositoryArchitectureTests` | Yes |
 | Service boundaries hold when carved | `EnforceServiceBoundary` + the `carve-*` CI jobs | Yes |

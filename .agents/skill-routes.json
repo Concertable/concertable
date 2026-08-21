@@ -267,6 +267,13 @@
       "note": "Writing guidance is the moment one-rule-one-home is won or lost: check docs/INDEX.md for an existing owner first, and never add a second copy of a rule that already has one."
     },
     {
+      "path": "^reviews/.*\\.md$",
+      "skills": [
+        "review-lifecycle"
+      ],
+      "note": "The review-file lifecycle used to arrive from a reviews/AGENTS.md sitting in the directory. That doc is now the shared standard, so this row is what delivers it."
+    },
+    {
       "path": "app/(shared|b2b/shared|customer/shared|web/shared|web/b2b/shared|mobile/shared)/.*\\.(ts|tsx)$",
       "skills": [
         "app-tiers",

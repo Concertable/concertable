@@ -1,3 +1,3 @@
-import axios from "axios";
+import { createApiClient } from "./apiClient";
 
-export const paymentClient = axios.create();
+export const paymentClient = createApiClient();
