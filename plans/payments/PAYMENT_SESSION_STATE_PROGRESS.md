@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against current `origin/main` `2323c77e74bc58bbde6394c360af673c402a8b5f`, merge head `268b48c47196cf446244c1c32c126a0807a79290`, incremental review watermark `6bf01d7b465f1cb41667ac3543755eee839d629d`, and Payment platform pin `0.1.0-alpha.0.1124`
+- Last reconciled: `2026-08-21` against current `origin/main` `2323c77e74bc58bbde6394c360af673c402a8b5f`, merge head `268b48c47196cf446244c1c32c126a0807a79290`, incremental review watermark `8fe54fc665afc7bcd0e66948c75dfdf88761c011`, and Payment platform pin `0.1.0-alpha.0.1124`
 
 ## Current state
 
@@ -37,14 +37,14 @@ provider truth is normalized fail-closed and must match a safe declined, expired
 retry shape before the persisted attempt is evaluated and cancellation is allowed. Known active or unknown
 incompatible truth creates neither cancellation nor a successor. The follow-up native, security, architecture,
 persistence, language/framework, changed-behaviour coverage, docs ownership, and plan/review lifecycle lenses
-are clean through that commit. All findings are resolved; the review file remains until exact-head draft-PR CI
+are clean through the reconciled implementation head `8fe54fc665afc7bcd0e66948c75dfdf88761c011`. All findings are resolved; the review file remains until exact-head draft-PR CI
 is green. Current `origin/main` is merged through `2323c77e74bc58bbde6394c360af673c402a8b5f`; the branch is 0 commits
 behind and the Payment platform pin is `0.1.0-alpha.0.1124`.
 
 The reconciled exact tree builds Payment Web and UnitTests with zero warnings or errors, all 521 Payment unit
 tests pass, and all 18 focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests` pass against
 Docker Desktop's Linux engine. The focused run exposed one stale gRPC test setup: it persisted a future failed
-observation while leaving the fake provider active. This commit now supplies fresh declined provider truth
+observation while leaving the fake provider active. Commit `8fe54fc665afc7bcd0e66948c75dfdf88761c011` supplies fresh declined provider truth
 after an earlier persisted failure, matching the fail-closed retry invariant already covered by the service tests.
 
 The roadmap item remains unchecked. All implementation must stay inside Payment until the producer PR has
@@ -52,8 +52,7 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Run `/incremental-review` from the recorded `6bf01d7b465f1cb41667ac3543755eee839d629d` watermark through this
-reconciled checkpoint. Only after that review is clean, run `/open-pr` for the draft producer PR.
+Run `/open-pr` for the draft producer PR from the clean, reviewed implementation head.
 
 ## Completed work
 
@@ -216,6 +215,10 @@ reconciled checkpoint. Only after that review is clean, run `/open-pr` for the d
 - Incremental review range `9751bd838c73e5b392d5a2890b03346a1a7c6932..6bf01d7b465f1cb41667ac3543755eee839d629d`
   (1 commit): native and security layers clean; architecture, persistence, language/framework,
   changed-behaviour coverage, docs ownership, and plan/review lifecycle lenses clean.
+- Incremental review range `6bf01d7b465f1cb41667ac3543755eee839d629d..8fe54fc665afc7bcd0e66948c75dfdf88761c011`
+  (72 commits): native and security layers clean; both current-main merges have no conflict-resolution delta;
+  architecture, service-boundary, persistence, language/framework, changed-behaviour coverage, docs ownership,
+  routed-skill, and plan/review lifecycle lenses clean.
 
 ## Reviews
 
@@ -223,7 +226,7 @@ Full review artifact: `reviews/Feature-payments_payment-session-state.md`. The i
 `69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`;
 the clean current-main incremental review covers
 `7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`.
-Incrementally reviewed and security-reviewed through `6bf01d7b465f1cb41667ac3543755eee839d629d` on `2026-08-21`.
+Incrementally reviewed and security-reviewed through `8fe54fc665afc7bcd0e66948c75dfdf88761c011` on `2026-08-21`.
 
 - `NAT1` resolved in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, medium: a cancellation-race loser re-reads
   provider truth and accepts a confirmed canceled predecessor before successor reservation/replay;

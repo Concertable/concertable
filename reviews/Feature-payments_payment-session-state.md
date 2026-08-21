@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `6bf01d7b465f1cb41667ac3543755eee839d629d`  _(2026-08-21)_
-**Security-reviewed up to commit:** `6bf01d7b465f1cb41667ac3543755eee839d629d`  _(2026-08-21)_
+**Reviewed up to commit:** `8fe54fc665afc7bcd0e66948c75dfdf88761c011`  _(2026-08-21)_
+**Security-reviewed up to commit:** `8fe54fc665afc7bcd0e66948c75dfdf88761c011`  _(2026-08-21)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -49,3 +49,14 @@ No new findings. The native correctness, reuse, efficiency, and error-handling p
 terminal-state normalization, retry eligibility, payer authorization, cancellation ordering and races,
 provider identity/status handling, and secret exposure; and the architecture, persistence,
 language/framework, changed-behaviour coverage, docs ownership, and plan/review lifecycle lenses were clean.
+
+## Incremental review — 2026-08-21
+
+> Range reviewed: `6bf01d7b..8fe54fc6` (72 commits).
+
+No new findings. The native correctness, reuse, efficiency, and error-handling pass and the security pass
+were clean. The two current-main merges imported their upstream commits unchanged and introduced no
+conflict-resolution delta. The branch-local integration-test correction exercises the fail-closed retry
+contract with earlier persisted failure state and current declined provider truth. The architecture,
+service-boundary, persistence, language/framework, changed-behaviour coverage, docs ownership, routed-skill,
+and plan/review lifecycle lenses were also clean.
