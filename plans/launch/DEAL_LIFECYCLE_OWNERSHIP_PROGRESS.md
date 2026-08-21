@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through Concert integration fixture-contraction work head
-  `897ef9e894a46b212e2eeab76eac6f8afc47c860`. Local, remote-tracking, and PR heads were verified equal;
+  through Admin/Tenant integration fixture-ownership work head
+  `f1e7dca088d6d60f7a0c6bc27ca181e8667e68da`. Local, remote-tracking, and PR heads were verified equal;
   this ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -271,8 +271,8 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: remove the remaining public `ApiFixture.Services` surface. Reclassify the Admin, Artist,
-Tenant, User, and Venue integration assertions currently creating scopes from it; expose only owning-module
+Active slice: remove the remaining public `ApiFixture.Services` surface. Reclassify the Artist, User, and
+Venue integration assertions currently creating scopes from it; expose only owning-module
 typed context/read helpers on their module-local fixtures, and move any complete multi-module assertion to
 B2B Process through HTTP or Contracts. Remove the public service-provider property once the last consumer
 is gone.
@@ -286,6 +286,13 @@ Commit and push in bounded checkpoints.
 
 ## Completed work
 
+- Published Admin/Tenant fixture-ownership checkpoint `f1e7dca08`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `f1e7dca088d6d60f7a0c6bc27ca181e8667e68da`. Moved both module
+  fixtures out of the shared harness, replaced test service location with typed owning-module operation
+  drivers, removed the shared fixture project's Admin references and stale IVTs, and added only owning
+  project references. Both integration projects build with 0 warnings and 0 errors; the focused
+  architecture guard passes 1/1, the plan graph reports 0 errors and 0 warnings, and `git diff --check`
+  passes.
 - Published Concert fixture-contraction checkpoint `897ef9e89`; local HEAD, the remote branch, and PR
   #633 `headRefOid` all equalled `897ef9e894a46b212e2eeab76eac6f8afc47c860`. Replaced the shared
   multi-context fixture with a module-local Concert fixture, removed Application/Booking persistence and
