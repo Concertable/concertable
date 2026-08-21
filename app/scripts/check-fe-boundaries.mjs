@@ -9,6 +9,7 @@ const workspaces = [
   ["web/b2b/venue", "web/b2b/venue/tsconfig.app.json"],
   ["web/b2b/artist", "web/b2b/artist/tsconfig.app.json"],
   ["web/b2b/business", "web/b2b/business/tsconfig.app.json"],
+  ["web/admin", "web/admin/tsconfig.app.json"],
   ["mobile/customer", "mobile/customer/tsconfig.json"],
   ["mobile/b2b", "mobile/b2b/tsconfig.json"],
   ["b2b/shared", "b2b/shared/tsconfig.build.json"],
