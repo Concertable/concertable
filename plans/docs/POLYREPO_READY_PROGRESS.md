@@ -3,170 +3,141 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: none after this checkpoint merges; the completed cross-harness delivery worktree is closed.
-- Branch: none after this checkpoint merges; create a fresh plan-managed branch from `origin/main` for N3.
-- PRs: N2 producer **agent-standards #12 MERGED** (`d175b8b`), N2 consumer **this repo #695 MERGED**
-  (`2650f5c`); cross-harness producers **agent-standards #13 MERGED** (`e685095`), **dotagents #3 MERGED**
-  (`e5ca9cc`), **react-agents #1 MERGED** (`c9a973d`); consumer **this repo #696 MERGED** (`b1ea4209`).
-- Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
-  The current machine is provisioned from the merged GitHub marketplaces and verified for both harnesses.
-- Last reconciled: 2026-08-21, after merging N2 (#12 + #695), all three cross-harness producers, and
-  cross-harness consumer #696; both harnesses were refreshed from the merged producer revisions and the
-  completed delivery worktree was closed. **N3 is the next plan slice.**
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-n3-api-floor`
+  (consumer, this slice). Producer worktree:
+  `C:/Users/TommySeery/source/repos/agent-standards.worktrees/Docs/polyrepo-ready-n3-shared-intersection`.
+- Branch: `Docs/docs_polyrepo-ready-n3-api-floor` (consumer); `Docs/polyrepo-ready-n3-shared-intersection`
+  (producer). Both close after their PRs merge.
+- PRs: **N3 producer agent-standards [#15](https://github.com/Concertable/agent-standards/pull/15) OPEN**;
+  N3 consumer this repo — opening after producer merges + reprovision. Prior: N2 producer **#12 MERGED**,
+  N2 consumer **#695 MERGED**; cross-harness producers **agent-standards #13**, **dotagents #3**,
+  **react-agents #1** MERGED; consumer **#696 MERGED**.
+- Dependency/package gates: **this diff DOES touch `api/**`** (deletes `api/AGENTS.md` + `api/CLAUDE.md`,
+  edits several `api/**/*.md`). `publish-packages` triggers on `api/**` regardless of file type, so the
+  consumer merge **will** republish (MinVer bump) and open a `chore/platform-sync-*` PR. It is
+  **non-breaking** — no published type shape changed — so the sync PR auto-merges green; whoever merges the
+  consumer owns it to green. This is the first polyrepo-ready slice that trips platform-sync.
+- Last reconciled: 2026-08-21, N3 implemented in both worktrees; producer #15 open, consumer pending.
+  **N3 is delivery-ready; next slice after it lands is N4.**
 
 ## Current state
 
-**Phase 1 and all of N1 (six families, 28 skills) are merged in both repos.** Concertable `main` includes
-cross-harness consumer merge `b1ea4209`; agent-standards `main` includes cross-harness producer merge
-`e685095`. Family 6 (package-cutover) landed as
-producer #11 + consumer #693; `package-cutover` homed in the **dotnet** plugin as `dotnet:package-cutover`.
+**N3 (`api/AGENTS.md` + `api/CLAUDE.md`, 78 lines) is implemented on both sides; producer #15 is open,
+consumer PR pending its merge + machine reprovision.** The finding: four of the five floor sections were
+already skill-owned — microservices/roster → `microservice-boundaries` (`SERVICE_BOUNDARIES.md`), seeding →
+`seeding`, migrations → `migrations`, source-generated logging → the generic `dotagents:logging`. Only
+**"Shared code is the intersection, never the union"** had no canonical home (referenced by `MULTITENANCY.md`
+and `HTTP_CLIENTS.md`, stated only in `api/AGENTS.md`) and no route row on the shared tier.
 
-**N2 — the route-table convention — is merged on both sides.**
+- **Producer (agent-standards #15):** Concertable-specific statement of the rule added to
+  `standards/dotnet/structure/SERVICE_BOUNDARIES.md` (the generic principle already lives in the paired
+  `dotnet-standards` `SERVICE_BOUNDARIES.md`); CANONICAL route row fires `microservice-boundaries` on
+  `Concertable\.(Kernel|Contracts)/.*\.cs$` (universal shared tier only, not a service's own `*.Contracts`;
+  carve-clean). No new skill → 62/62 unchanged.
+- **Consumer (this repo, branch above):** same route row added to `.agents/skill-routes.json` (37 → 38);
+  `api/AGENTS.md` + `api/CLAUDE.md` deleted; every inbound guidance-doc link repointed (root `AGENTS.md`
+  backend bullet, `docs/INDEX.md`, `api/ARCHITECTURE.md`, the four service `AGENTS.md` inheritance lines,
+  Deal/Search/Payment `ARCHITECTURE.md`, roadmap north star). Backend floor is thereafter the route table
+  over the `dotnet` plugin.
 
-- **Producer (agent-standards #12):** the route table is per-repo data, but the *convention* its rows follow
-  was homeless after the cut deletes the monorepo root (it lived only in the table's `_comment` and
-  `docs/INDEX.md`). Landed as `standards/process/SKILL_ROUTES.md` (skill **`skill-routes`**, agent-process
-  plugin) + a carve-time generator `.agents/gen_skill_routes.py` + its gate test. The generator carries the
-  canonical rows once, tagged by group; `--kind dotnet-service` emits a carved service's table by re-anchoring
-  the one `.cs` area floor to the repo root and dropping the react rows, `--kind monorepo` reproduces the
-  platform's own table. **`react-app` is refused** until the frontend carve seam (roadmap §6/§4c) is decided —
-  the react rows carry `app/` mid-pattern, so generating one now would name paths that repo does not have.
-- **Consumer (this repo #695):** the table's `_comment` shrinks from restating the model + field semantics to a
-  pointer at the convention home, per one-rule-one-home. Routes unchanged (37); comment-only.
-
-**Generator/template decision (Tommy): generator.** "Run a script, get a correct table" is the only shape the
-eight carved repos genuinely cannot drift from — the table is generated once at carve time and committed, so
-every clone has the conventions wired from the first commit and nobody hand-edits. A template still relies on
-correct hand-editing per repo.
-
-**Cross-harness standards producers are merged and provisioned from GitHub.** Claude Code and Codex each have
-all five standards plugins enabled at user scope. Both independently resolve all 54 unique skills named by
-Concertable's live route table. The router now resolves only against the active harness and keeps every write
-blocked when an owning skill is absent; a stale cache in the other harness can no longer create a false pass.
-
-**`auto-memory` stays in-repo temporarily.** Its old blocker is gone because Codex now loads agent-standards;
-criterion 1 still requires a durable home for this Codex-only utility before close-out.
+**Everything from Phase 1, N1 (six families / 28 skills), and N2 is merged on both sides.** Both harnesses
+are provisioned from GitHub with all five standards plugins at user scope. `auto-memory` still needs a
+durable home before close-out (Codex-only utility).
 
 ## Next Steps
 
-1. **Start new Claude and Codex sessions.** The installed catalogues now point at the merged producer
-   revisions; existing sessions retain the snapshot they started with.
-
-2. **Create a fresh plan-managed worktree from `origin/main` and begin N3.** Continue N3–N6 + N7a — N1/N2
-   no longer block them. N6 still carries the open question for Tommy:
-   `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard
-   nor service-specific — surface, don't invent a home. **N7b** waits on roadmap §4c; **N8** last as the only
-   carved-repo evidence; it repeats the already-delivered Claude/Codex checks against the carved table. The
-   **frontend carve seam** (roadmap §6/§4c) now also
-   gates the generator's `react-app` kind — an input N8 needs before a carved frontend repo can be proven.
+1. **Merge N3 producer #15** (agent-standards) via its normal green path, then **reprovision this machine**
+   (`scripts/provision-agent-standards.ps1`) and start fresh sessions so the updated `SERVICE_BOUNDARIES.md`
+   is installed.
+2. **Open + merge the N3 consumer PR** (this branch) via `/merge-docs` (admin-merge bypasses the queue's
+   E2E). **Then own the `chore/platform-sync-*` PR** the consumer merge triggers to green/merged — it is
+   non-breaking (markdown-only under `api/**`), so it should auto-merge, but confirm it.
+3. **Then N4** — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525): cross-service
+   by definition, platform-wide in full, the largest single doc left; every service repo needs it day one.
+   N5 (root `AGENTS.md`), N6 (`docs/` — carries the open product-narrative question for Tommy: `OVERVIEW.md`,
+   `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are neither platform standard nor service-specific — surface,
+   don't invent a home), then N7a follow. N7b waits on roadmap §4c; the **frontend carve seam** (§6/§4c)
+   also gates the generator's `react-app` kind. N8 last, the only carved-repo evidence.
 
 ## Completed work
 
-- **Cross-harness prerequisite — producer PRs merged and machine reprovisioned.** agent-standards #13 adds
-  Codex manifests for `agent-process`, `dotnet`, and `react`, a one-command Claude/Codex provisioner, and the
-  active-harness fail-closed router with an all-route installation verifier. dotagents #3 and react-agents #1
-  add their Codex marketplace/plugin schemas. This consumer vendors the router, provisioner, and provenance.
-  All five plugins are installed from the merged GitHub marketplaces and enabled in both harnesses on this
-  machine; all 54 routed skills resolve independently in each harness.
-- **N2 producer — agent-standards #12.** `standards/process/SKILL_ROUTES.md` (the convention) routed by the
-  new `skill-routes` skill; `.agents/gen_skill_routes.py` (the generator, canonical rows embedded once);
-  `.agents/hooks/tests/test_gen_skill_routes.py` (11 tests). Generator current at **62 skills / 62 docs** (197
-  files), hook suite **161 → 172**, plugin router rewrote to a valid relative path, description colon-space
-  clean, INDEX row present, `skill-routes` collision-free across every repo on the machine.
-- **N2 consumer — this repo #695.** `.agents/skill-routes.json` `_comment` repointed to the convention; routes
-  unchanged (37), JSON valid, router resolves representative paths. Committed and pushed early (worktree-prune
-  lesson). Plan + ledger updated.
-- **N1 — all six families, merged both repos.** Family 1 review (#675 + agent-standards #6): seven `review/`
-  docs. Family 2 merge/PR (#676 + #7): four `merge/` docs, `create-gh-pr` → `open-pr`. Family 3 test-debug
-  (#677 + #8): six `testing/` docs, `docker-health.ps1` vendored. Family 4 git (#679 + #9): six `git/` docs,
-  `sync` → `sync-checkout`, `worktree` → `open-worktree`, `worktrees.ps1` vendored. Family 5 plan-workflow
-  (#687 + #10): `plan/RESUME.md`, `plan/CONTINUE_ROADMAP.md`, `plan/UPDATE_ROADMAP.md`, `TECHDEBT.md`, plus a
-  new `plan-checkpoint` skill (`plan/CHECKPOINT.md` with the ledger template folded in). Family 6
-  package-cutover (#693 + #11): `standards/dotnet/PACKAGE_CUTOVER.md` in the **dotnet** plugin.
-- **Phase 1** (#669 + agent-standards #5): the plan method into `PLANS.md`; `HANDOFF.md` new.
+- **N3 — `api/AGENTS.md` re-home (this slice).** Producer #15 + consumer (this branch). Route table 37 → 38;
+  the shared-is-the-intersection rule homed in `SERVICE_BOUNDARIES.md`; both floor files deleted; all inbound
+  links repointed. See Current state.
+- **N2 — route-table convention.** Producer #12: `standards/process/SKILL_ROUTES.md` (skill `skill-routes`)
+  + carve-time generator `.agents/gen_skill_routes.py` + gate test; `--kind monorepo` reproduced the live
+  37-row table exactly, `dotnet-service` carve clean, `react-app` refused. Consumer #695: `_comment`
+  repointed, routes unchanged.
+- **Cross-harness prerequisite.** agent-standards #13 (Codex manifests for all three plugins, one-command
+  Claude/Codex provisioner, active-harness fail-closed router + all-route verifier), dotagents #3,
+  react-agents #1, consumer #696. Both harnesses resolve all live routed skills independently.
+- **N1 — six families / 28 skills, merged both repos.** review (#675 + #6, seven `review/` docs),
+  merge/PR (#676 + #7, four `merge/` docs, `create-gh-pr` → `open-pr`), test-debug (#677 + #8, six `testing/`
+  docs, `docker-health.ps1` vendored), git (#679 + #9, six `git/` docs, `sync`→`sync-checkout`,
+  `worktree`→`open-worktree`), plan-workflow (#687 + #10, four docs + new `plan-checkpoint`), package-cutover
+  (#693 + #11, `dotnet:package-cutover`).
+- **Phase 1** (#669 + #5): plan method into `PLANS.md`; `HANDOFF.md` new.
 
-## Verification — cross-harness delivery
+## Verification — N3
 
-- Provisioner full run and `-VerifyOnly -Repository <worktree>`: Claude **5/5** plugins enabled, Codex
-  **5/5** enabled; each harness resolves all **54/54** unique skills named by the live table.
-- Fresh Codex CLI session loaded both `dotnet-standards:unit-testing` and `dotnet:unit-testing`, followed
-  both routers to their shipped `UNIT.md` payloads, and returned the expected smoke marker.
-- Claude's installed component inventory exposes `unit-testing` in both `dotnet-standards` (22 skills) and
-  `dotnet` (16 skills). The Claude plugin list shows all five standards plugins enabled at user scope.
-- Producer combined hook/generator suite **177/177**; consumer vendored-hook suite **19/19**. Plan graph **0 errors / 0
-  warnings**; docs reachability **0 errors / 24 pre-existing warnings**.
-- All three generated corpora are current: agent-standards **62 skills / 62 docs** (196 checked), dotagents **77 files**,
-  react-agents **43 files**. Claude validates all marketplaces/plugins; Codex validates and installs all
-  five `.codex-plugin` manifests.
-
-## Verification — N2
-
-Producer (agent-standards #12):
-- **Faithfulness (the strong proof):** `build_routes("monorepo")` reproduces Concertable's live 37-row table
-  **exactly** — paths, skills, `content_requires`, `deny`, and notes all match (structural diff against the
-  real `.agents/skill-routes.json`). The canonical rows are the real rows, not a paraphrase.
-- **Carve (`dotnet-service`):** 28 rows (4 meta + 24 dotnet), **zero `^api/`/`^app/`/`app/` leakage**, the
-  `.cs` floor re-anchored to root (`^(?!.*(GlobalUsings|AssemblyInfo)\.cs$).*\.cs$`) and still excluding
-  `GlobalUsings`. Layer/name/test-tier/deny rows all port and fire through the **real** `skill_router`
-  matcher on a simulated carved Payment tree — every tracked path covered.
-- Hook suite **172 passed** (161 + 11 new). `sync-generated.ps1 -Check` current (62 skills / 62 docs, 197
-  files). Plugin router → `../../standards/process/SKILL_ROUTES.md`. `skill-routes` collision-free across
-  `~/.claude`, `~/.agents`, `~/.codex`, `dotagents`, `react-agents`, `agent-starter-kit`, the work repos.
+Producer (agent-standards #15):
+- `sync-generated.ps1 -Check`: **196 files current (62 skills / 62 docs)** — no new skill, `SERVICE_BOUNDARIES.md`
+  plugin copy regenerated.
+- Hook suite **177/177** (incl. `test_gen_skill_routes.py`: new row valid regex, carries skills, carve-clean).
+- `build_routes("monorepo")` → **38 rows**; `Concertable.Kernel/ICurrentUser.cs` and universal
+  `Concertable.Contracts/Genre.cs` resolve `microservice-boundaries`; per-service `Concertable.Auth.Contracts`
+  correctly **excluded**; `dotnet-service` carve shows **no `^api/`/`app/` leak**.
 
 Consumer (this repo):
-- `.agents/skill-routes.json` parses; 37 routes intact; `skill_router.py --skills-for` resolves
-  `csharp-*`/`dotnet:persistence`/`plans`/`react-standards:typescript-style` on representative paths.
-- **Meta-only holds** — changed top-level paths are `.agents`, `plans`. No `api/**`, no workflow file → the
-  `/merge-docs` path, no publish/`chore/platform-sync-*`.
+- `.agents/skill-routes.json` parses, 38 routes; `skill_router.py --skills-for` resolves
+  `microservice-boundaries` on a `Concertable.Kernel/**` path (the moved rule's representative path) and the
+  prior families still resolve (seeding/migrations/logging/persistence).
+- `docs_reachability.py`: 0 errors (api/AGENTS.md's inbound guidance-doc links all repointed);
+  `plan_graph.py`: 0 errors. Vendored-hook check clean.
+- **Not meta-only w.r.t. publish** — the diff deletes/edits `api/**/*.md`, so the merge republishes and opens
+  a non-breaking `chore/platform-sync-*` PR (see gates). The queue path is still `/merge-docs` (admin-merge
+  skips E2E); platform-sync fires post-merge and is owned to green.
 
 ## Reviews
 
-**N2 — low review surface, self-checked; no review file yet.** The producer doc states the convention that
-already lived (verbatim in substance) in the table's `_comment` and `docs/INDEX.md`, now with one home; the
-generator is proven by the committed gate test + the exact-reproduction faithfulness check; the consumer is a
-comment-only edit. A `/docs-review` over both halves can be run from the moved copy
-`standards/process/review/DOCS.md` before merge if wanted, as prior slices did while the cache is stale.
+**N3 — self-checked, no review file yet.** Producer is a roster-doc addition (the rule's generic half already
+existed in `dotagents`) plus one route row proven by the committed gate test + monorepo/carve replay; consumer
+is a route-row addition, two deletions, and mechanical link repointing verified by `docs_reachability.py` =
+0 errors. A `/docs-review` over both halves can run before merge as prior slices did.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- **Generator, not template (Tommy confirmed).** The only shape the eight carved repos cannot drift from:
-  generate the table once at carve time and commit it. The generator is the routing-table analog of
-  `vendor-hooks.ps1` — a carve-time authoring tool at `.agents/gen_skill_routes.py`, run `--into <repo>`, not
-  vendored into every consumer (a table, once committed, needs no per-clone regeneration).
-- **The react rows genuinely cannot be carved yet — surfaced, not papered over.** For a .NET service only the
-  one `.cs` area floor is location-keyed; every layer/name/meta row ports verbatim. The react rows are
-  different: they carry `app/` *mid-pattern* (`app/.*/api/…`), not just as a prefix, so a carved frontend
-  repo's table depends on whether an `app/` node survives the cut — undecided (roadmap §6/§4c). The generator
-  therefore **refuses `--kind react-app`** with that reason rather than emitting wrong rows. This is a new
-  input the frontend carve seam owes, folded into N8's dependencies.
-- **Consumer scope kept minimal by design.** N2 requires the convention published + the generator + the gate;
-  it does **not** require Concertable to regenerate its own table or wire `--check` into CI. Making the
-  monorepo table a `--check`-guarded generator output is an available follow-up (it would reformat the table
-  and touch CI), deliberately out of this slice. The faithfulness proof already demonstrates the generator
-  against the real repo without that churn.
-- **No values file — resolved at run time again.** The generator embeds the canonical rows once and
-  parameterises only the floor anchor by `--kind`; there is no per-repo values file, seventh slice running.
-- **A meta-only consumer must ADMIN-MERGE via `/merge-docs`, never `--auto`** — the merge queue runs E2E on a
-  normal enqueue even for a meta-only diff (inside `merge_group` the path-filter has no diff base, so E2E does
-  not skip). This bit #687 (a 17-min UI-E2E run that then fell out). `/merge-docs` admin-merges to bypass the
-  queue, with `skip-e2e` as belt-and-braces.
-- **The stale/reduced plugin-cache gap is repaired on this machine.** Both harnesses now have the complete
-  five-plugin set at user scope, and the route verifier resolves all 54 live skills independently in each.
-  New sessions are required to load the refreshed catalog; N2's new `skill-routes` skill arrives after #12.
-- **Durable cross-slice rules that still bind N3–N8:**
-  - **Collision-check a new skill name across *every* repo on the machine**, not just the standards repos and
-    the harness built-ins — the family-2/3/4 lesson (`create-gh-pr`, `sync`, `worktree` all collided).
-  - **No values file — resolve per-repo values at run time** (discovery, a script's own usage, or a genuine
-    constant). Reaching for a values file is evidence the discovery mechanism has not been found.
+- **N3 added a route row rather than relying on the always-loaded floor (the scalable call).** The
+  shared-is-the-intersection rule's violation (an audience-specific member on `Kernel`/`Contracts`) is silent
+  and expensive, and no route fired on the shared tier — only `AppHost/Program.cs` fired
+  `microservice-boundaries`. Deleting the prose floor without a route row would make the rule stop resolving
+  at its violation site (acceptance criterion 2 failure). The new row (universal shared tier only, carve-safe)
+  preserves the trigger; the live table and the generator's CANONICAL were updated together to stay faithful.
+- **N3 trips platform-sync; earlier slices did not.** `publish-packages` keys on `api/**` for any file type,
+  so deleting/editing `api/**/*.md` republishes. Non-breaking → the sync PR auto-merges; still must be owned
+  to green by whoever merges the consumer.
+- **Generator, not template (Tommy confirmed).** The table is generated once at carve time and committed; the
+  generator (`.agents/gen_skill_routes.py`) carries the canonical rows once and parameterises only the floor
+  anchor by `--kind`. No per-repo values file — resolve per-repo values at run time.
+- **`react-app` generation still blocked** on the frontend carve seam (roadmap §6/§4c): the react rows carry
+  `app/` mid-pattern. Folded into N8's dependencies.
+- **`auto-memory`** stays in-repo; criterion 1 still requires a durable home for this Codex-only utility
+  before close-out.
+- **Durable cross-slice rules that still bind N4–N8:**
+  - **Collision-check a new skill name across *every* repo on the machine** (the family-2/3/4 lesson). N3
+    added no new skill, so no collision check was needed.
+  - **No values file — resolve per-repo values at run time.**
   - **Commit+push the irreversible core of a slice before the longer ledger prose** — concurrent sessions
-    prune worktrees here, and a family-6 worktree was `rm`'d mid-authoring with uncommitted work in it.
-  - **Cross-harness completeness is a per-slice gate now, not deferred to N8.** Run the provisioner's
-    repository verification for Claude and Codex whenever route ownership changes. N8 repeats it against the
-    carved service rather than implementing delivery for the first time.
+    prune worktrees here.
+  - **A meta-only consumer ADMIN-MERGES via `/merge-docs`, never `--auto`** — the queue runs E2E even on a
+    meta diff inside `merge_group`.
+  - **Cross-harness completeness is a per-slice gate** — run the provisioner's repository verification for
+    Claude and Codex whenever route ownership changes. (N3 added a row for an existing skill, so the unique
+    skill set is unchanged; re-verify after reprovision anyway.)
 
 ## Resume prompt
 
 ```
 cd C:/Users/TommySeery/source/repos/Concertable
-Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. Create a fresh plan-managed worktree from origin/main for N3, then do what the ledger's `## Next Steps` says.
+Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. Merge N3 producer agent-standards #15, reprovision, open + merge the N3 consumer PR via /merge-docs and own its platform-sync PR to green, then begin N4 in a fresh plan-managed worktree from origin/main.
 ```
