@@ -5,7 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `119714ba74586f7542291f0d4b2fb824afb0a351`  _(2026-08-21)_
+**Reviewed up to commit:** `a5e7bf4ced0f0cb9dc0b1a36ed773e0514b54f89`  _(2026-08-21)_
+**Security-reviewed up to commit:** `a5e7bf4ced0f0cb9dc0b1a36ed773e0514b54f89`  _(2026-08-21)_
 
 > Range reviewed: `c4c83ee1..119714ba` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -52,3 +53,51 @@ Layer 2 (architecture lenses):
   in both worktree runs, pre- and post-rebase onto current `main`). No new behaviour, no coverage gap.
 - **docs-and-debt** — the resolved `TECH_DEBT.md` entry is deleted outright (not archived), per
   "Once the debt is addressed, delete the entire entry."
+
+## Incremental review — 2026-08-21
+
+> Range reviewed: `119714ba..a5e7bf4c` (9 commits touching the Admin module; 188 commits total, the rest
+> unrelated `origin/main` history pulled in by two base-currency merges — scoped with
+> `-- api/Concertable.B2B/src/Modules/Admin`).
+
+`origin/main` independently landed an admin-grant race-safety fix (`ff8f25243`) while this branch was
+open: `AdminService.GrantIfEligibleAsync` (registration-time, `Task`) became
+`EnsureCurrentUserAdminGrantedIfEligibleAsync` (post-login `/api/auth/me`, `Task<bool>`, with a
+`TrySaveGrantAsync` helper catching a concurrent-grant duplicate-key race). Merging `origin/main` produced
+real conflicts in `AdminService.cs` and `AdminServiceTests.cs` — both branches touched the same methods —
+hand-resolved by reapplying the repository split onto main's new shape: every `repository.X` call became
+`invitationRepository.X` or `profileRepository.X` by domain ownership, and `SaveChangesAsync` (including
+inside `TrySaveGrantAsync`) keeps routing through `invitationRepository`, per the convention this file
+already covers above. The rest of the diff (`IAdminService.cs`, `IAdminModule.cs`, `AdminModule.cs`,
+`AdminInvitationEntity.cs`, `AdminProvisioningTests.cs`, the `.csproj`) merged clean from `origin/main`
+with zero conflict — already-reviewed upstream content, sanity-checked here rather than re-reviewed.
+
+Layer 1 (native review, `code-reviewer` subagent, medium effort): no findings. Verified line-by-line that
+every `repository.X` call in main's pre-merge `AdminService.cs` maps 1:1 onto the correct split repository
+(`ListAdminSubsAsync`/`GrantAdmin`/`RemoveAdmin`/`IsAdminAsync`/`CountAdminsAsync` → profile;
+`GetPendingInvitationByEmailAsync`/`ListPendingInvitationsAsync`/`InsertAsync`/`GetByIdAsync` →
+invitation), confirmed both repositories share one scoped `AdminDbContext` per request (so
+"save via one designated sibling repo" is structurally correct, not just asserted), confirmed no stray
+reference to the deleted `IAdminRepository` or the renamed `GrantIfEligibleAsync` remains anywhere under
+the module, and confirmed the new `EnsureCurrentUserAdminGrantedIfEligibleAsync` unit tests mock and
+verify against the correct split repository throughout.
+
+Layer 2 (architecture lenses): Lens A (correctness/atomicity/races) — the duplicate-key race handling is
+unchanged in effect by the split, since `SaveChangesAsync` still saves the one shared context regardless
+of which repository interface issues the call. Lens B (service isolation) — not applicable, no
+cross-service call added. Lens C (module boundaries) — not applicable, no new cross-module reach. Lens D
+(seeding) — not applicable, no seeder touched. Lens E (conventions) — same routed skills as the prior
+review, all still satisfied post-merge. Lens F (test coverage) — the 7 new
+`EnsureCurrentUserAdminGrantedIfEligibleAsync` unit tests and the rewritten `AdminProvisioningTests`
+(registration vs. login-time grant, split into `RegisterAsync`/`LogInAsync`) already ship with this diff
+from upstream; no gap introduced by the merge resolution itself.
+
+Security layer (`.Contracts` path touched — `IAdminModule.cs` — so this range needed a current
+`Security-reviewed up to commit:` marker): no findings. `EnsureCurrentUserAdminGrantedIfEligibleAsync`
+grants off `ICurrentUser.Id`/`.Email` (server-derived from the authenticated token, not attacker-supplied
+input) and a server-configured bootstrap email — the same trust boundary as the pre-existing
+`GrantIfEligibleAsync`, unchanged by the repository split. No raw SQL, string-built queries, secrets,
+crypto or deserialization anywhere in the diff. The `IAdminModule.cs`/`IAdminService.cs` changes are a
+method rename plus XML-doc updates carrying no new behaviour of their own — the actual security posture
+change (moving the grant check from pre-verification registration time to post-login, closing an
+unverified-email gap) is `ff8f25243`'s, already merged and live on `main` independently of this PR.
