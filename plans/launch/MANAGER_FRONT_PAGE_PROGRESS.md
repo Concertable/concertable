@@ -7,7 +7,7 @@
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563)
 - Dependency/package gates: producer packages are published; this API-changing consumer merge must complete its generated platform-sync follow-through
-- Last reconciled: 2026-08-21 against `origin/main` `a364bebbdc5e75e28adf09b304513e9dcab72f1f`
+- Last reconciled: 2026-08-21 against `origin/main` `20012d1a8`
 
 ## Current state
 
@@ -42,12 +42,19 @@ app-relative helper import could not resolve on Linux. The correction now preser
 layout, archives the shared helper from the same Git tree, covers all five web SPAs with a no-network regression,
 and adds Admin to the authoritative carve matrix. The exact reviewed correction work head `c2a69d062` was pushed
 from starting remote/PR head `97765c2b1`; refreshed remote-tracking and PR heads both equal
-`c2a69d062d79685c59590e4f94569949fc9d88a9`.
+`c2a69d062d79685c59590e4f94569949fc9d88a9`. Review transport and the verified-push checkpoint were subsequently
+pushed and verified with local, remote-tracking, and PR heads equal at `6e17b5cdf0067833bda18d6d396e240a31f91b6a`.
+
+`origin/main` then advanced to `20012d1a8`. The reconciliation preserves current main's `InsertAsync` conversions
+where each insert is the only staged write, while `MessageService` deliberately retains `AddAsync` inside the
+ambient outbox unit of work because the message and `TenantActivityRecordedEvent` must commit atomically. The merged
+unit test now pins that exception explicitly.
 
 ## Next Steps
 
-1. Transport the review and verified-work-push checkpoint, then verify local, remote-tracking, and PR head equality.
-2. Require fresh exact-head CI green (including every feed-restored web carve), complete `/merge`, follow the generated
+1. Incrementally review and restamp the reconciled current-main tail.
+2. Push the exact reviewed head in two legs and require fresh exact-head CI green (including every feed-restored web
+   carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
@@ -64,6 +71,9 @@ from starting remote/PR head `97765c2b1`; refreshed remote-tracking and PR heads
 - Reconciled again after main advanced through Admin and platform-sync PR #709 in merge commits `3a9cc268e` and
   `27e51f65c`; the merges were conflict-free. Admin now shares the permanent development HTTPS/IPv4 configuration and
   has complete Auth/B2B origin wiring.
+- Reconciled with current main `20012d1a8`; the sole conflict was `MessageService.cs`, resolved by retaining the
+  dashboard's atomic message-plus-outbox transaction while accepting main's `InsertAsync` conversions everywhere
+  they satisfy the single-staged-write contract.
 - Preserved and committed the Payment provider inventory and Venue activity integration URL corrections in
   `276360edb`; the supplied pre-resume runs were Payment unit tests 489/489 and Venue integration tests 31/31.
 - Phase A.8 Browser acceptance passed for authenticated seeded Venue and Artist dashboards at 1440×1000, 834×1112,
@@ -75,6 +85,8 @@ from starting remote/PR head `97765c2b1`; refreshed remote-tracking and PR heads
 ## Verification
 
 - `python .agents/hooks/plan_graph.py --root <worktree>` — 0 errors and 0 warnings after the review checkpoint.
+- Current-main reconciliation: Conversations unit tests passed 46/46; the B2B AppHost build succeeded with 0 errors
+  (two pre-existing vulnerability-feed availability warnings); the plan graph remained at 0 errors and 0 warnings.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj` — restored the current
   `0.1.0-alpha.0.1120` platform pin and succeeded with 0 errors; pre-existing CS0628 and vulnerability-feed warnings
   remain.
