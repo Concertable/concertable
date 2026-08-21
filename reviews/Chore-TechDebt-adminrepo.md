@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a5e7bf4ced0f0cb9dc0b1a36ed773e0514b54f89`  _(2026-08-21)_
-**Security-reviewed up to commit:** `a5e7bf4ced0f0cb9dc0b1a36ed773e0514b54f89`  _(2026-08-21)_
+**Reviewed up to commit:** `980c4c97a1415579b26a288242f1e09c13197011`  _(2026-08-21)_
+**Security-reviewed up to commit:** `980c4c97a1415579b26a288242f1e09c13197011`  _(2026-08-21)_
 
 > Range reviewed: `c4c83ee1..119714ba` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -101,3 +101,9 @@ crypto or deserialization anywhere in the diff. The `IAdminModule.cs`/`IAdminSer
 method rename plus XML-doc updates carrying no new behaviour of their own — the actual security posture
 change (moving the grant check from pre-verification registration time to post-login, closing an
 unverified-email gap) is `ff8f25243`'s, already merged and live on `main` independently of this PR.
+
+## Incremental review — 2026-08-21 (base sync, re-stamp only)
+
+> Range reviewed: `a5e7bf4c..980c4c97` (base-currency merge picking up platform-sync PR #716 and the N4
+> architecture-doc re-homing). Confirmed `git diff a5e7bf4c..HEAD --stat -- api/Concertable.B2B/src/Modules/Admin`
+> is empty — nothing in this PR's own module changed. Re-stamped without a fresh review pass.
