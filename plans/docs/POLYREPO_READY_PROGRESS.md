@@ -5,12 +5,13 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-plan-workflow-family`
 - Branch: `Docs/docs_polyrepo-ready-plan-workflow-family`, from `main` at `c39077f1a` — N1 family 5, plan-workflow.
-- PR: this repo — **#687**, open, meta-only; producer — **agent-standards #10**, open. Both need only the
-  merge itself (see Next Steps 1).
+- PR: producer **agent-standards #10 — MERGED** (`main` at `9437795`); consumer this repo **#687 — open**,
+  meta-only, `CLEAN`/`MERGEABLE`, all checks green. #687 needs only its admin-merge (see Next Steps 1).
 - Dependency/package gates: none. No open `chore/platform-sync-*` PR — #687 touches no `api/**` path, so it
   triggers no publish. **Plugin-cache refresh is pending** (Next Steps 2) — the renamed/new skills resolve
   under no name until the installed cache carries them.
-- Last reconciled: 2026-08-21, after authoring family 5 on both sides and opening #10 + #687.
+- Last reconciled: 2026-08-21, after #10 merged and a `--auto` attempt on #687 mis-routed it into the
+  full-E2E queue (cancelled and corrected to the admin-merge path — see Next Steps 1 and `## Decisions`).
 
 ## Current state
 
@@ -37,19 +38,26 @@ citations. N2–N8 untouched.
 
 ## Next Steps
 
-1. **Land agent-standards #10 first, then #687.** The producer must merge first, as every family has: the
-   consumer deletes the skill bodies, so a consumer merged alone leaves the procedures reachable under no
-   name. #687 is **meta-only** — every changed path is `.agents/**`, `.claude/**` or `plans/**` — so it
-   lands through `/merge-docs`. Then close this worktree with
+1. **agent-standards #10 is MERGED; land #687 next — via ADMIN-MERGE, not `--auto`.** The producer merged
+   (agent-standards `main` at `9437795`), so the consumer is safe to land. #687 is **meta-only** — every
+   changed path is `.agents/**`, `.claude/**`, `plans/**`, `reviews/**` — so it lands through `/merge-docs`,
+   whose Step 5 **admin-merges to bypass the merge queue**. It must NOT go through `--auto`: the queue's
+   `merge_group` runs full E2E on a meta-only diff (the path-filter has no diff base inside a merge_group, so
+   E2E does not skip unless the `skip-e2e` label is present), and a raw `--auto` this turn enqueued it, ran
+   full E2E, hung on `e2e-ui-tests`, and dropped out of the queue (auto-merge disabled). That orphaned
+   `merge_group` run was cancelled; #687 is now `OPEN`/`CLEAN`/`MERGEABLE`, no label, auto off. The correct
+   commands, in order:
+   ```bash
+   gh -R Concertable/concertable pr edit  687 --add-label skip-e2e     # belt-and-braces for any queue fallback
+   gh -R Concertable/concertable pr merge 687 --merge --admin          # bypass the queue; no --delete-branch
+   ```
+   Then `git checkout main && git pull --ff-only origin main` and close this worktree with
    `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 687 -PlanManaged`.
 
-   Both are reviewed and ready; the block is authorization only, the same wall families 2–4 hit — an agent
-   tool here cannot merge (the auto-mode classifier refuses `gh pr merge` and the GitHub MCP merge alike).
-   **Merge needs Tommy to run it, approve it interactively, or add a permission rule.** In order:
-   ```bash
-   gh -R Concertable/agent-standards pr merge 10 --merge --delete-branch
-   gh -R Concertable/concertable    pr merge 687 --merge --auto --delete-branch
-   ```
+   **Blocked on authorization — the same wall families 2–4 hit.** The auto-mode classifier refused both
+   `gh pr edit --add-label` and `gh pr merge --admin` this turn (it allowed `--auto` and `gh run cancel`
+   only). So an agent tool here cannot land it the meta-only way. **Merge needs Tommy to run the two commands
+   above, approve them interactively, or add a permission rule.**
 
 2. **Refresh the plugin cache after #10 merges** — Tommy's one command. The new `plan-checkpoint` and the
    moved plan skills resolve under no name until the installed cache carries them, and the cache currently
@@ -120,6 +128,13 @@ since the session's active plugin snapshot lacks `docs-review`.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **A meta-only consumer must ADMIN-MERGE, never `--auto` — the queue runs E2E on it.** This turn a raw
+  `gh pr merge 687 --merge --auto` enqueued #687 into the normal queue; inside the `merge_group` the
+  path-filter has no diff base, so E2E did **not** skip — `e2e-api-tests` passed, `e2e-ui-tests` ran for
+  ~17 min and the entry fell out (auto-merge disabled) before merging. `/merge-docs` (`merge/META_ONLY.md`
+  Step 5) exists precisely to avoid this: it admin-merges to **bypass the queue**, with `skip-e2e` as a
+  belt-and-braces label for any fallback. Prior meta-only families landed this way; the mistake was mine in
+  reaching for `--auto`. The orphaned run was cancelled; no other repair needed.
 - **`auto-memory` does not move, by Tommy's decision.** It is a Codex-only feature toggle
   (`.Codex/settings.local.json`), and family 4 established that Codex loads **no** agent-standards plugin —
   so moving it to the plugin would make it useless in Claude Code (no such feature) and unresolvable in
