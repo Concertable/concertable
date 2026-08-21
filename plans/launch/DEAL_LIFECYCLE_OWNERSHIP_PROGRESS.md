@@ -236,20 +236,26 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: establish the corrected integration-test project and fixture topology before moving any
-legacy test body.
-Allowed scope: the Opportunity, Application, Booking, Deal, Concert, and B2B process integration-test
-project scaffolds; their local fixtures/collections/test metadata and guidance siblings; solution and
-friend-assembly wiring; the module-boundary architecture/convention guard; and the minimum shared fixture
-changes needed to keep `ApiFixture` host-neutral without yet removing temporary surfaces still consumed by
-unmoved tests.
-Exit gate: every new empty project builds, the architecture/convention guard passes and proves module
-integration projects cannot directly reference another module's Domain or Infrastructure assembly, the
-plan graph reports zero errors/warnings, and `git diff --check` passes. Commit and push this bounded
-topology checkpoint before moving test bodies.
+Active slice: move the single-owner Opportunity and Deal API suites and their request helpers out of the
+Concert integration project.
+Allowed scope: `OpportunityApiTests`, `OpportunityRequestBuilders`, `DealApiTests`, their owning project
+references/friend declarations, and removal of the stale Concert namespaces and references they leave
+behind.
+Exit gate: the Opportunity and Deal integration projects build with their moved suites, the remaining
+Concert integration project has no Opportunity/Deal test namespaces or references owned only by those
+suites, the module integration-project boundary guard passes, the plan graph reports zero errors/warnings,
+and `git diff --check` passes. Commit and push this bounded single-owner move before the Application and
+Booking migrations.
 
 ## Completed work
 
+- Established the corrected integration-test topology: Application, Booking, Opportunity, Deal, and B2B
+  Process integration projects now have local fixtures, collections, tier metadata, guidance siblings,
+  solution entries, and required own-module friend access. Application and Booking gained real
+  module-owned, read-only production DbContext stances; their fixtures expose only those stances. The B2B
+  process project references only the host-neutral fixture/testing harness, and an architecture test now
+  rejects direct references from any module integration project to another module's Domain or
+  Infrastructure assembly.
 - Published integration-test ownership audit range `3204e8abd..f80f8cbb1`; local HEAD, the remote
   branch, and PR #633 `headRefOid` all equalled
   `f80f8cbb1ca8ebe33f9e023ba3b06d20d03d0936` after the work-head push.
@@ -357,6 +363,12 @@ topology checkpoint before moving test bodies.
 
 ## Verification
 
+- Integration-test topology scaffold: Application, Booking, Opportunity, Deal, and B2B Process integration
+  projects each build with 0 errors; the focused `IntegrationTestBoundaryTests` architecture guard passes
+  1/1. Application, Opportunity, Deal, and Process report 0 warnings; Booking's clean incremental
+  confirmation reports 0 warnings after its initial dependency-graph build reported one transient warning.
+  Docs reachability reports 0 errors, the plan graph reports 0 errors/warnings, and `git diff --check`
+  passes.
 - Integration-test ownership audit: `python .agents/hooks/plan_graph.py --root .` reports 0 errors and
   0 warnings; `git diff --check` passes.
 - Current-main reconciliation: no unmerged paths or conflict markers remain, and `git diff --check`
