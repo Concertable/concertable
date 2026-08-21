@@ -17,8 +17,9 @@ remote-tracking and PR heads equalled `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`
 current-main reconciliation. `origin/main` advanced six commits while exact-head CI was running and
 was merged cleanly at `99412536cc0f8249cc42771322ba0a706509b666`. The incoming delta restructures architecture
 guidance and advances all services to the already-green `0.1.0-alpha.0.1124` platform pin; it did not overwrite any
-dashboard change. Proportional validation and incremental review are green; exact reviewed reconciliation work head
-`c6cc262b8dddcec7108d987d04d4940c891d38e4` can now be pushed for fresh CI. The delivered work includes:
+dashboard change. Proportional validation and incremental review are green. Exact reviewed reconciliation work head
+`c6cc262b8dddcec7108d987d04d4940c891d38e4` was pushed from `3ebc4722f`; refreshed remote-tracking and PR heads both
+equal the reviewed work head. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -73,8 +74,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Transport the final review and verified-push checkpoint around exact reviewed work head `c6cc262b8`, then require
-   fresh exact-head CI green.
+1. Transport final review commit `936d722ec` and this verified-push checkpoint, prove local/remote/PR head equality,
+   then require fresh exact-head CI green.
 2. Complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -154,6 +155,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
   `4c28ab7f7305f4fec2ffa91f0674cc99fc81cb47`.
 - Final transport at this base: review transport `7484a8d3a` and verified-push checkpoint `3ebc4722f`; local,
   remote-tracking, and PR heads all verified at `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`.
+- Current-main reconciliation work-head push: starting remote/PR `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`;
+  pushed `3ebc4722f..c6cc262b8`; refreshed remote-tracking and PR heads both verified at
+  `c6cc262b8dddcec7108d987d04d4940c891d38e4`.
 
 ## Reviews
 
