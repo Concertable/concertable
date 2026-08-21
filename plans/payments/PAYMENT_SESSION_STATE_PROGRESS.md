@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against current `origin/main` `4a478433a4a0db819f394518e44087eb4748a57f`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, incremental review watermark `6bf01d7b465f1cb41667ac3543755eee839d629d`, NAT1 fixing commit `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, SEC1 fixing commit `17f3fcc71e7ce97af0d2e915ebba24274abb202e`, SEC2 fixing commit `9751bd838c73e5b392d5a2890b03346a1a7c6932`, SEC3 fixing commit `6bf01d7b465f1cb41667ac3543755eee839d629d`, and current `origin/main` Payment platform pin `0.1.0-alpha.0.1113`
+- Last reconciled: `2026-08-21` against current `origin/main` `2323c77e74bc58bbde6394c360af673c402a8b5f`, merge head `268b48c47196cf446244c1c32c126a0807a79290`, incremental review watermark `6bf01d7b465f1cb41667ac3543755eee839d629d`, and Payment platform pin `0.1.0-alpha.0.1124`
 
 ## Current state
 
@@ -38,27 +38,22 @@ retry shape before the persisted attempt is evaluated and cancellation is allowe
 incompatible truth creates neither cancellation nor a successor. The follow-up native, security, architecture,
 persistence, language/framework, changed-behaviour coverage, docs ownership, and plan/review lifecycle lenses
 are clean through that commit. All findings are resolved; the review file remains until exact-head draft-PR CI
-is green. The branch is 47 commits behind current `origin/main` and must be reconciled before the producer PR opens.
+is green. Current `origin/main` is merged through `2323c77e74bc58bbde6394c360af673c402a8b5f`; the branch is 0 commits
+behind and the Payment platform pin is `0.1.0-alpha.0.1124`.
 
-The SEC3 exact-tree Payment IntegrationTests build passes with zero warnings and errors. The focused
-persisted-failure provider-truth theory passes both `requires_capture` and unknown-status cases, proving no
-cancellation, no successor, and unchanged protected history; all thirteen SQL-backed
-`PaymentSessionServiceTests` pass against Docker Desktop's Linux engine, including the realistic declined
-retry and concurrent cancellation convergence regressions.
+The reconciled exact tree builds Payment Web and UnitTests with zero warnings or errors, all 521 Payment unit
+tests pass, and all 18 focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests` pass against
+Docker Desktop's Linux engine. The focused run exposed one stale gRPC test setup: it persisted a future failed
+observation while leaving the fake provider active. This commit now supplies fresh declined provider truth
+after an earlier persisted failure, matching the fail-closed retry invariant already covered by the service tests.
 
 The roadmap item remains unchecked. All implementation must stay inside Payment until the producer PR has
 merged, its packages have published, and the generated platform-sync PR is green and merged.
 
 ## Next Steps
 
-Reconcile current main and restore a merge-ready reviewed candidate before opening the producer PR:
-
-1. Fetch current `origin/main`, merge it into `Feature/payments_payment-session-state` in this worktree, and
-   confirm the branch is 0 commits behind with the Payment platform pin advanced to the merged baseline.
-2. Re-run the exact-tree Payment Web and UnitTests builds, all Payment unit tests, and focused
-   `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests`; do not run E2E locally.
-3. Run `/incremental-review` from the recorded `6bf01d7b465f1cb41667ac3543755eee839d629d` watermark through the
-   reconciled head. Only after that review is clean, run `/open-pr` for the draft producer PR.
+Run `/incremental-review` from the recorded `6bf01d7b465f1cb41667ac3543755eee839d629d` watermark through this
+reconciled checkpoint. Only after that review is clean, run `/open-pr` for the draft producer PR.
 
 ## Completed work
 
@@ -98,11 +93,23 @@ Reconcile current main and restore a merge-ready reviewed candidate before openi
   payee receives the same unknown result as a missing operation and makes no Stripe call.
 - Resolved SEC2 in `9751bd838c73e5b392d5a2890b03346a1a7c6932` by refreshing and normalizing current nonterminal provider truth, evaluating the
   explicit-retry policy before cancellation, and proving live and authorized attempts make no cancellation call.
-- Resolved SEC3 in this commit by normalizing protected terminal-row provider truth without applying it to
+- Resolved SEC3 in `6bf01d7b465f1cb41667ac3543755eee839d629d` by normalizing protected terminal-row provider truth without applying it to
   history, admitting only safe declined, expired-authorization, or canceled truth before policy evaluation,
   and proving active and unknown incompatible truth creates no cancellation or successor.
+- Merged current `origin/main` through `2323c77e74bc58bbde6394c360af673c402a8b5f`, advanced Payment to
+  platform `0.1.0-alpha.0.1124`, and aligned the gRPC retry integration setup with the fail-closed provider-truth
+  invariant in this commit.
 
 ## Verification
+
+- `git rev-list --left-right --count HEAD...origin/main`: branch ahead and 0 behind at merge head
+  `268b48c47196cf446244c1c32c126a0807a79290`; Payment platform pin `0.1.0-alpha.0.1124`.
+- Exact-tree Payment Web and UnitTests builds: succeeded with 0 warnings and 0 errors.
+- Exact-tree Payment UnitTests: 521 passed, 0 failed, 0 skipped.
+- Exact-match `Retry_EligibleCurrentAttempt_ReturnsNextRevision`: 1 passed after correcting the stale test setup.
+- Exact-tree `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests`: 18 passed, 0 failed, 0 skipped
+  against Docker Desktop's Linux engine.
+- `git diff --check`, `skill_router.py`, and `plan_graph.py`: passed before this checkpoint.
 
 - `git status --short --branch`: clean `Feature/payments_payment-session-state...origin/main` before plan creation.
 - GitHub: PR #597 is merged at `bfbfd863c02399bd77b499428465d1fc3585f119`; PR #645 is merged at
