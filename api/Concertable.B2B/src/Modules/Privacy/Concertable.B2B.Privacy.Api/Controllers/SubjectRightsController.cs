@@ -30,6 +30,9 @@ internal sealed class SubjectRightsController : ControllerBase
         Ok(await erasureService.RequestErasureAsync(subjectId, ct));
 
     [HttpGet("/api/subject-export/{subjectId:guid}")]
-    public async Task<ActionResult<SubjectExportBundle>> Export(Guid subjectId, CancellationToken ct) =>
-        Ok(await exporter.ExportAsync(subjectId, ct));
+    public async Task<IActionResult> Export(Guid subjectId, CancellationToken ct)
+    {
+        var download = await exporter.ExportAsync(subjectId, ct);
+        return File(download.Content, download.ContentType, download.FileName);
+    }
 }

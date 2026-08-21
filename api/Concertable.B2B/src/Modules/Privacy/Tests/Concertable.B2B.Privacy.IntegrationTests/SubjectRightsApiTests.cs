@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Concertable.B2B.IntegrationTests.Fixtures;
 using Concertable.B2B.Privacy.Application.Interfaces;
 using Concertable.B2B.Privacy.Domain.Lifecycle;
@@ -42,7 +43,7 @@ public sealed class SubjectRightsApiTests : IAsyncLifetime
         Assert.Empty(memberships);
 
         var user = await fixture.Services.RunScopedAsync(sp =>
-            sp.GetRequiredService<IUserModule>().ExportUserAsync(subject.Id));
+            sp.GetRequiredService<IUserModule>().ExportAsync(subject.Id));
         Assert.True(user.TryGetValue(out var fragment));
         Assert.Contains("erased", fragment.Email);
     }
@@ -65,7 +66,7 @@ public sealed class SubjectRightsApiTests : IAsyncLifetime
         Assert.NotEmpty(memberships);
 
         var user = await fixture.Services.RunScopedAsync(sp =>
-            sp.GetRequiredService<IUserModule>().ExportUserAsync(subject.Id));
+            sp.GetRequiredService<IUserModule>().ExportAsync(subject.Id));
         Assert.True(user.TryGetValue(out var fragment));
         Assert.DoesNotContain("erased", fragment.Email);
     }
@@ -93,12 +94,17 @@ public sealed class SubjectRightsApiTests : IAsyncLifetime
     {
         var subject = fixture.SeedState.VenueManager1;
 
-        var bundle = await fixture.Services.RunScopedAsync(sp =>
+        var download = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<ISubjectExporter>().ExportAsync(subject.Id));
 
-        Assert.Equal(subject.Id, bundle.SubjectId);
-        Assert.NotNull(bundle.User);
-        Assert.NotEmpty(bundle.Memberships);
+        Assert.Equal("application/json", download.ContentType);
+        Assert.Contains(subject.Id.ToString("N"), download.FileName);
+
+        using var doc = JsonDocument.Parse(download.Content);
+        var root = doc.RootElement;
+        Assert.Equal(subject.Id, root.GetProperty("subjectId").GetGuid());
+        Assert.Equal(JsonValueKind.Object, root.GetProperty("user").ValueKind);
+        Assert.NotEqual(0, root.GetProperty("memberships").GetArrayLength());
     }
 
     #endregion
