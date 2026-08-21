@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: not opened
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against current `origin/main` `7f59fe27b33c3d84821b3129381776a2e0a204e6`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, incremental review watermark `e7f2e36a8415752bf3aea04630f568f53b417179`, NAT1 fixing commit `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, SEC1 fixing commit `17f3fcc71e7ce97af0d2e915ebba24274abb202e`, SEC2 fixing commit `this commit`, and current Payment platform pin `0.1.0-alpha.0.1108`
+- Last reconciled: `2026-08-21` against current `origin/main` `a3151f93ad31a068057630e99fbc439d308c3390`, reviewed implementation head `7e165607881895c735ac60055d9c479c336b7278`, incremental review watermark `9751bd838c73e5b392d5a2890b03346a1a7c6932`, NAT1 fixing commit `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, SEC1 fixing commit `17f3fcc71e7ce97af0d2e915ebba24274abb202e`, SEC2 fixing commit `9751bd838c73e5b392d5a2890b03346a1a7c6932`, SEC3 fixing commit `this commit`, and current `origin/main` Payment platform pin `0.1.0-alpha.0.1113`
 
 ## Current state
 
@@ -29,13 +29,20 @@ re-reads provider truth after cancellation fails and accepts only a confirmed ca
 reserving or replaying the successor. SEC1 is resolved in
 `17f3fcc71e7ce97af0d2e915ebba24274abb202e`: retry authorization now accepts only
 the persisted payer owner, while participant-wide authorization remains on the secret-free status read.
-SEC2 is resolved in this commit: retry refreshes and normalizes nonterminal provider truth, requires the
-explicit-retry evaluator to approve a new attempt, and only then permits predecessor cancellation. All original
-findings are resolved; no producer PR may be opened until the fix commits pass incremental review.
+SEC2 is resolved in `9751bd838c73e5b392d5a2890b03346a1a7c6932`: retry refreshes and normalizes
+nonterminal provider truth, requires the explicit-retry evaluator to approve a new attempt, and only then
+permits predecessor cancellation. The incremental native pass through that commit is clean. The security
+pass found `SEC3`, resolved in this commit: protected terminal history is no longer rewritten during retry;
+provider truth is normalized fail-closed and must match a safe declined, expired-authorization, or canceled
+retry shape before the persisted attempt is evaluated and cancellation is allowed. Known active or unknown
+incompatible truth creates neither cancellation nor a successor. No producer PR may be opened until this fix
+commit passes incremental review.
 
-The SEC2 exact-tree Payment IntegrationTests build passes with zero warnings and errors. The focused
-nonretryable-provider-state theory passes and proves live and authorized attempts are refreshed without any
-cancellation; all eleven SQL-backed `PaymentSessionServiceTests` pass against Docker Desktop's Linux engine.
+The SEC3 exact-tree Payment IntegrationTests build passes with zero warnings and errors. The focused
+persisted-failure provider-truth theory passes both `requires_capture` and unknown-status cases, proving no
+cancellation, no successor, and unchanged protected history; all thirteen SQL-backed
+`PaymentSessionServiceTests` pass against Docker Desktop's Linux engine, including the realistic declined
+retry and concurrent cancellation convergence regressions.
 
 The roadmap item remains unchecked. All implementation must stay inside Payment until the producer PR has
 merged, its packages have published, and the generated platform-sync PR is green and merged.
@@ -44,9 +51,9 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 Complete the review gate before opening the producer PR:
 
-1. Run `/incremental-review` from the recorded
-   `e7f2e36a8415752bf3aea04630f568f53b417179` watermark through the final fix head. Do not open or update the
-   producer PR until that incremental review is clean and the ledger records the clean watermark.
+1. Run `/incremental-review` from the recorded `9751bd838c73e5b392d5a2890b03346a1a7c6932` watermark through the
+   SEC3 fix head. Do not open or update the producer PR until that incremental review is clean and the ledger
+   records the clean watermark.
 
 ## Completed work
 
@@ -84,8 +91,11 @@ Complete the review gate before opening the producer PR:
 - Resolved SEC1 in `17f3fcc71e7ce97af0d2e915ebba24274abb202e` by restricting the secret-bearing retry path to the persisted payer owner while
   retaining participant-wide authorization on secret-free status reads, with SQL-backed coverage proving a
   payee receives the same unknown result as a missing operation and makes no Stripe call.
-- Resolved SEC2 in this commit by refreshing and normalizing current nonterminal provider truth, evaluating the
+- Resolved SEC2 in `9751bd838c73e5b392d5a2890b03346a1a7c6932` by refreshing and normalizing current nonterminal provider truth, evaluating the
   explicit-retry policy before cancellation, and proving live and authorized attempts make no cancellation call.
+- Resolved SEC3 in this commit by normalizing protected terminal-row provider truth without applying it to
+  history, admitting only safe declined, expired-authorization, or canceled truth before policy evaluation,
+  and proving active and unknown incompatible truth creates no cancellation or successor.
 
 ## Verification
 
@@ -181,6 +191,16 @@ Complete the review gate before opening the producer PR:
 - SEC2 checkpoint: `git diff --check` passed; `python .agents/hooks/plan_graph.py --root
   C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state` reported
   0 errors and 0 warnings.
+- Incremental review range `e7f2e36a8415752bf3aea04630f568f53b417179..9751bd838c73e5b392d5a2890b03346a1a7c6932`
+  (4 commits): native layer clean; security layer found `SEC3`; remaining architecture-aware lenses clean.
+- SEC3 exact-tree `dotnet build tests\Concertable.Payment.IntegrationTests\Concertable.Payment.IntegrationTests.csproj
+  --no-restore --disable-build-servers`: succeeded with 0 warnings and 0 errors.
+- SEC3 focused persisted-failure provider-truth theory: 2 passed, 0 failed, 0 skipped against Testcontainers SQL;
+  `requires_capture` returned conflict and unknown provider status returned unavailable, with one retrieval, no
+  cancellation, no successor, and unchanged protected terminal history in both cases. The restricted first run
+  executed zero scenarios because it could not access Docker's named pipe; the authorized unchanged rerun passed.
+- SEC3 sibling regression scope, `PaymentSessionServiceTests`: 13 passed, 0 failed, 0 skipped against
+  Testcontainers SQL, including eligible declined retry and concurrent cancellation convergence.
 
 ## Reviews
 
@@ -188,15 +208,18 @@ Full review artifact: `reviews/Feature-payments_payment-session-state.md`. The i
 `69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`;
 the clean current-main incremental review covers
 `7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`.
-Reviewed and security-reviewed up to `e7f2e36a8415752bf3aea04630f568f53b417179` on `2026-08-21`.
+Incrementally reviewed and security-reviewed through `9751bd838c73e5b392d5a2890b03346a1a7c6932` on `2026-08-21`.
 
 - `NAT1` resolved in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, medium: a cancellation-race loser re-reads
   provider truth and accepts a confirmed canceled predecessor before successor reservation/replay;
   deterministic concurrent SQL-backed coverage passes.
 - `SEC1` resolved in `17f3fcc71e7ce97af0d2e915ebba24274abb202e`, high: secret-bearing retry accepts only the persisted payer owner; a payee
   receives the indistinguishable unknown-operation result without calling Stripe.
-- `SEC2` resolved in this commit, medium: nonterminal provider truth is normalized and the explicit-retry policy
+- `SEC2` resolved in `9751bd838c73e5b392d5a2890b03346a1a7c6932`, medium: nonterminal provider truth is normalized and the explicit-retry policy
   must approve a new attempt before cancellation; live and authorized attempts make no cancellation call.
+- `SEC3` resolved in this commit, medium: protected terminal rows use normalized provider truth without
+  rewriting history; incompatible active or unknown truth creates no cancellation and no successor while
+  confirmed declined, expired-authorization, and canceled truth retain the eligible retry path.
 
 ## Decisions, discoveries, blockers, and deviations
 

@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e7f2e36a8415752bf3aea04630f568f53b417179`  _(2026-08-21)_
-**Security-reviewed up to commit:** `e7f2e36a8415752bf3aea04630f568f53b417179`  _(2026-08-21)_
+**Reviewed up to commit:** `9751bd838c73e5b392d5a2890b03346a1a7c6932`  _(2026-08-21)_
+**Security-reviewed up to commit:** `9751bd838c73e5b392d5a2890b03346a1a7c6932`  _(2026-08-21)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -19,6 +19,8 @@
   Retry authorization accepts either participant, but a successful retry returns the payer's PaymentIntent client secret, CustomerSession secret, and Stripe customer token. Require the retry owner to equal the persisted payer owner; keep participant-wide authorization only on the secret-free status read, and test that a payee retry returns the indistinguishable unknown-operation failure without calling Stripe.
 - [x] **SEC2 — MEDIUM — security/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentSessionService.cs:137`
   Retry cancels the current Stripe object before the persisted attempt is evaluated for retry eligibility, so a retry of a nonterminal or authorized attempt can destroy the live payment or hold and only then return `OperationConflict`. Refresh and normalize provider truth, evaluate the explicit-retry policy, and cancel only after it approves a new attempt; test that retrying an authorized or nonterminal attempt does not call cancellation.
+- [x] **SEC3 — MEDIUM — security/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentSessionService.cs:138`
+  Retry normalizes provider truth only while the persisted attempt is nonterminal. A stale persisted terminal failure can therefore cancel a provider object that has advanced to an active or unknown state. Normalize every retrieved observation before cancellation; for a protected terminal row, require known provider truth compatible with retry without rewriting history, and test persisted `Failed` plus provider `requires_capture` makes no cancellation and no successor.
 
 ## Incremental review — 2026-08-21
 
@@ -29,3 +31,12 @@ guidance/meta-only series; native, security, docs ownership, skill-route, archit
 lifecycle lenses were clean. The native pass rediscovered N3's deleted-`api/AGENTS.md` workflow reference,
 already owned as `ACC1` by `plans/docs/POLYREPO_READY_PROGRESS.md` on its dedicated follow-up branch, so it
 is not duplicated here.
+
+## Incremental review — 2026-08-21
+
+> Range reviewed: `e7f2e36a..9751bd83` (4 commits).
+
+The native correctness, reuse, efficiency, and error-handling pass was clean. The security pass found
+`SEC3`: a persisted terminal failure can bypass normalization and permit cancellation against stale active
+or unknown provider truth. The remaining architecture, persistence, language/framework, test-coverage,
+docs ownership, and plan/review lifecycle lenses were clean.
