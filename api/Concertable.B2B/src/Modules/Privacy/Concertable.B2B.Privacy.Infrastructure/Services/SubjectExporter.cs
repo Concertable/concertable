@@ -21,11 +21,11 @@ internal sealed class SubjectExporter : ISubjectExporter
 
     public async Task<SubjectExportBundle> ExportAsync(Guid subjectId, CancellationToken ct = default)
     {
-        var user = await userModule.ExportAsync(subjectId, ct);
+        var user = await userModule.ExportUserAsync(subjectId, ct);
         var memberships = await tenantModule.GetMembershipsAsync(subjectId, ct);
         var tenantIds = memberships.Select(m => m.TenantId).Distinct().ToArray();
-        var messages = await conversationsModule.ExportAsync(subjectId, ct);
-        var concertRecords = await concertModule.ExportAsync(tenantIds, ct);
+        var messages = await conversationsModule.ExportMessagesAsync(subjectId, ct);
+        var concertRecords = await concertModule.ExportRecordsAsync(tenantIds, ct);
 
         return new SubjectExportBundle
         {

@@ -23,6 +23,6 @@ internal sealed class ConversationsModule : IConversationsModule
     public Task ScrubParticipantProfilesAsync(IReadOnlyList<Guid> tenantIds, CancellationToken ct = default) =>
         erasureService.ScrubParticipantProfilesAsync(tenantIds, ct);
 
-    public Task<IReadOnlyList<MessageExport>> ExportAsync(Guid userId, CancellationToken ct = default) =>
-        erasureService.ExportAsync(userId, ct);
+    public Task<IReadOnlyList<MessageExport>> ExportMessagesAsync(Guid userId, CancellationToken ct = default) =>
+        erasureService.ExportMessagesAsync(userId, ct);
 }

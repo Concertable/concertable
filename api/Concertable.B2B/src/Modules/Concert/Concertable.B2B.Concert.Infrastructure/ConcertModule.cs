@@ -32,6 +32,6 @@ internal sealed class ConcertModule : IConcertModule
     public Task<bool> HasLiveObligationsAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default) =>
         obligationChecker.HasLiveAsync(tenantIds, ct);
 
-    public Task<ConcertRecordsExport> ExportAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default) =>
+    public Task<ConcertRecordsExport> ExportRecordsAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default) =>
         recordsExporter.ExportAsync(tenantIds, ct);
 }

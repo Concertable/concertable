@@ -18,5 +18,5 @@ public interface IConcertModule
 
     /// <summary>The subject's portable Concert records fragment (GDPR arts. 15/20): the RETAINED invoices,
     /// contracts and self-billing agreements their tenants are party to — read-only, never mutated by erasure.</summary>
-    Task<ConcertRecordsExport> ExportAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default);
+    Task<ConcertRecordsExport> ExportRecordsAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default);
 }
