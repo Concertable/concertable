@@ -263,21 +263,31 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: split `ApplicationCancelApiTests` by lifecycle-stage owner. Pre-accept withdrawal/guards belong
-to Application, pre-Concert cancellation/refund and late-capture compensation belong to Booking, and complete
-cross-module or opportunity-reopening journeys belong to B2B Process; post-creation cancellation remains
-Concert-owned.
-Allowed scope: the stale Concert `ApplicationCancelApiTests`, Application/Booking/Process integration suites,
-Booking-owned cancellation outcome handling required by the recovered behaviour, boundary-only helpers, and
-stale Concert metadata made removable by the split.
-Exit gate: every current cancellation assertion is represented at its owning boundary; Booking alone owns
-pre-Concert cancellation state and refund outcomes; tests do not use foreign contexts or service-provider
-access; cancellation stage, late capture, permissions, HATEOAS, notification, and opportunity-reopening
-coverage is preserved or corrected to the current public route; the three owning projects build, the
-architecture guard, plan graph, and `git diff --check` pass. Commit and push in bounded checkpoints.
+Active slice: remove the remaining multi-context and service-location surface from the Concert integration
+suite. Reclassify every remaining `ConcertReads.Set<ApplicationEntity>()`, `BookingEntity`, generic
+`ReadDbContext`, and `fixture.Services` use by the assertion's real owner; move complete journeys to B2B
+Process and keep only Concert persistence and deliberate host-harness observations in Concert tests.
+Allowed scope: the Concert integration fixture and tests, B2B Process coverage, strongly typed Concert-owned
+fixture helpers, stale project references/IVTs/usings, and shared harness visibility made removable by the
+contraction. Do not edit aggregate transition tables or state-machine implementation files owned by the
+parallel state-machine slice.
+Exit gate: `ConcertApiFixture` resolves only Concert persistence; no Concert test resolves Application or
+Booking persistence, repositories, `IServiceProvider`, or a generic context; the shared `ApiFixture` exposes
+only host-neutral harness operations; remaining Concert and Process projects build as far as the known
+Concert-owned compile frontier permits; the architecture guard, plan graph, and `git diff --check` pass.
+Commit and push in bounded checkpoints.
 
 ## Completed work
 
+- Published cancellation integration ownership checkpoint `5e98d6b31`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `5e98d6b31554635c0c1e38ce3f161366434c8d0c`.
+  Deleted the stale Concert `ApplicationCancelApiTests`, added the accepted-withdraw guard and pending
+  cancel-link assertions to Application, and placed the boundary-only Booking cancellation, late-capture,
+  notification/outbox, and Booking/Concert Opportunity-reopening journeys in B2B Process. Booking and
+  Process built with 0 warnings and 0 errors; Application built with 0 errors and its inherited
+  `UserEntity` warning; the architecture guard and plan graph passed. The Process facts deliberately pin
+  the missing non-blocking notification/reopening reactions for implementation after the parallel state
+  machine checkpoint rather than weakening or replacing them with foreign persistence assertions.
 - Published booking-confirmation integration ownership checkpoint `adb000732`; local HEAD, the remote
   branch, and PR #633 `headRefOid` all equalled `adb000732b32e451d851252eff44ef4cb4d2cfe5`.
   Moved the complete Application/Booking/Concert email-delivery journey to B2B Process, moved the
