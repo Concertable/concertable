@@ -1,16 +1,35 @@
 import type { ActionLink } from "../../types/common";
+import type { ReportCategory } from "./schemas/reportMessageRequestSchema";
 
 export type {
   ReportCategory,
   ReportMessageRequest,
 } from "./schemas/reportMessageRequestSchema";
 
-export type MessageAction =
-  | "ApplicationReceived"
-  | "ApplicationAccepted"
-  | "ConcertPosted";
+export const REPORT_CATEGORY_LABELS: Record<ReportCategory, string> = {
+  illegalContent: "Illegal content",
+  harassment: "Harassment or abuse",
+  fraud: "Fraud or scam",
+  spam: "Spam",
+  other: "Something else",
+};
 
-export type MessageSenderKind = "Org" | "Member";
+export type MessageAction =
+  | "applicationReceived"
+  | "applicationAccepted"
+  | "concertPosted";
+
+export type MessageSenderKind = "org" | "member";
+
+const MESSAGE_ACTION_LABELS: Record<MessageAction, string> = {
+  applicationReceived: "Application received",
+  applicationAccepted: "Application accepted",
+  concertPosted: "Concert posted",
+};
+
+export function messageActionLabel(action: MessageAction): string {
+  return MESSAGE_ACTION_LABELS[action];
+}
 
 export interface MessageSender {
   kind: MessageSenderKind;

@@ -1,8 +1,7 @@
 # Agent configuration
 
-This folder holds Concertable's repo-local agent skills and canonical command instructions. They are
-written against `AGENTS.md` and should stay agent-agnostic: no Claude-specific tool names and no
-missing workflow surfaces.
+This folder holds Concertable's repo-local agent skills. They are written against `AGENTS.md` and
+should stay agent-agnostic: no Claude-specific tool names and no missing workflow surfaces.
 
 ## Adding or updating skills
 
@@ -52,13 +51,6 @@ agent-starter-kit/
       ...
 ```
 
-`pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
-branch update flow.
-
-## Repository commands
-
-Canonical command instructions live under `.agents/commands/`. Agent-specific command entry points
-must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
-
-Claude discovers command wrappers under `.claude/commands/` and invokes `techdebt.md` as `/techdebt`.
-Codex discovers skill wrappers under `.agents/skills/` and invokes the matching skill as `$techdebt`.
+The bare `worktree` and `sync` names belong to that personal set. The repository-workflow procedures of
+the same shape ship from `agent-process` as `open-worktree` and `sync-checkout`, renamed precisely so a
+personal skill and a plugin skill cannot resolve under one name and shadow each other.

@@ -10,10 +10,8 @@ what is true of *this* repo: its folder layout, its hooks, its scripts, and its 
 live inside it (`plans/<epic>/<EPIC>_ROADMAP.md`, `plans/<epic>/<NAME>_PLAN.md` + `<NAME>_PROGRESS.md`).
 Standing reference/RFC docs keep a bare stem (no suffix). A plan's worktree/branch is temporary execution
 state, normally named `<Type>/<epic>_<name>` and safe to recreate from `origin/main` after the prior PR's
-worktree is removed. New ledgers start from
-[`resume-plan/assets/progress-template.md`](../.agents/skills/resume-plan/assets/progress-template.md);
-the mandatory update procedure is
-[`resume-plan/references/plan-progress-checkpoint.md`](../.agents/skills/resume-plan/references/plan-progress-checkpoint.md).
+worktree is removed. New ledgers start from the ledger template the `plan-checkpoint` standard carries;
+the mandatory update procedure is that standard's plan-progress checkpoint.
 
 `plans/launch/LAUNCH_ROADMAP.md` is the driving roadmap for the current effort — most work traces back to one
 of its items, so it is usually the one a landed change has to tick.

@@ -3,388 +3,228 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-test-debug-family`
-- Branch: `Docs/docs_polyrepo-ready-test-debug-family`, from `main` at `d1422b6b5` — N1 family 3, test-debug.
-- PR: this repo — **#677**, based on `main`; producer — **agent-standards #8, merged 2026-08-20 at
-  `2d9a8fe`**.
-  Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
-  family 2 as **#676, merged 2026-08-20 at `d1422b6b5`** + agent-standards #7 at `30734a9`.
-- Dependency/package gates: none outstanding. agent-standards `main` is at `30734a9` and carries the review
-  and merge families, so family 3's producer work has a current base. No open `chore/platform-sync-*` PR —
-  #676 touched no `api/**` path, so it triggered no publish.
-- Last reconciled: 2026-08-20, after agent-standards #8 merged at `2d9a8fe`. Family 3's producer half is
-  on that repo's `main`; #677 is the remaining half and lands meta-only. Plugin cache still stale (its
-  `standards/process/` holds the seven original docs, no `review/`, no `merge/`, no `testing/`).
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-package-cutover-family`
+- Branch: `Docs/docs_polyrepo-ready-package-cutover-family`, from `main` at `fbf011ac1` — N1 family 6, package-cutover.
+- PR: producer **agent-standards #11 — open** (`verify` running); consumer this repo — branch pushed
+  (deletion committed), plan+ledger edits to commit, then open its PR. Family 5 landed: producer #10 + consumer
+  **#687 MERGED** (`main` at `fbf011ac1`).
+- Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
+  **Plugin-cache refresh is pending** (Next Steps 2) — the family-5 plan skills, the new `plan-checkpoint`, and
+  now `package-cutover` resolve under no name until the installed cache carries them.
+- Last reconciled: 2026-08-21, after landing family 5 (#10 + #687) and authoring family 6 (agent-standards
+  #11 + this branch). **N1 is complete — all six families moved.**
 
 ## Current state
 
-**Phase 1 and N1 families 1 and 2 are merged in both repos.** The merge/PR family landed as #676 at
-`d1422b6b5`, closing the family: `merge`, `merge-docs` and `pr-preflight` keep their names so every prose
-citation still resolves, and `create-gh-pr` shipped as `open-pr` for the reason under `## Decisions`.
+**Phase 1 and N1 families 1–5 are merged in both repos.** Review (#675 + agent-standards #6), merge/PR
+(#676 + #7), test-debug (#677 + #8), git (#679 + #9) and plan-workflow (#687 + #10) all landed; `main` is
+at `fbf011ac1` and agent-standards `main` at `b283d44`.
 
-**N1 family 3 — test-debug — is merged on the producer side and landing on this one.** agent-standards
-**#8** merged at `2d9a8fe`: six docs under `standards/process/testing/`, every skill name kept, plus
-`vendor-hooks.ps1`'s second source→target tier and `scripts/docker-health.ps1` under it. This branch is
-the consumer half — 1,082 lines deleted, five citation sites touched, the vendored-script provenance and
-its five new tests. Four review findings, all fixed before either branch went up. All six skill names survived the machine-wide collision check, so **every prose citation that
-named one still resolves** — the re-pointing here was de-duplication, not renaming.
+**N1 family 6 — package-cutover — is authored on both sides.** agent-standards **#11**:
+`standards/dotnet/PACKAGE_CUTOVER.md` routed by the `package-cutover` skill, homed in the **dotnet** plugin
+(not agent-process) — it is a .NET/NuGet/EF mechanic (CS7069, EF re-scaffold, `dotnet build`) irrelevant to
+React repos, and the runnable counterpart to what `dotnet:packages` already owns. Cross-references
+re-pointed to docs that exist in agent-standards: `PACKAGES.md` + `process/PLANS.md` (the why),
+`data/MIGRATIONS.md` (re-scaffold), `process/plan/CHECKPOINT.md` (the plan-progress checkpoint) — replacing
+`api/ARCHITECTURE.md` and the `plans` skill, neither reachable from a standards doc. This branch is the
+consumer half: `.agents/skills/package-cutover/` + its `.claude` stub deleted. **No rename, no route row**
+(invoked by name only), and root `AGENTS.md`/`docs/INDEX.md` never cited it — the only citations
+(`docs/REMOTE_VALIDATION.md`, `PIPELINE_DEBT.md`) reference it by name, which survives the move untouched.
 
-**N1 families 4–6 and N2–N8 are untouched.** 816 of N1's original 3,285 lines remain, in three families.
+**`auto-memory` stays in-repo, by decision** (see `## Decisions`): a Codex-only feature toggle that Codex,
+loading no agent-standards plugin, could no longer resolve if moved.
 
-**Blocked, and it is Tommy's action, not a work item:** the plugin cache on this machine still predates
-agent-standards #6 — `~/.claude/plugins/cache/agent-standards/agent-process/.../standards/process/` holds
-the seven original docs and neither a `review/` nor a `merge/` directory, so the routers of *both* merged
-families fail to resolve. Family 1's Next Step (below, now step 2) has not had its pass condition met, and
-families 2 and 3 inherit the same dependency.
+**N1 is complete — all 28 workflow skills moved across six families.** What remains: N2–N8.
 
 ## Next Steps
 
-1. **Land #677 — agent-standards #8 is already merged at `2d9a8fe`.** **#677 is meta-only this time** — every
-   changed path is `.agents/**`, `.claude/**`, `docs/**`, `plans/**`, `reviews/**` or root `AGENTS.md`, and
-   `scripts/docker-health.ps1` is byte-identical to what was already there — so it lands through
-   `/merge-docs`, unlike family 2 which had to break its own gate on a workflow comment. Then close this
-   worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 677 -PlanManaged`.
+1. **Land family 6 — producer agent-standards #11 first, then this branch's consumer PR.** The producer
+   must merge first, as every family: the consumer deletes the skill body, so a consumer merged alone leaves
+   the procedure reachable under no name. #11 is a standards-only diff → merges when `verify` is green (that
+   repo has no queue; it merges directly). This branch is **meta-only** (`.agents/**`, `.claude/**`,
+   `plans/**`) → the `/merge-docs` admin-merge path, same as #687. Open this branch's PR, then:
+   ```bash
+   gh -R Concertable/agent-standards pr merge 11  --merge --delete-branch
+   gh -R Concertable/concertable    pr edit  693 --add-label skip-e2e
+   gh -R Concertable/concertable    pr merge 693 --merge --admin
+   ```
+   Then `git checkout main && git pull --ff-only origin main` and close this worktree with
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 693 -PlanManaged`.
 
-2. **Run `/plugin marketplace update agent-standards` — one command, and it is Tommy's.** Two merged
-   families (thirteen skills: the review family plus `review-lifecycle`, and the merge/PR family) resolve
-   from the plugin, and the cache on this machine has not been refreshed since #6 merged. Until it is,
-   `/review`, `/docs-review`, `/merge` and the rest exist under no name a harness can find — which is why
-   family 2's own docs review had to be run from the moved copy of the procedure. It does not block family
-   3's authoring; it blocks step 3 and every *invocation* of the moved skills. Codex needs nothing beyond
-   both repos being on merged `main`.
+   **Merge authorization:** Tommy runs the merges (or approves interactively). This session decided **not**
+   to add a blanket `gh pr merge` permission rule — the classifier stays the hard gate; Tommy approves each
+   merge. The agent cannot edit its own permission allowlist (classifier blocks self-escalation), so a rule,
+   if ever wanted, is Tommy's to add via `/permissions`.
 
-3. **Then the `^reviews/.*\.md$` route row** (carried over from family 1, unchanged and still deferred). A
-   route row naming a skill the plugin cache has not reinstalled hard-blocks every write to `reviews/**`
-   until the refresh — the same trap that kept `handoff` out of the table in Phase 1. The row is what
-   restores automatic delivery of the review-file lifecycle, which used to come from `reviews/AGENTS.md`
-   sitting in the directory. **Pass condition:** `review-lifecycle` resolves after step 2 on this machine,
-   and Tommy has confirmed the same on any other machine he works from.
+2. **Refresh the plugin cache once family 6 merges** — Tommy's one command. `package-cutover` (now
+   `dotnet:package-cutover`), the family-5 plan skills, and `plan-checkpoint` resolve under no name until the
+   installed cache carries them. This is now a **two-family** backlog (families 5 + 6).
 
-4. **Then N1 families 4–6**, in the plan's order: git (429 lines, plus reconciling `dotagents`'
-   `commit-push`/`sync`/`pull-main` overlap — and note `worktree` collides with a skill of that name in
-   *both* `dotagents` and the work repos, so family 2's naming problem recurs there) → plan-workflow (203,
-   and it should absorb `resume-plan/references/plan-progress-checkpoint.md`, 138 lines cited by fifteen
-   skills, which both merged families now cite only indirectly as "the checkpoint procedure the repository's
-   plan floor names") → `package-cutover` (184).
-
-5. **N2 can run in parallel**; N3–N6 after N1; N7 when roadmap §4c unblocks; N8 last as the only evidence.
-   N6 still carries the one open question to put to Tommy rather than answer: `OVERVIEW.md`, `USP.md` and
-   `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor service-specific.
+3. **N2 next (route-table convention), then N3–N6 + N7a** — N1 no longer blocks them. N6 still carries the
+   open question for Tommy: `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative,
+   neither platform standard nor service-specific — surface, don't invent a home. **N7b** waits on roadmap
+   §4c; **N8** last as the only evidence, and must include the Codex delivery gap.
 
 ## Completed work
 
-- **N1 family 3 producer — agent-standards #8, merged 2026-08-20 at `2d9a8fe`.** Six docs under
-  `standards/process/testing/`, one router each and every name unchanged: `UI_E2E.md` ← `e2e-ui-debug`;
-  `API_E2E.md` ← `e2e-api-debug`; `REGRESSION.md` ← `e2e-ui-regress`; `BOTH_LAYERS.md` ← `e2e-debug`;
-  `INTEGRATION.md` ← `integration-debug`; `IDE_DISCOVERY.md` ← `reset-test-explorer`. `vendor-hooks.ps1`
-  restructured around a tier list and given its second source→target tier; `scripts/docker-health.ps1`
-  added as its first member. Three sibling docs re-pointed because this slice falsified what they said —
-  see `## Decisions`. README charter, both marketplace manifests and the plugin manifest widened.
-- **N1 family 3 consumer — this branch.** The six `.agents/skills/*` bodies and their six `.claude/skills/*`
-  stubs deleted — 1,082 lines. Five citation sites touched, and **none of them a rename**: root `AGENTS.md`
-  (skill roster extended by the family), `plans/AGENTS.md` (its own by-tier list deleted, now that
-  `failing-tests` owns the table), `docs/INDEX.md` (the red-suite row split into three and two
-  machine-enforced rows widened), and `.agents/hooks/vendored.json` + its test suite for the new script
-  tier. `.agents/skills/package-cutover/SKILL.md`'s `integration-debug` citation needed no change at all.
-
-- **N1 family 2 — merged in both repos.** agent-standards #7 at `30734a9`; this repo's **#676 merged
-  2026-08-20 at `d1422b6b5`**, confirmed by polling the queue to a terminal state rather than assuming.
-  No publish run and no `chore/platform-sync-*` PR, as predicted: the diff touched no `api/**` path. The
-  worktree `Docs/docs_polyrepo-ready-merge-family` is spent and closes with
-  `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 676 -PlanManaged`.
-
-- **N1 family 2 producer — agent-standards #7, merged 2026-08-20 at `30734a9`.** Four docs under
-  `standards/process/merge/`, one router each: `QUEUE.md` (287) ← `merge`; `META_ONLY.md` (100) ←
-  `merge-docs`; `PREFLIGHT.md` (108) ← `pr-preflight`; `OPENING.md` (95) ← `create-gh-pr`, routed by a new
-  skill `open-pr`. `MERGING.md`'s delegation of the runnable poll loop re-pointed from "whatever executable
-  merge command the repository owns" to `merge/QUEUE.md`. README charter and both marketplace manifests
-  widened to admit the family.
-- **N1 family 2 consumer — this branch.** The four `.agents/skills/*` bodies and their four
-  `.claude/skills/*` stubs deleted — 674 lines. Five citation sites re-pointed, every one from a file path
-  to a skill name: root `AGENTS.md` (skill roster extended by the family; the Merging run-book pointer),
-  `docs/INDEX.md` (the merge-procedure and E2E-tier rows, plus new rows for PR-opening/preflight and the
-  meta-only path), `docs/REMOTE_VALIDATION.md`, `plans/AGENTS.md`, and the `changes`-job comment in
-  `.github/workflows/test.yml`.
-- **N1 family 2 review — clean.** Four findings, all fixed before either branch was pushed; three of them
-  defects in the moved docs themselves (see `## Reviews`).
-- **N1 family 1 producer — agent-standards #6.** Seven docs under `standards/process/review/` with a router
-  each: `FULL.md` ← `review`; `INCREMENTAL.md` ← `incremental-review`; `STAGED.md` ← `big-review`;
-  `UNATTENDED.md` ← `big-review-all`; `DOCS.md` ← `docs-review`; `ADDRESSING.md` ← `address-review`;
-  `LIFECYCLE.md` ← this repo's `reviews/AGENTS.md`, routed by a new skill `review-lifecycle`. The
-  purchase-time snapshot rule folded into `standards/dotnet/structure/SERVICE_BOUNDARIES.md`.
-- **N1 family 1 consumer — this repo's #675.** The six skill bodies, their stubs, and `reviews/AGENTS.md` +
-  its `CLAUDE.md` sibling deleted — 941 lines; root `AGENTS.md` skill list extended; two `docs/INDEX.md`
-  rows re-pointed.
-- **Phase 1 producer — agent-standards #5.** `standards/process/PLANS.md` 78 → 248 lines, absorbing the
-  method from `plans/agents/PLAN.md` and the roadmap tier from `plans/agents/ROADMAP.md`; new
-  `standards/process/HANDOFF.md` (57); new `handoff` router; `plans` router description widened; README
-  charter reworded.
-- **Phase 1 consumer — this repo's #669.** `PROMPTS.md`, `plans/agents/PLAN.md` and
-  `plans/agents/ROADMAP.md` deleted. `plans/AGENTS.md` rewritten as the in-repo floor (75 lines). Every
-  citation re-pointed across root `AGENTS.md`, `docs/INDEX.md`, the route table, eight skills,
-  `api/Concertable.Shared/TECH_DEBT.md`, and five roadmap headers.
+- **N1 family 6 producer — agent-standards #11.** `standards/dotnet/PACKAGE_CUTOVER.md` (the mechanic) +
+  `.agents/skills/package-cutover/SKILL.md` (the router); the dotnet plugin ships it automatically because
+  `payloads.json` maps the `dotnet` domain to it, so no manifest/README change was needed (README does not
+  enumerate per-domain docs). Generator current (**61 skills / 61 docs**, 194 files), hook tests **161/161**,
+  plugin router rewrote to a valid relative path, all four cross-links resolve, `package-cutover`
+  collision-free across every repo on the machine.
+- **N1 family 6 consumer — this branch.** `.agents/skills/package-cutover/` + its `.claude/skills/` stub
+  deleted (committed and pushed early — see `## Decisions` on the worktree-deletion incident). No route row
+  (invoked by name only), no rename, no hub cited it — the surviving references
+  (`docs/REMOTE_VALIDATION.md`, `PIPELINE_DEBT.md`) are by name and still resolve. Plan + ledger updated to
+  mark N1 complete.
+- **N1 family 5 producer — agent-standards #10.** Five docs, one router each; `plan-checkpoint` is the only
+  new skill name (collision-checked free across every repo on the machine). The progress-ledger template
+  folded into `CHECKPOINT.md` inside a `~~~markdown` fence, because the generator routes every `standards/`
+  doc and a bare asset/reference has no home. Per-repo values not restated: driving roadmap, architecture
+  doc and hook/script paths resolve from the plan floor and the vendored `plan_graph.py`/`worktrees.ps1`
+  constants; scalable-fix and delete-the-entry defer to `docs-and-debt`; worktree creation and PR opening
+  defer to `open-worktree`/`open-pr`. Generator current (60/60), 161 hook tests pass, README charter widened.
+- **N1 family 5 consumer — this branch, #687.** Four skill bodies + four `.claude` stubs + the two
+  `resume-plan/` support files + the techdebt command (both dirs) deleted. Three citation sites: `plans/AGENTS.md`
+  now names the `plan-checkpoint` standard for the ledger template and checkpoint; `package-cutover` defers
+  to "the checkpoint the plan floor names"; `.agents/README.md` drops the now subject-less "Repository
+  commands" section and its intro mention of command instructions. `auto-memory` left intact.
+- **Phase 1 and N1 families 1–4 — merged in both repos.** Phase 1 (#669 + agent-standards #5): the plan
+  method into `PLANS.md`, `HANDOFF.md`. Family 1 review (#675 + #6): seven `review/` docs. Family 2 merge/PR
+  (#676 + #7): four `merge/` docs, `create-gh-pr` → `open-pr`. Family 3 test-debug (#677 + #8): six
+  `testing/` docs, `docker-health.ps1` vendored. Family 4 git (#679 + #9): six `git/` docs, `sync` →
+  `sync-checkout` and `worktree` → `open-worktree`, `worktrees.ps1` vendored.
 
 ## Verification
 
-N1 family 3, producer (`agent-standards` #8):
+Family 6, producer (agent-standards #11):
+- `.agents/sync-generated.ps1 -Check` → **current, 61 skills / 61 docs** (194 files); 4 written on the
+  authoring run (`.claude` stub, plugin doc copy, plugin router, `dotnet/INDEX.md`).
+- Hook tests **161/161**. Plugin router rewrote to `../../standards/dotnet/PACKAGE_CUTOVER.md`. Description
+  carries no colon-space (generator would reject).
+- All four cross-links from the new doc resolve: `PACKAGES.md`, `../process/PLANS.md`, `data/MIGRATIONS.md`,
+  `../process/plan/CHECKPOINT.md`. INDEX row present with the H1 title and `package-cutover` skill.
+- `package-cutover` collision-free across `~/.claude`, `~/.agents`, `~/.codex`, `dotagents`, `react-agents`,
+  `agent-starter-kit`, the work repos — nowhere else on the machine.
 
-- `.agents/sync-generated.ps1` → 24 files written; `-Check` reports **158 current (49 skills, 49 docs)**.
-- Hook tests **161/161**.
-- Every relative link in the six new docs and the four edited ones resolves — 150 links walked across the
-  whole `standards/` tree plus the README, one broken and it is pre-existing (`PLANS.md`'s ledger-header
-  template contains the literal placeholder `<url>`, which any link checker reads as dead).
-- **Names checked collision-free across every repo on this machine, not just the standards set** — the
-  lesson family 2 paid for. `dotagents` (32 skills), `react-agents` (14), `agent-standards` (43 before
-  (~90 deployed), `~/.codex` (~1,300 installed) and Claude Code's built-ins. All six names free; the only
-  hits were this repo's own copies across 58 worktree checkouts.
-- The second vendoring tier proved itself before it was trusted: `vendor-hooks.ps1 -Check` against this
-  repo reported **only `vendored.json`** stale, never `docker-health.ps1`. A byte-identical body is the
-  evidence that the script is genuinely repo-invariant rather than merely believed to be.
+Family 6, consumer (this repo):
+- `docs_reachability.py --root <worktree>` → **0 errors, 25 warnings** — the same set as the family-5
+  baseline (all pre-existing `plans/` dangles); nothing added or removed by this diff.
+- `plan_graph.py --root <worktree>` → 0 errors, 0 warnings. Hook tests **19/19**.
+- No route row names `package-cutover` (there never was one); no surviving reference to the deleted skill
+  **path** — the two by-name references resolve unchanged.
+- **Meta-only holds** — changed top-level paths are `.agents`, `.claude`, `plans`. No `api/**`, no workflow
+  file → the `/merge-docs` path, no publish/`chore/platform-sync-*`.
 
-N1 family 3, consumer (this repo):
+Family 5, producer (agent-standards #10):
+- `.agents/sync-generated.ps1 -Check` → **current, 60 skills / 60 docs** (191 files). 16 files written on the
+  authoring run (5 `.claude` stubs, 5 docs + 5 routers into `plugins/agent-process/`, INDEX).
+- Hook tests **161/161**. Plugin router rewrite produced a valid relative path
+  (`../../standards/process/plan/RESUME.md`). No skill description carries a colon-space.
+- Names checked collision-free across every repo on the machine — `~/.claude`, `~/.agents`, `~/.codex`,
+  `dotagents`, `react-agents`, `agent-standards`, `agent-starter-kit`, the work repos — not just the
+  standards set. All five free (`resume-plan`, `continue-roadmap`, `update-roadmap`, `techdebt` were only
+  this repo's own copies; `plan-checkpoint` is new).
+- Cited constants exist in the producer: `scripts/worktrees.ps1`, `.agents/hooks/plan_graph.py`. New docs'
+  only `.md` links (`RESUME.md` → `CHECKPOINT.md`) resolve; the `<url>` reachability error is pre-existing
+  in `PLANS.md`, not this diff.
 
-- `python .agents/hooks/docs_reachability.py --root <worktree>` → **0 errors, 26 warnings**, and the warning
-  *set* is byte-identical to the branch base's — measured by running the checker in a throwaway detached
-  worktree at `d1422b6b5` and diffing the two sorted lists, not by comparing counts. Nothing added, nothing
-  removed.
-- `python .agents/hooks/plan_graph.py --root <worktree>` → 0 errors, 0 warnings.
-- `python -m unittest discover -s .agents/hooks/tests` → **19/19** (14 before; five new cover the script
-  tier — hash, upstream path, provenance, absence of a `delivery` field, and wired in no harness).
-- No route row names a deleted skill — checked by parsing `.agents/skill-routes.json` and intersecting, not
-  by eye. 36 rows, 53 skills named, unchanged by this slice.
-- `skill_router.py --skills-for` over the staged diff resolves `docs-and-debt` and `plans` on every path
-  this branch touches.
-- Repo-wide grep: no surviving reference to any deleted skill's **path**. Every surviving reference is by
-  skill *name*, and all six names still exist.
-- Every `##`/`###` heading of the six deleted skills maps to a section of a moved doc, with four
-  deliberate exceptions recorded under `## Decisions`.
-- **Meta-only holds:** every changed path is `.agents/**`, `.claude/**`, `docs/**`, `plans/**` or root
-  `AGENTS.md`. `scripts/docker-health.ps1` is untouched on disk.
-
-N1 family 2, producer (`agent-standards`):
-
-- `.agents/sync-generated.ps1` → 15 files written, 1 more after the review fixes; `-Check` reports **140
-  current (43 skills, 43 docs)**.
-- Hook tests **161/161**.
-- Every relative link in the four new docs and in the edited `MERGING.md` resolves — checked by walking the
-  tree, zero broken. `PLANS.md` really carries the "Never leave the codebase out of sync" heading
-  `PREFLIGHT.md` cites.
-- Names checked collision-free across `dotagents` (32), `react-agents` (14), `agent-standards` (39 before
-  this), this repo (22) and Claude Code's built-ins. Three were free; `create-gh-pr` was not.
-
-N1 family 2, delivery gate (2026-08-20):
-
-- agent-standards #7: `verify` pass, `CLEAN`, 0 behind `origin/main`. That repo has no merge queue — its
-  rulesets API answers 403 on a private free plan — so it merges directly rather than through `--auto`.
-- #676: every non-`merge_group` check **pass** — build, `ci-complete`, all seven carves, `fe-boundaries`,
-  `hook-tests`, the full integration matrix; `CLEAN`; 0 behind `origin/main`. Verified at `fd9231be` and
-  re-verified in full at `3f70e103` after the first checkpoint pushed. The only non-pass rows are the three
-  `merge_group`-gated E2E suites reporting `skipping`, which is expected on the PR itself. Every checkpoint
-  commit re-runs the PR gate, so the green set belongs to whichever head the ledger's last push produced.
-- **E2E tier: `skip-e2e` applied to #676, no `full-e2e`.** No positive trigger — the diff is markdown plus
-  one comment line in `.github/workflows/test.yml`: no UI flow, no HTTP or cross-service contract, no
-  published package shape, no auth or routing behaviour. The hard floor still gates it.
-
-N1 family 2, consumer (this repo):
-
-- `python .agents/hooks/docs_reachability.py --root <worktree>` → **0 errors, 26 warnings**, against 27 on
-  this branch's own base: zero added, one removed. The removed one was this ledger's own — its header
-  carried a markdown link whose target was the literal placeholder `<url>`, which the checker reads as a
-  dead link, and rewriting the header dropped it. Writing that shape *about* itself re-triggers the warning,
-  so describe it rather than quote it. (Family 1's ledger recorded 26 as its baseline; `main` then gained one warning and this slice clears a
-  different one. Diffing against the branch base rather than a remembered number is what makes the claim
-  checkable at all — the numbers alone would have looked unchanged while hiding both movements.)
-- `python .agents/hooks/plan_graph.py --root <worktree>` → 0 errors, 0 warnings.
-- `python -m unittest discover -s .agents/hooks/tests` → **14/14**.
-- No route row names a deleted skill, and no row names `create-gh-pr` — checked by parsing
-  `.agents/skill-routes.json` and intersecting the skill names it yields with the deleted set, not by eye.
-  36 rows, 53 skills named, unchanged by this slice.
-- `skill_router.py --skills-for` still resolves on every path this branch touches.
-- Every `##`/`###` heading of the four deleted skills maps to a section of a moved doc. `merge`'s
-  `### Transition checkpoints` was promoted to a top-level section, since it governed every step rather
-  than sitting inside `## Steps`. The only content deliberately **not** carried is `create-gh-pr`'s
-  contrast with the work repos' PR skill — see `## Decisions`.
-- Repo-wide grep: no surviving reference to a deleted skill's path or to the name `create-gh-pr`.
+Family 5, consumer (this repo, #687):
+- `docs_reachability.py` → **0 errors, 25 warnings**, and the warning **set is byte-identical** to the
+  branch base (measured by running the checker on the main checkout at `c39077f1a` and diffing sorted
+  lists — nothing added or removed).
+- `plan_graph.py` → 0 errors, 0 warnings. Hook tests **19/19**.
+- No route row names a deleted skill; no surviving reference to any deleted skill **path** or to the
+  techdebt command; `skill_router.py --skills-for` resolves `docs-and-debt`/`plans` on every touched path.
+- **Meta-only holds** — changed top-level paths are only `.agents`, `.claude`, `plans`. No `api/**`, no
+  workflow file → the `/merge-docs` path, and no publish/`chore/platform-sync-*`.
 
 ## Reviews
 
-**Family 3 — four findings, all fixed and ticked before either branch went up for review; no open
-findings.** One review file across both branches, on the consumer:
-`reviews/Docs-docs_polyrepo-ready-test-debug-family.md`, covering `d1422b6b5..207b28d44` here and
-`30734a9..5cf3608` in agent-standards; that repo carries a companion pointing at it. **Run from the moved
-copy of the procedure** (`standards/process/review/DOCS.md`, merged as #6) for the second slice running,
-since this repo holds no `docs-review` skill and the plugin cache is still stale.
+**Family 6 — low review surface, self-checked; no review file yet.** The consumer is a pure deletion; the
+producer doc is the vetted skill body verbatim with only four cross-references re-pointed (all verified to
+resolve) and the E2E-tier pointer restated as "the `merge` skill's Step 4" (matches root `AGENTS.md`). A
+`/docs-review` over both halves can still be run from the moved copy `standards/process/review/DOCS.md` if
+wanted before merge, as prior families did while the cache is stale.
 
-- `INST1` — `API_E2E.md` Step 2 carried `--settings <the repo's run settings>`, a placeholder with no
-  resolution route, two paragraphs after warning that omitting those settings is how two E2E applications
-  boot at once. It now says to grep the entrypoint for it.
-- `INST2` — the new tier table in `FAILING_TESTS.md` routes a **unit** failure to `INTEGRATION.md`, whose
-  closing note deflected it ("unit tests are a different tier again"). The pre-move `plans/AGENTS.md`
-  routed identically and carried the identical gap; **filing the six tiers in one directory is what exposed
-  it**, which is the second time this epic has found a defect that six separate skills had hidden. The note
-  now says what carries over and what does not.
-- `CON1` — `REGRESSION.md` banned re-running a red regress by hand while `FAILING_TESTS.md` mandates
-  exactly that re-run as flaky triage. Both correct, neither saying so: the entrypoint has already
-  performed it. Named in both docs.
-- `INST3` — `BOTH_LAYERS.md` said to confirm the secrets are set without naming them.
-
-`/docs-review` over `2ce95368..29a82099` → `reviews/Docs-docs_polyrepo-ready-merge-family.md`, whose header
-carries the reviewed range and watermark. Four findings, all fixed and ticked; no open findings. The
-producer branch carries a companion `reviews/Docs-polyrepo-ready-merge-family.md` pointing at it rather than
-splitting one review across two files, because three of the four findings were defects in the moved docs.
-
-**Run from the moved copy of the procedure** (`standards/process/review/DOCS.md`, merged as #6), because
-this repo no longer holds a `docs-review` skill and the plugin cache has not been refreshed — which
-discharges family 1's own gate, "`docs-review` still runs end-to-end from the moved copy", a second time on
-a real diff.
-
-- `HOME1` — `merge/QUEUE.md` step 5 restated the worktree-close command's full refusal list, which root
-  `AGENTS.md` and `docs/INDEX.md` already own in the consuming repo. Collapsed to "run the command and trust
-  the refusal".
-- `INST1` — `merge/QUEUE.md` step 0 said to hand the user a command "prefixed so it executes in their
-  session" without naming the prefix. Over-generalising had deleted the actionable half of the rule;
-  `!` restored and attributed to Claude Code.
-- `ACC1` — the sync-branch prefix appeared as a `<placeholder>` in one step of `merge/QUEUE.md` and as the
-  literal `chore/platform-sync-` in another. Both literal now.
-- `ACC2` — the rewritten root `AGENTS.md` Merging pointer added a second copy of the E2E-tier ownership
-  sentence the validation section already owns — a duplicate introduced by the commit whose purpose is
-  de-duplication. Removed.
-
-Family 1's reviews, clean and merged: this repo's #675 → `reviews/Docs-docs_polyrepo-ready-nodes.md`;
-agent-standards #6 → its `reviews/Docs-polyrepo-ready-review-family.md`. Phase 1's: #669 →
-`reviews/Docs-docs_polyrepo-ready.md`; agent-standards #5 → `reviews/Docs-polyrepo-ready-process.md`, one
-finding deferred (`PLANS.md` at 248 lines is 3× that repo's eighty-line split rule); #668 → an
-`## Incremental review` section on `reviews/Docs-skill-routes-mapper-coverage.md`.
+**Family 5 — clean, no findings.** `reviews/Docs-docs_polyrepo-ready-plan-workflow-family.md` covers both halves —
+consumer `c39077f1a..2b92ca18d` and producer `9437795..260f7f68` (agent-standards #10); the producer carries
+a companion pointer. All six lenses clean plus the `CHECKPOINT.md` fence-nesting and anchor checks, verified
+a second time in an independent fresh context. Run from the moved copy `standards/process/review/DOCS.md`,
+since the session's active plugin snapshot lacks `docs-review`.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- **Every node moved so far has surfaced a rule whose only home was the thing being moved. This family
-  surfaced four, and three of them were *false statements* the move created rather than merely homeless
-  rules.** `FAILING_TESTS.md` said each tier's debug skill is named "in a repository's own guidance" — it
-  no longer is, so it now carries the tier table itself. `REMOTE_VALIDATION.md` ended its container
-  pre-flight section with "script it, and make the suite runner gate on that script"; the script now exists
-  at a constant path in every repo, so it names it. And `MERGING.md` plus `merge/QUEUE.md` both justified an
-  executable merge procedure by its need to resolve "the repo's own slug, check names **and debug routes**"
-  — debug routes became platform-wide constants in this very commit, so the third item had to go from both.
-  A slice that publishes a family invalidates the sentences that described it as per-repo; **grep the
-  standards repo for claims about the thing being moved, not just for links to it.**
-- **Two moved rules contradicted their new siblings, and the contradiction pre-dated the move.**
-  `e2e-ui-regress` said to arm a detached watcher for its terminal line; `e2e-ui-debug` and `e2e-api-debug`
-  both said explicitly *not* to use one, and the merge family had already settled on a capped background
-  loop that echoes every poll. Filing all six in one directory is what made the disagreement visible at
-  all — inside six separate skills it had survived indefinitely. `REGRESSION.md` uses the capped echoing
-  loop. Second: `integration-debug` carried the fixture-and-mock roster that
-  `dotnet:integration-testing` already owns, so `INTEGRATION.md` keeps only *how to read a failure* and
-  points at that inventory for *what the harness contains*.
-- **Four headings were deliberately not carried, and one whole section was refused.** `e2e-ui-regress`'s
-  "When to use" / "When NOT to use" fold into the opening two paragraphs (a doc opens by saying what it is
-  for; a skill needed the headings because its front matter could not). `integration-debug`'s "If the test
-  threw" is item 3 of the read-order list rather than its own section. Refused outright:
-  `integration-debug`'s **"Conventions that affect how failures read"** — the status-assertion failure
-  format moved into Step 3 because it genuinely governs reading a failure, but the response/client variable
-  naming and the three-line fetch shape are *authoring* rules the integration-testing standards already
-  own. A debug procedure restating them is the duplication this epic exists to end.
-- **Three citation classes were dropped rather than moved, all for the same reason: the target does not
-  exist in the destination.** Per-repo memory ids (`e2e_parallel_execution`, `stripe_e2e_resolver_state`,
-  `idevseder_not_itestseeder_for_e2e`, `cross_context_fk`) — memories are project-scoped files, so an id
-  cited from a machine-wide plugin points at nothing on a machine that never had this repo; the *facts*
-  they carried are stated in prose instead. A citation to `SEEDING_CONVENTIONS.md`, which **already did not
-  exist in this repo** — a dead link the move surfaced, and its rule is owned by the two seeding skills the
-  same bullet names. And both suites' scenario, feature and module rosters, which the docs standard's "a
-  count would be wrong by the next one anyone writes" rule forbids; the docs derive them from
-  `--list-tests` and `integration.ps1 list` instead.
-- **`docker ps` versus the real gate is a deliberate split, not an inconsistency, and it is now written
-  down.** The three E2E docs mandate `./scripts/docker-health.ps1`; `INTEGRATION.md` keeps the cheap
-  `docker ps`. The gate's own header scopes it to the E2E suites, and the failure it catches is a *booted
-  stack's* published ports dying. `INTEGRATION.md` states the one case that promotes it — the cheap check
-  passes but every database connection is accepted then reset — so the next reader does not "fix" the
-  asymmetry by copying the heavier gate into a tier that does not need it.
-- **The vendoring tier's manifest is keyed by tier, and only hooks carry `delivery`.** A script is invoked
-  from a command line or by another script and is never wired to a harness event, so a `delivery` field
-  with one possible value is an invitation to answer it wrongly. The consumer's test suite asserts the
-  absence of the field, that the copy lands at the same path it holds upstream (which is the entire basis
-  for a doc naming `./scripts/docker-health.ps1` as a constant), and that it is wired in no harness.
-- **`e2e.ps1` and `integration.ps1` did not move, and their discovery mechanism already existed.** Both
-  scripts print a usage listing when called with no recognised argument, and `integration.ps1 list` prints
-  every integration project. That is the same shape the merge family found in `gh repo view` / `gh pr
-  checks`: the value is *resolvable at run time*, so no doc names a project path and no repo writes a
-  values file. **A fifth family, a fifth time with no values file** — the pattern is now strong enough that
-  reaching for one should be treated as evidence the discovery mechanism has not been found yet.
-
-- **A skill name can collide with a repo this corpus never sees, and one did.** `create-gh-pr` already
-  exists on this machine as the work repos' issue-tracker-linked PR skill — a *different and contradictory*
-  procedure (work item, board transition, assignee, attribution stripped) reached through per-repo
-  junctions. A plugin installs **per machine**, so publishing `create-gh-pr` from `agent-standards` would
-  offer a "GitHub only, no work item, no assignee" procedure inside repos where the opposite is mandatory.
-  Claude Code namespaces plugin skills, so the two would not collide *by name*; they would collide by
-  meaning, in the same session, which is worse than a name clash because nothing surfaces it. Renamed to
-  **`open-pr`**; its three in-repo citations all sat in skills this slice deletes, so the rename cost
-  nothing. **The generalisable lesson: family 1's collision check swept the three standards repos and the
-  harness built-ins. That set is incomplete — the real namespace is every repo on the machine.**
-  say what the *work* skill does that this one must not. That contrast is a machine-level fact about two
-  skill sets coexisting, already owned by Tommy's global instructions ("personal repos use plain
-  `gh pr create`; the Azure-DevOps skills are work-only"). Carrying it into a machine-wide plugin doc would
-  have put another organisation's tooling into a Concertable standard — and it is exactly what made the name
-  unsafe. `OPENING.md` states the platform-neutral form instead: use the forge's own CLI, and a
-  differently-scoped PR procedure elsewhere on the machine is not this one.
-- **`MERGING.md` was already pointing at something this epic deletes.** It said "the runnable loop belongs
-  to whatever executable merge command the repository owns, because only that command knows the repo's own
-  slug, check names and debug routes." Once the executable command is itself platform-wide, that sentence
-  describes a home with no future — the §6 failure mode, found *inside* the standards repo rather than the
-  monorepo. The loop now lives in `merge/QUEUE.md`, and the "only that command knows" premise is answered
-  the family-1 way: it resolves the slug from `gh repo view`, the check set from `gh pr checks`, and the
-  queue config from the rulesets API, so nothing needs to be known in advance. **Every node moved so far has
-  surfaced at least one rule whose only home was the thing being moved; that is now the expected yield of a
-  slice, not a surprise.**
-- **One value in this family genuinely does not port, and it was monorepo-shaped.** "Does this merge
-  publish?" was written as "does the diff touch `api/**`" — a path that does not exist in a carved service
-  repo, where the repo *is* the service. `QUEUE.md` re-anchors it on what the repo's own publish workflow
-  filters on. This is the plan's "rows keyed on architecture port; rows keyed on location don't" showing up
-  in prose rather than in the route table.
-- **No values file again — three families, three times.** The label names (`skip-e2e`, `skip-e2e-ui`,
-  `full-e2e`), the aggregate required check, and `scripts/worktrees.ps1` are identical in every repo, so
-  they are stated rather than parameterised. The queue's ruleset id was **dropped** rather than moved:
-  nothing in the procedure uses it, so it was colour that would rot. The vendored review-gate hook path
-  (`.agents/hooks/merge_review_gate.py`) is named, being fixed by `vendor-hooks.ps1` everywhere.
-- **The E2E-tier rule survived the move intact, and it is the substantive content of the family.** Four
-  positive triggers, "wiring is not an independent trigger", the hard floor, and why a git trailer silently
-  loses to a mandated attribution trailer (git parses only the last paragraph, and a blank line between them
-  makes two). The two PR numbers that evidenced the trailer bug were dropped — a PR number in another repo
-  is precisely the citation the docs standard says will rot — while the mechanism they proved was kept.
-- **This slice had to break its own meta-only gate, and that is the correct outcome.** The consumer branch
-  edits one comment in `.github/workflows/test.yml`, so it fails the meta-only path list and lands through
-  `/merge`. The gate is path-based on purpose: the alternative readings were to leave a dead pointer on
-  `main`, or to split a one-line comment onto its own PR. Recorded here because the next family that
-  re-points a workflow comment will hit it too.
-- **The plugin refresh is now a two-family backlog, and nothing in the repo can check it.** Family 1's
-  ledger made the refresh a per-machine follow-up; it has not happened, so thirteen merged skills currently
-  resolve under no name. This is not a work item to schedule — it is one command, and until it runs, every
-  subsequent family compounds the same gap. Hence its promotion to Next Step 1.
-- **The vendored review gate has a path bug, and it fails closed — so it looks like a refusal.**
-  `merge_review_gate.py`'s `merge_target_dir` takes the literal argument of the last `cd` before the merge
-  command and hands it to `subprocess(cwd=…)`. From Git Bash that argument is a POSIX path (`/c/Users/…`),
-  which Windows Python cannot use as a working directory, so `git rev-parse --show-toplevel` raises
-  `WinError 267` and the gate blocks with "cannot resolve git state" — on a branch whose review is clean.
-  A Windows-form `cd C:/Users/…` resolves fine, so the fix is one normalization step in the hook, in
-  `agent-standards`, on its own slice. **Not amended onto #7:** that branch is reviewed and green, and a
-  hook change is neither this family's content nor covered by its review.
-- **Test-debug's scripts sort three ways, not two — and the plan had miscounted them.** The six skills name
-  `scripts/e2e.ps1` 35 times, `scripts/integration.ps1` 8 (the `integration-debug` entrypoint, which the
-  plan had not counted at all) and `scripts/docker-health.ps1` 4. The settled answer lives in the plan; the
-  discovery that decided it belongs here: `docker-health.ps1` contains no repo path, no suite name and no
-  `api/` anywhere, while `e2e.ps1` and `integration.ps1` are hardcoded lists of this monorepo's suite
-  projects across four services. **Portability is a property of a script's body, not of its path**, which is
-  why both "vendor the scripts" and "parameterise the paths" were the wrong question — the answer splits the
-  three. Also measured, because the family gate depends on it: 131 of these 1,022 lines carry a
-  repo-specific token, against a family-2 diff that carried none. "Leaves behind only values" has real work
-  to do here.
-- **`worktree` will recur as family 4's naming problem.** It exists in `dotagents` *and* in the work repos,
-  which is two collisions rather than one, and unlike `create-gh-pr` it has real in-repo citations. Flagged
-  now so family 4 budgets for it rather than discovering it mid-slice.
+- **package-cutover went to the `dotnet` plugin, not `agent-process`.** The plan left the home open
+  (`standards/dotnet/` or `standards/process/`). It is decisively .NET/NuGet/EF — CS7069, EF re-scaffold,
+  `dotnet build`, `PackageReference` — and would be noise in a React service repo, which `agent-process`
+  (installed everywhere) would give it. `dotnet:packages` already owns the *why* ("a published contract
+  change is a two-step release"); package-cutover is its runnable execution procedure, so they are siblings
+  under the dotnet plugin. Domain→plugin is by `payloads.json` (`dotnet` → dotnet plugin), so a doc under
+  `standards/dotnet/` ships correctly with no manifest edit.
+- **A background cleanup process deleted the family-6 worktree mid-authoring — commit early.** After the
+  producer was pushed and the consumer files deleted (but not yet committed), another Claude Code process
+  ran a startup worktree cleanup and `rm`'d the freshly-created worktree, taking the uncommitted consumer
+  deletions and plan/ledger edits with it (the branch existed only locally, so it went too). The producer
+  (already pushed as #11) was untouched. Recovery: recreate the worktree from `origin/main`, redo the
+  deletion, **commit and push it immediately** so the branch is durable on origin, then redo the doc edits.
+  Lesson for the remaining nodes: in a repo where concurrent sessions prune worktrees, commit+push the
+  irreversible core of a slice before doing the longer ledger prose, not after.
+- **First family with a values question that genuinely dissolves rather than ports.** The doc names
+  `api/Concertable.slnx`, `./initial-migrations.ps1` and the `Concertable.*` package families. Per the
+  calibration set by `PACKAGES.md`/`MIGRATIONS.md`, agent-standards **is** Concertable's roster and names
+  these freely; the re-scaffold defers to `data/MIGRATIONS.md` (which owns `./initial-migrations.ps1`) rather
+  than restating it. No values file — sixth family, sixth time.
+- **A meta-only consumer must ADMIN-MERGE, never `--auto` — the queue runs E2E on it.** This turn a raw
+  `gh pr merge 687 --merge --auto` enqueued #687 into the normal queue; inside the `merge_group` the
+  path-filter has no diff base, so E2E did **not** skip — `e2e-api-tests` passed, `e2e-ui-tests` ran for
+  ~17 min and the entry fell out (auto-merge disabled) before merging. `/merge-docs` (`merge/META_ONLY.md`
+  Step 5) exists precisely to avoid this: it admin-merges to **bypass the queue**, with `skip-e2e` as a
+  belt-and-braces label for any fallback. Prior meta-only families landed this way; the mistake was mine in
+  reaching for `--auto`. The orphaned run was cancelled; no other repair needed.
+- **`auto-memory` does not move, by Tommy's decision.** It is a Codex-only feature toggle
+  (`.Codex/settings.local.json`), and family 4 established that Codex loads **no** agent-standards plugin —
+  so moving it to the plugin would make it useless in Claude Code (no such feature) and unresolvable in
+  Codex (no plugin), strictly worse than the in-repo `.agents/skills/` copy Codex reads today. Left in-repo
+  and deferred with the Codex machine-setup decision; the plan's acceptance criterion ("nothing agent-based
+  left in root") is not yet met for this one skill, deliberately.
+- **The generator routes every `standards/` doc, so a reference or asset cannot be a bare file.** The
+  checkpoint procedure and the progress template were a `references/` doc and an `assets/` file under the
+  `resume-plan` skill. In the router/doc model each doc needs exactly one owning skill, so the checkpoint
+  became `plan/CHECKPOINT.md` routed by a new `plan-checkpoint` skill, and the template folded into it as a
+  section. Any future move of a reference/asset (N7's `progress-template` is already handled here) faces the
+  same rule — fold it into a routed doc or give it a skill.
+- **This move created no false sibling statements — the first family that didn't.** Every prior family
+  surfaced a rule whose only home was the thing being moved, usually a now-false sentence. This one is clean
+  because the four merged families already cite the checkpoint **indirectly** ("the checkpoint procedure the
+  repository's plan floor names"), so landing the actual standard **fulfils** that indirection rather than
+  falsifying anything. The consumer's `plans/AGENTS.md` is now the doc that names it (`plan-checkpoint`),
+  closing the loop.
+- **The "Repository commands" mechanism died with its only instance.** `techdebt` was the sole
+  `.agents/commands/` entry; once it ships from the plugin, the repo has no commands and both command dirs
+  are gone, so `.agents/README.md`'s "Repository commands" section described nothing and was removed. The
+  router/doc model supersedes the canonical-command-plus-thin-wrapper mechanism; it has no polyrepo home.
+- **The installed plugin cache holds stale snapshots, and the session resolved against a reduced one.**
+  `installed_plugins.json` pins `agent-process` to `2d9a8fedf0e7` (the full family-3 snapshot with
+  `review`/`merge`/`testing`/`docs-review`), but two reduced snapshots (`88cf091a3c2b`, `bbb5cd69c7e9`)
+  carrying only the seven principle skills also exist, and this session loaded `docs-and-debt` from
+  `bbb5cd69c7e9` — so `docs-review` and the other executables are **not invocable as skills here**. Ran the
+  review from the moved copy on disk, the family-3 fallback. The refresh (Next Steps 2) is Tommy's.
+- **Durable cross-family rules that still bind family 6 and N2–N8:**
+  - **Collision-check a new skill name across *every* repo on the machine**, not just the three standards
+    repos and the harness built-ins — the family-2/3/4 lesson (`create-gh-pr`, `sync`, `worktree` all
+    collided).
+  - **No values file — resolve per-repo values at run time** (discovery via the plan floor / `gh` / a
+    script's own usage listing, or state a genuine constant). Five families, five times; reaching for a
+    values file is evidence the discovery mechanism has not been found.
+  - **The Codex delivery gap is real and must be N8's concern:** every plugin-delivered standard resolves in
+    Claude Code only; Codex has `agent-standards`/`dotagents`/`react-agents` registered nowhere. `auto-memory`
+    is the first skill whose *value* the gap changes, not just its delivery.
 
 ## Resume prompt
 
 ```
-cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-test-debug-family
+cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-package-cutover-family
 Read @plans/docs/POLYREPO_READY_PLAN.md and @plans/docs/POLYREPO_READY_PROGRESS.md and do what its `## Next Steps` says.
 ```
