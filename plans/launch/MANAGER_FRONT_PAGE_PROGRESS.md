@@ -7,7 +7,7 @@
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563)
 - Dependency/package gates: producer packages are published; this API-changing consumer merge must complete its generated platform-sync follow-through
-- Last reconciled: 2026-08-21 against `origin/main` `2323c77e7` in merge `99412536c`
+- Last reconciled: 2026-08-21 against `origin/main` `2323c77e7` in merge `99412536c`; current base `7f107d98b` is pending reconciliation
 
 ## Current state
 
@@ -74,9 +74,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Transport final review commit `936d722ec` and this verified-push checkpoint, prove local/remote/PR head equality,
-   then require fresh exact-head CI green.
-2. Complete `/merge`, follow the generated
+1. Merge current `origin/main` `7f107d98b`, validate and incrementally review its 16-commit delta, then push and
+   require fresh exact-head CI green.
+2. Re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
@@ -158,6 +158,12 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 - Current-main reconciliation work-head push: starting remote/PR `3ebc4722f160ed69b724d7f46e44cb6fb76c5f03`;
   pushed `3ebc4722f..c6cc262b8`; refreshed remote-tracking and PR heads both verified at
   `c6cc262b8dddcec7108d987d04d4940c891d38e4`.
+- Exact transported PR head `8a6086b07f1185bc4338c22d6e1cd844fce232ce` passed fresh PR CI run `32531796625`
+  (73 pass, 3 expected merge-group-only skips). Merge-group run `32534078615` then passed API E2E and both B2B and
+  Customer UI E2E blocks, but one Venue integration runner remained in `actions/cache@v4` for 97 minutes before any
+  artifact download or test execution. The capped infrastructure wait was exhausted, the wedged run was cancelled
+  once, and GitHub removed #563 from the queue. Main then proved 16 commits ahead at `7f107d98b`; no stale re-enqueue
+  will be attempted.
 
 ## Reviews
 
