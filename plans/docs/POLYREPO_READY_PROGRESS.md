@@ -6,14 +6,13 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Fix/CrossHarnessStandardsDelivery`
 - Branch: `Docs/docs_polyrepo-ready-cross-harness-delivery`, from `origin/main` at `1e26f8244`, layered on
   N2 consumer branch `Docs/docs_polyrepo-ready-route-table-convention` at `a3bdd42e8`.
-- PRs: N2 producer **agent-standards #12 — open**, N2 consumer **this repo #695 — open**; cross-harness
-  producers **agent-standards #13**, **dotagents #3**, **react-agents #1 — draft**; consumer **this repo
-  #696 — draft**.
+- PRs: N2 producer **agent-standards #12 MERGED** (`d175b8b`), N2 consumer **this repo #695 MERGED**
+  (`2650f5c`); cross-harness producers **agent-standards #13 MERGED** (`e685095`), **dotagents #3 MERGED**
+  (`e5ca9cc`), **react-agents #1 MERGED** (`c9a973d`); consumer **this repo #696 — open**.
 - Dependency/package gates: none. This diff touches no `api/**` path → no publish, no `chore/platform-sync-*`.
-  The current machine is provisioned and verified for both harnesses; `skill-routes` itself joins the cache
-  after N2 producer #12 merges and provisioning is rerun.
-- Last reconciled: 2026-08-21, after authoring N2 (#12 + #695) and delivering the cross-harness prerequisite
-  (#13 + dotagents #3 + react-agents #1 + this branch). **N1 is complete; N2 and delivery are authored.**
+  The current machine is provisioned from the merged GitHub marketplaces and verified for both harnesses.
+- Last reconciled: 2026-08-21, after merging N2 (#12 + #695), all three cross-harness producers, and
+  refreshing both harnesses from those merged revisions. **Only consumer #696 remains in this delivery.**
 
 ## Current state
 
@@ -21,7 +20,7 @@
 agent-standards `main` at `e8fd22f` (includes family-6 producer #11). Family 6 (package-cutover) landed as
 producer #11 + consumer #693; `package-cutover` homed in the **dotnet** plugin as `dotnet:package-cutover`.
 
-**N2 — the route-table convention — is authored on both sides.**
+**N2 — the route-table convention — is merged on both sides.**
 
 - **Producer (agent-standards #12):** the route table is per-repo data, but the *convention* its rows follow
   was homeless after the cut deletes the monorepo root (it lived only in the table's `_comment` and
@@ -39,7 +38,7 @@ eight carved repos genuinely cannot drift from — the table is generated once a
 every clone has the conventions wired from the first commit and nobody hand-edits. A template still relies on
 correct hand-editing per repo.
 
-**Cross-harness standards delivery is authored and provisioned locally.** Claude Code and Codex each have
+**Cross-harness standards producers are merged and provisioned from GitHub.** Claude Code and Codex each have
 all five standards plugins enabled at user scope. Both independently resolve all 54 unique skills named by
 Concertable's live route table. The router now resolves only against the active harness and keeps every write
 blocked when an owning skill is absent; a stale cache in the other harness can no longer create a false pass.
@@ -49,33 +48,14 @@ criterion 1 still requires a durable home for this Codex-only utility before clo
 
 ## Next Steps
 
-1. **Land N2 — producer agent-standards #12 first, then this branch's consumer PR.** The producer must merge
-   first: the consumer's `_comment` points at the convention, so a consumer merged alone points at a doc not
-   yet on `main`. #12 is a standards-only diff → merges when `verify` is green (that repo has no queue; it
-   merges directly). This branch is **meta-only** (`.agents/**`, `plans/**`) → the `/merge-docs` admin-merge
-   path (bypass the queue; the queue runs E2E on a normal enqueue even for meta-only — see `## Decisions`).
-   Producer #12, consumer #695:
-   ```bash
-   gh -R Concertable/agent-standards pr merge 12  --merge --delete-branch
-   gh -R Concertable/concertable    pr edit  695 --add-label skip-e2e
-   gh -R Concertable/concertable    pr merge 695 --merge --admin
-   ```
-   Then `git checkout main && git pull --ff-only origin main` and close this worktree with
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 695 -PlanManaged`.
+1. **Land consumer #696 through the normal queue.** Its net diff includes executable
+   `scripts/provision-agent-standards.ps1`, so it is not meta-only. No end-to-end positive trigger applies;
+   use `skip-e2e`, retain the hard-floor build/hooks, and close this plan-managed worktree after merge.
 
-   **Merge authorization:** Tommy runs the merges (or approves interactively). The classifier stays the hard
-   gate; no blanket `gh pr merge` permission was added.
+2. **Start new Claude and Codex sessions.** The installed catalogues now point at the merged producer
+   revisions; existing sessions retain the snapshot they started with.
 
-2. **Land the cross-harness delivery after N2.** N2 producer #12 changes the same generated corpus as
-   agent-standards #13, so merge #12 first, update #13 from `main`, regenerate, and re-run its gate. Then land
-   dotagents #3, react-agents #1, agent-standards #13, and this branch's consumer PR. The consumer vendors the
-   committed fail-closed router and the one-command provisioner; it must not land before all three producers.
-
-3. **Re-run the provisioner after #12/#13 merge.** The current machine already has all five plugins and all
-   54 live routes resolve in both harnesses. The final refresh adds N2's new `skill-routes` skill and replaces
-   the local development cache with merged marketplace revisions. Start new Claude and Codex sessions.
-
-4. **N3–N6 + N7a next** — N1/N2 no longer block them. N6 still carries the open question for Tommy:
+3. **N3–N6 + N7a next** — N1/N2 no longer block them. N6 still carries the open question for Tommy:
    `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard
    nor service-specific — surface, don't invent a home. **N7b** waits on roadmap §4c; **N8** last as the only
    carved-repo evidence; it repeats the already-delivered Claude/Codex checks against the carved table. The
@@ -84,12 +64,12 @@ criterion 1 still requires a durable home for this Codex-only utility before clo
 
 ## Completed work
 
-- **Cross-harness prerequisite — producer branches and local provisioning.** agent-standards #13 adds
+- **Cross-harness prerequisite — producer PRs merged and machine reprovisioned.** agent-standards #13 adds
   Codex manifests for `agent-process`, `dotnet`, and `react`, a one-command Claude/Codex provisioner, and the
   active-harness fail-closed router with an all-route installation verifier. dotagents #3 and react-agents #1
   add their Codex marketplace/plugin schemas. This consumer vendors the router, provisioner, and provenance.
-  All five plugins are installed and enabled in both harnesses on this machine; all 54 routed skills resolve
-  independently in each harness.
+  All five plugins are installed from the merged GitHub marketplaces and enabled in both harnesses on this
+  machine; all 54 routed skills resolve independently in each harness.
 - **N2 producer — agent-standards #12.** `standards/process/SKILL_ROUTES.md` (the convention) routed by the
   new `skill-routes` skill; `.agents/gen_skill_routes.py` (the generator, canonical rows embedded once);
   `.agents/hooks/tests/test_gen_skill_routes.py` (11 tests). Generator current at **62 skills / 62 docs** (197
@@ -115,9 +95,9 @@ criterion 1 still requires a durable home for this Codex-only utility before clo
   both routers to their shipped `UNIT.md` payloads, and returned the expected smoke marker.
 - Claude's installed component inventory exposes `unit-testing` in both `dotnet-standards` (22 skills) and
   `dotnet` (16 skills). The Claude plugin list shows all five standards plugins enabled at user scope.
-- Producer router suite **48/48**; consumer vendored-hook suite **19/19**. Plan graph **0 errors / 0
+- Producer combined hook/generator suite **177/177**; consumer vendored-hook suite **19/19**. Plan graph **0 errors / 0
   warnings**; docs reachability **0 errors / 24 pre-existing warnings**.
-- All three generated corpora are current: agent-standards **61 skills / 61 docs**, dotagents **77 files**,
+- All three generated corpora are current: agent-standards **62 skills / 62 docs** (196 checked), dotagents **77 files**,
   react-agents **43 files**. Claude validates all marketplaces/plugins; Codex validates and installs all
   five `.codex-plugin` manifests.
 
