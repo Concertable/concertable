@@ -83,10 +83,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Incrementally review the committed post-main-sync reconciliation from reviewed watermark `e4fdc642d`,
-focusing on PR-owned commits and the net branch diff against current `origin/main`. If clean, update and
-commit the review artifact, publish that reviewed head through the plan-managed two-leg push, wait for
-exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
+After this review checkpoint commit, publish the reviewed head through the plan-managed two-leg push,
+wait for exact-head CI, then requeue PR #678 with `full-e2e` as the authoritative E2E gate.
 
 ## Separate public-library follow-up
 
@@ -180,6 +178,9 @@ The public library is not implemented or published by the current PR.
   passes found no issues, and both review watermarks are `beab16bd9`.
 - Pre-merge incremental review `beab16bd..e4fdc642` (3 commits): clean; the range contains only plan and
   review checkpoints, with no runtime or security-sensitive changes; review watermark is `e4fdc642d`.
+- Queue-fix/current-main incremental review `e4fdc642..c4a536f8`: clean after isolating the three PR-owned
+  commits and checking the net branch diff against `origin/main@42f760994`; both review watermarks are
+  `c4a536f8b`.
 
 ## Decisions and discoveries
 

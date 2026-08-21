@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e4fdc642d8856c776a7d47f51e1379c6eb1dcf5e`  _(2026-08-20)_
-**Security-reviewed up to commit:** `beab16bd980c28c76021016ddd3101fa38b1ce91`  _(2026-08-20)_
+**Reviewed up to commit:** `c4a536f8b`  _(2026-08-21)_
+**Security-reviewed up to commit:** `c4a536f8b`  _(2026-08-21)_
 
 > Range reviewed: `133b018d..2e34ce37` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -33,3 +33,11 @@ module boundaries, seeding, C# conventions, security-sensitive changes, and test
 No issues found. Reviewed `beab16bd..e4fdc642` (3 commits) for correctness, microservice isolation,
 module boundaries, seeding, C# conventions, and test coverage. The range changes only the plan ledger
 and review artifact; it contains no runtime or security-sensitive changes.
+
+## Incremental review — 2026-08-21 (queue-fix and current-main reconciliation)
+
+No issues found. Reviewed `e4fdc642..c4a536f8` by isolating the three PR-owned commits from the
+`origin/main` merge and checking the resulting branch diff against `origin/main@42f760994`. The Workers
+delta removes duplicate Admin project/module registration while retaining the required dependency; the
+superseded local unit test is replaced by current main's stricter production-host composition coverage.
+No security-sensitive behavior changed.
