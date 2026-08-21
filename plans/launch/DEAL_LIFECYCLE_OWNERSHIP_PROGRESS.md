@@ -206,6 +206,20 @@ the missing canonical module-owned integration assertion surface is recorded in 
 discussion. The target file contributes no diagnostic and the exact remaining integration frontier is
 18 errors outside this slice. Published work head `757703caa` is on the draft PR branch.
 
+Tommy rejected that provisional topology because it contradicts this PR's module-ownership purpose.
+The complete Concert integration tree has now been audited by operation and assertion surface. Its
+Application, Booking/Contract, Opportunity, Deal, Artist-dashboard, complete-journey, and stale Booking
+processor coverage will move to owning module or B2B process projects; mixed files will split by
+operation rather than move as indivisible legacy files. Concert retains only its HTTP, creation,
+cancellation, completion, settlement, invoice, self-billing, notification, and outbox coverage.
+
+The corrected fixture topology is fixed before further compile recovery: local module fixtures derive
+from the shared host harness and resolve only their own production context/read stance; the B2B process
+suite uses HTTP or deliberate Contracts boundaries and directly references no module Domain or
+Infrastructure assembly. A mechanical project-reference guard will enforce that rule. The temporary
+`ApplicationDb`/`BookingDb` surface and the corresponding TECH_DEBT entry are removed after the moved
+coverage is green, not renamed or hidden behind another resolver.
+
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
 PR #633 therefore resumes against `DealDto` and the proven module-local factory pattern, not against a
@@ -222,16 +236,22 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: recover `ApplicationVenueHireApiTests` onto module-owned Application, Booking, and Concert
-types, reads, and state.
-Allowed scope: that test file and the minimum directly required fixture/API adaptation exposed by its
-compiler diagnostics.
-Exit gate: the file contributes no compile diagnostic, the Concert integration project establishes the
-exact remaining frontier, and `git diff --check` passes. Commit and push the bounded recovery before
-selecting the next file.
+Active slice: establish the corrected integration-test project and fixture topology before moving any
+legacy test body.
+Allowed scope: the Opportunity, Application, Booking, Deal, Concert, and B2B process integration-test
+project scaffolds; their local fixtures/collections/test metadata and guidance siblings; solution and
+friend-assembly wiring; the module-boundary architecture/convention guard; and the minimum shared fixture
+changes needed to keep `ApiFixture` host-neutral without yet removing temporary surfaces still consumed by
+unmoved tests.
+Exit gate: every new empty project builds, the architecture/convention guard passes and proves module
+integration projects cannot directly reference another module's Domain or Infrastructure assembly, the
+plan graph reports zero errors/warnings, and `git diff --check` passes. Commit and push this bounded
+topology checkpoint before moving test bodies.
 
 ## Completed work
 
+- Audited every test and helper in `Concertable.B2B.Concert.IntegrationTests` by actual operation and
+  assertion purpose; recorded the per-file split and the module/process target topology in the plan.
 - Reconciled the heterogeneous-method landing design: net10 uses keyed DI only inside a dedicated
   marker-returning factory, consumers match honest method-header interfaces and guarded required input,
   and .NET 11 changes that return boundary to a direct native interface union without Dunet wrappers.

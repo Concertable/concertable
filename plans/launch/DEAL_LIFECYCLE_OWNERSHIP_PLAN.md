@@ -452,6 +452,65 @@ Checkpoint gate: the dependency graph is acyclic and Contracts-only while behavi
 responses remain unchanged. Empty runtime layers, no-op `Add*Module` methods, and the legacy shared
 `LifecycleState` are explicitly non-deliverable transient state on the draft branch.
 
+#### Integration-test ownership topology correction
+
+The compile-recovery work exposed a test-boundary defect that must be corrected before further
+file-by-file recovery. `Concertable.B2B.Concert.IntegrationTests` currently acts as a service-wide
+test bucket and its fixture temporarily resolves Application, Booking, and Concert persistence. That
+shape contradicts the module carve and is not an acceptable delivery state.
+
+The audit classifies every current test/helper by the operation and assertion surface it actually
+owns:
+
+| Current source | Target ownership and purpose |
+|---|---|
+| `ApplicationApiTests` | Application API and eligibility behaviour; Application integration tests. |
+| `ApplicationWithdrawRejectApiTests` | Application terminal decisions and notifications; Application integration tests. |
+| `ApplicationFinancialOperationApiTests` | Booking-owned acceptance financial-operation state exposed by the compatibility route; Booking integration tests. |
+| `ApplicationCancelApiTests` | Split by command owner: pending withdrawal/guards to Application, pre-Concert cancellation/refund to Booking, post-creation cancellation to Concert. Opportunity reopening is verified through its HTTP boundary from the initiating module. |
+| `ApplicationDoorSplitApiTests`, `ApplicationFlatFeeApiTests`, `ApplicationVenueHireApiTests`, `ApplicationVersusApiTests` | Split Application-only checkout/apply/accept validation from the complete payment/Accept/Booking/Concert journey. Application cases move to Application integration tests; complete journeys move to the B2B process integration suite. |
+| `ContractApiTests` | Split Application-owned consent/signature/fingerprint cases from Booking-owned immutable Contract formation, metadata, PDF, and snapshot cases. |
+| `BookingConfirmationEmailTests` | Concert-creation notification/outbox behaviour stays with Concert; the pure renderer case belongs in Concert unit tests. |
+| `ConcertApiTests`, `ConcertCancelApiTests`, `ConcertDoorRevenueApiTests`, `ConcertDoorSplitApiTests`, `ConcertFlatFeeApiTests`, `ConcertInvoiceApiTests`, `ConcertPayoutComplianceGateApiTests`, `ConcertSelfBillingGateApiTests`, `ConcertVenueHireApiTests`, `ConcertVersusApiTests`, `OutboxVerificationTests`, `SelfBillingAgreementApiTests`, `SelfBillingAgreementGateApiTests` | Genuinely Concert-owned HTTP, completion, cancellation, settlement, invoice, self-billing, notification, and outbox behaviour; remain in Concert integration tests. |
+| `ConcertRequestBuilders` | Concert HTTP request construction; remains in Concert integration tests. |
+| `ConcertWorkflowExtensions` | Concert-only setup/operation helper, but must be replaced by fixture/API helpers that do not expose `IServiceProvider` or locate repositories. |
+| `ArtistDashboardCountsTests` | Artist dashboard composition; move to the existing Artist integration project and assert through the Artist HTTP API. |
+| `DealApiTests` | Deal HTTP behaviour; Deal integration tests. |
+| `OpportunityApiTests`, `OpportunityRequestBuilders` | Opportunity HTTP behaviour and requests; Opportunity integration tests. |
+| `EscrowPaymentProcessorTests` | Stale Concert processor vocabulary for Booking-owned acceptance financial outcomes; rewrite against the Booking processor in Booking integration tests. |
+| `TenantScopingTests` | Split Application visibility/snapshot, Booking persistence stance, Concert public/party reads, and the complete cross-stage tenant-snapshot journey by those owners; the journey case belongs in the B2B process suite. |
+| `AssemblyInfo`, `GlobalUsings`, `IntegrationCollection`, project metadata, `AGENTS.md`, `CLAUDE.md` | Recreate per owning integration project; no shared Concert namespace or fixture survives in another module's suite. |
+
+The target topology is:
+
+- Opportunity, Application, Booking, Deal, and Concert each own a `*.IntegrationTests` project. Each
+  project's fixture derives from the shared host harness and may expose only that module's real
+  production `DbContext` or read stance.
+- `ConcertApiFixture` resolves only Concert persistence. Application and Booking fixtures resolve
+  only their own contexts and never expose one another's or Concert's context.
+- `Concertable.B2B.Process.IntegrationTests` owns only complete multi-module journeys. It has no direct
+  Domain or Infrastructure project reference and observes stages through HTTP or deliberate Contracts
+  surfaces.
+- The shared `ApiFixture` remains host-neutral infrastructure. It does not become a generic context,
+  repository, or service locator for module assertions.
+- Architecture/convention coverage reads every module integration-test project reference and fails a
+  direct reference to another module's Domain or Infrastructure assembly. A module may friend only its
+  own integration-test assembly.
+- The temporary integration-fixture TECH_DEBT entry is deleted only after the topology, fixtures,
+  references, namespaces, and behavioural coverage are all corrected.
+
+Implementation checkpoints, in order:
+
+1. scaffold the missing module/process projects, local fixtures, collections, metadata, solution
+   entries, friend declarations, and the mechanical project-reference guard;
+2. move the single-owner suites and helpers, then split mixed Application/Booking/Concert tests by
+   operation ownership;
+3. re-express complete journeys and cross-module assertions through public boundaries, remove the
+   temporary multi-context fixture surface and stale Concert-owned namespaces/references, and delete
+   the resolved debt entry;
+4. validate each affected project, the architecture guard, the remaining Concert suite, B2B build
+   closure, plan graph, and diff hygiene before resuming lifecycle implementation.
+
 ### Phase 3 — split Application and Booking ownership atomically
 
 - [ ] Move Application persistence, services, repository, API mapping, actions, and local lifecycle
