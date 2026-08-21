@@ -278,6 +278,12 @@ architecture guard, plan graph, and `git diff --check` pass. Commit and push in 
 
 ## Completed work
 
+- Published booking-confirmation integration ownership checkpoint `adb000732`; local HEAD, the remote
+  branch, and PR #633 `headRefOid` all equalled `adb000732b32e451d851252eff44ef4cb4d2cfe5`.
+  Moved the complete Application/Booking/Concert email-delivery journey to B2B Process, moved the
+  Concert template rendering and escaping assertion to Concert unit tests, and removed the remaining
+  `fixture.Services` dependency from that coverage. The Process project built with 0 warnings and 0
+  errors, the focused Concert unit test passed, and the integration-project boundary guard passed.
 - Opened draft Kernel producer PR [#719](https://github.com/Concertable/concertable/pull/719) at exact
   local, remote-tracking, and PR head `6535690418c340e4f63ddf7662123a1360eab045`. Producer commit
   `33ee4dd1199b7a9ed3f84d1ca0b0eacde3eddc95` adds the immutable Result-based state machine and its
