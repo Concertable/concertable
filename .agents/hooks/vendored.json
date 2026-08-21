@@ -25,8 +25,8 @@
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/plan_handoff_stop.py",
       "delivery": "invoked",
-      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
-      "sha256": "sha256:8101cb4ea0bba31cb2f5b03f865685e46a92e900ffe0e19d4bb9834291f06372"
+      "commit": "f0c422e18bdc17d41f56b0b27be4221b94244fd1",
+      "sha256": "sha256:d3642deca2b95e8ba2f3a5dad9bff2b87181f4b71ee38b8f89315cf42f25e8d1"
     },
     "plan_handoff_stop_launcher.py": {
       "source": "Concertable/agent-standards",
@@ -49,6 +49,12 @@
       "path": "scripts/docker-health.ps1",
       "commit": "76758be8ae5973ebca29bf6c28814e697ccdd9c6",
       "sha256": "sha256:985ce6ca8e4f82dc4e707f5d88aac100857404c56b08bf87a20fddafe224083f"
+    },
+    "worktrees.ps1": {
+      "source": "Concertable/agent-standards",
+      "path": "scripts/worktrees.ps1",
+      "commit": "06405a3a3b4cd5e3cdc6c103953f6bb6ece0945d",
+      "sha256": "sha256:37334f7117b8d0fce88e5d391e34e10605e2a1de0bbac9c73b61ea67e5fd7b1f"
     }
   }
 }

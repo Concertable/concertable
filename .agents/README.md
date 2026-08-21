@@ -52,8 +52,9 @@ agent-starter-kit/
       ...
 ```
 
-`pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
-branch update flow.
+The bare `worktree` and `sync` names belong to that personal set. The repository-workflow procedures of
+the same shape ship from `agent-process` as `open-worktree` and `sync-checkout`, renamed precisely so a
+personal skill and a plugin skill cannot resolve under one name and shadow each other.
 
 ## Repository commands
 
