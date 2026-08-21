@@ -283,11 +283,30 @@ Public-vs-private is a per-endpoint call.
 
 The mutating side is now guarded: `ControllerBoundaryTests.Mutating_endpoints_declare_authorization_explicitly`
 fails the build if any POST/PUT/PATCH/DELETE action in B2B is neither authorized nor explicitly
-`[AllowAnonymous]`. No equivalent guard exists for reads, because a read guard needs each public read tagged
-`[AllowAnonymous]` first.
+`[AllowAnonymous]`. That guard is B2B-only — it scans `Concertable.B2B.*` assemblies — so Payment and the
+other services have no equivalent, and no read-side guard exists anywhere (a read guard needs each public
+read tagged `[AllowAnonymous]` first).
 
 **Resolves when:** every anonymous-by-omission read is classified — private reads gain the correct
 `[Authorize]`/`[HasPermission]` (scoped to the caller's own tenant/resource), genuinely public reads gain an
 explicit `[AllowAnonymous]` — with tests proving an anonymous request is rejected on the private ones; then a
-read-side arch guard mirrors the mutating one so no endpoint is reachable anonymously by omission again.
+read-side guard *and* the mutating guard both cover every service (via one shared reflection helper rather
+than a per-service copy — see the hand-rolled-boundary-guard item in `Concertable.Shared/TECH_DEBT.md`), so no
+endpoint in any service is reachable anonymously by omission again.
+
+### Public images and private PDFs share one blob container behind an anonymous read endpoint
+
+`BlobStorageService` uses a single container (`BlobStorage:ContainerName`, `"images"`) with no per-type
+separation, and B2B's `GET api/blob/download` reads from it `[AllowAnonymous]` to serve the public marketplace
+images. But `PdfBlobCache` writes private contract/invoice/self-billing PDFs (`contracts/…`, `invoices/…`) into
+that same container. This is not exploitable today — PDF blob names embed a 122-bit `Guid`, the `download/{blobName}`
+route is a single non-catch-all segment and ASP.NET Core rejects encoded `/`, so a namespaced private blob
+cannot be addressed, and `Download` now also rejects any `blobName` containing a path separator. But the
+separation rests on name-secrecy plus routing shape, not on isolation: a route change to catch-all, an
+encoded-slash config change, or a leaked PDF name (they are persisted and served by the authenticated PDF
+endpoints) would each re-open it.
+
+**Resolves when:** public images and private documents live in separate containers (or non-overlapping,
+access-differentiated prefixes), so an anonymous read endpoint is scoped to the public store by construction and
+can never resolve to a private document regardless of route shape or name exposure.
 
