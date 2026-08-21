@@ -181,15 +181,15 @@ and draft PR #633.
 The focused `ApplicationDoorSplitApiTests` recovery now reads Application rows through
 `ApplicationReads`, Booking creation and financial-confirmation failure through `BookingReads`, and
 Concert creation only through `ConcertReads`. DoorSplit acceptance asserts the resulting
-`DeferredBooking`; both failed-verification paths assert `BookingState.FinancialConfirmationFailed`.
+`DeferredBooking`; both failed-verification paths assert `BookingState.ConfirmationFailed`.
 The fixture support project now directly references the Admin Domain and Infrastructure assemblies whose
 types it consumes, so a normal dependency build reaches the Concert integration project. The target file
 contributes no diagnostic and the exact remaining integration frontier is 21 errors outside this slice.
 Published work head `eeee95ac4` is verified equal across local, remote, and draft PR #633.
 
 The focused `ApplicationFinancialOperationApiTests` recovery now consumes `BookingState` at its response
-boundary. A pending acceptance operation maps to `AwaitingFinancialConfirmation`; a rejected operation
-maps to `FinancialConfirmationFailed`. Both diagnostics owned by that file are gone, `git diff --check`
+boundary. A pending acceptance operation maps to `AwaitingConfirmation`; a rejected operation maps to
+`ConfirmationFailed`. Both diagnostics owned by that file are gone, `git diff --check`
 passes, and the exact remaining integration frontier is 19 errors outside this slice. Published work head
 `59a5326e1` is verified equal across local, remote, and draft PR #633.
 

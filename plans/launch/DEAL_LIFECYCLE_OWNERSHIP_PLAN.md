@@ -115,8 +115,8 @@ aggregate to confirm itself.
 The exact enum names are fixed during the implementation inventory, but the state meaning is:
 
 ```text
-AwaitingFinancialConfirmation
-FinancialConfirmationFailed
+AwaitingConfirmation
+ConfirmationFailed
 Confirmed
 CancellationPending
 CancellationFailed
