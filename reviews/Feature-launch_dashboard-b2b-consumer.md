@@ -149,3 +149,12 @@ standards, and changed-behaviour test coverage. The carve keeps feed-only isolat
 real `app/...` hierarchy, archives the shared Vite HTTPS helper from the same Git tree, and now includes Admin in the
 CI matrix. The 7 frontend-tooling tests and every dependency boundary passed locally; the package-scoped CI token
 remains responsible for the authoritative standalone restores and builds.
+
+## Incremental review — 2026-08-21 (latest current-main reconciliation)
+
+- [x] **NAT5 — MEDIUM — native/correctness** — `.github/workflows/platform-sync.yml:153`
+  `mergeStateStatus == CLEAN` proves that a superseded sync PR is mergeable, but not that auto-merge is armed. A
+  transient failure across all auto-merge attempts could therefore leave a clean, idle PR that every later sync
+  preserved indefinitely. Protect only a clean PR with a non-null `autoMergeRequest`, close clean-but-idle PRs, and
+  pin both states with a repository workflow-policy test. The classifier now owns that decision, its four-state table
+  runs in the required CI aggregate, and the operational workflow installs the same Node runtime used by the test.

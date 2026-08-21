@@ -52,6 +52,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PLATFORM_SYNC_TOKEN }}
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Cascade guard — skip if this publish came from a pin-bump merge
         id: guard
         # A sync PR merge is itself an api/** change, so it re-triggers 'Publish packages'. Without this,
@@ -136,18 +140,19 @@ jobs:
           set -euo pipefail
           keep="chore/platform-sync-${VERSION}"
           # Every other open sync PR is an older, now-superseded bump - close it so stale/conflicting ones
-          # never accumulate. EXCEPT one already CLEAN (validated, about to enter/already in the merge
-          # queue): closing that under sustained merge traffic is a livelock, since a newer version is
-          # always ready before its queue turn completes - observed live, #706 was CLEAN and queued, then
-          # killed here anyway the moment #709 opened. Its own merge won't re-trigger a sync (the cascade
-          # guard above), so nothing is lost by letting it land instead.
+          # never accumulate. Preserve only a CLEAN PR whose auto-merge request is actually armed: that is
+          # the validated in-flight state which must be allowed to reach the merge queue. CLEAN alone only
+          # means mergeable and can also describe a stranded PR whose auto-merge request failed. The older
+          # PR's own merge won't re-trigger a sync (the cascade guard above), so nothing is lost by letting
+          # a genuinely in-flight one land instead.
           gh pr list --state open --json number,headRefName \
             --jq '.[] | select(.headRefName | startswith("chore/platform-sync-")) | select(.headRefName != "'"$keep"'") | .number' \
           | while read -r n; do
               [ -n "$n" ] || continue
-              status="$(gh pr view "$n" --json mergeStateStatus -q .mergeStateStatus)"
-              if [ "$status" = "CLEAN" ]; then
-                echo "PR #$n is already clean — leaving it to land instead of closing a PR about to merge."
+              action="$(gh pr view "$n" --json mergeStateStatus,autoMergeRequest \
+                | node .github/scripts/platform-sync-pr-action.mjs)"
+              if [ "$action" = "keep" ]; then
+                echo "PR #$n is clean with auto-merge armed — leaving it to land."
                 continue
               fi
               echo "Closing superseded sync PR #$n"

@@ -48,11 +48,13 @@ pushed and verified with local, remote-tracking, and PR heads equal at `6e17b5cd
 `origin/main` then advanced to `20012d1a8`. The reconciliation preserves current main's `InsertAsync` conversions
 where each insert is the only staged write, while `MessageService` deliberately retains `AddAsync` inside the
 ambient outbox unit of work because the message and `TenantActivityRecordedEvent` must commit atomically. The merged
-unit test now pins that exception explicitly.
+unit test now pins that exception explicitly. Incremental review also found that current main's platform-sync
+supersession guard treated every clean PR as in-flight. It now preserves only a clean PR with auto-merge actually
+armed, with the state decision isolated in a repository-owned helper and exercised by the required CI aggregate.
 
 ## Next Steps
 
-1. Incrementally review and restamp the reconciled current-main tail.
+1. Re-review the NAT5 correction, restamp the reconciled current-main tail, and checkpoint the completed review.
 2. Push the exact reviewed head in two legs and require fresh exact-head CI green (including every feed-restored web
    carve), complete `/merge`, follow the generated
    package/platform-sync PR to green and
@@ -87,6 +89,8 @@ unit test now pins that exception explicitly.
 - `python .agents/hooks/plan_graph.py --root <worktree>` — 0 errors and 0 warnings after the review checkpoint.
 - Current-main reconciliation: Conversations unit tests passed 46/46; the B2B AppHost build succeeded with 0 errors
   (two pre-existing vulnerability-feed availability warnings); the plan graph remained at 0 errors and 0 warnings.
+- Platform-sync supersession policy tests passed 4/4, both touched workflow YAML files parsed successfully, and the
+  helper passed Node syntax validation.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj` — restored the current
   `0.1.0-alpha.0.1120` platform pin and succeeded with 0 errors; pre-existing CS0628 and vulnerability-feed warnings
   remain.
@@ -121,6 +125,9 @@ unit test now pins that exception explicitly.
   HTTPS/IPv4 setup, and `NAT4` added the AppHost composition regression. No open findings remain.
 - Incremental range `27e51f65c..c2a69d062` (5 commits) was reviewed through the mandatory native and security layers,
   all mechanically routed standards, and the six architecture/correctness/test lenses. No findings remain.
+- Incremental range `c2a69d062..1ce24bb0b` produced NAT5: a clean-but-idle platform-sync PR could be mistaken for an
+  in-flight queued PR. The correction is implemented and locally validated; the correction tail still requires the
+  mandatory native/security re-review before the watermarks move.
 - Correctness and security watermarks are both `c2a69d062d79685c59590e4f94569949fc9d88a9`.
 - Review transport commit `cb9174ed5` is local and will be carried with the single push-checkpoint transport leg.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
