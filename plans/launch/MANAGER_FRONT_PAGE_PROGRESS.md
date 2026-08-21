@@ -12,7 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Paused: Tommy — review and explicitly authorize merging draft producer PR [#685](https://github.com/Concertable/concertable/pull/685); resume after its exact-merge `publish-fe-packages` run publishes and verifies a new `@concertable/web` alpha containing the review-route exports.
+1. Push and verify the current-main consumer reconciliation work head on draft PR [#563](https://github.com/Concertable/concertable/pull/563).
+2. Deliver the already-green review-route producer PR [#685](https://github.com/Concertable/concertable/pull/685), then verify its exact-merge `publish-fe-packages` run publishes a new `@concertable/web` alpha containing the review-route exports.
+3. Merge the resulting current `main` into #563, rebuild and push its exact head, require CI green, and complete the remaining Phase A.8 authenticated seeded venue/artist UX review before consumer delivery.
 
 ## Reviews
 
@@ -30,6 +32,19 @@ Paused: Tommy — review and explicitly authorize merging draft producer PR [#68
   are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
+
+- **Current-main handoff repair and opportunity materialization fix are locally verified.** The consumer is reconciled
+  with `origin/main` commit `cf644420b2a5217f1f7c9a4f3af06e67933aa71b`. Main's extracted
+  `AddB2BWebHost()` composition is retained with the branch-only `TenantActivityRecordedEvent` publication, and all
+  six retired dashboard fixture files remain deleted. Exact-head CI run
+  [`32425916458`](https://github.com/Concertable/concertable/actions/runs/32425916458) also exposed a real null
+  `OpportunityEntity.Venue` invariant in the branch's newly required `OpportunityDto.VenueName` mapping. Active venue
+  reads now include `Venue`, while both create paths attach the already-loaded tracked venue to new opportunities.
+  The plan graph passes with 0 errors/warnings; all five frontend package tiers and all four SPA production builds
+  pass. The focused Concert integration project builds, but its 11 selected tests cannot start because Docker is
+  unavailable in this checkout; the broader B2B solution reaches the shared Notification infrastructure project and
+  then hits a local intermediate-output copy race that does not reproduce from `main`, so exact-head CI owns both
+  environment-dependent gates.
 
 - **The exact-head consumer failure is diagnosed and its publish-first producer is green.** Draft PR #563 exact-head
   run [`32421218561`](https://github.com/Concertable/concertable/actions/runs/32421218561) deterministically failed the
