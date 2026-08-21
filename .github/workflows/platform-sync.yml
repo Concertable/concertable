@@ -138,10 +138,24 @@ jobs:
           # This PR pins the latest feed version, so every OTHER open platform-sync PR is by definition an older,
           # now-superseded bump. Close it and delete its branch so stale, conflicting sync PRs can never accumulate
           # (delete_branch_on_merge only cleans up branches that MERGE — a superseded one never does).
+          #
+          # EXCEPT one already in the merge queue: observed live — a fully green sync PR sat queued behind an
+          # unrelated PR, and this step killed it the moment a newer version appeared before its queue turn
+          # arrived. Under sustained merge traffic (a new version always available before any one sync PR's
+          # ~10-15min CI+queue turn completes), that closes every sync PR forever — a livelock, not "picking
+          # the newest." A queued PR is already validated and about to land; closing it only restarts the
+          # clock. Leave it be — its own merge won't re-trigger a sync (the cascade guard above), so main will
+          # briefly pin a version slightly behind latest, and the very next non-sync api/** merge opens a fresh
+          # sync for whatever is newest by then anyway. Nothing is lost by letting an in-flight one land.
           gh pr list --state open --json number,headRefName \
             --jq '.[] | select(.headRefName | startswith("chore/platform-sync-")) | select(.headRefName != "'"$keep"'") | .number' \
           | while read -r n; do
               [ -n "$n" ] || continue
+              queued="$(gh api graphql -f query='query($n:Int!){repository(owner:"Concertable",name:"concertable"){pullRequest(number:$n){isInMergeQueue}}}' -F n="$n" --jq '.data.repository.pullRequest.isInMergeQueue')"
+              if [ "$queued" = "true" ]; then
+                echo "PR #$n is already in the merge queue — leaving it to land instead of closing a PR that's about to merge."
+                continue
+              fi
               echo "Closing superseded sync PR #$n"
               gh pr close "$n" --delete-branch \
                 --comment "Superseded by the sync to \`${VERSION}\`. Only one platform-sync PR is ever live."
