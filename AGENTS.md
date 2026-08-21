@@ -61,6 +61,13 @@ explicitly limits it to a named PR or stage.
 - **Mobile apps (`app/mobile/`)** — [`app/mobile/AGENTS.md`](./app/mobile/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
+**Codex — one-time plugin setup.** Claude Code resolves the marketplaces above automatically (declared
+project-scoped in `.claude/settings.json`); Codex has no repo-committable equivalent (plugin config is
+still user-scoped upstream). If `codex plugin marketplace list` doesn't show `agent-standards`,
+`dotagents` and `react-agents`, run `./scripts/setup-codex-plugins.ps1` once — idempotent, safe to
+re-run. Skipping this makes `skill_router.py` report every routed skill as "NOT INSTALLED" instead of
+loading it.
+
 ## Git branch — branch first, then prove the worktree is the right one
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `main` or an unrelated branch. Naming, casing, where to branch from, and when a refactor stays on its feature branch are the `git-branching` skill.
