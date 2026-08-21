@@ -101,7 +101,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | # | Node | Size | Destination | Leaves behind |
 |---|---|---|---|---|
 | ~~N1~~ **done** | `.agents/skills/` — all 28 skills moved (6 of 6 families) | 3,285 lines | platform-wide, across `agent-process` + `dotnet` plugins | per-repo values: script paths, suite names |
-| N2 | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* + a generator | the table itself: per-repo data |
+| ~~N2~~ **done** | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* (`SKILL_ROUTES.md`, skill `skill-routes`) + a generator (`gen_skill_routes.py`) | the table itself: per-repo data; `_comment` repointed |
 | N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
 | N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
 | N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
@@ -109,9 +109,9 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
 | N8 | *(gate)* prove one carved service standalone | — | — | — |
 
-**One node per slice, in this order.** N1 first: every hub below it points *at* skills, so re-homing a hub
-before its targets have addresses writes pointers to nowhere. N2 is independent and can run in parallel.
-N3–N6 follow N1. N7 waits on an external decision. N8 is last and is the only evidence.
+**One node per slice, in this order.** ~~N1 first~~ and ~~N2~~ are **done**: every hub below N1 points *at*
+skills, so re-homing a hub before its targets have addresses writes pointers to nowhere; N2 was independent
+and ran alongside. N3–N6 + N7a follow. N7b waits on an external decision. N8 is last and is the only evidence.
 
 ### N1 — the 28 workflow skills (3,285 lines)
 
@@ -180,7 +180,22 @@ instead of this repo's and junctioned sixteen untracked skill directories into a
 a stale copy of a skill that now ships from the plugin. `sync-checkout` and `open-worktree` resolve it, and
 `git/WORKTREE.md` states the junction hazard as a rule.
 
-### N2 — the route table's convention (37 rows)
+### N2 — the route table's convention (37 rows) ✅ **done**
+
+**Shipped** (producer agent-standards #12, consumer this repo). The convention landed as
+`standards/process/SKILL_ROUTES.md` (skill `skill-routes`), and the "template or generator" question was
+decided — **generator**: `.agents/gen_skill_routes.py`, a carve-time tool (the routing-table analog of
+`vendor-hooks.ps1`) that carries the canonical rows once and emits a repo's table for its `--kind`,
+re-anchoring the one `.cs` area floor and dropping the other stack's rows. Its gate test replays a simulated
+carved dotnet-service tree through the real matcher; the strongest check is that `--kind monorepo` reproduces
+this repo's live 37-row table exactly. The consumer only repoints the table's `_comment` at the convention.
+
+**Two corrections to the framing below.** (1) `^plans/` is **not** an area floor that "ceases to exist" — it,
+`^reviews/` and `^.agents/skills/` name directories every repo has, so they port verbatim; only `^api/` and
+`^app/` are location floors, and only the `.cs` one re-anchors for a .NET service (the react floor and rows
+are dropped). (2) The react rows carry `app/` *mid-pattern*, not just as a prefix, so a carved frontend
+repo's table is genuinely blocked on the frontend carve seam (§6/§4c) — the generator refuses `--kind
+react-app` rather than emit wrong rows, an input added to N8's dependencies.
 
 The mechanism already splits the way §6 requires: `agent-standards` vendors `skill_router.py` through
 `vendor-hooks.ps1` (provenance-hashed) and ships **no** table, so the hook is platform-wide procedure and
