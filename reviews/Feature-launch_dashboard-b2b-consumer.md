@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`  _(2026-08-16)_
-**Security-reviewed up to commit:** `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`  _(2026-08-16)_
+**Reviewed up to commit:** `bb0e6f3f4b911066a9982e85e40da7e541bf1df7`  _(2026-08-21)_
+**Security-reviewed up to commit:** `bb0e6f3f4b911066a9982e85e40da7e541bf1df7`  _(2026-08-21)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -94,3 +94,13 @@ serialization/HATEOAS ownership, frontend mutation/query contracts, seeding impl
 No open findings remain. The review covered the current net branch diff `35b114d4a..7529c5761`, including correctness,
 security and tenant scoping, Result terminals, serialization/HATEOAS, module/repository boundaries, frontend contracts,
 seeding implications, and focused test coverage.
+
+## Final current-main review - 2026-08-21
+
+No issues found. The incremental review covered `7529c5761..bb0e6f3f4`, with focused inspection of every
+conflict resolution: controller routes and concrete response mapping, module and host registrations, dashboard service
+composition, the retired fixture deletion, opportunity navigation materialization, and the review-route provider's
+customer-compatible default with explicit Venue and Artist overrides. The security pass rechecked tenant scoping,
+manager permissions, and authenticated controller boundaries. Local validation passed the plan graph, all five
+frontend package tiers, 31 shared-web tests, and all four SPA production builds. Environment-dependent integration
+and end-to-end coverage remains assigned to exact-head CI.
