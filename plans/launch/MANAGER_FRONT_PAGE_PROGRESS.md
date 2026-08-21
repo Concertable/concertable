@@ -12,9 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Push and verify the current-main consumer reconciliation work head on draft PR [#563](https://github.com/Concertable/concertable/pull/563).
-2. Deliver the already-green review-route producer PR [#685](https://github.com/Concertable/concertable/pull/685), then verify its exact-merge `publish-fe-packages` run publishes a new `@concertable/web` alpha containing the review-route exports.
-3. Merge the resulting current `main` into #563, rebuild and push its exact head, require CI green, and complete the remaining Phase A.8 authenticated seeded venue/artist UX review before consumer delivery.
+1. Deliver the already-green review-route producer PR [#685](https://github.com/Concertable/concertable/pull/685), then verify its exact-merge `publish-fe-packages` run publishes a new `@concertable/web` alpha containing the review-route exports.
+2. Merge the resulting current `main` into #563, rebuild and push its exact head, require CI green, and complete the remaining Phase A.8 authenticated seeded venue/artist UX review before consumer delivery.
 
 ## Reviews
 
@@ -32,6 +31,13 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
+
+- **Reconciled consumer work-head push verified.** Starting remote and PR head
+  `d59bc7ac9a73020babe5f870f493bb30501e9fa9` advanced to merge work head
+  `4d8e3dac50ab291882e8091329952f7a349895dc`; fetch verification proved local HEAD, the remote-tracking branch, and
+  draft PR #563 all equal. Exact-head CI run
+  [`32472741901`](https://github.com/Concertable/concertable/actions/runs/32472741901) has started, but its standalone
+  frontend carve result remains delivery-gated on producer PR #685's package publication.
 
 - **Current-main handoff repair and opportunity materialization fix are locally verified.** The consumer is reconciled
   with `origin/main` commit `cf644420b2a5217f1f7c9a4f3af06e67933aa71b`. Main's extracted
