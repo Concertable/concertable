@@ -236,19 +236,23 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: move the single-owner Opportunity and Deal API suites and their request helpers out of the
-Concert integration project.
-Allowed scope: `OpportunityApiTests`, `OpportunityRequestBuilders`, `DealApiTests`, their owning project
-references/friend declarations, and removal of the stale Concert namespaces and references they leave
-behind.
-Exit gate: the Opportunity and Deal integration projects build with their moved suites, the remaining
-Concert integration project has no Opportunity/Deal test namespaces or references owned only by those
-suites, the module integration-project boundary guard passes, the plan graph reports zero errors/warnings,
-and `git diff --check` passes. Commit and push this bounded single-owner move before the Application and
-Booking migrations.
+Active slice: move the single-owner Application API and terminal-decision suites out of Concert.
+Allowed scope: `ApplicationApiTests`, `ApplicationWithdrawRejectApiTests`, Application-owned request/test
+helpers, their own-module friend declarations and project references, and the stale Concert metadata those
+moves make removable.
+Exit gate: the Application integration project builds with the moved suites, the remaining Concert
+integration project retains its 18-error pre-migration frontier without Application API or terminal-decision
+test classes, the module integration-project boundary guard passes, the plan graph reports zero
+errors/warnings, and `git diff --check` passes. Commit and push this bounded Application move before
+splitting mixed Application/Booking/process suites.
 
 ## Completed work
 
+- Moved `OpportunityApiTests` and its canonical request builder into Opportunity integration tests and
+  moved `DealApiTests` into Deal integration tests. Both suites now use their owning fixtures and current
+  module contracts; Concert has no Deal or Opportunity test namespace/class. The temporary lifecycle
+  request helper left for not-yet-moved journey tests is explicitly Application-local and is removed when
+  those consumers move.
 - Published integration-test topology checkpoint `36e460bd5`; local HEAD, the remote branch, and PR #633
   `headRefOid` all equalled `36e460bd57920cb9c94abc3e5e512a69fe2067d8`. Application, Booking, Opportunity, Deal, and B2B
   Process integration projects now have local fixtures, collections, tier metadata, guidance siblings,
@@ -364,6 +368,9 @@ Booking migrations.
 
 ## Verification
 
+- Opportunity and Deal single-owner move: both owning integration projects build with 0 warnings and 0
+  errors. The reduced Concert integration project remains at exactly the prior 18 known compile errors,
+  with no new diagnostic. The Concert ownership search finds no Deal/Opportunity test namespace or class.
 - Integration-test topology scaffold: Application, Booking, Opportunity, Deal, and B2B Process integration
   projects each build with 0 errors; the focused `IntegrationTestBoundaryTests` architecture guard passes
   1/1. Application, Opportunity, Deal, and Process report 0 warnings; Booking's clean incremental
