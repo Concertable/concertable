@@ -45,11 +45,11 @@ loading no agent-standards plugin, could no longer resolve if moved.
    `plans/**`) → the `/merge-docs` admin-merge path, same as #687. Open this branch's PR, then:
    ```bash
    gh -R Concertable/agent-standards pr merge 11  --merge --delete-branch
-   gh -R Concertable/concertable    pr edit  <n>  --add-label skip-e2e
-   gh -R Concertable/concertable    pr merge <n>  --merge --admin
+   gh -R Concertable/concertable    pr edit  693 --add-label skip-e2e
+   gh -R Concertable/concertable    pr merge 693 --merge --admin
    ```
    Then `git checkout main && git pull --ff-only origin main` and close this worktree with
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`.
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 693 -PlanManaged`.
 
    **Merge authorization:** Tommy runs the merges (or approves interactively). This session decided **not**
    to add a blanket `gh pr merge` permission rule — the classifier stays the hard gate; Tommy approves each
