@@ -37,13 +37,15 @@ The work-head push advanced the remote/PR from `0c09697b9906fc3f34a566a25fdac477
 reviewed work head. Review transport `b741b6123` and push checkpoint `77b23dfc4` were then transported and verified
 with local, remote-tracking, and PR heads equal. PR #563 is ready for review and current with `origin/main`
 `a364bebbd`. Fresh CI run `32521884372` failed `carve-fe (web/b2b/venue)` at job `96895902261`: the standalone
-carve omitted `app/scripts/vite-development-https.ts`, so Venue's shared helper import could not resolve on Linux.
+carve flattened the SPA subtree and omitted `app/scripts/vite-development-https.ts`, so Venue's legitimate
+app-relative helper import could not resolve on Linux. The correction now preserves the isolated `app/<surface>`
+layout, archives the shared helper from the same Git tree, covers all five web SPAs with a no-network regression,
+and adds Admin to the authoritative carve matrix.
 
 ## Next Steps
 
-1. Repair the frontend carve dependency closure for the shared Vite HTTPS helper, run the affected standalone carve
-   gates locally, review the correction, and push a fresh exact head.
-2. Require fresh exact-head CI green, complete `/merge`, follow the generated package/platform-sync PR to green and
+1. Commit and incrementally review the frontend carve correction, address every finding, then push a fresh exact head.
+2. Require fresh exact-head CI green (including every feed-restored web carve), complete `/merge`, follow the generated package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
    -PlanManaged`.
 3. From current `origin/main`, record terminal delivery evidence and delete the plan and ledger together in the
@@ -78,6 +80,11 @@ carve omitted `app/scripts/vite-development-https.ts`, so Venue's shared helper 
 - `npm run build --workspace @concertable/web` followed by Customer, Venue, Artist, Business, and Admin web builds —
   all succeeded; existing chunk-size warnings only.
 - `npm test --workspace @concertable/web` — 5 files and 31 tests passed after the review correction.
+- `npm run test:boundaries` — 7/7 frontend-tooling tests passed, including all five web carve layouts resolving the
+  shared Vite HTTPS helper; `npm run lint:boundaries` passed every workspace boundary.
+- A full local Venue feed restore reached GitHub Packages but the workstation `gh` token lacks `read:packages` and
+  received 403. No credential or gate was weakened; exact-head CI carries the package-scoped token and remains the
+  authoritative standalone restore/build verification.
 - Live readiness probes returned Auth discovery 200 with Venue CORS and B2B `/api/auth/me` preflight with the same
   allowed origin.
 - Browser Phase A.8 — passed as recorded under Completed work. The attempted Venue checkout correctly exposed a
@@ -94,7 +101,8 @@ carve omitted `app/scripts/vite-development-https.ts`, so Venue's shared helper 
 - Incremental ranges through `c531e4f1a..27e51f65c` were reviewed through both mandatory layers and all mechanically
   routed current-main standards. `NAT2` and `NAT3` added Admin Auth/CORS wiring, `CI5` moved Admin onto the shared
   HTTPS/IPv4 setup, and `NAT4` added the AppHost composition regression. No open findings remain.
-- Correctness and security watermarks are both `27e51f65c422959ebda09893abeac603c6fb5a1f`.
+- Correctness and security watermarks are both `27e51f65c422959ebda09893abeac603c6fb5a1f`; the carve correction awaits
+  the required incremental review before push.
 - Review transport `b741b6123` and push checkpoint `77b23dfc4` are verified on the remote and PR. PR #563 is ready,
   current with base. Fresh CI run `32521884372`, job `96895902261`, failed because the Venue carve did not include
   `app/scripts/vite-development-https.ts`; this is a real dependency-closure failure and will not be retried unchanged.
@@ -107,6 +115,9 @@ carve omitted `app/scripts/vite-development-https.ts`, so Venue's shared helper 
 - Vite binds to `127.0.0.1`; local development no longer depends on IPv6 localhost resolution.
 - Shared `@concertable/web` source changes require rebuilding that workspace before standalone SPAs consume its `dist`
   exports.
+- Frontend carves preserve the real `app/<surface>` hierarchy inside an otherwise isolated temporary root and archive
+  explicit shared build inputs from the same Git tree. Flattening a surface cannot support legitimate app-relative
+  build-tool imports. Admin is a first-class web carve alongside Customer, Venue, Artist, and Business.
 - Every B2B web SPA is now asserted from the composed AppHost model against its development port and backend origin;
   authenticated surfaces additionally assert redirect, logout, and Auth CORS values.
 - Booked dev applications must have contracts because production writes the contract aggregate directly during
