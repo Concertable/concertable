@@ -248,7 +248,9 @@ splitting mixed Application/Booking/process suites.
 
 ## Completed work
 
-- Moved `ApplicationApiTests` and `ApplicationWithdrawRejectApiTests` into Application integration tests.
+- Published Application integration ownership checkpoint `9b28ce842`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `9b28ce842b8143b74c9cbf56e75c866a7a62b69c`. Moved
+  `ApplicationApiTests` and `ApplicationWithdrawRejectApiTests` into Application integration tests.
   Both suites use `ApplicationApiFixture` and the module-owned Application read stance; the withdrawal
   scenario observes Opportunity reopening through HTTP with a local boundary projection rather than an
   Opportunity Domain/Infrastructure reference.
