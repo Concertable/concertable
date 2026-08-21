@@ -12,6 +12,8 @@ Two products, three tiers of sharing:
   app does not depend on it. Rules: [`b2b/shared/AGENTS.md`](./b2b/shared/AGENTS.md).
 - per-app `src/` — everything only that site can do.
 
-After making any changes to a web app or shared code, run the four web builds before reporting done —
-all four green is the boundary gate, and `app-tiers` carries the commands, the business app's vite-only
-build and the `routeTree.gen.ts` regeneration step.
+After making any changes to a web app or shared code, run the five web builds before reporting done —
+all five green is the boundary gate, and `app-tiers` carries the commands, the business app's vite-only
+build and the `routeTree.gen.ts` regeneration step. **`app-tiers` (external `Concertable/agent-standards`
+plugin) still enumerates four SPAs as of this merge — it predates this branch's `web-admin` addition and
+needs a follow-up update there to add the fifth.**
