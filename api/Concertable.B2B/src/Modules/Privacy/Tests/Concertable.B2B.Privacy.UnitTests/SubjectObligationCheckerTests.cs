@@ -6,15 +6,15 @@ using Moq;
 
 namespace Concertable.B2B.Privacy.UnitTests;
 
-public sealed class ErasureGateTests
+public sealed class SubjectObligationCheckerTests
 {
     private readonly Mock<ITenantModule> tenantModule = new();
     private readonly Mock<IConcertModule> concertModule = new();
-    private readonly ErasureGate gate;
+    private readonly SubjectObligationChecker obligationChecker;
 
-    public ErasureGateTests()
+    public SubjectObligationCheckerTests()
     {
-        this.gate = new ErasureGate(tenantModule.Object, concertModule.Object);
+        this.obligationChecker = new SubjectObligationChecker(tenantModule.Object, concertModule.Object);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public sealed class ErasureGateTests
         tenantModule.Setup(m => m.GetMembershipsAsync(subjectId, It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
-        var result = await gate.HasLiveObligationsAsync(subjectId);
+        var result = await obligationChecker.HasLiveObligationsAsync(subjectId);
 
         Assert.False(result);
         concertModule.Verify(
@@ -42,7 +42,7 @@ public sealed class ErasureGateTests
         concertModule.Setup(m => m.HasLiveObligationsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var result = await gate.HasLiveObligationsAsync(subjectId);
+        var result = await obligationChecker.HasLiveObligationsAsync(subjectId);
 
         Assert.True(result);
     }
@@ -56,7 +56,7 @@ public sealed class ErasureGateTests
         concertModule.Setup(m => m.HasLiveObligationsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var result = await gate.HasLiveObligationsAsync(subjectId);
+        var result = await obligationChecker.HasLiveObligationsAsync(subjectId);
 
         Assert.False(result);
     }

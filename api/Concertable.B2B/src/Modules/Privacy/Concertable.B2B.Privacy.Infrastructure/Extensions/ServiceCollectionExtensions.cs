@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ErasureStateMachine>();
         services.AddScoped<ISubjectErasureRepository, SubjectErasureRepository>();
-        services.AddScoped<IErasureGate, ErasureGate>();
+        services.AddScoped<ISubjectObligationChecker, SubjectObligationChecker>();
         services.AddScoped<ISubjectErasureService, SubjectErasureService>();
         services.AddScoped<ISubjectExporter, SubjectExporter>();
 

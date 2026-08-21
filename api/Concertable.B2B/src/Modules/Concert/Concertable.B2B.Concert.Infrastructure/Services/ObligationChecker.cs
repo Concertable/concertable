@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.B2B.Concert.Infrastructure.Services;
 
-internal sealed class ConcertObligationGate : IConcertObligationGate
+internal sealed class ObligationChecker : IObligationChecker
 {
     // Application states with no in-flight financial obligation — erasing a subject while an application sits in
-    // any of these breaks no settlement. Every other (mid-settlement) state defers erasure, so a future state
-    // added to the lifecycle defaults to "has an obligation" until it is deliberately classified here.
+    // any of these breaks no settlement. Every other (mid-settlement) state is a blocking obligation, so a
+    // future lifecycle state defaults to "blocking" until it is deliberately classified here.
     private static readonly LifecycleState[] SettledStates =
     [
         LifecycleState.Applied,
@@ -22,13 +22,13 @@ internal sealed class ConcertObligationGate : IConcertObligationGate
     private readonly IConcertReadDbContext context;
     private readonly TimeProvider timeProvider;
 
-    public ConcertObligationGate(IConcertReadDbContext context, TimeProvider timeProvider)
+    public ObligationChecker(IConcertReadDbContext context, TimeProvider timeProvider)
     {
         this.context = context;
         this.timeProvider = timeProvider;
     }
 
-    public async Task<bool> HasLiveObligationsAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default)
+    public async Task<bool> HasLiveAsync(IReadOnlyCollection<Guid> tenantIds, CancellationToken ct = default)
     {
         if (tenantIds.Count == 0)
             return false;

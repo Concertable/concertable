@@ -23,31 +23,25 @@ public sealed class SubjectRightsApiTests : IAsyncLifetime
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() { fixture.DetachOutput(); return Task.CompletedTask; }
 
-    private async Task<T> InScopeAsync<T>(Func<IServiceProvider, Task<T>> body)
-    {
-        using var scope = fixture.Services.CreateScope();
-        return await body(scope.ServiceProvider);
-    }
-
     #region RequestErasure
 
     [Fact]
     public async Task RequestErasure_CleanSubject_AnonymisesAndCompletes()
     {
         // ArtistManagerNoArtist registered but never set up an organisation: a tenant it solely owns, no
-        // concerts, so no live obligation — the gate clears and erasure runs to completion.
+        // concerts, so no live obligation — the check clears and erasure runs to completion.
         var subject = fixture.SeedState.ArtistManagerNoArtist;
 
-        var result = await InScopeAsync(sp =>
+        var result = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<ISubjectErasureService>().RequestErasureAsync(subject.Id));
 
         Assert.Equal(ErasureState.Completed, result.State);
 
-        var memberships = await InScopeAsync(sp =>
+        var memberships = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<ITenantModule>().GetMembershipsAsync(subject.Id));
         Assert.Empty(memberships);
 
-        var user = await InScopeAsync(sp =>
+        var user = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<IUserModule>().ExportAsync(subject.Id));
         Assert.True(user.TryGetValue(out var fragment));
         Assert.Contains("erased", fragment.Email);
@@ -60,17 +54,17 @@ public sealed class SubjectRightsApiTests : IAsyncLifetime
         // financial obligation — so erasure must fail closed to Deferred and leave every row intact.
         var subject = fixture.SeedState.VenueManager1;
 
-        var result = await InScopeAsync(sp =>
+        var result = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<ISubjectErasureService>().RequestErasureAsync(subject.Id));
 
         Assert.Equal(ErasureState.Deferred, result.State);
         Assert.NotNull(result.DeferralReason);
 
-        var memberships = await InScopeAsync(sp =>
+        var memberships = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<ITenantModule>().GetMembershipsAsync(subject.Id));
         Assert.NotEmpty(memberships);
 
-        var user = await InScopeAsync(sp =>
+        var user = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<IUserModule>().ExportAsync(subject.Id));
         Assert.True(user.TryGetValue(out var fragment));
         Assert.DoesNotContain("erased", fragment.Email);
@@ -99,7 +93,7 @@ public sealed class SubjectRightsApiTests : IAsyncLifetime
     {
         var subject = fixture.SeedState.VenueManager1;
 
-        var bundle = await InScopeAsync(sp =>
+        var bundle = await fixture.Services.RunScopedAsync(sp =>
             sp.GetRequiredService<ISubjectExporter>().ExportAsync(subject.Id));
 
         Assert.Equal(subject.Id, bundle.SubjectId);

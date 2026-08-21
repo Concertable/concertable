@@ -8,7 +8,7 @@ internal sealed class SubjectErasureService : ISubjectErasureService
     private const string PendingFinancialObligations = "PendingFinancialObligations";
 
     private readonly ISubjectErasureRepository repository;
-    private readonly IErasureGate gate;
+    private readonly ISubjectObligationChecker obligationChecker;
     private readonly ErasureStateMachine stateMachine;
     private readonly IUserModule userModule;
     private readonly ITenantModule tenantModule;
@@ -18,7 +18,7 @@ internal sealed class SubjectErasureService : ISubjectErasureService
 
     public SubjectErasureService(
         ISubjectErasureRepository repository,
-        IErasureGate gate,
+        ISubjectObligationChecker obligationChecker,
         ErasureStateMachine stateMachine,
         IUserModule userModule,
         ITenantModule tenantModule,
@@ -27,7 +27,7 @@ internal sealed class SubjectErasureService : ISubjectErasureService
         ILogger<SubjectErasureService> logger)
     {
         this.repository = repository;
-        this.gate = gate;
+        this.obligationChecker = obligationChecker;
         this.stateMachine = stateMachine;
         this.userModule = userModule;
         this.tenantModule = tenantModule;
@@ -41,7 +41,7 @@ internal sealed class SubjectErasureService : ISubjectErasureService
         var request = SubjectErasureRequestEntity.Create(subjectId, timeProvider.GetUtcNow().UtcDateTime);
         await repository.InsertAsync(request, ct);
 
-        if (await gate.HasLiveObligationsAsync(subjectId, ct))
+        if (await obligationChecker.HasLiveObligationsAsync(subjectId, ct))
         {
             Advance(request, ErasureTrigger.Defer);
             request.RecordDeferral(PendingFinancialObligations);

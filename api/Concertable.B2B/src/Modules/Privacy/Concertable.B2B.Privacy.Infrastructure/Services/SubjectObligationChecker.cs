@@ -1,11 +1,11 @@
 namespace Concertable.B2B.Privacy.Infrastructure.Services;
 
-internal sealed class ErasureGate : IErasureGate
+internal sealed class SubjectObligationChecker : ISubjectObligationChecker
 {
     private readonly ITenantModule tenantModule;
     private readonly IConcertModule concertModule;
 
-    public ErasureGate(ITenantModule tenantModule, IConcertModule concertModule)
+    public SubjectObligationChecker(ITenantModule tenantModule, IConcertModule concertModule)
     {
         this.tenantModule = tenantModule;
         this.concertModule = concertModule;

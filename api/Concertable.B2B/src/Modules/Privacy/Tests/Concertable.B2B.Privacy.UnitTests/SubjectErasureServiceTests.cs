@@ -13,7 +13,7 @@ namespace Concertable.B2B.Privacy.UnitTests;
 public sealed class SubjectErasureServiceTests
 {
     private readonly Mock<ISubjectErasureRepository> repository = new();
-    private readonly Mock<IErasureGate> gate = new();
+    private readonly Mock<ISubjectObligationChecker> obligationChecker = new();
     private readonly Mock<IUserModule> userModule = new();
     private readonly Mock<ITenantModule> tenantModule = new();
     private readonly Mock<IConversationsModule> conversationsModule = new();
@@ -30,7 +30,7 @@ public sealed class SubjectErasureServiceTests
 
         this.service = new SubjectErasureService(
             repository.Object,
-            gate.Object,
+            obligationChecker.Object,
             new ErasureStateMachine(),
             userModule.Object,
             tenantModule.Object,
@@ -43,7 +43,7 @@ public sealed class SubjectErasureServiceTests
     public async Task RequestErasureAsync_NoObligations_CompletesAndRunsTheFanOut()
     {
         var subjectId = Guid.NewGuid();
-        gate.Setup(g => g.HasLiveObligationsAsync(subjectId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        obligationChecker.Setup(g => g.HasLiveObligationsAsync(subjectId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await service.RequestErasureAsync(subjectId);
 
@@ -58,7 +58,7 @@ public sealed class SubjectErasureServiceTests
     public async Task RequestErasureAsync_LiveObligation_DefersWithoutAnonymising()
     {
         var subjectId = Guid.NewGuid();
-        gate.Setup(g => g.HasLiveObligationsAsync(subjectId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        obligationChecker.Setup(g => g.HasLiveObligationsAsync(subjectId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await service.RequestErasureAsync(subjectId);
 
@@ -74,7 +74,7 @@ public sealed class SubjectErasureServiceTests
     public async Task RequestErasureAsync_NoObligations_ResolvesEmailBeforeErasingTheUserRow()
     {
         var subjectId = Guid.NewGuid();
-        gate.Setup(g => g.HasLiveObligationsAsync(subjectId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        obligationChecker.Setup(g => g.HasLiveObligationsAsync(subjectId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         var sequence = new List<string>();
         userModule.Setup(u => u.GetByIdAsync(subjectId))
             .ReturnsAsync(new UserDto { Id = subjectId, Email = "subject@test.invalid" })
