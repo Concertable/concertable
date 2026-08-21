@@ -13,7 +13,7 @@
 
 ## Findings
 
-- [ ] **NAT1 — MEDIUM — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentSessionService.cs:139`
+- [x] **NAT1 — MEDIUM — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentSessionService.cs:139`
   Concurrent duplicate retry requests can both observe a cancellable predecessor; after the first request cancels it, the second treats the provider's already-canceled response as `ProviderUnavailable` and returns before repository reservation can replay the winner's successor. Make predecessor cancellation convergent by re-reading after cancellation failure and accepting a confirmed canceled state before reserving or replaying the successor.
 - [ ] **SEC1 — HIGH — security** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentSessionService.cs:116`
   Retry authorization accepts either participant, but a successful retry returns the payer's PaymentIntent client secret, CustomerSession secret, and Stripe customer token. Require the retry owner to equal the persisted payer owner; keep participant-wide authorization only on the secret-free status read, and test that a payee retry returns the indistinguishable unknown-operation failure without calling Stripe.
