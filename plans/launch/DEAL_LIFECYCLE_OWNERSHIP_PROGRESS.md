@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through typed Application checkout-error checkpoint
-  `00e5833d12195be9a7ac53e3d0e8f3b4baff1115`. Starting remote head for that checkpoint was
-  `4616fc8261172d59a50262d6ca1a4e59cf86ce1b`; local, remote-tracking, and PR heads were verified equal.
+  through current-main product-doc relocation merge checkpoint
+  `c526dc83e2ca7eee5442a8cbf59ce2dfe4276123`. Starting remote head for that checkpoint was
+  `c0d1b3e0c946723f2bc6d218b458e28e7d0c7988`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -21,7 +21,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-22 through `origin/main` head `685f66ec9`
+- Last reconciled: 2026-08-22 through `origin/main` head `1452b5b8b`
 
 ## Current state
 
@@ -318,6 +318,10 @@ recovery.
 
 ## Completed work
 
+- Reconciled `origin/main` head `1452b5b8b`, whose six-commit delta relocates repository-wide product
+  narrative into `Concertable/docs`. The docs-only merge is conflict-free and does not touch the lifecycle
+  implementation, test topology, or parallel state-machine slice. Merge checkpoint `c526dc83e`; the plan
+  graph reports 0 errors and 0 warnings, and the merge diff check passes.
 - Exact-head CI run `32579210710` passed the solution build and exposed one Shared API architecture
   failure: Application's newly owned checkout slice still threw HTTP exceptions for ordinary not-found,
   missing-tenant, and unsupported-deal outcomes. `ApplicationCheckoutError` now closes those failures and
