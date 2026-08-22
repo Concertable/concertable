@@ -12,6 +12,20 @@ failures. Hoist that primitive to the shared generic DataAccess repository under
 `TryInsertAsync`, matching its `bool` Try-pattern return) so it coexists with `InsertAsync`, and remove
 both module-local copies. Do the hoist as a published-package cutover.
 
+**Progress — PR1 (`Chore/TechDebt-dataaccess-tryinsert`) landed the producer half:** `TryInsertAsync`
+exists as a `WriteRepositoryExtensions` extension on `IWriteRepository<TEntity>`
+(`Concertable.DataAccess.Infrastructure/Extensions/WriteRepositoryExtensions.cs`) — an extension rather
+than a new interface member or a third hand-copied implementation on `WriteRepository<TEntity>` /
+`Repository<TEntity, TKey>`, since it needs nothing but the two members (`AddAsync` +
+`SaveChangesAsync`) those bases already expose publicly; adding it as a class member would have meant
+writing the same try/catch twice, compounding the "Repository bases repeat CRUD" item in
+[`api/TECH_DEBT.md`](../TECH_DEBT.md) instead of avoiding it. Unit-covered in `RepositoryTests`.
+**Remaining — PR2 (delivery-gated on the republish + `platform-sync` pin bump):** migrate
+`PreferenceRepository.InsertAsync` and `ConcertReviewRepository.InsertAsync` (Customer) to call the
+shared `TryInsertAsync` and delete both module-local copies — `ConcertReviewRepository` doesn't inherit
+`Repository<TEntity>`, so it calls the extension directly off its own `context`-backed CRUD, not
+through inheritance.
+
 ## Standardize the duplicate-aware save (distinct from `TryInsertAsync` above)
 
 `Concertable.B2B.Admin.Infrastructure.Services.AdminService.TrySaveGrantAsync` hand-rolls the same
@@ -20,7 +34,26 @@ duplicate-aware shape as the `TryInsertAsync` primitive above — `SaveChangesAs
 *save* of already-tracked changes (a race between two calls granting the same admin), not an insert
 of a fresh entity. One call site today, so not worth hoisting yet; once a second one shows up,
 generalize both into one `TrySaveAsync`/`TryInsertAsync` pair on the shared repository, with the
-duplicate-branch behavior as a caller-supplied delegate rather than a fixed `false`.
+duplicate-branch behavior as a caller-supplied delegate rather than a fixed `false`. Same shape as
+`TryInsertAsync`: `TrySaveAsync` needs nothing but the already-public `SaveChangesAsync`, so it belongs
+in `WriteRepositoryExtensions` as an extension too, not a member hand-copied onto
+`WriteRepository<TEntity>` / `Repository<TEntity, TKey>` — bolting it onto either base directly would
+reintroduce the exact duplication `TryInsertAsync` was hoisted to avoid.
+
+## `RepositoryTests` repeats `InMemoryDatabaseRoot`/`databaseName` arrange lines per test
+
+Every database-touching test in `Concertable.DataAccess.UnitTests/RepositoryTests.cs` opens with the
+same two lines — `var root = new InMemoryDatabaseRoot(); var databaseName = Guid.NewGuid().ToString();`
+— before calling `CreateContext`/`CreateReadContext`. xUnit gives every `[Fact]` a fresh instance of the
+test class, so this pair is safe to hoist into constructor-initialized fields without any cross-test
+isolation risk; it would just sit unused (cheaply) in the handful of reflection-only tests
+(`Repository_ContextField_UsesCombinedCapabilityOnly` and its two siblings) that touch no database at
+all. Not fixed here because the pair repeats across essentially the whole file — a one-line change would
+be pure churn; the fix reads better as one pass over every test in the file, not a drive-by edit.
+
+**Resolves when:** `root` and `databaseName` become constructor-initialized fields (or a small
+`private (InMemoryDatabaseRoot, string) NewDatabase()` helper if a fresh pair is ever needed mid-test),
+and every existing test's arrange section drops its own copy of those two lines.
 
 ## `IReadRepository.GetByIdAsync` should not be `virtual`
 

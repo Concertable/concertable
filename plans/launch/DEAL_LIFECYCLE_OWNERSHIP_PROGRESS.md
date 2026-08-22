@@ -21,7 +21,8 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-22 after merging `origin/main` at `a091f5342` into the integration-topology closure
+- Last reconciled: 2026-08-22 after resolving and validating the dashboard landing from `origin/main`
+  at `223e20a75`; `origin/main` subsequently advanced to `26645ecd1` and is the next reconciliation checkpoint
 
 ## Current state
 
@@ -310,15 +311,24 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: reconcile the newly advanced `origin/main` into published migration work head `7eb5e7a88`,
-repeat the B2B build and focused topology gates, then remote-validate the resulting exact PR #633 head.
-Do not edit aggregate transition tables or state-machine implementation files owned by the parallel
-state-machine slice. When CI is green, the topology correction is terminal and the parallel state-machine
-slice owns the next implementation change. Do not resume the superseded file-by-file Concert compile
-recovery.
+Active slice: checkpoint the validated `223e20a75` dashboard reconciliation, merge the subsequent
+`origin/main` head `26645ecd1`, repeat the B2B build and focused topology gates, then remote-validate the
+resulting exact PR #633 head. Do not edit aggregate transition tables or state-machine implementation files
+owned by the parallel state-machine slice. When CI is green, the topology correction is terminal and the
+parallel state-machine slice owns the next implementation change. Do not resume the superseded file-by-file
+Concert compile recovery.
 
 ## Completed work
 
+- Resolved the dashboard landing from `origin/main` at `223e20a75` without restoring stale Concert-owned
+  Application or Opportunity services, repositories, mappers, projections, tests, or persistence. Application
+  and Opportunity now own their dashboard endpoints and use Contracts-only cross-module facts; a narrow
+  Application-owned metrics provider keeps the production dependency graph acyclic. Booking no longer grants
+  Concert test assemblies internal access. Application and Concert integration projects build with 0 warnings
+  and 0 errors; the complete B2B Release solution builds with 0 errors; architecture tests pass 12/12,
+  composition tests pass 6/6, Opportunity unit tests pass 3/3, all four carved EF contexts report no pending
+  model changes, the plan graph reports 0 errors and 0 warnings, and both staged and unstaged diff checks pass.
+  No local integration or E2E runtime suite was executed.
 - Published migration-closure checkpoint `7eb5e7a88`; local HEAD, the remote branch, and PR #633
   `headRefOid` all equalled `7eb5e7a88db900621c637c5302abe6232031c157`. The canonical full re-scaffold
   added module-owned Opportunity, Application, and Booking migrations plus design-time factories, and
