@@ -50,7 +50,7 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     purpose: "Records the user's cookie-consent decision so the banner is shown once.",
     duration: "Persistent until cleared",
     classification: "necessary",
-    apps: ["customer", "venue", "artist", "business"],
+    apps: ["customer", "venue", "artist", "business", "admin"],
     writeSites: ["shared/src/lib/consent.ts"],
   },
   {
@@ -61,7 +61,7 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     purpose: "Remembers the light/dark UI preference.",
     duration: "Persistent until cleared",
     classification: "functional",
-    apps: ["customer", "venue", "artist"],
+    apps: ["customer", "venue", "artist", "admin"],
   },
   {
     key: "concertable.active-tenant",
@@ -87,7 +87,7 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     purpose: "Auth tokens and sign-in/silent-renew state for the logged-in session.",
     duration: "Session / token lifetime",
     classification: "necessary",
-    apps: ["customer", "venue", "artist"],
+    apps: ["customer", "venue", "artist", "admin"],
     notes:
       "Written internally by oidc-client-ts via WebStorageStateStore in shared/src/features/auth/config/oidcConfig.ts; not an explicit setItem call.",
   },

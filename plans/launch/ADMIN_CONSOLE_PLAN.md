@@ -26,7 +26,7 @@ the audit log itself.
 
 ## Design decisions
 
-### 1. Provisioning is invitation-gated, fail-closed, and reuses the existing reactive path — no new sync RPC
+### 1. Provisioning is invitation-gated and fail-closed — but the grant fires post-login, not at registration
 
 The unconditional grant in `CredentialRegisteredHandler` is the actual security hole this plan closes.
 Today it's inert because no Duende client named `admin` exists, so nobody can reach
@@ -34,8 +34,8 @@ Today it's inert because no Duende client named `admin` exists, so nobody can re
 admin SPA's login, `AuthService.RegisterAsync` (`api/Concertable.Auth/src/Concertable.Auth/Services/AuthService.cs`)
 — which accepts **any** `clientId` resolved from the OIDC authorize context with no allow-list — becomes
 a self-serve "become an admin" endpoint. Auth is identity-only by design (`api/Concertable.Auth/AGENTS.md`)
-and doesn't know B2B's admin concept, so the fix belongs where authority already lives: B2B's handler,
-not Auth's registration.
+and doesn't know B2B's admin concept, so the fix belongs where authority already lives: B2B, not Auth's
+registration.
 
 New `AdminInvitationEntity` in the User module (`Concertable.B2B.User.Domain`), same shape as
 `TenantInvitationEntity` minus the tenant fields: `Id` (Guid), `Email` (normalized), `Status`
@@ -43,22 +43,49 @@ New `AdminInvitationEntity` in the User module (`Concertable.B2B.User.Domain`), 
 `InvitationService`'s `InvitationTtl`). Created via a new `[Admin]`-gated `POST /api/AdminInvitation`
 (an existing admin invites the next one by email).
 
-`CredentialRegisteredHandler` changes its `ClientIds.Admin` branch: instead of always adding
-`AdminProfileEntity`, it now only does so when
+**The grant does not run inside `CredentialRegisteredHandler`.** An initial design put it there
+(`ClientIds.Admin` branch, unconditionally-adjacent to `UserEntity` creation), reasoning it "reuses the
+existing reactive path." That design shipped in #624 and was corrected before Phase 2 wired the client:
+`CredentialRegisteredEvent` fires at raw registration *submission*, before the account's email is ever
+verified (`CredentialEntity.IsEmailVerified` defaults `false`; `SendEmailVerificationAsync` runs *after*
+the event already published). Granting off it means anyone who knows the bootstrap email or an invited
+admin's email can register with it first — unverified — and get admin, or at minimum permanently consume
+the one-time bootstrap slot/invitation via Auth's global email-uniqueness check.
 
-1. a pending, unexpired `AdminInvitationEntity` exists for `e.Email` (accept it, grant the profile), or
-2. `AdminProfiles` is empty **and** `e.Email` matches a configured bootstrap email (see below) — the
-   one-time first-admin path.
+The grant instead runs from `AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync`, called from
+`UserController.Me()` (`GET /api/auth/me`) — the first authenticated request every SPA makes right after
+login. This is guaranteed post-verification with **zero cross-service contract changes**: Auth's own
+`CredentialEntity.CanAuthenticate` already requires `IsEmailVerified`, so an unverified account cannot
+successfully log in at all, and therefore never reaches `Me()`. `CredentialRegisteredHandler` keeps doing
+exactly one thing for the admin client: create the plain, inert `UserEntity` row (same as every other
+manager client) — no different from Venue/Artist registration, and unaffected by whether the email is
+ever verified.
 
-Otherwise the credential still becomes a plain `UserEntity` (so idempotency/inbox bookkeeping is
-unaffected) but gets **no** `AdminProfileEntity` — an inert account. Self-registering through the admin
-client with no invitation and no bootstrap match is now provably a no-op for authority, which is the
-property that matters; the admin SPA additionally never links to the generic sign-up page (UX only, not
-the security boundary).
+The eligibility rule itself is unchanged, just relocated and now backed by `IAdminRepository` instead of
+a raw `DbContext`:
+
+1. a pending, unexpired `AdminInvitationEntity` exists for the caller's email (accept it, grant the
+   profile), or
+2. `AdminProfiles` is empty **and** the caller's email matches a configured bootstrap email (see below) —
+   the one-time first-admin path.
+
+Otherwise the call is a no-op — the account stays a plain, inert `UserEntity` with no `AdminProfileEntity`.
+Self-registering through the admin client with no invitation and no bootstrap match is provably a no-op
+for authority; the admin SPA additionally never links to the generic sign-up page (UX only, not the
+security boundary).
 
 There is no explicit "accept" HTTP call (unlike `InvitationController.Accept`) — acceptance is implicit
-in the email match at registration time, because a brand-new admin has no B2B session yet to call an
-`[Authorize]`d endpoint with. This is simpler than the tenant-invite flow and needs no new endpoint.
+in the email match at first-login time. This is simpler than the tenant-invite flow and needs no new
+endpoint. A legitimate invitee needs no extra step beyond what they'd do anyway: they must verify their
+email to log in at all, and logging in is exactly what triggers the grant.
+
+**Residual, explicitly out-of-scope risk:** an attacker can still *register* (never verifying) with the
+bootstrap or an invited email, permanently squatting it via Auth's global email-uniqueness check and
+blocking the real owner from ever registering that exact address. Neither this design nor a
+`CredentialRegisteredEvent` contract change touches this — it's a pre-existing, platform-wide property of
+every registration (venue/artist/customer signup has the identical shape), not something this plan
+introduces. Treated as accepted, matching the security review's own non-blocking conclusion; not solved
+here.
 
 **Existing-user caveat:** `AuthService.RegisterAsync` checks email uniqueness globally, not per client
 (`context.Credentials.AnyAsync(c => c.Email == email)`), matching existing Venue/Artist behavior. An
@@ -71,9 +98,14 @@ emails. Fine for the MVP; not worth a redesign for a handful of platform operato
 The very first admin has nobody to invite them. Rather than inventing a shared-secret bootstrap token
 (which would need a real secret store — the still-open `launch/production deployment + config/secrets`
 gate, planned in `plans/platform/CONFIG_AND_DEPLOYMENT_PLAN.md` but not yet built), bootstrap reuses the
-same email-ownership proof every registration already relies on: Auth's existing email-verification flow.
+same email-ownership proof every registration already relies on: Auth's existing email-verification
+flow. This is actually enforced (not just aspirational) because the bootstrap match runs from
+`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync`, reachable only via an authenticated request
+— and `CredentialEntity.CanAuthenticate` already requires `IsEmailVerified`, so no unverified account can
+ever reach it. See design decision 1 for the full mechanism and why an earlier draft that granted inside
+`CredentialRegisteredHandler` didn't actually have this property.
 
-`Admin:BootstrapEmail`, read via `IConfiguration` in `CredentialRegisteredHandler`'s composition
+`Admin:BootstrapEmail`, read via `IConfiguration` in `AdminService`'s composition
 (a small bound options type is fine) — plain non-secret config, no different in posture from every
 other `IConfiguration`-sourced value in this codebase today (e.g. `ServiceAuth:*ClientSecret`). In
 non-Production environments, default it in code to `SeedUsers.AdminEmail`
@@ -147,8 +179,10 @@ one complete continuation PR. Reviewability alone does not justify another parti
 - `AdminInvitationEntity` (Domain) + EF configuration + `IAdminRepository`/`AdminRepository`
   (`Concertable.B2B.User.Infrastructure` — its own repository per `api/agents/CODE_PATTERNS.md`'s "one
   repository per entity", not folded into `UserRepository`; no new module, `UserDbContext` is shared).
-- `CredentialRegisteredHandler`: invitation-or-bootstrap gate on the `ClientIds.Admin` branch (design
-  decision 1); inject `TimeProvider` + the bootstrap-email option.
+- `CredentialRegisteredHandler`: unchanged for the admin client beyond creating the plain `UserEntity` —
+  the invitation-or-bootstrap gate lives in `AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync`,
+  called from `UserController.Me()` post-login (design decision 1; corrected before Phase 2 wired the
+  OIDC client, moving the gate out of the registration-event handler it originally shipped in).
 - New `AdminController` (`Concertable.B2B.User.Api/Controllers/`), `[Admin]`-gated at the class level:
   `POST /api/AdminInvitation`, `DELETE /api/AdminInvitation/{id}`, `GET /api/Admin`,
   `DELETE /api/Admin/{sub}`. Service layer (`IAdminService`/`AdminService`) mirrors `InvitationService`'s

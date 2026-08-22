@@ -3,12 +3,126 @@
 - Plan: `plans/launch/ADMIN_CONSOLE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/admin-console`
-- Worktree: none; Phase 1's merged worktree is no longer registered and the continuation worktree has not been created
-- Branch: none for the remaining work; Phase 1 branch `Feature/launch_admin-console` merged
-- PR: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED** (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z); Phases 2-4 have no PR yet
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console`
+- Branch: `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase 1's was deleted on merge)
+- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **OPEN, CI RE-VALIDATING**
+  at head `e9623af6d` after a genuine bug found in the previous draft-PR CI run and fixed locally (see
+  reconciliation below); not yet merged — merge waits on Tommy's explicit instruction. Phase 1:
+  [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
+  (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-17 after the repository clarified that reviewability alone does not split a plan
+- Last reconciled: 2026-08-19. #648's branch had drifted 36 commits behind `origin/main` and GitHub
+  reported it `DIRTY`/`CONFLICTING`. Merged `origin/main` in: the only real conflict was an additive
+  clash in `app/package.json` between this branch's `build:admin` script and main's `@concertable/web-b2b`
+  addition (from the merged `Refactor/B2bPackageTopology`, #643) to `build:packages`/`build:web-packages`
+  — resolved by keeping both additions (`3b10b5302`). `app/package-lock.json` and
+  `app/scripts/check-fe-boundaries.mjs` auto-merged cleanly. Verified locally before push:
+  `npm install` clean, `npm run lint:boundaries` clean (all 10 workspaces), `npm run build:admin` green,
+  and `dotnet build` green on `Concertable.B2B.Web`, `Concertable.Auth`, `Concertable.B2B.AppHost`, and
+  the umbrella `Concertable.AppHost`. Pushed; PR flipped from `DIRTY`/`CONFLICTING` to
+  `BLOCKED`/`MERGEABLE` (blocked = draft-PR CI re-running on the new head, not a real block).
+  Reconfirmed same day once that run completed: `gh pr checks 648` — every required check `pass`, the
+  three E2E jobs correctly `skipping` per this plan's phase scope; `gh pr view 648` — `state OPEN`,
+  `mergeStateStatus CLEAN`, `mergeable MERGEABLE`, not draft. **#648 is genuinely ready; nothing further
+  to verify — merge is gated only on Tommy's explicit instruction (see Next Steps).**
+  `Refactor/b2b_admin-module` now has an **open** PR ([#651](https://github.com/Concertable/concertable/pull/651),
+  `state OPEN`, `mergeStateStatus BLOCKED`, not yet merged) — the ledger previously said no PR existed;
+  step 1 below remains not-yet-actionable until #651 merges, not blocking.
+- Re-reconciled 2026-08-19 (same day, later): polled #648's checks on head `4e1ec207b` to completion —
+  45 pending checks resolved to 0 pending / 0 failures, `mergeStateStatus CLEAN`, `mergeable MERGEABLE`,
+  not draft. Re-checked #651: still `state OPEN`, `isDraft true`, `mergeStateStatus BLOCKED`, not merged
+  — step 1 remains not-yet-actionable. No action taken beyond confirmation; merge still waits on Tommy.
+- Reconciled 2026-08-19 (same day, later still): Tommy reported #651 merged. Confirmed via
+  `gh pr view 651` (`state MERGED`, `mergedAt 2026-08-19T18:27:56Z`). Merged `origin/main` into this
+  branch (137 commits behind) per Next Steps step 1. Ten files conflicted: seven backend (the
+  Admin-module extraction moved `IAdminRepository`/`AdminRepository`/`AdminService`/`IAdminService`/
+  `IAdminModule`/`AdminModule`/`CredentialRegisteredHandler`/`UserController`/both `AdminServiceTests`/
+  `AdminProvisioningTests` out of `Concertable.B2B.User` into a new `Concertable.B2B.Admin` module) and
+  three docs (`app/AGENTS.md`, `app/web/AGENTS.md`, `app/web/shared/AGENTS.md`, from the concurrently
+  merged `Docs/GuidanceDocsRestructure`, #637).
+  **The backend conflict was a real security regression risk, not just a textual clash:** #651 branched
+  off `main` after Phase 1 (#624) merged but *before* this branch's post-login security fix (design
+  decision 1) was written, so its mechanical module extraction preserved Phase 1's original,
+  registration-time grant (`CredentialRegisteredHandler` → `IAdminModule.GrantIfEligibleAsync(sub,
+  email)`, wrapped in a new `IUnitOfWorkBehavior` for atomicity) — exactly the gap design decision 1
+  closes. Resolved every conflict toward this branch's secure design
+  (`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync()`, called from `UserController.Me()` via
+  the new `IAdminModule` facade) reapplied onto the new module boundary, not a silent revert to the
+  registration-time grant. Also: renamed `AddAdmin`→`GrantAdmin` on `IAdminRepository`/`AdminRepository`
+  (adopted #651's rename), deleted the now-dead `IUnitOfWorkBehavior`/`UnitOfWork<UserDbContext>`
+  registration in `Concertable.B2B.User.Infrastructure` (existed only to support the reverted design),
+  updated the stale `AdminService.GrantIfEligibleAsync` doc-comment reference in `AdminInvitationEntity`,
+  and split `AdminProvisioningTests` to match #651's module-ownership split: Admin's own
+  `AdminProvisioningTests.cs` keeps the grant-eligibility (`Login_*`) tests using a `RegisterAsync`+
+  `LogInAsync` helper pair (dispatching `CredentialRegisteredEvent` via the generic
+  `IIntegrationEventHandler<T>` interface, not the internal `CredentialRegisteredHandler`, since Admin's
+  test project has no `InternalsVisibleTo` grant into `Concertable.B2B.User.Infrastructure`); removed the
+  now-redundant/stale `Registration_AdminClient_CreatesUser_EvenWithNoMatchingAdminGrant` from User's
+  `UserProvisioningTests.cs` (its premise — the ambient-transaction grant call — no longer exists, and
+  it's covered by the existing `[InlineData(ClientIds.Admin)]` case on `Registration_ManagerClient_CreatesUser`).
+  **Docs conflict:** adopted #637's slimmed skill-referencing structure in all three files; one of them
+  (`app/web/AGENTS.md`) stated a now-stale fact independent of the restructure — "run the four web
+  builds" — which is wrong since this branch's Phase 2 added the fifth (`web-admin`); corrected to five
+  and flagged that the external `app-tiers` skill (`Concertable/agent-standards` plugin, outside this
+  repo) still needs its own follow-up update for the fifth SPA — not fixable from here.
+  **Verified:** `dotnet build` on `Concertable.B2B.Web` (full host): 0 errors. Built and ran
+  `Concertable.B2B.Admin.UnitTests`: 31/31 passing. Built `Concertable.B2B.Admin.IntegrationTests`,
+  `Concertable.B2B.User.IntegrationTests`, `Concertable.B2B.User.UnitTests`: all green (integration
+  tests compile-only, no local Docker). `npm run lint:boundaries`: clean across all 13 workspaces.
+  `npm run build:admin`: green. Committed as `80208ce22` and pushed; draft-PR CI running on that head.
+- Draft-PR CI on `80208ce22`/`bc55fefdd`/`82c0c1701` came back genuinely red — 5/8
+  `Concertable.B2B.Admin.IntegrationTests` failing (`gh run view 32296515424`; the wider list `gh pr
+  checks` briefly showed of ~10 failing jobs was a transient/stale snapshot — the run's actual job list
+  had exactly one real failure plus the cascading `ci-complete` gate). **Root cause, found via a local
+  Docker-backed repro (Docker Desktop was down, then recovered) and confirmed by direct experiment (an
+  unconditional `throw`/`Assert.Fail` inside the suspect method, since a custom `ILogger` line and a bare
+  `Console.WriteLine` both turned out not to be captured by this test runner — a dead end that cost real
+  time before switching to xUnit's own assertion-failure reporting, which does reliably surface):** the
+  `origin/main` merge (`80208ce22`) silently dropped `CredentialRegisteredHandler`'s
+  `await context.SaveChangesAsync(ct);` — git's 3-way merge auto-resolved it as a non-conflicting
+  deletion (origin/main's side had replaced the call with an ambient-transaction wrapper this branch's
+  conflict resolution correctly removed to keep the post-login grant design, without the removed
+  wrapper's own internal save being replaced by anything). Effect: **no B2B manager registration —
+  venue, artist, or admin — ever actually persisted a `UserEntity` row**, not just Admin's grant flow;
+  confirmed via `Concertable.B2B.User.IntegrationTests` also failing 6/11 before the fix. Restoring the
+  `SaveChangesAsync` call then surfaced a second, independent, pre-existing bug from PR #651's own module
+  extraction: `AdminApiFixture.ClearAdminsAsync()` only cleared `AdminProfiles`, not the seeded admin's
+  underlying `UserEntity` row (the pre-refactor `UserApiFixture.ClearAdminsAsync` cleared both) — masked
+  until now because nothing ever hit the database, then a real `Users.Email` duplicate-key violation once
+  saves actually ran. Fixed by restoring the `UserDbContext`-based row cleanup, mirroring the original.
+  Both fixes committed as `e9623af6d`, pushed. **Verified:** `Concertable.B2B.Admin.IntegrationTests`
+  8/8, `Concertable.B2B.User.IntegrationTests` 11/11, `Concertable.B2B.User.UnitTests` 1/1,
+  `Concertable.B2B.Admin.UnitTests` 31/31 — all green locally post-fix.
+- Reconciled 2026-08-20/21: Tommy said "let's merge." Logged two small, related pieces of tech debt
+  Tommy flagged along the way (not fixed, per his call): `api/Concertable.B2B/src/Modules/User/TECH_DEBT.md`
+  (`UserEntity.FromRegistration` is the only domain factory in the B2B layer not named `Create` — no
+  disambiguation need justifies the exception) and
+  `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/TECH_DEBT.md` (`AdminProvisioningTests.LogInAsync`
+  reuses that same production factory, plus a redundant `email` param, to fake an identity for an
+  already-persisted user instead of reading the real row back). Before arming auto-merge, confirmed the
+  currency check (root `AGENTS.md` "Before enabling auto-merge") — branch was 21 commits behind
+  `origin/main`; merged clean (no conflicts), rebuilt `Concertable.B2B.Web`/`Concertable.Auth`/both
+  AppHosts to 0 errors, pushed (`107fafcf5`). Draft-PR CI on that head then genuinely failed:
+  `carve-fe (web/b2b/artist)` and `carve-fe (web/b2b/venue)`, ~150 TypeScript errors combined — real,
+  not flaky. Root cause: the `origin/main` sync brought in #595's camelCase-JSON-enums refactor
+  (`DashboardApplicationStatus`, `ActivityType`, `SettlementDirection`, `PaymentMethod`, `TenantType`,
+  `Genre`, `StripeConnectState`, `PayoutAccountStatus`), and neither `app/web/b2b/artist` nor
+  `app/web/b2b/venue` was in that refactor's scope, so their dashboard fixtures/widgets/route guards
+  still used the old PascalCase literals. Recased every affected literal (dozens per app, via the
+  compiler's own `Did you mean` hints; a first automated pass had a column-offset bug — TS points
+  diagnostics at the enclosing property/argument, not the literal itself — caught before committing by
+  verifying the actual diff, not just script exit status) plus two `Record<K,V>` object-key sets the
+  compiler only reports one violation of at a time. Fixed as `4d2563f29`, pushed. **Verified:** both
+  apps' full builds clean, all five web app builds green (`web-customer`/`web-business`/`web-admin`/
+  `web-artist`/`web-venue`, exit 0 each), `npm run lint:boundaries` clean across all 13 workspaces.
+  Draft-PR CI re-validating on `4d2563f29` — confirm genuinely green (see Next Steps) before arming
+  auto-merge.
+- Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
+  `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
+  (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
+  Purely internal — routes/DTOs unchanged — so it does not block or get blocked by this ledger; fold in a
+  note here once it merges. Open as PR #651 as of this reconciliation.
 
 ## Current state
 
@@ -42,47 +156,82 @@ no retry) — merged #634 by hand to unblock, then shipped the actual retry fix 
 All unit tests green (26/26). `reviews/Feature-launch_admin-console.md` is clean (zero open findings).
 
 **#624 merged.** One sub-8-confidence security note from the review was NOT closed before merging —
-it's inert until Phase 2 registers the `admin` OIDC client, and is carried below as a Phase 2 pre-flight
-item, not a Phase 1 blocker.
+carried into Phase 2, and **now resolved** (see below) before the OIDC client was wired, so the gap
+never went live.
+
+Phase 1's worktree/branch is closed (no separate worktree existed — Phase 1 ran in the primary
+checkout; its branch was deleted on merge). Fresh worktree created for Phase 2:
+`.worktrees/Feature-launch_admin-console`, branch `Feature/launch_admin-console`, off `origin/main`
+at `bfbfd863c...` (contains #624).
+
+**Security pre-flight closed, before the OIDC client:** the carried-over gap (`GrantAdminIfEligibleAsync`
+granting off the raw, unverified registration event) is fixed — asked Tommy for a decision among three
+options (Auth contract change / weak client-side mitigation / move the grant to a post-login,
+already-verified checkpoint); he picked the third. Implemented as
+`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync`, called from `UserController.Me()`; see plan
+design decision 1 for the full mechanism. Zero cross-service contract changes. `IAdminRepository` gained
+`AddAdmin(Guid)`. `AdminServiceTests` gained 6 tests (32/32 total); `AdminProvisioningTests` restructured
+around a register-then-log-in two-step flow (compiles clean, deferred to CI per remote-validation policy
+— no local Docker).
+
+**Auth OIDC client + AppHost wiring done:** `ClientIds.Admin` ("admin") added to `Config.WebClients` +
+`SpaClientSettings.Admin`, redirect URIs in `appsettings.json` (prod) and `appsettings.E2E.json`
+(`localhost:5178`); reuses the existing non-Customer scope branch (`openid profile concertable.b2b.api`)
+— no `Config.cs` logic change needed. `AppHostExtensions.AddAdminSpa` (mirrors `AddVenueSpa`/
+`AddArtistSpa` — B2B-only backend, no separate service), wired into both `Concertable.B2B.AppHost` and
+the umbrella `Concertable.AppHost`. Both builds green.
+
+**Phase 2 SPA scaffold done and build-verified:** `app/web/admin/` created as a fifth workspace
+(package.json/vite.config.ts/tsconfig*/index.html, port 5178). Deliberately does **not** depend on
+`@concertable/b2b` (the venue/artist tenant tier — Admin has no tenant concept) and does **not** use the
+shared `AppLayout`/`Navbar`/`ProfileMenu` stack (`ProfileMenu` hard-links `/settings` and
+`/settings/payment`, which don't apply to a platform-admin console) — instead a small hand-rolled
+`_admin/route.tsx` header using `useAuth()` alone (email from OIDC profile claims, sign-out). Routes:
+`login.tsx`/`auth.callback.tsx` (copied from venue), `forbidden.tsx` (new — shown when an authenticated
+non-admin B2B user reaches the app), `_admin/route.tsx` (`requireAdmin` guard: `requireAuth` then checks
+`Identity.isAdmin` off the same cache entry the guard already populated, no extra fetch),
+`_admin/index.tsx` (renders the admins page). `features/identity/` (guard + a feature-private `Identity`
+type, not exported — nothing outside the guard needs it) and `features/admins/` (mirrors b2b/shared's
+`members` feature shape: one `useAdminOverviewQuery` shared by both the roster and pending-invitations
+facades, since the backend returns both in one `GET /api/Admin` call unlike members' two separate
+endpoints; `useInviteAdmin`/`useAdminsRoster`/`usePendingInvitations` facades; revoke-admin button
+disabled client-side when it's the last admin, mirroring the server's last-admin invariant). All five
+web builds green (customer/venue/artist/business/admin) and `npm run lint:boundaries` clean across all
+12 workspaces (added `web/admin` to `app/scripts/check-fe-boundaries.mjs`). `app/web/AGENTS.md`'s build
+gate and `app/web/shared/AGENTS.md`'s route-contract docs updated from "four" to "five" SPAs;
+`BROWSER_STORAGE.md`/`storageManifest.ts` updated for admin's cookie-consent/theme/oidc storage.
+
+Two tech-debt items logged along the way (not fixed, out of scope here):
+`api/Concertable.Frontend.Hosting/TECH_DEBT.md` (new — the `AddXSpa` methods' magic port/surface-name
+literals, pre-existing across all five, low priority since it's dev-only orchestration likely reworked
+for prod deployment) and `app/web/shared/TECH_DEBT.md` (new — `useSyncUser`/`useAuthStore` duplicates
+TanStack Query's own cache via a `useEffect` copy, the exact anti-pattern `app/agents/CODE_PATTERNS.md`
+already warns against for `useConcertStore`; Admin's own guard/header deliberately avoid the pattern
+rather than adding to it).
+
+**Not added:** focused component tests for invite/revoke. Checked precedent first — `b2b/shared`'s
+`members` feature (the closest analog) has zero component/hook tests for its equivalent
+`InviteForm`/`MembersRoster`/`PendingInvitations` either, only one pure-logic test
+(`acceptInvitation.test.ts`, node environment, no jsdom). No single-app `vitest` config precedent exists
+in `venue`/`artist` either. Matched precedent rather than inventing new test infrastructure ahead of an
+established need; flagging this explicitly rather than silently skipping it.
+
+Branch merged `origin/main` (11 commits: platform-sync version bumps, an `OpportunityMapper`
+refactor, the platform-sync auto-merge retry fix, a `CODE_CONVENTIONS.md` update) — clean, no
+conflicts. `Concertable.Auth` and both AppHost projects rebuilt green post-merge. Pushed and opened
+draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
 ## Next Steps
 
-Create one fresh continuation worktree from current `origin/main` and implement Phases 2-4 together on
-one complete draft PR. Begin with the Phase 2 security pre-flight below, then build the admin SPA,
-moderation UI, and venue-approval UI without a phase merge stop:
-
-1. Build the admin console SPA shell and provisioning UI:
-   - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
-   - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
-     `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
-     wired to Phase 1's `AdminController` endpoints.
-   - Auth service: `ClientIds.Admin` ("admin") Duende Web client — `Config.WebClients` +
-     `SpaClientSettings.Admin` + redirect URIs in `appsettings*.json`. This is what makes Phase 1's
-     fail-closed gate load-bearing (today `admin` has no OIDC client, so the path is unreachable).
-   - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`), called from
-     `Concertable.B2B.AppHost/Program.cs` and the umbrella `Concertable.AppHost/Program.cs`.
-   - Verification gate: all five web builds green; focused component/hook tests for invite/revoke.
-   - **Security pre-flight (found in #624's `/review`/`/security-review` pass):** design decision 2
-     claims bootstrap "reuses the same email-ownership proof every registration already relies on:
-     Auth's existing email-verification flow" — verified against the shipped `AuthService.RegisterAsync`/
-     `CredentialEntity` code that this is **not actually true**: `CredentialRegisteredEvent` fires at
-     registration submit time, before `IsEmailVerified` is ever set, and carries no verified-status
-     field. `GrantAdminIfEligibleAsync` (`CredentialRegisteredHandler.cs`) grants off the raw event
-     email with no verification check. This is provably inert in Phase 1 (no `admin` OIDC client
-     exists yet, so `RegisterAsync` can never be invoked with `client_id=admin`), which is why the
-     `/security-review` pass scored it 5/10 (below the blocking bar) — but the moment Phase 2 registers
-     the client, the gap goes live: anyone who knows the bootstrap email or an invited admin's email
-     could self-register with it before the real owner does, consuming the one-time bootstrap slot or
-     the invitation, and (via Auth's global email-uniqueness check) permanently blocking the legitimate
-     admin from ever registering that email. **Close this before or as part of Phase 2** — either gate
-     `GrantAdminIfEligibleAsync` on a verified-email signal (Auth would need to carry/expose one at
-     registration time, which it currently doesn't for any client), or require the admin SPA's login
-     flow to force an explicit verify-then-retry step before the grant becomes reachable. Full finding:
-     `reviews/Feature-launch_admin-console.md` (SEC layer note, below the 8-confidence bar for a
-     blocking finding but real).
-2. In the same PR, complete Phase 3 moderation UI and Phase 4 venue approval UI, including the new
-   `GET /api/Venue/pending-approval` endpoint. Phase checkpoints must remain green, but none is an
-   independent delivery candidate.
+Paused: Tommy — Tommy said "let's merge"; the delivery chain is in progress. #648
+([PR #648](https://github.com/Concertable/concertable/pull/648)) is pushed at head `4d2563f29`, current
+with `origin/main` (synced twice more since the SaveChangesAsync fix — see "Current state" for the
+second currency sync and the camelCase-enum fix it surfaced). Draft-PR CI is re-validating on this head.
+Resume condition: once `gh pr checks 648` confirms genuinely green (0 pending, 0 failing — verify the
+actual job list via `gh run view <runId> --json jobs`, not just `gh pr checks`, since that command has
+shown transient/stale entries mid-run this session), re-check the `behind` count one more time (main
+moves fast right now) and arm auto-merge per the root `AGENTS.md` procedure, then confirm via the
+Bash background until-loop (never `Monitor`).
 
 ## Completed work
 
@@ -126,8 +275,6 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Remaining Phases 2-4 land together. There is no package, publication, deployment, or runtime gate
-  between them, so reviewability is not a reason for another partial PR.
 - Confirmed via `AdminProfileHandler` that the `"Admin"` policy is checked entirely on B2B's side
   (`AdminProfiles.Sub == sub` claim), not via any Auth-side role/claim — so provisioning is a B2B-only
   concern; Auth's `RegisterAsync` needs no changes.
@@ -142,8 +289,10 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 - Confirmed B2B's production startup currently runs **no** `IDbInitializer` at all
   (`Concertable.B2B.Web/Program.cs`: the initializer only runs `if (!app.Environment.IsProduction())`)
   — so the bootstrap mechanism deliberately avoids depending on any "runs at B2B startup in production"
-  hook (none is proven to exist yet) and instead triggers lazily inside the existing
-  `CredentialRegisteredHandler` reactive path, which already runs in every environment.
+  hook (none is proven to exist yet). It originally triggered lazily inside
+  `CredentialRegisteredHandler`'s reactive path; **corrected in Phase 2** to trigger from
+  `UserController.Me()` instead (every authenticated request path, not just registration) — see the
+  security pre-flight entry above and plan design decision 1.
 - The invite email deliberately carries **no** accept link — unlike `TenantInvitationCreatedDomainEventHandler`,
   admin acceptance is implicit at registration-time email match (design decision 1), and the admin
   console's real URL doesn't exist until Phase 2. The email just tells the invitee which email to
@@ -168,6 +317,6 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 ## Resume prompt
 
 ```
-cd C:\Users\tommy\source\repos\Concertable
+cd C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console
 Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says.
 ```

@@ -60,11 +60,11 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Topic | Owner |
 |---|---|
 | System-wide premise; monorepo vs the split-repo world | [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
-| Cross-service references are Contracts-only; this monorepo's `api/` folder layout | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
+| Cross-service references are Contracts-only | skill `dotnet:microservice-boundaries` |
 | Protocol selection — gRPC / HTTP / Service Bus | skill `dotnet-standards:microservice-boundaries` |
 | Adapter vs data services, what may `WaitFor` what, standalone-AppHost-is-canonical, the surface each service exposes | skill `dotnet-standards:microservice-boundaries` |
 | Producer seed libraries point downward only; the simulator that makes standalone work | skill `dotnet-standards:seeding` |
-| Design rationale and decision history (not current state) | [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md) |
+| Design rationale and decision history (not current state) | skill `microservices-architecture` |
 | Per-service specifics | that service's own `AGENTS.md` / `ARCHITECTURE.md` |
 
 ## Backend code (`api/`)
@@ -75,7 +75,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | C# naming — suffix table, `Projection`, `Response`/`Dto`, `XMappers`, evaluators, frozen tables | skill `csharp-naming` |
 | Comments and XML doc mechanics | skill `comments` (the default-to-none policy is global) |
 | DI registration, dependency-holders, lifetimes | skill `dependency-injection` |
-| Executable host inventory, strict provider validation and dynamic activation-root coverage | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
+| Executable host inventory, strict provider validation and dynamic activation-root coverage | skill `composition-testing` |
 | Logging — source-generated `Log.cs`, probes included | skill `logging` |
 | Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
 | Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `dotnet-standards:persistence` |
@@ -110,7 +110,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
 | DTOs vs `Response` at the controller boundary | skills `dotnet-standards:http-api`, `dotnet:http-api` |
-| Migrations; shared-is-the-intersection; the seeder trigger rule | [`api/AGENTS.md`](../api/AGENTS.md) |
+| Migrations; shared-is-the-intersection; the seeder trigger rule | skills `migrations`, `dotnet:microservice-boundaries`, `dotnet:seeding` |
 
 ## Frontend code (`app/`)
 

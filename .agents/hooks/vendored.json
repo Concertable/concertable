@@ -39,8 +39,8 @@
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/skill_router.py",
       "delivery": "hook",
-      "commit": "a8a3e6f3f9ad96769f326dad50eb55690c8f7452",
-      "sha256": "sha256:0f7168877b1128e0f0388e2a67d24872f08639bee764ac24c778916c1d8056f7"
+      "commit": "31ddc0c32919d800c2ceae8e62accda281d83d4f",
+      "sha256": "sha256:33a280c5c5fa28f0d88c182c8f78a8b0d2ea48ae92d86d42cfc921d3e3053682"
     }
   },
   "scripts": {
@@ -49,6 +49,12 @@
       "path": "scripts/docker-health.ps1",
       "commit": "76758be8ae5973ebca29bf6c28814e697ccdd9c6",
       "sha256": "sha256:985ce6ca8e4f82dc4e707f5d88aac100857404c56b08bf87a20fddafe224083f"
+    },
+    "provision-agent-standards.ps1": {
+      "source": "Concertable/agent-standards",
+      "path": "scripts/provision-agent-standards.ps1",
+      "commit": "31ddc0c32919d800c2ceae8e62accda281d83d4f",
+      "sha256": "sha256:11412aa9a2b4137a8d42792bbbd245ec595b67cb2efb069c34d49066da487109"
     },
     "worktrees.ps1": {
       "source": "Concertable/agent-standards",

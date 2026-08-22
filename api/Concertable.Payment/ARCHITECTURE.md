@@ -1,6 +1,6 @@
 # Concertable.Payment — Architecture
 
-> Cross-service plan and design rationale: [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../docs/MICROSERVICES_ARCHITECTURE.md)
+> Cross-service design rationale and decision history: the `microservices-architecture` skill
 > Keyed-dispatch pattern: the `keyed-strategies` skill
 > Provider lifecycle baseline: [`PROVIDER_CONTRACT.md`](./PROVIDER_CONTRACT.md)
 > Outstanding gaps: [`TECH_DEBT.md`](./TECH_DEBT.md)
@@ -117,7 +117,7 @@ The proto (`Client/Protos/payment.proto`) generates client stubs in `Payment.Cli
 The opaque `owner` is resolved two different ways by design:
 
 - **HTTP** — `ICurrentPayoutOwner` (`Api/Identity/`, namespace `Concertable.Payment.Api.Identity`) reads the `owner` claim off the principal and **fail-closes** (throws `UnauthorizedException` when absent). Used only by `StripeAccountController`, which Customer calls directly.
-- **gRPC** — `PayoutAccount` RPCs take `owner_id` as an explicit request field; B2B passes its active tenant id (sourced from `ITenantContext`), never a claim. This is the "shared identity carries no owner concept" boundary from `api/AGENTS.md`.
+- **gRPC** — `PayoutAccount` RPCs take `owner_id` as an explicit request field; B2B passes its active tenant id (sourced from `ITenantContext`), never a claim. This is the "shared identity carries no owner concept" boundary from the `microservice-boundaries` skill.
 
 ---
 
