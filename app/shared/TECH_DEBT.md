@@ -19,4 +19,20 @@ were about to repeat before being written the other way.
 prefix, where a module genuinely calls more than one) at the top, with every method interpolating it
 instead of restating the literal.
 
+### The write-boundary pattern's pre-validation form state is named `XBuffer`, not `XDraft`
+
+`useReportMessage.ts`'s `ReportBuffer` (consumed by `ReportMessageDialog.tsx`, re-exported from
+`features/messaging/index.ts`) names the controlled-input state before it's parsed into a request
+`XBuffer`. "Buffer" reads as a binary/IO concept (and this same codebase already uses it correctly that
+way — `ArrayBuffer` reads in `concertApi.ts`, `blobApi.ts`); "draft" is the clearer, unambiguous name for
+"user-entered values not yet validated or committed."
+
+Renamed in the admin console's own copy of this pattern (`InviteDraft`, `ResolveDraft` —
+`app/web/admin/src/features/{admins,moderation}/`) when this was raised; this entry is what's left.
+Sibling debt in `app/web/b2b/shared` (`InviteBuffer`, `OrganizationBuffer`) and `app/web/customer`
+(`ReviewBuffer`) covers the rest of the codebase.
+
+**Resolves when:** `ReportBuffer` → `ReportDraft` (type, hook parameter names, the re-export), matching
+the admin console's already-renamed pattern.
+
 ---
