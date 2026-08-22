@@ -6,18 +6,18 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through complete module integration fixture-ownership work head
-  `e196fddb1bf7227ae8eb4496b897bf781b73d187`. Local, remote-tracking, and PR heads were verified equal;
-  this ledger commit is the checkpoint-transport leg.
+  through integration-topology closure work head
+  `fc678e0edaf5970e01ace03b9400c59a23da3c86`. Starting remote head was
+  `998f3d00f65a3b4d7a37c34775587de9782ebaac`; local, remote-tracking, and PR heads were verified equal.
+  This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
   merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`. The
-  additive Kernel state-machine API is implemented on draft producer PR
+  additive Kernel state-machine API is implemented on ready producer PR
   [#719](https://github.com/Concertable/concertable/pull/719) at exact head
-  `6535690418c340e4f63ddf7662123a1360eab045`. Its merge, package publication, and generated
-  platform-sync version remain the Phase 5 consumer gate; the current integration-test ownership
-  slices remain implementable while that delivery chain runs.
-- Last reconciled: 2026-08-21 after opening the verified Kernel producer PR
+  `541ff90f5b3910815c5835c38c03a52dc47434f4`; exact-head CI is still completing. Its merge, package
+  publication, and generated platform-sync version remain the Phase 5 consumer gate.
+- Last reconciled: 2026-08-22 after integration-topology closure and Kernel producer-gate refresh
 
 ## Current state
 
@@ -243,17 +243,27 @@ cancellation, completion, settlement, invoice, self-billing, notification, and o
 The corrected fixture topology is fixed before further compile recovery: local module fixtures derive
 from the shared host harness and resolve only their own production context/read stance; the B2B process
 suite uses HTTP or deliberate Contracts boundaries and directly references no module Domain or
-Infrastructure assembly. A mechanical project-reference guard will enforce that rule. The temporary
-`ApplicationDb`/`BookingDb` surface and the corresponding TECH_DEBT entry are removed after the moved
-coverage is green, not renamed or hidden behind another resolver.
+Infrastructure assembly. A mechanical project-reference guard enforces that rule. The temporary
+`ApplicationDb`/`BookingDb` surface and the corresponding TECH_DEBT entry have been removed rather than
+renamed or hidden behind another resolver.
 
 Concert's fixture topology is now corrected. `ConcertApiFixture` is module-local and resolves only
 Concert's production write/read stance and Concert-owned operation drivers; Application and Booking
-contexts, generic reads, foreign repositories, and the test-facing service provider are absent. The
+contexts, generic reads, and foreign repository service location are absent. Inherited
+`ApiFixture.Services` remains available as host-harness composition infrastructure. The
 shared fixture no longer owns a Concert fixture or Concert persistence. Concert assertions use only
 Concert entities, while the full VenueHire posting/outbox journey and exact cross-module cancellation
 refund assertion live in B2B Process. The Concert and Process integration projects build with 0 errors,
 and the focused integration-project boundary guard passes.
+
+The complete integration topology is now closed. Opportunity, Application, Booking, Deal, and B2B
+Process integration projects exist in `Concertable.B2B.slnx`; every module fixture is local and resolves
+only its owning production context/read stance. The shared fixture project contains only host-neutral
+`ApiFixture`, including its public `Services` composition capability. The B2B E2E host no longer reads
+Application persistence: cancellation is verified through the Application HTTP contract, and Concert
+completion is verified through the Concert HTTP response. Module facades now delegate persistence work to
+module-local application services, the Worker host composes every required module, and the mechanical
+architecture rules pass in full. No local integration or E2E suite was executed.
 
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
@@ -271,21 +281,21 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: close the integration-test topology and B2B build gates. Audit the solution/project roster,
-remaining namespaces, project references, IVTs, collection fixtures, and test-tier metadata for stale
-Concert ownership or missing module integration projects; then build the full B2B solution and address only
-topology/composition fallout.
-Allowed scope: integration-test topology metadata and compile fixes caused by the ownership moves. The shared
-`ApiFixture.Services` host-harness capability remains available; module fixtures inherit it and resolve only
-their own `dbContext`/`readDbContext` stance. Do not edit aggregate transition tables or state-machine
-implementation files owned by the parallel state-machine slice.
-Exit gate: the shared fixture project contains only host-neutral `ApiFixture`; every module fixture is local;
-all required integration projects are in `Concertable.B2B.slnx`; the full B2B solution, architecture tests,
-plan graph, and `git diff --check` pass without local integration or E2E execution.
-Commit and push in bounded checkpoints.
+Active slice: remote-validate integration-topology closure on PR #633. Observe exact-head CI after this
+ledger transport and fix any failure in a moved/new integration shard, architecture rule, composition host,
+or full build without editing aggregate transition tables or state-machine implementation files owned by the
+parallel state-machine slice. When those checks are green, the topology correction is terminal and the
+parallel state-machine slice owns the next implementation change. Do not resume the superseded file-by-file
+Concert compile recovery.
 
 ## Completed work
 
+- Published integration-topology closure checkpoint `fc678e0ed`; local HEAD, the remote branch, and PR
+  #633 `headRefOid` all equalled `fc678e0edaf5970e01ace03b9400c59a23da3c86`. The complete B2B solution
+  builds with every module and Process integration project plus the host E2E project; architecture tests
+  pass 10/10 and composition tests pass 5/5. The host no longer asserts Application lifecycle through SQL,
+  module facades no longer depend directly on persistence components, Worker composition includes the carved
+  modules, and direct Reunion package ownership is exact.
 - Published remaining-fixture ownership checkpoint `e196fddb1`; local HEAD, the remote branch, and PR
   #633 `headRefOid` all equalled `e196fddb1bf7227ae8eb4496b897bf781b73d187`. Moved User's fixture out
   of the shared harness, added module-local Artist and Venue fixtures, converted their persistence
@@ -507,6 +517,19 @@ Commit and push in bounded checkpoints.
 
 ## Verification
 
+- Integration-topology closure at work head `fc678e0edaf5970e01ace03b9400c59a23da3c86`:
+  `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --no-restore -c Release --nologo -v:minimal`
+  passed with 0 errors. Every module integration project, B2B Process, remaining Concert integration, and
+  the B2B E2E host compiled; output contained two existing Concert nullable warnings and two generated UI
+  nullable-annotation warnings.
+- Full `Concertable.B2B.ArchitectureTests` passed 10/10, including integration-project reference boundaries,
+  module-facade dependency boundaries, and direct Reunion package ownership. Full
+  `Concertable.B2B.CompositionTests` passed 5/5 across the B2B executable hosts.
+- The stale B2B E2E Application SQL helper and Concert lifecycle imports are absent. Cancellation now polls
+  the public Application response, and completion polls the public Concert response. No local integration or
+  E2E test was run.
+- `python .agents/hooks/plan_graph.py --root <worktree>` reports 0 errors and 0 warnings; `git diff --check`
+  passes.
 - Kernel producer PR #719 exact head: `Concertable.Kernel.UnitTests` passed 246/246 in Release;
   successful Result, typed rejection, duplicate-edge rejection, mutable-input snapshotting, and
   concurrent reads are covered. Packing `Concertable.Kernel` at the same head produced a `.nuspec`
@@ -560,18 +583,6 @@ Commit and push in bounded checkpoints.
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1
   --consoleLoggerParameters:ErrorsOnly`: 0 warnings and 0 errors after the `DealDto`, privileged-context,
   and host-composition adaptations.
-- `dotnet build
-  api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-  --configuration Release --no-restore --disable-build-servers --maxcpucount:1
-  --property:GenerateFullPaths=false --consoleLoggerParameters:ErrorsOnly`: the slice baseline reproduced
-  26 errors; after the `ApplicationCancelApiTests` recovery it produced 22, and after the
-  `ApplicationDoorSplitApiTests` recovery plus direct Admin fixture references it produced 21, and after
-  the `ApplicationFinancialOperationApiTests` recovery it produced 19, and after the
-  `ApplicationFlatFeeApiTests` recovery it produces exactly 18 errors with no diagnostic from any
-  recovered file.
-- The exact remaining 18-error frontier is 11 deleted Concert lifecycle imports, two deleted Concert
-  workflow imports, two Contract entity references, two Application entity references, and one settlement
-  outcome reference. `ApplicationVenueHireApiTests.cs` is the next bounded recovery.
 - `dotnet test
   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 88/88 passed after
