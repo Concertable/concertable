@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through migration-closure work head
-  `7eb5e7a88db900621c637c5302abe6232031c157`. Starting remote head for that checkpoint was
-  `5b18da56f7444d2d2ee6d94c3a594b20751274ef`; local, remote-tracking, and PR heads were verified equal.
+  through current-main/dashboard reconciliation head
+  `12e85e2daf223734e10d013779ac29655f00fd9a`. Starting remote head for that checkpoint was
+  `1c9efcddd659403eb0042c45d1a6214106179721`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -21,8 +21,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-22 after resolving and validating the dashboard landing from `origin/main`
-  at `223e20a75`; `origin/main` subsequently advanced to `26645ecd1` and is the next reconciliation checkpoint
+- Last reconciled: 2026-08-22 through `origin/main` head `26645ecd1`
 
 ## Current state
 
@@ -311,15 +310,26 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: checkpoint the validated `223e20a75` dashboard reconciliation, merge the subsequent
-`origin/main` head `26645ecd1`, repeat the B2B build and focused topology gates, then remote-validate the
-resulting exact PR #633 head. Do not edit aggregate transition tables or state-machine implementation files
-owned by the parallel state-machine slice. When CI is green, the topology correction is terminal and the
-parallel state-machine slice owns the next implementation change. Do not resume the superseded file-by-file
-Concert compile recovery.
+Active slice: remote-validate the exact published PR #633 head. The integration-test topology correction,
+dashboard ownership reconciliation, and current-main merge are terminal locally. Do not edit aggregate
+transition tables or state-machine implementation files owned by the parallel state-machine slice. That
+parallel slice owns the next implementation change. Do not resume the superseded file-by-file Concert compile
+recovery.
 
 ## Completed work
 
+- Published topology/dashboard reconciliation checkpoint `1c9efcddd`; local HEAD, the remote branch, and
+  PR #633 `headRefOid` all equalled `1c9efcddd659403eb0042c45d1a6214106179721`. Reconciled the dashboard
+  landing from `origin/main` at `223e20a75` without restoring stale Concert-owned Application or Opportunity
+  ownership, and completed the module-owned dashboard composition through Contracts-only boundaries.
+- Reconciled subsequent `origin/main` head `26645ecd1` and published merge checkpoint `12e85e2da`; local
+  HEAD, the remote branch, and PR #633 `headRefOid` all equalled
+  `12e85e2daf223734e10d013779ac29655f00fd9a`. The latest User entity constructor is valid for EF without
+  retaining its sealed-type warning, and the already-resolved shared-fixture TECH_DEBT item remains removed.
+  The complete B2B Release solution builds with 0 errors; the focused User Domain project builds with 0
+  warnings and 0 errors; architecture tests pass 12/12, composition tests pass 6/6, Opportunity unit tests
+  pass 3/3, the plan graph reports 0 errors and 0 warnings, and both diff checks pass. No local integration
+  or E2E runtime suite was executed.
 - Resolved the dashboard landing from `origin/main` at `223e20a75` without restoring stale Concert-owned
   Application or Opportunity services, repositories, mappers, projections, tests, or persistence. Application
   and Opportunity now own their dashboard endpoints and use Contracts-only cross-module facts; a narrow
