@@ -89,11 +89,11 @@
       ]
     },
     {
-      "path": "\\.CompositionTests[^/]*/.*\\.cs$",
+      "path": "\\.ArchitectureTests[^/]*/.*\\.cs$",
       "skills": [
         "composition-testing"
       ],
-      "note": "The composition-test tier builds each host's real production registration graph without starting it, then ValidateComposition proves the roots ValidateOnBuild cannot. Every executable host is covered here or declares a CompositionValidationExclusion."
+      "note": "The architecture tier holds both static ArchUnitNET rules and dynamic host-graph checks. The host-graph checks build each host's real production registration graph without starting it, then ValidateComposition proves the roots ValidateOnBuild cannot. Every executable host is covered here or declares a CompositionValidationExclusion."
     },
     {
       "path": "\\.csproj$",
