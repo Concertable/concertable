@@ -6,6 +6,35 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Production assemblies own dev/test seeding across the backend
+
+Dev/test seeder implementations and seed-only helpers currently live in production assemblies across
+the backend:
+
+- B2B has sixteen `IDevSeeder` / `ITestSeeder` implementations in module `*.Infrastructure` projects;
+  Concert Infrastructure also owns `SeededApplicationSigner`, `SeededContractFactory`, and
+  `SeededSelfBillingAgreementGranter`. The module Infrastructure projects depend on
+  `Concertable.B2B.Seed.Infrastructure`.
+- Customer has nine dev/test seeder implementations in module `*.Infrastructure` projects, whose
+  production project graph depends on `Concertable.Customer.Seed.Infrastructure`.
+- Payment and Search each keep a test seeder in their production Infrastructure assembly:
+  `PaymentTestSeeder` and `SearchProjectionTestSeeder`. Search Infrastructure also depends on
+  `Concertable.Search.Seed.Infrastructure`.
+- Auth keeps `AuthDevSeeder` in the production Auth assembly, and the published Shared Blob
+  Infrastructure package keeps `BlobDevSeeder` beside its production implementation.
+
+Moving an individual helper only hides one symptom while its caller, registration, and seed-project
+dependency remain in the production closure. The correction is a backend-wide composition change that
+keeps production write capabilities in their owning modules while moving seed orchestration,
+implementations, helpers, and registration into seed/test-owned assemblies.
+
+**Resolves when:** production assemblies contain no `IDevSeeder` / `ITestSeeder` implementations,
+seed-only helpers, or seeder registration methods; production projects do not reference service seed
+projects or `Concertable.Seed.*`; and AppHost, development, integration, and E2E composition roots add
+the appropriate seed-owned assemblies without changing the production write paths each seeder exercises.
+
+---
+
 ### Controller route-token casing is implemented only in the B2B host
 
 `Concertable.B2B.Web` owns `KebabCaseRouteTransformer` and registers
