@@ -109,9 +109,9 @@ Consumer (this repo, `Docs/docs_polyrepo-ready-n6-docs`):
   referrers (root `AGENTS.md` line 1, `INDEX.md` Product rows) repointed at `Concertable/docs`. Broad
   non-md reference sweep: none.
 - `REMOTE_VALIDATION.md` unchanged (kept as per-repo doc). Root `AGENTS.md` stays the minimal anchor.
-- `docs_reachability.py` (scoped): **0 errors**, 29 warnings (all pre-existing `plans/` dead-link warnings;
-  the +1 vs N5 is a historical `docs/OVERVIEW.md` mention in a spent ledger — plans-only, warns not fails).
-  `plan_graph.py`: **0 errors**.
+- `docs_reachability.py` (scoped): **0 errors**, 29 warnings — all `plans/` dead-link warnings (warn-only,
+  never gating), from the plan/ledger's own `@`-import and relative `AGENTS.md` / `*_PROGRESS.md` references
+  resolved against repo root; none references a deleted doc. `plan_graph.py`: **0 errors**.
 - **Meta-only**: `AGENTS.md`, `docs/INDEX.md`, `plans/docs/*`, three `docs/*.md` deletions — no `api/**`, no
   publish / platform-sync.
 
@@ -167,6 +167,15 @@ Consumer (this repo):
   skips E2E); platform-sync fires post-merge and is owned to green.
 
 ## Reviews
+
+**N6 — docs-reviewed by an independent agent; one LOW finding, fixed on-branch.**
+`reviews/Docs-docs_polyrepo-ready-n6-docs.md`.
+- **ACC1 (LOW, Lens A)** — the N6 verification parenthetical mis-attributed the reachability warning delta
+  (claimed the +1 was a historical `docs/OVERVIEW.md` mention; the hook flags no such warning). Fixed: the
+  29 warnings are all `plans/` dead-link warnings from the ledger's own `@`-import/relative references.
+- Lenses A (durable dead-links / reachability / external-URL shape), B, C, D, E, F all verified clean: no
+  surviving dead link to the three deleted docs, no orphan, the new `Concertable/docs` URLs are well-formed,
+  and no sibling still claims product docs live in `docs/`.
 
 **N5 — docs-reviewed by an independent agent; one finding, fixed on-branch.**
 `reviews/Docs-docs_polyrepo-ready-n5-root-agents.md`.
