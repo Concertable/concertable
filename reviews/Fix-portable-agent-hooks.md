@@ -31,6 +31,11 @@
   `git rev-parse --show-toplevel`, including `SessionStart`; the inline Python launcher is gone. The focused
   Windows wiring regression executes all four exact manifest commands through `cmd.exe` from
   `.agents/hooks/tests` and proves each intended hook script launches successfully.
-- [ ] **NAT3 — MEDIUM — native** — `.agents/hooks/tests/test_repo_hook_wiring.py:68`
+- [x] **NAT3 — MEDIUM — native** — `.agents/hooks/tests/test_repo_hook_wiring.py:68`
   The consumer suite executes Codex commands only on Windows, leaving the changed POSIX commands unexecuted
   on Linux/macOS. Execute every POSIX command through Bash on POSIX alongside the nested-cwd Windows cases.
+
+  **Resolved:** Codex manifest structure is now validated for both platform command fields on every OS,
+  while native execution runs all four exact Windows commands through `cmd.exe` or all four exact POSIX
+  commands through Bash from a nested checkout directory. Claude wiring validation now also accounts for
+  its `SessionStart` hook, and its complete native command set continues to execute.
