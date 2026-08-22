@@ -13,6 +13,31 @@
             "statusMessage": "Checking which standard owns this path"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/merge_review_gate.py\"",
+            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/merge_review_gate.py'), run_name='__main__')\"",
+            "timeout": 15,
+            "statusMessage": "Checking merge is reviewed"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py\"",
+            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/session_floor.py'), run_name='__main__')\"",
+            "timeout": 15,
+            "statusMessage": "Loading the always-on behavioral floor"
+          }
+        ]
       }
     ],
     "Stop": [
