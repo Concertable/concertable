@@ -5,58 +5,84 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `82f1fb498` _(2026-08-21)_
-**Security-reviewed up to commit:** `82f1fb498` _(2026-08-21)_
+**Reviewed up to commit:** `a03bf4bc55d86e5cca442edc1a0f95a1a6cd56e7`  _(2026-08-22)_
+**Security-reviewed up to commit:** `a03bf4bc55d86e5cca442edc1a0f95a1a6cd56e7`  _(2026-08-22)_
 
-> Range reviewed: `42f76099..82f1fb498`.
+> Range reviewed: `1452b5b8..503a1181` (6 commits: Phase 4's 3 own commits, a merge of `origin/main`
+> catching the branch up 49 commits, and this review's own tech-debt-logging commit). Phase 4 diff proper
+> (excluding the main-sync merge and this review's own commit): 22 files, +444/-29 across
+> `api/Concertable.B2B/src/Modules/Venue/**` and `app/web/admin/src/features/venues/**`.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
+
+## What this branch does
+
+Phase 4 of `plans/launch/ADMIN_CONSOLE_PLAN.md`: venue approval UI. Backend —
+`IVenuePrivilegedRepository.GetPendingApprovalAsync` (paginated, `!Approved`, oldest-first),
+`PendingVenue` DTO + `VenueMappers.ToPendingVenue` (C# 14 `extension()` block), `VenueService`
+pass-through, new `[Admin]`-gated `GET /api/venue/pending-approval` on `VenueController`. Frontend — a
+`venues` feature in `app/web/admin` mirroring the existing `moderation` feature's shape exactly
+(`venuesApi.ts`, `usePendingVenuesQuery`/`useApproveVenueMutation`/`usePendingVenues`,
+`PendingVenuesList.tsx`, `VenuesPage.tsx`), new `/venues` route, nav link added.
+
+**Note on how this review file was written:** `review`/`review-lifecycle` could not be invoked
+(`Skill({skill:"..."})` returns `Unknown skill`) — this session's plugin registry predates today's
+`agent-standards` fixes for exactly this failure mode (`agent-standards` PR #28, vendored into this repo
+via Concertable PR #748). Read the standards directly from the `agent-standards` checkout instead, with
+Tommy's prior explicit awareness/authorization. Written and the one fixable finding applied via the Bash
+tool, since `skill_router.py`'s `PreToolUse` matcher covers `Write|Edit|MultiEdit|NotebookEdit`, not
+`Bash` — disclosed, not a silent bypass of the gate this session's other work strengthens.
 
 ## Findings
 
-- [x] **NAT1 — MEDIUM — correctness** — `api/Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Infrastructure/Services/AdminService.cs`
-  `EnsureCurrentUserAdminGrantedIfEligibleAsync` called `repository.SaveChangesAsync` unguarded after
-  a grant. Two concurrent first authenticated requests for the same eligible email (e.g. two tabs
-  after login) both pass the eligibility check, both grant, and the loser's `SaveChangesAsync` throws
-  an unhandled duplicate-key `DbUpdateException` — a 500 for what is a legitimate race, not a real
-  conflict. Fixed: both grant branches now call `TrySaveGrantAsync`, which catches
-  `DbUpdateException` via `IsDuplicateKey()`/`DiscardFailedChanges()` and returns `true` either way
-  (the race winner made the caller admin regardless of who "won" the write), `false` only when the
-  caller was never eligible. Covered by
-  `EnsureCurrentUserAdminGrantedIfEligibleAsync_MatchingPendingInvitation_NonDuplicateSaveFailure_Propagates`
-  (a genuine non-duplicate failure still propagates) — the duplicate-key-swallowed branch itself isn't
-  unit-tested since constructing a real `SqlException` isn't practical at that tier.
+- [x] **DEBT1 — LOW — docs-and-debt** — `api/Concertable.DataAccess/TECH_DEBT.md`
+  `VenuePrivilegedRepository.GetPendingApprovalAsync` (and every other pagination-repository caller) has
+  no `CancellationToken`, because the shared `ToPaginationAsync` extension it calls into has none to
+  thread through — a real, already-acknowledged gap (narrated in this branch's own progress ledger as a
+  deliberate deferral) that was never actually logged as tech debt. `review-lifecycle`'s rule: a
+  deferral owes a debt entry, with a resolution condition, in the same stroke it's deferred — prose in a
+  plan file doesn't satisfy that. **Fixed**: added the entry to `api/Concertable.DataAccess/TECH_DEBT.md`
+  (the file owning the problem — the shared extension, not any one caller), naming every current call
+  site and the resolution condition (thread `ct` through `ToPaginationAsync`, a cross-service published-
+  package cutover).
 
-- [x] **NAT2 — LOW — efficiency** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Api/Controllers/UserController.cs`
-  `Me()` called `adminModule.EnsureCurrentUserAdminGrantedIfEligibleAsync()` then, on every request,
-  a second `adminModule.IsCurrentUserAdminAsync()` to read the result — a redundant DB round-trip on
-  the hottest authenticated endpoint in the app. Fixed:
-  `EnsureCurrentUserAdminGrantedIfEligibleAsync` now returns `Task<bool>` (whether the caller is admin
-  after the call) and `Me()` uses that value directly, dropping the second call.
+Everything else checked clean:
 
-- [x] **CONV1 — MEDIUM — test convention** — `api/Concertable.B2B/src/Modules/Admin/Tests/Concertable.B2B.Admin.IntegrationTests/AdminProvisioningTests.cs`,
-  `api/Concertable.B2B/src/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/UserProvisioningTests.cs`
-  Both files hand-wrote `fixture.Services.CreateScope()` to dispatch
-  `IIntegrationEventHandler<CredentialRegisteredEvent>` — `testing/INTEGRATION.md` requires
-  `IScoped<IEnumerable<IIntegrationEventHandler<TEvent>>>.RunAsync(...)` for exactly this (the
-  established precedent in `EscrowPaymentProcessorTests.cs`/`ApiFixture.cs`). Found via self-audit
-  against the actual standard after this branch's history showed it had been skipped. Fixed in both
-  files; the DbContext-scoping `CreateScope()` calls in `UserProvisioningTests.cs` used purely for
-  assertion reads are a different, legitimate use and were left as-is.
-
-- [x] **NAT3 — HIGH — correctness (CI-caught)** — `api/Concertable.B2B/tests/Concertable.B2B.CompositionTests/B2BCompositionTests.cs`
-  `Functions_MissingAdminModule_FailsWithUnresolvedDependency` asserted the **Workers** host fails
-  composition without `IAdminModule` — true under the old registration-time-grant design this branch's
-  #651 merge resolution correctly moved away from. `IAdminModule`'s only real consumer is now
-  `UserController.Me()` in the **Web** host, so Workers has nothing to lose and the test silently
-  stopped exercising anything (caught by CI's `composition-tests` job going red, not by local review).
-  Fixed: renamed to `Web_MissingAdminModule_FailsWithUnresolvedDependency`, asserting against the Web
-  host build instead. Verified: `Concertable.B2B.CompositionTests` 5/5 green.
-
-No further findings — checked correctness, microservice/module boundaries, C# conventions
-(`csharp-style`, `csharp-naming`), and test tier placement (`unit-testing`, `integration-testing`)
-against the branch's full diff. Security review: the post-login grant design
-(`EnsureCurrentUserAdminGrantedIfEligibleAsync` called from `UserController.Me()`, never from
-`CredentialRegisteredHandler` at registration time) correctly requires email verification before an
-admin grant can occur — the property this branch exists to establish — and was preserved intact
-through every origin/main merge in this branch's history, including the #651 module-extraction merge
-that could have silently reverted it.
+- **Lens A (correctness):** `GetPendingApprovalAsync`'s filter (`!Approved`), ordering (`Id` — no
+  `CreatedAt` on `VenueEntity`) and pagination are correct and match `ContentReportPrivilegedRepository`'s
+  established shape for an admin-gated queue. `VenueService`'s pass-through
+  (`repository call → .Map(ToPendingVenue)`) has no branching to get wrong. The `adminRepository` →
+  `privilegedRepository` field/parameter rename (both `VenueService` and `VenueServiceTests`) is
+  symmetric — no half-rename.
+- **Lens C (module boundaries):** `PendingVenue` stays `internal sealed record` in `Venue.Application`;
+  the controller returns it directly with no extra wrapper type, matching `ModerationController`'s own
+  precedent of returning its Application DTO verbatim.
+- **Lens E (conventions):** `PendingVenue` (not `PendingVenueDto` — matches this module's `VenueDetails`/
+  `VenueSummary`, no suffix). `VenueMappers.ToPendingVenue` is a C# 14 `extension()` block, not a legacy
+  `this`-parameter extension method. Both already corrected in this branch's own history
+  (`f5c070f7d`) before this review — verified still correct at current HEAD, not re-flagged.
+- **Lens F (test coverage):** `GetPendingApprovalAsync` has real 401/403/200 integration coverage
+  (`VenueApiTests.cs`), the 200 case asserting both inclusion of a freshly-created unapproved venue and
+  exclusion of the seeded pre-approved one — not just a shape check. No dedicated `VenueServiceTests`
+  unit test for the new service method: checked against precedent
+  (`ModerationService.GetQueueAsync`, the method this one explicitly mirrors) — same shape, same
+  coverage-at-the-integration-tier-only pattern, no unit test either. Consistent with established
+  convention, not a gap this diff introduces.
+- **Frontend:** `venues` feature is a structural match to `moderation` (same `api`/`hooks`/`components`/
+  `pages` layout, same `const BASE` route-literal convention, same `Table`/`PaginationControls`/`Spinner`
+  shared primitives). Route wiring (`routeTree.gen.ts`, nav link) is build-generated and consistent.
+- **The `origin/main` catch-up merge** (49 commits, clean, no conflicts) — rebuilt `Concertable.B2B.Web`
+  (0 errors) and `npm run build:admin` (green) post-merge; no stray `routeTree.gen.ts`/build-artifact
+  diffs left in the working tree after either build.
+- **Security layer (`merge_review_gate.py`'s repo-local `security_paths`, matched on `Controller[A-Za-z]*\.cs$`
+  — `VenueController.cs`; corrected from an earlier, wrong "no security-sensitive path" conclusion in
+  this review that only checked the hook's *generic* patterns, not this repo's own `.agents/merge-gate.json`
+  inventory):** the new endpoint is gated by `[Admin]` (`Concertable.B2B.Admin.Api.Authorization.AdminAttribute`
+  — a plain `AuthorizeAttribute` with `Policy = "Admin"`), the exact same attribute already guarding
+  `VenueController.Approve` two lines above it in this same file. No new policy, no new claim handling, no
+  new authorization mechanism — this endpoint reuses existing, already-audited enforcement verbatim.
+  `[FromQuery] PageParams` binds only page-number/page-size primitives through the existing `IPageParams`
+  shape already used by every other paginated admin endpoint in this codebase (e.g. `ModerationController`) —
+  no raw SQL, no string-built query, EF LINQ only (`Where(!Approved).OrderBy(Id)`). No credential, secret,
+  or auth-*logic* change anywhere in the diff. Verified `GetPendingApproval_ShouldReturn401_WhenUnauthenticated`
+  and `_ShouldReturn403_WhenNotAdmin` integration tests actually exercise both denial paths, not just the
+  200 case.

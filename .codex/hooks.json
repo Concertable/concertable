@@ -1,5 +1,5 @@
 {
-  "description": "Route writes, gate merges on a current review, and block incomplete plan-managed handoffs. Repo-local wiring remains active before plugin provisioning; shared invocation claims deduplicate it from the installed plugin.",
+  "description": "Load the behavioral floor, route writes, gate merges on a current review, and block incomplete plan-managed handoffs. Repo-local wiring remains active before plugin provisioning; shared invocation claims deduplicate it from the installed plugin.",
   "hooks": {
     "PreToolUse": [
       {
@@ -23,6 +23,19 @@
             "commandWindows": "\".agents/hooks/run-repo-hook.cmd\" merge_review_gate.py",
             "timeout": 15,
             "statusMessage": "Checking merge review"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py\"",
+            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/session_floor.py'), run_name='__main__')\"",
+            "timeout": 15,
+            "statusMessage": "Loading the always-on behavioral floor"
           }
         ]
       }

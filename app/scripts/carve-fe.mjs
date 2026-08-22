@@ -9,7 +9,7 @@ import { join } from "node:path";
 // here at install; a shared import absent from the feed fails at restore; a build that only resolves
 // via monorepo-root config fails standalone.
 //
-//   node scripts/carve-fe.mjs <surface> [--worktree] [--keep]
+//   node scripts/carve-fe.mjs <surface> [--worktree] [--prepare-only] [--keep]
 //
 // Requires GITHUB_PACKAGES_TOKEN (a PAT with read:packages) in the environment — same credential the
 // feed restore uses everywhere else.
@@ -19,6 +19,7 @@ import { join } from "node:path";
 // standalone build crashes without them. The value is never dereferenced — only shaped.
 const SURFACES = {
   "web/customer": { kind: "web", env: { VITE_CUSTOMER_API_URL: "https://carve.invalid/api" } },
+  "web/admin": { kind: "web", env: { VITE_B2B_API_URL: "https://carve.invalid/api" } },
   "web/b2b/venue": { kind: "web", env: { VITE_B2B_API_URL: "https://carve.invalid/api" } },
   "web/b2b/artist": { kind: "web", env: { VITE_B2B_API_URL: "https://carve.invalid/api" } },
   "web/b2b/business": { kind: "web", env: { VITE_B2B_API_URL: "https://carve.invalid/api" } },
@@ -29,12 +30,15 @@ const SURFACES = {
 const argv = process.argv.slice(2);
 const surface = argv.find((a) => !a.startsWith("--"));
 const useWorktree = argv.includes("--worktree");
+const prepareOnly = argv.includes("--prepare-only");
 const keep = argv.includes("--keep");
 
 if (!surface || !SURFACES[surface]) {
-  throw new Error(`Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--worktree] [--keep]`);
+  throw new Error(
+    `Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--worktree] [--prepare-only] [--keep]`,
+  );
 }
-if (!process.env.GITHUB_PACKAGES_TOKEN) {
+if (!prepareOnly && !process.env.GITHUB_PACKAGES_TOKEN) {
   throw new Error("GITHUB_PACKAGES_TOKEN is required (a PAT with read:packages).");
 }
 
@@ -56,7 +60,8 @@ const npmPrefix =
     : [];
 
 const work = mkdtempSync(join(tmpdir(), "carve-fe-"));
-const dir = join(work, "surface");
+const carveRoot = join(work, "repo");
+const dir = join(carveRoot, "app", ...surface.split("/"));
 // Fresh per-run cache by default (CI isolation); a persistent path speeds local iteration.
 const cache = process.env.CARVE_NPM_CACHE || join(work, "npm-cache");
 
@@ -67,16 +72,19 @@ function run(cmd, args, opts = {}) {
 }
 
 try {
-  // 1. Extract only the surface's tracked tree (no siblings, no .git) — BE parity: git archive, not
-  //    subtree-split. `<treeish>:<path>` yields the subtree; tar keeps it cross-platform (Linux CI).
+  // 1. Extract only the surface and its explicit shared build inputs (no siblings, no .git). Preserve
+  //    their app-relative paths: Vite configs legitimately import shared build tooling through those
+  //    paths, while the isolated carve root still prevents monorepo package/config leakage.
   const tar = join(work, "surface.tar");
-  execFileSync("git", ["archive", "--format=tar", "-o", tar, `${treeish}:app/${surface}`], {
+  const archivePaths = [`app/${surface}`];
+  if (spec.kind === "web") archivePaths.push("app/scripts/vite-development-https.ts");
+  execFileSync("git", ["archive", "--format=tar", "-o", tar, treeish, ...archivePaths], {
     cwd: repoRoot,
   });
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(carveRoot, { recursive: true });
   // Relative paths under cwd — an absolute Windows path (C:\...) makes GNU tar read the drive as a
   // remote host ("Cannot connect to C:"). Portable across the Linux CI and Windows tars.
-  run("tar", ["-xf", "surface.tar", "-C", "surface"], { cwd: work });
+  run("tar", ["-xf", "surface.tar", "-C", "repo"], { cwd: work });
 
   // 2. Rewrite intra-@concertable specifiers "*" -> "alpha": "*" links the workspace copy in-monorepo
   //    but is unresolvable from the feed (the tiers publish only alpha-tagged prereleases). The tag
@@ -105,25 +113,29 @@ try {
     ].join("\n"),
   );
 
-  // 4. Restore from the feed only — no workspace root above the temp dir to resolve @concertable/* from.
-  run(npm, [...npmPrefix, "install", "--no-audit", "--no-fund"], { cwd: dir });
-
-  // 5. Build the surface standalone.
-  if (spec.kind === "web") {
-    run(npm, [...npmPrefix, "run", "build"], { cwd: dir, env: { ...process.env, ...spec.env } });
+  if (prepareOnly) {
+    console.log(`\n>>> carve-fe ${surface}: isolated tree prepared OK`);
   } else {
-    // Mobile: typecheck, then bundle with `expo export`. tsc alone can't see metro/NativeWind/Tailwind
-    // config, so only the export proves those resolve @concertable/mobile from the feed dist (not the
-    // ../shared sibling, which the carved tree does not contain).
-    run(npm, [...npmPrefix, "exec", "--", "tsc", "--noEmit", "-p", "tsconfig.json"], { cwd: dir });
-    run(npm, [...npmPrefix, "exec", "--", "expo", "export", "--platform", "android"], {
-      cwd: dir,
-      env: { ...process.env, EXPO_NO_TELEMETRY: "1", CI: "1" },
-    });
-  }
+    // 4. Restore from the feed only — no workspace root above the temp dir to resolve @concertable/* from.
+    run(npm, [...npmPrefix, "install", "--no-audit", "--no-fund"], { cwd: dir });
 
-  console.log(`\n>>> carve-fe ${surface}: standalone restore + build OK`);
+    // 5. Build the surface standalone.
+    if (spec.kind === "web") {
+      run(npm, [...npmPrefix, "run", "build"], { cwd: dir, env: { ...process.env, ...spec.env } });
+    } else {
+      // Mobile: typecheck, then bundle with `expo export`. tsc alone can't see metro/NativeWind/Tailwind
+      // config, so only the export proves those resolve @concertable/mobile from the feed dist (not the
+      // ../shared sibling, which the carved tree does not contain).
+      run(npm, [...npmPrefix, "exec", "--", "tsc", "--noEmit", "-p", "tsconfig.json"], { cwd: dir });
+      run(npm, [...npmPrefix, "exec", "--", "expo", "export", "--platform", "android"], {
+        cwd: dir,
+        env: { ...process.env, EXPO_NO_TELEMETRY: "1", CI: "1" },
+      });
+    }
+
+    console.log(`\n>>> carve-fe ${surface}: standalone restore + build OK`);
+  }
 } finally {
-  if (keep) console.log(`\n(kept carved tree: ${dir})`);
+  if (keep) console.log(`\n(kept carve work: ${work})`);
   else rmSync(work, { recursive: true, force: true });
 }

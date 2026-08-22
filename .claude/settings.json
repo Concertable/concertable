@@ -35,6 +35,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/session_floor.py\"",
+            "timeout": 15
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {

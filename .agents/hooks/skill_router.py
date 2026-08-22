@@ -10,14 +10,31 @@ written". `.agents/skill-routes.json` maps path -> owning skill; a new concern i
 
 Two behaviours, and the difference matters:
 
-- **First write into a routed path in a session -> block once** with the owning skills and their own
-  descriptions, then allow every later write to that route. PreToolUse has no way to add context
-  without stopping the call, and stopping once is the point: it puts the standard in context *before*
-  the file exists, which costs one tool call and removes the discretion. State lives in a per-session
-  file, so it is one interruption per route, not per edit.
+- **First write into a routed path in a session -> block** with the owning skills and their own
+  descriptions, then allow a later write to that route once its skills are *proven* loaded - see the
+  session-proof paragraph below. PreToolUse has no way to add context without stopping the call, and
+  stopping is the point: it puts the standard in context *before* the file exists, which costs one tool
+  call.
 - **A deny pattern -> block every time.** Those are mechanically decidable violations, so they are not
   advice. A repo whose rules are also expressible in its build should enforce them there too - a hook
   matcher is per-tool and never sees `dotnet new`, a shell heredoc or an MCP write.
+
+**Session proof, not a one-time nag.** The failure this closes: a plugin can be installed/enabled at
+project scope *after* a session already started. The session's own `Skill`-tool registry does not
+hot-reload, so `Skill({skill: "<name>"})` returns `Unknown skill` even though the skill's `SKILL.md` is
+sitting right there on disk - `skill_description()` below finds it fine, because that is a filesystem
+check, not a query of the live session. A hook process cannot ask the running agent's tool registry
+whether a name resolves (no such channel exists), so it cannot detect this *before* the agent tries.
+What it CAN do is read the session transcript (`transcript_path`, on every hook's stdin payload) after
+the fact and look at the `Skill` tool_use/tool_result pair itself: a harness-authored `is_error: true`
+on that result is unambiguous proof the name did not resolve *in this session*, no matter what sits on
+disk. So a route no longer trusts a single nag forever - it re-checks the transcript on every write and
+only lets one through once a *successful* invocation of every owed skill is found there. A name the
+transcript shows was invoked and rejected blocks with a distinct message (restart the session - a stale
+registry is a session problem, not a fixable classification) instead of the ordinary "go invoke this"
+nag. Where no `transcript_path` is supplied at all (undocumented for some caller), this layer cannot run
+and the route falls back to the pre-existing single-nag-then-trust behaviour, so a caller that cannot
+supply the proof is not wedged shut by demanding one.
 
 Contract: exit 0 = allow, exit 2 = block with stderr fed back to the agent. Anything unexpected exits
 0 - a broken router must not wedge every write, since a build gate is the tier that guarantees.
@@ -284,6 +301,57 @@ def skill_description(name, harness):
     return None
 
 
+def transcript_skill_outcomes(transcript_path):
+    """Bare skill name -> whether the transcript proves it resolved this session, or None if unreadable.
+
+    Scans the session's own JSONL transcript for `Skill` tool_use blocks and the `tool_result` each
+    one's `id` pairs with. A result carrying `is_error: true` is the harness itself saying the name did
+    not resolve - not a guess, not a re-derivation, the exact fact this hook cannot otherwise observe.
+    A later success overrides an earlier failure (the registry can recover mid-session, e.g. after the
+    user restarts and resumes); a later failure never downgrades an earlier proven success.
+
+    Returns `None` - not `{}` - when the transcript itself could not be read at all, so the caller can
+    tell "proof is unavailable, fall back" apart from "proof was checked and found nothing yet".
+    """
+    if not transcript_path:
+        return None
+    outcomes = {}
+    pending = {}
+    try:
+        with open(transcript_path, encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                content = (entry.get("message") or {}).get("content")
+                if not isinstance(content, list):
+                    continue
+                for block in content:
+                    if not isinstance(block, dict):
+                        continue
+                    block_type = block.get("type")
+                    if block_type == "tool_use" and block.get("name") == "Skill":
+                        tool_id = block.get("id")
+                        name = (block.get("input") or {}).get("skill")
+                        if tool_id and isinstance(name, str) and name:
+                            pending[tool_id] = name.rpartition(":")[2] or name
+                    elif block_type == "tool_result":
+                        tool_id = block.get("tool_use_id")
+                        name = pending.pop(tool_id, None) if tool_id else None
+                        if name is None:
+                            continue
+                        succeeded = not bool(block.get("is_error"))
+                        if outcomes.get(name) is not True:
+                            outcomes[name] = succeeded
+    except OSError:
+        return None
+    return outcomes
+
+
 def state_path(session_id):
     key = hashlib.sha256((session_id or "nosession").encode()).hexdigest()[:16]
     return Path(tempfile.gettempdir()) / f"skill-router-{key}.json"
@@ -406,6 +474,23 @@ def query(argv):
     return 0
 
 
+def standards_corpus_absent(routes, harness):
+    """True only when the WHOLE corpus is unreachable - not one missing skill, every one.
+
+    A partially missing plugin is left to the per-route block below, which names the exact skill and
+    keeps that route blocked. This is the catastrophe check: the standards plugin did not load at all,
+    so a routed path finds no owner and an un-routed path would otherwise slip through unenforced. It
+    short-circuits the moment any skill resolves, so the common (loaded) case costs one lookup.
+    """
+    names = {name for route in routes for name in route.get("skills") or []}
+    if not names:
+        return False
+    for name in names:
+        if skill_description(name, harness) is not None:
+            return False
+    return True
+
+
 def verify_install(argv):
     index = argv.index(VERIFY_FLAG)
     harness = argv[index + 1].lower() if len(argv) > index + 1 else ""
@@ -487,6 +572,21 @@ def main():
         for route in matching_routes(routes, rel, content):
             matched.append((rel, route))
     if not matched:
+        # No route owns this path, so the per-route block below never sees it. That is safe only while
+        # the corpus is actually loaded; if not one routed skill resolves, the plugin did not load and
+        # an un-routed write is the last unguarded way to produce code against absent standards.
+        if standards_corpus_absent(routes, harness):
+            sys.stderr.write(
+                "SKILL ROUTER - blocked, the standards corpus is not loaded:\n\n"
+                f"  Not one skill named by {ROUTES_FILE} resolves for {harness}, so the agent-standards\n"
+                "  plugin did not load. This repo's conventions, routes and guardrails are all absent, so\n"
+                "  writing code now is blind and unenforced - the exact failure externalising the corpus\n"
+                "  was meant to prevent.\n\n"
+                "  Run scripts/provision-agent-standards.ps1 (or enable the plugin), then start a new\n"
+                "  session. The file was NOT written, and every write stays blocked until the corpus\n"
+                "  resolves.\n"
+            )
+            sys.exit(2)
         sys.exit(0)
 
     if not claim_invocation(data, "skill-router"):
@@ -524,20 +624,52 @@ def main():
             if descriptions[name] is None:
                 missing.add(name)
 
-    lines = ["SKILL ROUTER - a standard owns this path, and it has not been loaded this session:", ""]
+    # Proof, not a filesystem check alone: a name present on disk can still be `Unknown skill` in THIS
+    # session's own registry (a plugin enabled after the session started never hot-reloads into it).
+    # `missing` alone already forces the permanent block below, so the transcript is only worth reading
+    # when every name at least resolves on disk. No transcript -> outcomes is None -> reproduce the
+    # pre-existing single-nag-then-trust behaviour exactly, so a caller that cannot supply the proof is
+    # not wedged shut by demanding one.
+    outcomes = None if missing else transcript_skill_outcomes(data.get("transcript_path"))
+    fallback = not missing and outcomes is None
+    rejected, unproven = set(), set()
+    if not missing and outcomes is not None:
+        for name in descriptions:
+            outcome = outcomes.get(name.rpartition(":")[2] or name)
+            if outcome is False:
+                rejected.add(name)
+            elif outcome is not True:
+                unproven.add(name)
+
+    if not missing and not fallback and not rejected and not unproven:
+        for _, route in pending:
+            seen.add(route.get("path"))
+        save_seen(session, seen)
+        sys.exit(0)
+
+    lines = ["SKILL ROUTER - a standard owns this path, and it is not proven loaded this session:", ""]
     for rel, route in pending:
         lines += [f"  {rel}", ""]
         for name in route.get("skills") or []:
             desc = descriptions[name]
             lines.append(f"  * {name}")
-            if desc:
-                lines.append(f"      {desc}")
-            else:
+            if name in missing:
                 lines.append(
                     f"      NOT INSTALLED FOR {harness.upper()} - no SKILL.md is available to the "
                     "active harness. A route pointing at a missing skill is a deployment fault, not "
                     "a reason to proceed."
                 )
+            elif name in rejected:
+                lines.append(
+                    "      REJECTED THIS SESSION - its file is present, but invoking it returned an "
+                    "error (e.g. `Unknown skill`), so this session's own registry does not resolve it "
+                    "- typically a plugin enabled or updated after the session started, which does not "
+                    "hot-reload. Restart the session (exit and relaunch); if it still fails afterward, "
+                    "this is a genuine bug, report it. Do not read the standard's file directly and "
+                    "code from precedent as a substitute for actually invoking it."
+                )
+            elif desc:
+                lines.append(f"      {desc}")
         if route.get("note"):
             lines.append(f"      NOTE: {route['note']}")
     if missing:
@@ -547,7 +679,15 @@ def main():
             "was NOT written. This route remains blocked on every attempt until every owning skill "
             "is available.",
         ]
-    else:
+    elif rejected:
+        lines += [
+            "",
+            "The file was NOT written. This route stays blocked on every attempt until every owning "
+            "skill records a successful invocation in this session's transcript.",
+        ]
+    elif fallback:
+        # No transcript to prove anything either way - reproduce the pre-existing behaviour verbatim
+        # rather than demanding proof a caller was never able to supply.
         for _, route in pending:
             seen.add(route.get("path"))
         save_seen(session, seen)
@@ -555,6 +695,13 @@ def main():
             "",
             "Invoke the skill(s) above, then repeat this write. The file was NOT written. This fires "
             "once per path pattern per session, so it will not interrupt you again for this route.",
+        ]
+    else:
+        lines += [
+            "",
+            "Invoke the skill(s) above, then repeat this write. The file was NOT written. This route "
+            "stays blocked on every attempt until a successful invocation of every owning skill is "
+            "recorded in this session's transcript - not merely attempted once.",
         ]
     sys.stderr.write("\n".join(lines))
     sys.exit(2)
