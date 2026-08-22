@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `26645ecd1eca1787c91f294112efe606a1401436`  _(2026-08-22)_
+**Reviewed up to commit:** `6f12da7a3c14d8caf00b0792ceb49413fd7572d5`  _(2026-08-22)_
 
 > Range reviewed: working-tree diff against `origin/main` (uncommitted at review time; the commit that
 > lands carries this exact content).
@@ -74,3 +74,22 @@ No issues found. Checked:
 - **Security layer:** range touches no path matching this repo's security-sensitive patterns
   (`.github/workflows/`, `authoriz|authentic|credential|secret|password|apikey`) — no security-reviewed
   marker needed.
+
+## Incremental review — 2026-08-22
+
+CI's `hook-tests` job (run `32577886553`) caught three real gaps in this repo's own test fixtures, none
+in the vendored hooks themselves — fixed as `6f12da7a3`:
+
+- **Reverted** the `.codex/hooks.json` `merge_review_gate.py` wiring from the prior commit: its
+  `SHELL_TOOLS` vocabulary is still Claude-only, so that wiring was inert-while-looking-wired — exactly
+  the failure mode the pre-existing `SINGLE_HARNESS` exemption in `test_vendored_hooks.py` names.
+  Restored the exemption rather than leaving a non-functional wiring in place.
+- **Fixed** `test_vendored_hooks.py`'s `load_hook()` to put the hooks directory on `sys.path` before an
+  in-process `importlib` load — `merge_review_gate.py`'s new `hook_runtime` import is real and correct,
+  the test's loading style was the gap.
+- **Fixed** `test_a_non_test_csproj_is_allowed` (genuinely tripping `agent-standards` #27's fail-closed
+  absent-corpus block in a bare CI runner with no plugin installed anywhere) by planting one resolvable
+  skill under a fake plugin cache, matching `agent-standards`' own test pattern, so the test proves only
+  the route-matching behaviour it claims to.
+
+All 19 local tests pass (`python -m unittest discover -s .agents/hooks/tests -t .agents/hooks/tests`).
