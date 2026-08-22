@@ -6,6 +6,7 @@
 > in one line, take the safe path, keep going.
 
 **Reviewed up to commit:** `9e44faeb9006ad67ec784a2c342a32e567383567`  _(2026-08-22)_
+**Security-reviewed up to commit:** `cb79c6b590cdf6139cd9f23318bb046573987e63`  _(2026-08-22)_
 
 > Range reviewed: `549af7cc0..bda4ae413` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -26,6 +27,16 @@
   the static half, so the write-time hook won't load that skill before an author edits B2B's static ArchUnit
   rules. Add `dotnet-standards:module-structure` and `dotnet:module-structure` to that route's skills list
   (matching the pairing already used at line 32-37 for `\.Application/`).
+
+## Security review
+
+Range `549af7cc0..439be9780`, triggered because the branch's own diff touches `.github/workflows/test.yml`
+(the merge gate's security-sensitive path). No HIGH/MEDIUM findings. The workflow change is a straight
+identifier rename (`composition_projects`→`architecture_projects`, job `composition-tests`→
+`architecture-tests`, glob `*.CompositionTests.csproj`→`*.ArchitectureTests.csproj`) — no new interpolation
+of untrusted context into a `run:` block, `permissions:` and secrets usage unchanged, `matrix.project`
+values still come from a `find`/`jq` scan of filenames already committed to the repo (same trust boundary as
+before). No production code, auth logic, or endpoints touched.
 
 ## Native review (Layer 1)
 
