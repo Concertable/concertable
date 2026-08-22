@@ -19,20 +19,26 @@ were about to repeat before being written the other way.
 prefix, where a module genuinely calls more than one) at the top, with every method interpolating it
 instead of restating the literal.
 
-### The write-boundary pattern's pre-validation form state is named `XBuffer`, not `XDraft`
+### Hand-rolled `useState` + manual zod `safeParse` per field, where `react-hook-form` is now the standard
 
 `useReportMessage.ts`'s `ReportBuffer` (consumed by `ReportMessageDialog.tsx`, re-exported from
-`features/messaging/index.ts`) names the controlled-input state before it's parsed into a request
-`XBuffer`. "Buffer" reads as a binary/IO concept (and this same codebase already uses it correctly that
-way — `ArrayBuffer` reads in `concertApi.ts`, `blobApi.ts`); "draft" is the clearer, unambiguous name for
-"user-entered values not yet validated or committed."
+`features/messaging/index.ts`) hand-rolls the write-boundary pattern: a `useState` per field, a manually
+named pre-validation type (`XBuffer` — "buffer" also reads as a binary/IO concept, which this same
+codebase already uses correctly elsewhere for `ArrayBuffer` reads in `concertApi.ts`/`blobApi.ts`), and
+a facade hook exposing `validate`/`submit` that calls `schema.safeParse` by hand. `react-hook-form` +
+`@hookform/resolvers/zod` does this same job with less code and no separate draft type at all: the form
+owns its own field state, `zodResolver` runs the schema, and `formState.errors`/`isValid` replace the
+hand-rolled parse-on-every-render.
 
-Renamed in the admin console's own copy of this pattern (`InviteDraft`, `ResolveDraft` —
-`app/web/admin/src/features/{admins,moderation}/`) when this was raised; this entry is what's left.
-Sibling debt in `app/web/b2b/shared` (`InviteBuffer`, `OrganizationBuffer`) and `app/web/customer`
-(`ReviewBuffer`) covers the rest of the codebase.
+Migrated in the admin console's own copy of this pattern (`InviteForm`/`useInviteAdmin`,
+`ResolveReportDialog`/`useResolveReport` — `app/web/admin/src/features/{admins,moderation}/`) when this
+was raised; that's the model to follow. Sibling debt in `app/web/b2b/shared` (`InviteForm`/
+`useInviteMember`, `OrganizationForm`/`useOrganization`) and `app/web/customer` (`useAddReview`) covers
+the rest of the codebase. `useESignature.ts`'s canvas-drawn signature isn't a `react-hook-form` field in
+the usual sense (it's not a text/select input) — worth a second look when this is tackled, but likely
+stays a `useState`, just renamed away from "buffer".
 
-**Resolves when:** `ReportBuffer` → `ReportDraft` (type, hook parameter names, the re-export), matching
-the admin console's already-renamed pattern.
+**Resolves when:** `ReportMessageDialog`/`useReportMessage` uses `useForm` + `zodResolver` the same way,
+`ReportBuffer` and the manual `validate`/`safeParse` call disappear entirely rather than getting renamed.
 
 ---
