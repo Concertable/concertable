@@ -5,17 +5,20 @@
 - Roadmap item: `architecture-tests-rename/tier-collapse`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable`
 - Branch: `Refactor/architecture-tests-rename`
-- PR: none yet (branch pushed)
+- PR: [#746](https://github.com/Concertable/concertable/pull/746)
 - Package gate: Phase 2 renames the published `Concertable.Composition.Testing` package (publish-then-bump).
 
 ## Current state
 
-Phase 1 implemented, committed (`868a9868a`) and pushed. The Composition tier is gone: six
-composition-test projects are now `*.ArchitectureTests`, with B2B's dynamic host-graph tests folded into
-its existing `Concertable.B2B.ArchitectureTests` (as `B2BHostGraphTests`) alongside the static ArchUnit
-rules. Tier gate, CI leg, `test.ps1` suite, skill route, and all `.slnx` files updated. The shared
+Phase 1 implemented, committed (`868a9868a`), reviewed, and pushed; PR #746 open. The Composition tier is
+gone: six composition-test projects are now `*.ArchitectureTests`, with B2B's dynamic host-graph tests
+folded into its existing `Concertable.B2B.ArchitectureTests` (as `B2BHostGraphTests`) alongside the static
+ArchUnit rules. Tier gate, CI leg, `test.ps1` suite, skill route, and all `.slnx` files updated. The shared
 published lib `Concertable.Composition.Testing` is intentionally untouched (Phase 2), so the change is
-non-breaking. No PR opened yet (personal repo — PR is opt-in).
+non-breaking.
+
+The branch is 9 commits behind `origin/main` — currency must be resolved (merge main in, rebuild to 0
+errors, push) before enqueueing/merging; not a blocker for the open PR itself.
 
 ## Completed milestones
 
@@ -41,6 +44,7 @@ the pre-rename `composition-tests` CI matrix; the `.ArchitectureTests` skill rou
 
 ## Next Steps
 
-Open the PR (personal repo — PR is opt-in, review is done). Phase 2 (renaming the published
-`Concertable.Composition.Testing` package to `Concertable.Testing.Architecture` via publish-then-bump) is a
-separate chain that starts only after this PR lands.
+Bring the branch current with `origin/main` (9 commits behind), rebuild `api/Concertable.slnx` to 0 errors,
+push, then run `/merge` on [PR #746](https://github.com/Concertable/concertable/pull/746). Phase 2 (renaming
+the published `Concertable.Composition.Testing` package to `Concertable.Testing.Architecture` via
+publish-then-bump) is a separate chain that starts only after this PR lands.
