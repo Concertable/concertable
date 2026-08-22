@@ -110,7 +110,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | ~~N1~~ **done** | `.agents/skills/` — all 28 skills moved (6 of 6 families) | 3,285 lines | platform-wide, across `agent-process` + `dotnet` plugins | per-repo values: script paths, suite names |
 | ~~N2~~ **done** | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* (`SKILL_ROUTES.md`, skill `skill-routes`) + a generator (`gen_skill_routes.py`) | the table itself: per-repo data; `_comment` repointed |
 | ~~N3~~ **done** | `api/AGENTS.md` + `api/CLAUDE.md` deleted | 78 | agent-standards (shared-is-the-intersection → `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) | nothing |
-| N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
+| ~~N4~~ **done** | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` deleted, refs repointed | 62 + 525 | agent-standards (cross-service by definition) | nothing |
 | N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
 | N6 | `docs/` — `INDEX.md` 188 · `USP.md` 203 · `DEEP_RESEARCH_PROMPT_GUIDE.md` 81 · `OVERVIEW.md` 55 · `REMOTE_VALIDATION.md` 27 | 554 | mixed — see N6 | nothing |
 | N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
@@ -118,7 +118,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 
 **One node per slice, in this order.** ~~N1 first~~ and ~~N2~~ are **done**: every hub below N1 points *at*
 skills, so re-homing a hub before its targets have addresses writes pointers to nowhere; N2 was independent
-and ran alongside. ~~N3~~ **done**; N4–N6 + N7a follow. N7b waits on an external decision. N8 is last and is the only evidence.
+and ran alongside. ~~N3~~ **done**; ~~N4~~ **done**; N5–N6 + N7a follow. N7b waits on an external decision. N8 is last and is the only evidence.
 
 ### N1 — the 28 workflow skills (3,285 lines)
 
@@ -245,11 +245,20 @@ shared tier, so its "silent and expensive" trigger lived only in the always-load
   `ARCHITECTURE.md`, the roadmap north star). The backend floor is thereafter the route table over the
   `dotnet` plugin.
 
-### N4 — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525)
+### N4 — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525) ✅ **done**
 
 Cross-service by definition — the carve, the publish→sync loop, Contracts-only dependencies. Platform-wide
 in full, and the largest single document left. It is also what every service repo needs on day one to know
 what it may depend on, so it cannot be the last node moved.
+
+- **Producer (agent-standards #18 + #19):** the microservices architecture record homed platform-wide, plus
+  host-composition validation; #19 repointed the AppHost route note off the deleted `api/ARCHITECTURE.md`.
+  Both MERGED.
+- **Consumer (this repo):** split by branch type — `Docs/docs_polyrepo-ready-n4-architecture` (#715) deleted
+  both docs and repointed every guidance-doc link (landed through the merge queue, `skip-e2e`); the non-doc
+  citations (five service `Directory.Build.props`/`.targets`, five `*.Hosting.csproj`, `claude-review.yml`)
+  repointed to the `packages` skill on `Chore/polyrepo-n4-arch-ref-repoint` (#713). Both MERGED; publishes
+  succeeded and the final `chore/platform-sync-0.1.0-alpha.0.1128` sync (#724) merged green, non-breaking.
 
 ### N5 — root `AGENTS.md` (147 lines)
 

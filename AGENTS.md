@@ -93,9 +93,6 @@ Four things are expensive and silent enough to state here:
   `<ConcertablePlatformVersion>` pin, which merging `origin/main` fixes.
 - **A failed check is a real failure.** Surface it and debug it; never retry it, never toggle auto-merge
   to shake it loose.
-- **Never use the `Monitor` tool** to wait for a merge — its detached poller silently missed merges here
-  (it timed out instead of firing). Confirm with a capped Bash `run_in_background` until-loop that echoes
-  its state every poll and never swallows poll errors.
 - **Whoever merges owns the platform-sync PR** the merge triggers — below.
 
 ## Platform sync is a live gate — a package merge isn't done until its sync PR is green

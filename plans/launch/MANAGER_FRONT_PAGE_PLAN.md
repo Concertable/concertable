@@ -1,11 +1,12 @@
 # Manager Front Page Plan
 
-## Progress (2026-08-15, frontend package expansion)
+## Progress (2026-08-21, final consumer acceptance)
 
-**Branch:** `Feature/launch_dashboard-frontend-package-expand` — additive package producer for dependent dashboard PR [#563](https://github.com/Concertable/concertable/pull/563).
+**Branch:** `Feature/launch_dashboard-b2b-consumer` — draft PR [#563](https://github.com/Concertable/concertable/pull/563).
 
-**Phase A UI and Phase B implementation are complete on the dependent dashboard branch.** Its standalone carves are
-delivery-gated on publishing two additive `@concertable/b2b` exports from this producer branch.
+**Implementation, Phase A.8, current-main reconciliation, and incremental review are complete.** The live-data cutover,
+focused tests, authenticated Venue/Artist desktop-tablet-mobile acceptance, application mutations, contract download,
+and all review corrections are green. Exact-head CI, merge, platform sync, and lifecycle closeout remain.
 
 See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session decisions that supersede this plan in conflict.
 
@@ -18,8 +19,8 @@ See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session
 | B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code and all-module migration re-scaffold | `094fd4d4` + dashboard consumer commit `e4054a7e6` |
 | B.10 | Shared `IHasDateRange` marker + `IUpcomingSpecification<T>` / `IDateRangeSpecification<T>` specs | ✅ | `e2193f46` + `23c8fc4c` (added `ApplyExpression<TParent>` overload + `BuildPredicate` helper) |
 | B.11 | Dashboard KPI endpoint (venue + artist) — orchestration via Venue/Artist dashboard services, one SQL round trip via `ConcertDashboardRepository` + queryable mapper | ✅ KPI slice only | `d4f9a3a6` + `a91c7271` + `23c8fc4c` |
-| B.11 | Dashboard overview, activity, charts, canonical resources, and live SPA cutover | ✅ Implemented on dependent PR #563; package publication gate remains | `d82f93cb7` + `16baf7cc4` + `e4054a7e6` |
-| B.12 | Focused unit and SQL-backed integration coverage | ✅ Added on dependent PR #563; its exact-head CI remains gated | `e4054a7e6` |
+| B.11 | Dashboard overview, activity, charts, canonical resources, and live SPA cutover | ✅ Implemented on dependent PR #563; package publication gate resolved | `d82f93cb7` + `16baf7cc4` + `e4054a7e6` + `01c9fbff6` |
+| B.12 | Focused unit and SQL-backed integration coverage | ✅ Added on dependent PR #563; exact-head CI remains | `e4054a7e6` + `01c9fbff6` |
 
 ### B.11 KPI endpoint — what shipped
 
@@ -98,7 +99,7 @@ Each remaining endpoint has a clear docking point. Order by independence:
 | A.5 | Venue widgets + page + route | ✅ |
 | A.6 | Artist widgets + page; layout diverged from venue (NextConcertHero, ApplicationsPipeline, no Settlements/Open opps) | ✅ |
 | A.7 | Stripe + Profile-Health banners | ✅ Done via overview widgets |
-| A.8 | UX freeze, persona switch verification, builds green | ⏳ Pending (eyeball with three personas; tablet/mobile responsive pass) |
+| A.8 | Authenticated live-data UX freeze; application actions; responsive review | ✅ Venue and Artist passed at 1440×1000, 834×1112, and 390×844; mutations and contract download exercised |
 
 **Session-2 deltas (committed in 5fb54e96):**
 
@@ -111,9 +112,7 @@ Each remaining endpoint has a clear docking point. Order by independence:
 - **Page wrapper** drops `max-w-7xl` for full-bleed; `DashboardCard` is `h-full` so paired rows align.
 - BE endpoint refinement: dashboard controller only owns aggregations (`overview`, `kpis`, `activity`). Plain lists (`applications`, `inbox`, `upcoming-concerts`, `settlements`, `recommended-opportunities`) hit canonical resource controllers filtered to "me". Updates Round-trip plans below.
 
-**Open Phase A todo:**
-
-- **A.8 UX freeze** — spin up dev server, hit `/_venue/` and `/_artist/`, toggle `?persona=empty|mid|thriving`, verify responsive collapse. Auth-gated routes; either log in as seeded venue/artist manager or temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`. Independent of Phase B work and can be picked up at any time.
+**Open Phase A todo:** none.
 
 **Key divergences from original plan** (codified in FEEDBACK.md):
 
@@ -443,7 +442,7 @@ composed server-side from one or more module-facade calls
 | VS1 | Header (welcome + profile health + Stripe + reviews) | `GET /api/venues/me/dashboard/header` | `VenueDashboardHeaderDto` | `IVenueModule.GetProfileHealthAsync` + `IPaymentModule.GetConnectStatusAsync` + `IReviewModule.GetVenueReviewSummaryAsync` (parallel) | on mount |
 | VS2 | KPI strip (4 numbers) | `GET /api/venues/me/dashboard/kpis` | `VenueDashboardKpisDto` | `IConcertModule.{applicationsAwaitingReview, openOpportunities, upcomingConcerts(days=30)}CountAsync` + `IPaymentModule.GetVenueTicketRevenueMtdAsync` (parallel) | 30s |
 | VS3 | Applications to review list | `GET /api/venues/me/dashboard/applications-to-review?take=5` | `ApplicationDto[]` | `IConcertModule.GetVenueApplicationsAwaitingReviewAsync` | 30s |
-| VS4 | Inbox preview | `GET /api/venues/me/dashboard/inbox?take=5` | `MessageThreadDto[]` | `IMessagingModule.GetRecentThreadsAsync` | 30s |
+| VS4 | Inbox preview | `GET /api/venues/me/dashboard/inbox?take=5` | `MessagePreviewDto[]` | `IMessageService.GetRecentPreviewsAsync` | 30s |
 | VS5 | Upcoming concerts strip | `GET /api/venues/me/dashboard/upcoming-concerts?take=5` | `ConcertCardDto[]` | `IConcertModule.GetVenueUpcomingConcertsAsync` | 60s |
 | VS6 | Ticket revenue chart (6-month series, gross + net) | `GET /api/venues/me/dashboard/charts/ticket-revenue?monthsBack=6` | `MonthlyRevenuePointDto[]` | `IPaymentModule.GetVenueTicketRevenueByMonthAsync` | 60s |
 | VS7 | Open opportunities | `GET /api/venues/me/dashboard/open-opportunities` | `OpportunityWithCountsDto[]` (opportunity + application count + days-until) | `IConcertModule.GetVenueOpenOpportunitiesAsync` (one query joining application counts) | 60s |
@@ -471,7 +470,7 @@ live in `Venue.Application/DTOs/` since the orchestration owns them.
 - `OpportunityWithCountsDto { Opportunity: OpportunityDto, ApplicationCount: int, DaysUntilDeadline: int }`
 
 Reuse existing DTOs where possible (`ApplicationDto`, `ConcertCardDto`,
-`ReviewSummaryDto`, `MessageThreadDto`).
+`ReviewSummaryDto`, `MessagePreviewDto`).
 
 ## Artist front page
 
@@ -509,7 +508,7 @@ Reuse existing DTOs where possible (`ApplicationDto`, `ConcertCardDto`,
 | AS1 | Header | `GET /api/artists/me/dashboard/header` | `ArtistDashboardHeaderDto` | `IArtistModule.GetProfileHealthAsync` + `IPaymentModule.GetConnectStatusAsync` + `IReviewModule.GetArtistReviewSummaryAsync` (parallel) | on mount |
 | AS2 | KPI strip | `GET /api/artists/me/dashboard/kpis` | `ArtistDashboardKpisDto` | `IConcertModule.{applications(status=Pending), applications(status=AcceptedAwaitingCheckout), upcomingConcerts(days=30)}CountAsync` + `IPaymentModule.GetArtistPayoutsMtdAsync` (parallel) | 30s |
 | AS3 | My applications (grouped by status) | `GET /api/artists/me/dashboard/applications?take=10` | `ApplicationDto[]` | `IConcertModule.GetArtistApplicationsAsync` | 30s |
-| AS4 | Inbox preview | `GET /api/artists/me/dashboard/inbox?take=5` | `MessageThreadDto[]` | `IMessagingModule.GetRecentThreadsAsync` | 30s |
+| AS4 | Inbox preview | `GET /api/artists/me/dashboard/inbox?take=5` | `MessagePreviewDto[]` | `IMessageService.GetRecentPreviewsAsync` | 30s |
 | AS5 | Upcoming gigs strip | `GET /api/artists/me/dashboard/upcoming-gigs?take=5` | `ConcertCardDto[]` | `IConcertModule.GetArtistUpcomingConcertsAsync` | 60s |
 | AS6 | Payout trend chart (6-month series) | `GET /api/artists/me/dashboard/charts/payouts?monthsBack=6` | `MonthlyRevenuePointDto[]` (reused DTO) | `IPaymentModule.GetArtistPayoutsByMonthAsync` | 60s |
 | AS7 | Recommended opportunities | `GET /api/artists/me/dashboard/recommended-opportunities?take=5` | `OpportunityCardDto[]` | `ISearchModule.GetRecommendedOpportunitiesForArtistAsync` | 60s |
@@ -525,7 +524,7 @@ Reuse existing DTOs where possible (`ApplicationDto`, `ConcertCardDto`,
 
 Reuse `MonthlyRevenuePointDto`, `ActivityItemDto`, `ApplicationDto`,
 `ConcertCardDto`, `ReviewSummaryDto`, `OpportunityCardDto`,
-`MessageThreadDto`.
+`MessagePreviewDto`.
 
 ## Backend additions — summary by module
 
@@ -584,7 +583,7 @@ Repo implementations compose: inline `.Where(x => x.VenueId == venueId)` /
 
 ### `IReviewModule` / `IMessagingModule` / `ISearchModule`
 
-- Verify existence of `GetVenueReviewSummaryAsync`, `GetArtistReviewSummaryAsync`, `GetRecommendedOpportunitiesForArtistAsync`, `GetRecentThreadsAsync` before adding. Where they exist, reuse; where they don't, follow the same single-query-via-spec pattern.
+- Verify existence of `GetVenueReviewSummaryAsync`, `GetArtistReviewSummaryAsync`, `GetRecommendedOpportunitiesForArtistAsync`, `GetRecentPreviewsAsync` before adding. Where they exist, reuse; where they don't, follow the same single-query-via-spec pattern.
 
 ### Migrations
 
