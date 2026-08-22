@@ -34,10 +34,13 @@ non-breaking. No PR opened yet (personal repo — PR is opt-in).
 
 ## Reviews
 
-None yet.
+`reviews/Refactor-architecture-tests-rename.md`, reviewed up to `bda4ae413`. Native layer (Layer 1): no
+findings. Repo lenses: two findings, both fixed and committed (`349920c18`) — `docs/INDEX.md` still named
+the pre-rename `composition-tests` CI matrix; the `.ArchitectureTests` skill route was missing
+`module-structure` for the static ArchUnit half B2B's own AGENTS.md says that skill governs.
 
 ## Next Steps
 
-Run `/review` on this branch, then address any findings. Open the PR when ready. Phase 2 (renaming the
-published `Concertable.Composition.Testing` package to `Concertable.Testing.Architecture` via
-publish-then-bump) is a separate chain that starts only after this PR lands.
+Open the PR (personal repo — PR is opt-in, review is done). Phase 2 (renaming the published
+`Concertable.Composition.Testing` package to `Concertable.Testing.Architecture` via publish-then-bump) is a
+separate chain that starts only after this PR lands.
