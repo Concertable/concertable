@@ -5,10 +5,10 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9b2248a78981ac200d2d06acd98077aad1287ac5`  _(2026-08-21)_
-**Security-reviewed up to commit:** `9b2248a78981ac200d2d06acd98077aad1287ac5`  _(2026-08-21)_
+**Reviewed up to commit:** `0ae63fb63d2d36c136737d852671c8bbbb0bd9d0`  _(2026-08-22)_
+**Security-reviewed up to commit:** `0ae63fb63d2d36c136737d852671c8bbbb0bd9d0`  _(2026-08-22)_
 
-> Range reviewed: `2323c77e7..9b2248a78` (2 commits).
+> Range reviewed: `2323c77e7..9b2248a78` (original 2 commits) + base merge to `0ae63fb63` (see incremental note below).
 > Two mandatory layers (native general review + security layer for the touched `Controller*.cs` / `Concertable.Payment` paths) plus the architecture-aware lenses. Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -46,3 +46,21 @@
 - **~30 anonymous-by-omission read endpoints (security Gap C):** the largest residual exposure (private
   contract/invoice PDFs on unauthenticated GETs, fail-closed only via a service-layer filter) — logged, needs a
   per-endpoint public/private classification.
+
+## Incremental review — 2026-08-22 (base merge `origin/main` → `0ae63fb63`)
+
+`origin/main` advanced 113 commits during the merge attempt, so base was merged into the branch. Those
+commits are others' already-reviewed, already-merged PRs — not re-reviewed here. The only new,
+previously-unreviewed code is one merge-conflict resolution, plus one stale-reference fix:
+
+- **`ControllerBoundaryTests.cs` conflict resolution** — main renamed the shared helper
+  `ControllerTypes()` → `GetControllers()` and added `Controller_route_segments_match_controller_names_and_routes`.
+  Resolved by keeping main's helper + new test and re-adding `Mutating_endpoints_declare_authorization_explicitly`
+  on the shared helper, extended so `GetControllers()` also scans `Concertable.B2B.Web.dll` (keeps `BlobController`
+  in the mutating-guard's scope; harmless to the other two tests — Web-host controllers have no `RouteSegment`
+  field and don't inject `TimeProvider`). Verified: B2B + Payment build clean, `ArchitectureTests` 11/11 pass.
+- **`api/TECH_DEBT.md`** — the cross-reference to the "hand-rolled boundary guard" item was retargeted: PR #725
+  resolved and deleted that item by building the shared `Concertable.Composition.Testing` assembly-guard helper,
+  so the note now points at that existing helper as the model for a shared auth-guard.
+
+No new findings.
