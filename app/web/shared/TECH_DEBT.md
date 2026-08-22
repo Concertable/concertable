@@ -34,10 +34,9 @@ reactive sources for the same fetch — `useQuery(meQueryKey)` directly, or `use
 
 This is the literal shape `app/agents/CODE_PATTERNS.md` ("A domain's reactive state has explicit
 homes") already calls out as the violation: *"Server data copied into a store... snapshots cache data
-into global state, which breaks background refetch."* That section's example is
-`useConcertStore.draft`; `useAuthStore` is the same anti-pattern in the auth feature, just not yet
-flagged. TanStack Query already provides everything the store adds (reactivity, caching, dedup) — the
-store is a second cache for identical data, not a distinct capability.
+into global state, which breaks background refetch."* TanStack Query already provides everything the
+store adds (reactivity, caching, dedup) — the store is a second cache for identical data, not a distinct
+capability.
 
 Confirmed consumers of `useAuthStore` today: `ProfileMenu.tsx`, `Navbar.tsx`, `ProfilePage.tsx`,
 `features/auth/guards.ts` (writes it from `ensureUser`), and B2B artist's `useApply.ts`. None of them

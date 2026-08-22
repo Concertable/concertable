@@ -7,37 +7,36 @@
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: none
 - Dependency/package gates: none; PRs #595, #600, and #637 are merged; the branch-time platform-sync check found no completed red check
-- Last reconciled: 2026-08-22 against `origin/main` at `09c535eb8101cccf93b8652f167245732daed244`, current frontend source, open PRs, and registered worktrees
+- Last reconciled: 2026-08-22 against `origin/main` at `1452b5b8b0ccd01523d2493283b8497070a60c02`, current frontend source, open PRs, and registered worktrees
 
 ## Current state
 
-Phases 0 and 1 are complete. The dependency gate cleared, the canonical branch owns the
-implementation, and the inventory was refreshed after the frontend guidance and package-topology
-changes landed.
+Phases 0 through 2 are complete. The dependency gate cleared, the canonical branch owns the
+implementation, and the inventory and plan now reflect React Hook Form as the interactive form-state
+boundary.
 
 The direct label tables, `paymentSummary`, cohesive `consent` service, canonical
-`Opportunity.toRequest`, Organization buffer/request companions, raw-buffer validation, and tenant
-barrel contraction are implemented and verified. Consent-owned absence is `undefined` and its stored
-value is `StoredConsent`; only browser Storage signatures and JavaScript object validation retain
-`null`.
+`Opportunity.toRequest`, RHF/Zod form boundaries, slim request contracts, and tenant barrel
+contraction are implemented and verified. Consent-owned absence is `undefined` and its stored value
+is `StoredConsent`; only browser Storage signatures and JavaScript object validation retain `null`.
 
-The plan now also owns the audited store boundaries and codebase-wide absence normalization. The
-editor-store work stays in the existing Concert/Artist/Venue phases because those phases already
-change the same buffers. Auth/search encapsulation and the full `null` audit are Phase 4.
+The Concert editor store is deleted. Artist and Venue store removal remains in Phase 3 alongside
+their multipart request cut-over. Auth/search encapsulation and the full `null` audit remain Phase 4.
 
 ## Next Steps
 
-Begin Phase 2 in this worktree:
+Begin Phase 3 in this worktree:
 
-1. Split route identity from the shared review request, add the web-customer `ReviewBuffer` companion,
-   and map only its parsed data to `CreateReviewRequest`.
-2. Move report-message normalization into its Zod schema and remove the pre-parse object mapper.
-3. Replace Preference's read-as-write mutation input with a slim parsed request, preserving selected
-   genres for both create and update.
-4. Introduce the shared Concert buffer/request contracts and `Concert.toBuffer`, then make
-   `useMyConcert` the complete editor facade and remove public store consumption.
-5. Run the Phase 2 focused tests and package builds, update this ledger with exact evidence, and commit
-   the coherent phase checkpoint. Do not start Phase 3 in the same turn.
+1. Reconcile the current Artist and Venue APIs, hooks, forms, stores, schemas, and multipart tests
+   against the Phase 3 inventory before editing.
+2. Move slim create/update request interfaces into each feature's `types.ts`; add
+   `Artist.toUpdateRequest` and `Venue.toUpdateRequest` for read-model initialization.
+3. Move Artist and Venue interactive state to RHF plus `zodResolver`, add create workflow hooks where
+   needed, and delete both editor stores and every public/component store import.
+4. Keep PascalCase multipart conversion module-private in the API files and test request projection
+   separately from exact multipart encoding.
+5. Run focused tests, universal package builds, and both mobile gates; update this ledger and commit
+   the Phase 3 checkpoint. Do not start Phase 4 in the same turn.
 
 ## Completed work
 
@@ -57,14 +56,24 @@ Begin Phase 2 in this worktree:
   shape to `StoredConsent`, and changed owned absence from `null` to `undefined`.
 - Added `OpportunityRequest` and the canonical `Opportunity.toRequest` companion and replaced the
   anonymous API projection with `desired.map(Opportunity.toRequest)`.
-- Added `Organization.toBuffer` and `OrganizationBuffer.toUpdateRequest`, moved the request contract
-  into `types.ts`, and made the form parse its raw buffer before request construction.
+- Added `Organization.toFormValues`, moved the request contract into `types.ts`, and made RHF/Zod
+  transform flat form values directly into the nested request.
 - Removed unused tenant membership derivations from the public barrel and added focused Opportunity,
   Organization, schema, and consent coverage.
+- Split review route identity from `CreateReviewRequest`; Review and report-message now use RHF with
+  Zod normalization and their hooks accept request contracts only.
+- Replaced Preference's read-as-write update with one slim `PreferenceRequest`; RHF now preserves the
+  selected genres for both create and update.
+- Added `Concert.toUpdateRequest`, moved the request interface into `types.ts`, moved editor state into
+  RHF-owned `useMyConcert`, and deleted `useConcertStore` and all of its exports/imports.
+- Removed the remaining hand-written form-state abstractions by converting Invite and Organization to
+  RHF; production `Buffer` references now describe only binary `ArrayBuffer` values.
+- Deleted the three resolved RHF technical-debt entries and removed the stale Concert-store citation
+  from the remaining auth debt.
 
 ## Verification
 
-- Baseline source: `origin/main` at `09c535eb8101cccf93b8652f167245732daed244`.
+- Reconciled source: `origin/main` at `1452b5b8b0ccd01523d2493283b8497070a60c02`.
 - `gh pr view` confirms #595 merged at 2026-08-20T21:21:17Z, #600 at
   2026-08-21T10:10:55Z, and #637 at 2026-08-19T19:29:52Z.
 - Branch-time platform-sync inspection found no completed red check on the open sync PR.
@@ -89,6 +98,21 @@ Begin Phase 2 in this worktree:
 - Pre-edit audits captured every production import of `useAuthStore`, `useSearchFiltersStore`,
   `useArtistStore`, `useVenueStore`, and `useConcertStore`; only Opportunities and Tenant already
   satisfy the private-store boundary.
+- Phase 2 focused tests passed: 24 files and 69 tests across `@concertable/shared`,
+  `@concertable/customer`, `@concertable/web`, `@concertable/web-customer`, and
+  `@concertable/web-b2b`.
+- Phase 2 package builds passed for `@concertable/shared`, `@concertable/customer`,
+  `@concertable/web`, `@concertable/web-b2b`, and `@concertable/mobile`.
+- Mobile Customer and the Customer, Venue, Artist, and Business web application typechecks passed.
+  The web application checks were run serially because concurrent TypeScript processes can race on
+  TanStack Router's generated route types.
+- Customer, Venue, Artist, and Business production Vite builds passed after the final RHF changes.
+  Existing Vite configuration and chunk-size warnings remain warnings only.
+- All seven frontend dependency-cruiser boundary scopes and all five boundary-script carve tests
+  passed.
+- The production custom-buffer search now finds only three genuine binary `ArrayBuffer` uses.
+- Phase 2 final `git diff --check`, plan-graph validation, and documentation-reachability validation
+  passed with zero errors or warnings.
 
 ## Reviews
 
@@ -101,8 +125,8 @@ findings were fixed; incremental review found no issues in the ledger checkpoint
 - `Opportunity.toRequest`, not `OpportunityRequest.from`, is the canonical spelling.
 - Companions stay in feature `types.ts` for this migration. No threshold or speculative folder split
   is left for the implementer to decide.
-- Zod remains the only added behaviour at form boundaries and is already installed; no new dependency
-  is planned.
+- React Hook Form owns interactive form state and `zodResolver` owns parsing. Both libraries already
+  existed in the monorepo; affected workspaces now declare their direct dependencies explicitly.
 - The inventory includes implicit mappings where a read type is reused as a write body, even if no
   function is currently named mapper.
 - Backend mappers are excluded.
@@ -114,8 +138,9 @@ findings were fixed; incremental review found no issues in the ledger checkpoint
 - Raw `Query`/`Mutation` hooks remain valid public server-state APIs. Facades are required when a
   consumer would otherwise assemble store transitions, validation, derivation, or navigation.
 - The worktree's first `npm ci` was interrupted by slow Windows file scanning and left partially
-  extracted ignored dependencies. Verification restored exact locked package contents from a
-  complete sibling worktree or exact npm tarballs; no manifest or lockfile changed.
+  extracted ignored dependencies. Verification restored exact locked package contents from npm's
+  complete staging directories or a complete sibling worktree. Phase 2 intentionally changes
+  workspace manifests and lockfile workspace entries for direct RHF/Zod/Vitest dependencies.
 
 ## Resume prompt
 

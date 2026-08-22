@@ -1,10 +1,16 @@
 import type { ActionLink } from "../../types/common";
-import type { ReportCategory } from "./schemas/reportMessageRequestSchema";
 
-export type {
-  ReportCategory,
-  ReportMessageRequest,
-} from "./schemas/reportMessageRequestSchema";
+export type ReportCategory =
+  | "illegalContent"
+  | "harassment"
+  | "fraud"
+  | "spam"
+  | "other";
+
+export interface ReportMessageRequest {
+  category: ReportCategory;
+  details?: string;
+}
 
 export const REPORT_CATEGORY_LABELS: Record<ReportCategory, string> = {
   illegalContent: "Illegal content",
