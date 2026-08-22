@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `aaedcdc4d6204daba0178e128bfb9f3418e26cfc`  _(2026-08-22)_
-**Security-reviewed up to commit:** `aaedcdc4d6204daba0178e128bfb9f3418e26cfc`  _(2026-08-22)_
+**Reviewed up to commit:** `6062892f9bc002c753cddb0177403d4a793382a0`  _(2026-08-22)_
+**Security-reviewed up to commit:** `6062892f9bc002c753cddb0177403d4a793382a0`  _(2026-08-22)_
 
 > Range reviewed: `549af7cc0..bda4ae413` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -61,3 +61,11 @@ gained 6 more commits, the N5 root-`AGENTS.md` thin, while this review was in fl
 auto-merged cleanly — the CV1 fix line survived intact (`grep` confirmed post-merge). True branch-owned diff
 (`merge-base(origin/main, HEAD)..HEAD`) is byte-identical in file set to the first incremental pass; nothing
 new to review. No findings.
+
+## Incremental review — 2026-08-22 (third)
+
+Range `aaedcdc4d..6062892f9`: a third `origin/main` merge, picking up the platform-sync PR #744
+(`ConcertablePlatformVersion` bump across five `Directory.Packages.props` files) that landed on main while
+this review was in flight. Clean merge, no conflicts. True branch-owned diff (`merge-base(origin/main,
+HEAD)..HEAD`) is byte-identical in file set to the prior two incremental passes — the version-pin bump isn't
+part of this branch's own diff. No findings.
