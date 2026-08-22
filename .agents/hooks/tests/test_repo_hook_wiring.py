@@ -13,6 +13,13 @@ SCRIPTS = {
     "merge_review_gate.py",
     "plan_handoff_stop_launcher.py",
 }
+CODEX_SCRIPTS = SCRIPTS | {"session_floor.py"}
+
+WINDOWS_LAUNCH_PREFIX = (
+    'for /f "delims=" %R in '
+    "('git rev-parse --show-toplevel 2^>nul') "
+    'do @call "%R\\.agents\\hooks\\run-repo-hook.cmd" '
+)
 
 
 def handlers(path):
@@ -22,10 +29,10 @@ def handlers(path):
             yield from group["hooks"]
 
 
-def payload(script):
+def payload(script, cwd=REPO):
     data = {
         "session_id": f"repo-hook-{uuid.uuid4().hex}",
-        "cwd": str(REPO),
+        "cwd": str(cwd),
     }
     if script == "skill_router.py":
         data.update(
@@ -67,17 +74,22 @@ class RepoHookWiringTests(unittest.TestCase):
     def test_codex_windows_commands_launch_every_repo_hook(self):
         if os.name != "nt":
             self.skipTest("Windows command contract")
+        nested_cwd = REPO / ".agents" / "hooks" / "tests"
         actual = list(handlers(REPO / ".codex" / "hooks.json"))
-        scripts = {item["commandWindows"].split()[-1] for item in actual}
-        self.assertEqual(SCRIPTS, scripts)
+        commands = [item["commandWindows"] for item in actual]
+        self.assertTrue(
+            all(command.startswith(WINDOWS_LAUNCH_PREFIX) for command in commands)
+        )
+        scripts = {command.removeprefix(WINDOWS_LAUNCH_PREFIX) for command in commands}
+        self.assertEqual(CODEX_SCRIPTS, scripts)
         for item in actual:
-            script = item["commandWindows"].split()[-1]
+            script = item["commandWindows"].removeprefix(WINDOWS_LAUNCH_PREFIX)
             result = subprocess.run(
                 f'cmd.exe /D /S /C "{item["commandWindows"]}"',
-                input=payload(script),
+                input=payload(script, nested_cwd),
                 capture_output=True,
                 text=True,
-                cwd=REPO,
+                cwd=nested_cwd,
             )
             self.assert_launched(result)
 

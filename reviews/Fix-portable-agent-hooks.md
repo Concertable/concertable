@@ -22,10 +22,15 @@
   now requires the canonical absolute `pushd` checkout envelope, while Claude evaluates the same proven
   target and fails closed on attempted-but-unprovable `pushd` forms. The producer's 59-test merge-gate suite,
   the 13-test consumer provenance suite, and `vendor-hooks.ps1 -Check` all pass.
-- [ ] **NAT2 — HIGH — native** — `.codex/hooks.json:11`
+- [x] **NAT2 — HIGH — native** — `.codex/hooks.json:11`
   Windows launch commands use a repo-root-relative wrapper path even though Codex sessions can start in any
   repository subdirectory. Resolve the wrapper from the Git top level without reintroducing quote-sensitive
   inline Python, and execute all three commands from a nested cwd.
+
+  **Resolved:** Every repo-local Codex event now resolves the shared `run-repo-hook.cmd` launcher through
+  `git rev-parse --show-toplevel`, including `SessionStart`; the inline Python launcher is gone. The focused
+  Windows wiring regression executes all four exact manifest commands through `cmd.exe` from
+  `.agents/hooks/tests` and proves each intended hook script launches successfully.
 - [ ] **NAT3 — MEDIUM — native** — `.agents/hooks/tests/test_repo_hook_wiring.py:68`
   The consumer suite executes Codex commands only on Windows, leaving the changed POSIX commands unexecuted
   on Linux/macOS. Execute every POSIX command through Bash on POSIX alongside the nested-cwd Windows cases.
