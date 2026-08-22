@@ -23,7 +23,9 @@ push checkpoint were then transported at `fcaa35f5d`; fresh exact-head CI run `3
 expected merge-group-only skips. A final two-commit main advance was then merged cleanly at `6b48d0e5f`; it only moves
 all five service pins to the already-green `0.1.0-alpha.0.1128` platform package. Incremental review found and fixed
 one stale ledger statement; exact reviewed work head is now `b4eb94e5005a264bb575dcb91a7d8a2a2261f32d` and its
-native/security correction-tail re-reviews are clean. The delivered work includes:
+native/security correction-tail re-reviews are clean. That exact work head was pushed from `fcaa35f5d`; refreshed
+remote-tracking and PR heads both equal `b4eb94e5005a264bb575dcb91a7d8a2a2261f32d`. The review transport is the only
+remaining local tail. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -78,7 +80,7 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Push exact reviewed work head `b4eb94e50`, transport its review/checkpoint, and require fresh exact-head CI green.
+1. Transport the final review and verified-push checkpoint, then require fresh exact-head CI green.
 2. Recheck base currency, re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -176,6 +178,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 - Second reconciliation work-head push: starting remote/PR `8a6086b07f1185bc4338c22d6e1cd844fce232ce`;
   pushed `8a6086b07..98b526b57`; refreshed remote-tracking and PR heads both verified at
   `98b526b57d1c5d9ea6f609e290f982094bff2d8b`.
+- Final platform-sync reconciliation work-head push: starting remote/PR `fcaa35f5d3b14b776f0cf0e69db30654bc245698`;
+  pushed `fcaa35f5d..b4eb94e50`; refreshed remote-tracking and PR heads both verified at
+  `b4eb94e5005a264bb575dcb91a7d8a2a2261f32d`.
 
 ## Reviews
 
