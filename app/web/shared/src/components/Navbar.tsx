@@ -21,6 +21,29 @@ export interface NavLink {
   href?: string;
 }
 
+function NavLinkAnchor({ link, className }: Readonly<{ link: NavLink; className?: string }>) {
+  return link.href ? (
+    <a
+      href={link.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+      data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
+    >
+      {link.label}
+    </a>
+  ) : (
+    <Link
+      to={link.to!}
+      activeOptions={{ exact: true }}
+      className={className}
+      data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
+    >
+      {link.label}
+    </Link>
+  );
+}
+
 interface Props {
   links: NavLink[];
   profileItems?: ProfileMenuItem[];
@@ -69,30 +92,13 @@ export function Navbar({
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
-          {links.map((link) =>
-            link.href ? (
-              <a
-                key={link.href}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary-foreground/70 hover:text-primary-foreground text-sm transition-colors"
-                data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link
-                key={link.to}
-                to={link.to!}
-                activeOptions={{ exact: true }}
-                className="text-primary-foreground/70 hover:text-primary-foreground [&.active]:text-primary-foreground text-sm transition-colors [&.active]:font-medium"
-                data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
-              >
-                {link.label}
-              </Link>
-            )
-          )}
+          {links.map((link) => (
+            <NavLinkAnchor
+              key={link.href ?? link.to}
+              link={link}
+              className="text-primary-foreground/70 hover:text-primary-foreground [&.active]:text-primary-foreground text-sm transition-colors [&.active]:font-medium"
+            />
+          ))}
         </div>
 
         <DropdownMenu>
@@ -105,13 +111,7 @@ export function Navbar({
           <DropdownMenuContent align="start">
             {links.map((link) => (
               <DropdownMenuItem key={link.href ?? link.to} asChild>
-                {link.href ? (
-                  <a href={link.href} target="_blank" rel="noopener noreferrer">
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link to={link.to!}>{link.label}</Link>
-                )}
+                <NavLinkAnchor link={link} />
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
