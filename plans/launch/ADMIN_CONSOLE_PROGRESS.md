@@ -3,11 +3,23 @@
 - Plan: `plans/launch/ADMIN_CONSOLE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/admin-console`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console`
-- Branch: `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase 1's was deleted on merge)
-- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **OPEN, CI RE-VALIDATING**
-  at head `e9623af6d` after a genuine bug found in the previous draft-PR CI run and fixed locally (see
-  reconciliation below); not yet merged — merge waits on Tommy's explicit instruction. Phase 1:
+- Roadmap status: **not yet ticked** — Phase 4 (venue approval UI) remains before
+  `plans/launch/LAUNCH_ROADMAP.md` line 42 can flip to `[x]`.
+- Worktree: closed (Phase 2/3 worktree `.worktrees/Feature-launch_admin-console` removed post-merge). A
+  fresh worktree off `origin/main` is needed for Phase 4.
+- Branch: Phase 2/3 ran on `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase
+  1's was deleted on merge); also closed/deleted post-merge. Phase 4 needs a new branch of the same name
+  (recreated from `origin/main`, per this file's own folder convention).
+- PR: **Phase 2 — MERGED** as [#648](https://github.com/Concertable/concertable/pull/648). **Phase 3
+  (moderation UI) — MERGED** as [#722](https://github.com/Concertable/concertable/pull/722)
+  (2026-08-22T04:14:31Z), via a required split-PR prerequisite,
+  [#733](https://github.com/Concertable/concertable/pull/733) (`Feature/navbar-shell-shell`, MERGED
+  2026-08-22T03:30:06Z — extracted the shared `Navbar.tsx`/`spinner.tsx` diff so `carve-fe (web/admin)`
+  could build against a published `@concertable/web` alpha rather than local source), plus its
+  platform-sync follow-through [#734](https://github.com/Concertable/concertable/pull/734) (non-breaking,
+  auto-merged) and a review-lifecycle cleanup
+  [#735](https://github.com/Concertable/concertable/pull/735) (retired the spent
+  `Feature-launch_admin-console.md`/`Feature-navbar-shell-shell.md` review files). Phase 1:
   [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
   (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
@@ -221,17 +233,74 @@ refactor, the platform-sync auto-merge retry fix, a `CODE_CONVENTIONS.md` update
 conflicts. `Concertable.Auth` and both AppHost projects rebuilt green post-merge. Pushed and opened
 draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
+## Phase 3 close-out (2026-08-22)
+
+**#648 merged** (Phase 2), then Phase 3 (moderation UI) was built on a fresh
+`Feature/launch_admin-console` branch/worktree off `origin/main` and delivered real UX/architecture
+fixes beyond the plan's bare scope, driven by Tommy's own line-by-line review:
+
+- Replaced the hand-rolled `_admin/route.tsx` header with the shared `Navbar` (branded — logo, real nav
+  chrome — instead of a bare unbranded bar), extending `Navbar` with optional `profileSlot`/`showSearch`/
+  `showMailbox` props (default `true`/`true`, so every existing caller is unaffected) so a tenant-less
+  surface like Admin can supply its own profile menu and skip search/mailbox rather than being forced to
+  render stubs for concepts that don't apply to it.
+- Destructive/primary actions (`Revoke`, `Hide`) recolored off `variant="ghost"` (invisible-by-design,
+  wrong for actions with real consequences) to `variant="destructive"`/appropriate defaults across
+  `AdminsRoster`, `PendingInvitations`, `ReportsQueue`.
+- Extracted a shared `Spinner` primitive (`app/web/shared/src/components/ui/spinner.tsx`), replacing a
+  hand-rolled spinner div.
+- `moderationApi.ts`/`adminApi.ts` adopted a `const BASE`/`INVITATION_BASE` route-literal pattern instead
+  of repeating the route string per call; logged as tech debt for the still-unconverted call sites in
+  `app/shared`/`app/web/b2b/shared` (their own `TECH_DEBT.md` files) and written up as a new standard in
+  the external `react-agents` skill repo (`HTTP.md`, `http-layer`).
+- **Adopted `react-hook-form` + `zodResolver` as the canonical form pattern**, replacing the hand-rolled
+  `useState`+`zod.safeParse` "write-boundary" shape for `InviteForm` and `ResolveReportDialog`. Caught and
+  fixed a real bug live via Playwright: `mode: "onBlur"` + `reValidateMode: "onChange"` left a stale
+  validation error after the user fixed an invalid value; `mode: "onChange"` alone clears correctly.
+  Migration for the remaining hand-rolled forms (`app/shared`, `app/web/b2b/shared`, customer) logged as
+  tech debt in each tree's own `TECH_DEBT.md`, citing this migration as the model; the `FORMS.md`/
+  `STRUCTURE.md` standards in `react-agents` were rewritten around this shape.
+- Self-caught in review: the AppHost's per-worktree SQL-volume-isolation fix
+  (`api/Concertable.AppHost.Shared/DistributedApplicationBuilderExtensions.cs`) hashed
+  `Directory.GetCurrentDirectory()`, which varies by invocation style; fixed to hash
+  `AppContext.BaseDirectory` (fixed per checkout regardless of how the AppHost is launched).
+
+**Delivery chain, in order:** `carve-fe (web/admin)` on #722 failed because it builds against the
+*published* `@concertable/web` package, not local source — the Navbar/Spinner changes hadn't been
+published yet (`publish-fe-packages.yml` only fires on push to `main`). Split those two files onto a
+fresh branch/worktree, opened [#733](https://github.com/Concertable/concertable/pull/733), merged it
+first (merge-queue CI, ~30 min — the queue reruns full CI against a live merge with `main`, not just the
+PR's own branch checks). Its merge triggered `publish-fe-packages.yml`; once that republished the alpha
+dist-tag, re-ran (not retried-blind — the root cause was fixed) the previously-failing `carve-fe
+(web/admin)` job on #722's existing CI run, which then passed. #722 had already auto-armed itself into
+the merge queue by the time its local `origin/main` sync was ready to push (GitHub queues on green
+checks, independent of a manual `--auto` re-arm) — let the queue's own merge-with-`main` build stand in
+for the local rebuild-before-arming step, since it validates the identical thing. #722 merged
+2026-08-22T04:14:31Z, triggering `publish-packages` → platform-sync PR
+[#734](https://github.com/Concertable/concertable/pull/734) (non-breaking `Directory.Packages.props`
+bump only — auto-merged green). Retired the spent `reviews/Feature-launch_admin-console.md` and
+`reviews/Feature-navbar-shell-shell.md` via [#735](https://github.com/Concertable/concertable/pull/735)
+per `review-lifecycle`.
+
+**Noticed, out of scope:** a scheduled `Verify service mirror parity` run on `main` failed across all six
+service mirrors (`api/Concertable.Payment`→`Concertable/payment`, etc.) shortly before #722 merged — not
+caused by this branch (no mirror-parity-relevant paths in its diff) and not a required check on any of
+this chain's PRs, but a systemic mirror-sync issue worth a separate look.
+
+**Two upstream doc/standard PRs opened during Phase 3, still awaiting Tommy's review/merge (not
+auto-merged — no blanket authorization covers them):** `tomjseery/react-agents` PR #3
+(`http-layer`/`HTTP.md` `const BASE` rule) and PR #4 (`write-boundary`/`FORMS.md` rewrite around
+`react-hook-form`). `Concertable/agent-standards` PR #23 (`pr-screenshots` skill) also still open.
+
 ## Next Steps
 
-Paused: Tommy — Tommy said "let's merge"; the delivery chain is in progress. #648
-([PR #648](https://github.com/Concertable/concertable/pull/648)) is pushed at head `4d2563f29`, current
-with `origin/main` (synced twice more since the SaveChangesAsync fix — see "Current state" for the
-second currency sync and the camelCase-enum fix it surfaced). Draft-PR CI is re-validating on this head.
-Resume condition: once `gh pr checks 648` confirms genuinely green (0 pending, 0 failing — verify the
-actual job list via `gh run view <runId> --json jobs`, not just `gh pr checks`, since that command has
-shown transient/stale entries mid-run this session), re-check the `behind` count one more time (main
-moves fast right now) and arm auto-merge per the root `AGENTS.md` procedure, then confirm via the
-Bash background until-loop (never `Monitor`).
+**Phase 4 — Venue approval UI** is the only remaining phase (plan §"Phase 4"): new
+`IAdminVenueRepository` pending-approval query + service method + `[Admin]`-gated
+`GET /api/Venue/pending-approval` endpoint (genuinely new backend surface, not just UI wiring), a
+pending-venues list page, and the approve action wired to the existing `PATCH /api/Venue/{id}/approve`.
+Start by creating a fresh worktree/branch (`Feature/launch_admin-console`) off current `origin/main` —
+the prior one was closed post-#722-merge. Only once Phase 4 lands and its verification gate passes does
+`plans/launch/LAUNCH_ROADMAP.md`'s `launch/admin-console` item (line 42) get ticked `[x]`.
 
 ## Completed work
 
@@ -317,6 +386,6 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 ## Resume prompt
 
 ```
-cd C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console
-Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says.
+Create a fresh worktree/branch (Feature/launch_admin-console) off current origin/main.
+Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says (Phase 4 — venue approval UI).
 ```
