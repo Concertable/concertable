@@ -634,7 +634,7 @@ Gate: Concert can validate and complete every operation from its own state plus 
 
 - [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
-- [ ] Deliver the additive Kernel `IStateMachine<TState, TTrigger>`,
+- [x] Deliver the additive Kernel `IStateMachine<TState, TTrigger>`,
   `TransitionError<TState, TTrigger>`, and immutable frozen-table implementation through its shared
   package producer checkpoint; reconcile Kernel's direct Reunion dependency rule, reject duplicate
   edges, and prove the input collection cannot mutate the constructed machine.

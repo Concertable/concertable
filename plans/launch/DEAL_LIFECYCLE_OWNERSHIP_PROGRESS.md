@@ -13,10 +13,14 @@
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
   merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`. The
-  additive Kernel state-machine API is implemented on ready producer PR
-  [#719](https://github.com/Concertable/concertable/pull/719) at exact head
-  `541ff90f5b3910815c5835c38c03a52dc47434f4`; exact-head CI is still completing. Its merge, package
-  publication, and generated platform-sync version remain the Phase 5 consumer gate.
+  additive Kernel state-machine API was delivered by producer PR
+  [#719](https://github.com/Concertable/concertable/pull/719) from exact source head
+  `541ff90f5b3910815c5835c38c03a52dc47434f4`, merged as
+  `a1ec9fa2e690aa9c1df5c467cd742481514e28c7` after successful merge-group run `32541628076`.
+  Publish-packages run `32543949659` published `Concertable.Kernel` version
+  `0.1.0-alpha.0.1133`; generated platform-sync PR
+  [#730](https://github.com/Concertable/concertable/pull/730) merged green as
+  `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
 - Last reconciled: 2026-08-22 after merging `origin/main` at `a091f5342` into the integration-topology closure
 
 ## Current state
@@ -44,10 +48,10 @@ failure contract; otherwise they compose it into a closed operation-owned error 
 inheritance, open error catalogs, and `Result<T, IError>` are rejected.
 
 Kernel references Reunion deliberately because Result is part of this pure domain API. Producer PR #719
-implements the fixed surface and frozen lookup, pins Reunion in the Shared closure, and keeps Kernel's
+delivered the fixed surface and frozen lookup, pins Reunion in the Shared closure, and keeps Kernel's
 Reunion reference private in package metadata so no consumer can rely on it transitively. Its focused
-Release suite and package metadata gate are green; exact-head CI, review, merge, publication, and platform
-sync remain. The B2B machine adoption stays on PR #633 after the published version is recorded. Payment
+Release suite, package metadata gate, exact-head CI, review, merge, publication, and platform sync are
+green at published version `0.1.0-alpha.0.1133`. The B2B machine adoption stays on PR #633. Payment
 PR #707 may reuse only the immutable edge lookup while retaining its provider-specific validation and
 transition semantics. Moving the abstraction into the Reunion repository is rejected; a standalone
 state-machine NuGet remains only a possible later extraction after the API is proven in both consumers.
@@ -361,11 +365,14 @@ recovery.
   Concert template rendering and escaping assertion to Concert unit tests, and removed the remaining
   `fixture.Services` dependency from that coverage. The Process project built with 0 warnings and 0
   errors, the focused Concert unit test passed, and the integration-project boundary guard passed.
-- Opened draft Kernel producer PR [#719](https://github.com/Concertable/concertable/pull/719) at exact
-  local, remote-tracking, and PR head `6535690418c340e4f63ddf7662123a1360eab045`. Producer commit
-  `33ee4dd1199b7a9ed3f84d1ca0b0eacde3eddc95` adds the immutable Result-based state machine and its
-  focused behavioural coverage; merge commit `653569041` reconciles current `origin/main` before
-  publication.
+- Delivered Kernel producer PR [#719](https://github.com/Concertable/concertable/pull/719) from exact
+  source head `541ff90f5b3910815c5835c38c03a52dc47434f4`; local, remote-tracking, and PR heads were proven
+  equal before merge. Producer commit `33ee4dd1199b7a9ed3f84d1ca0b0eacde3eddc95` adds the immutable
+  Result-based state machine and its focused behavioural coverage. Merge-group run `32541628076`
+  passed and the PR merged as `a1ec9fa2e690aa9c1df5c467cd742481514e28c7`. Publish-packages run
+  `32543949659` published `Concertable.Kernel` `0.1.0-alpha.0.1133`; generated platform-sync PR
+  [#730](https://github.com/Concertable/concertable/pull/730) passed run `32545078748` and merged as
+  `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`.
 - Published tenant-scoping integration ownership checkpoint `58c72d03b`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `58c72d03b793a1dca40b76f8030b125bebc4b8fc`. Split the
   six former Concert cases across Application tenant stamping/visibility, Booking's unscoped module read
@@ -571,7 +578,10 @@ recovery.
 - Kernel producer PR #719 exact head: `Concertable.Kernel.UnitTests` passed 246/246 in Release;
   successful Result, typed rejection, duplicate-edge rejection, mutable-input snapshotting, and
   concurrent reads are covered. Packing `Concertable.Kernel` at the same head produced a `.nuspec`
-  with no Reunion dependency, and `git diff --check` passed.
+  with no Reunion dependency, and `git diff --check` passed. Exact-head CI run `32540096727`,
+  successful merge-group run `32541628076`, publish-packages run `32543949659`, and platform-sync
+  merge-group run `32545078748` are green; the published and synchronized version is
+  `0.1.0-alpha.0.1133`.
 - Tenant-scoping ownership split: Application, Booking, and Process integration projects build with 0
   warnings and 0 errors; the focused `IntegrationTestBoundaryTests` guard passes. Concert remains at exactly
   13 unrelated known compile errors and its retained tenant test reads only the public Concert endpoint.
