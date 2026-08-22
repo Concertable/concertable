@@ -5,10 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `82f1fb498` _(2026-08-21)_
-**Security-reviewed up to commit:** `82f1fb498` _(2026-08-21)_
+**Reviewed up to commit:** `bec1b4051` _(2026-08-22)_
+**Security-reviewed up to commit:** `82f1fb498` _(2026-08-21)_ — range below touches no
+`.agents/merge-gate.json` `security_paths` (no `Concertable.Auth`, `Concertable.Payment`,
+`.Contracts`, or `Controller*.cs`), so Step 1d did not re-run.
 
-> Range reviewed: `42f76099..82f1fb498`.
+> Range reviewed: `42f76099..82f1fb498`, then `82f1fb498..bec1b4051`.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -60,3 +62,41 @@ against the branch's full diff. Security review: the post-login grant design
 admin grant can occur — the property this branch exists to establish — and was preserved intact
 through every origin/main merge in this branch's history, including the #651 module-extraction merge
 that could have silently reverted it.
+
+## Incremental review — 2026-08-22
+
+Range: `82f1fb498..bec1b4051` (Phase 3 — moderation UI, plus follow-on fixes), scoped to the paths this
+branch's own commits touched — `app/web/admin/**`, `app/web/shared/src/components/Navbar.tsx`,
+`app/shared/TECH_DEBT.md`, `app/web/b2b/shared/TECH_DEBT.md`, `app/web/customer/TECH_DEBT.md`,
+`api/Concertable.AppHost.Shared/DistributedApplicationBuilderExtensions.cs` — rather than the full
+`git diff 82f1fb498..HEAD`, which would also replay ~150 unrelated commits merged in from `origin/main`
+(dashboard consumer work, the N3/N4 doc restructure, the Kernel state machine, several platform-sync
+bumps) that already went through their own review and CI on `main`. Layer 1 (native) via the
+`code-reviewer` subagent at medium effort; Layer 2 (lenses) by hand.
+
+- [x] **NAT4 — MEDIUM — reuse/duplication** — `app/web/shared/src/components/Navbar.tsx`
+  The desktop link list and the mobile `DropdownMenu` link list duplicated the same href-vs-`to`
+  branching logic with different wrapper markup — a future `NavLink` shape change would need updating
+  in two places. Fixed: extracted `NavLinkAnchor({ link, className })`, used by both call sites.
+
+- [x] **BUG1 — MEDIUM — correctness** — `api/Concertable.AppHost.Shared/DistributedApplicationBuilderExtensions.cs`
+  The new per-checkout SQL volume isolation hashed `Directory.GetCurrentDirectory()`, which varies with
+  invocation style — a developer's `dotnet run` from inside the AppHost project folder gets a different
+  cwd than `scripts/e2e.ps1`, which `Set-Location $repoRoot` first. The same worktree would get two
+  different volumes depending on how it's launched, weakening the fix's own goal (one volume per
+  worktree, reused across restarts). Fixed: hash `AppContext.BaseDirectory` (the build output path)
+  instead — fixed per checkout regardless of invocation cwd.
+
+Lens B (service isolation): N/A — no cross-service call added; the AppHost change is orchestration
+config, not a runtime dependency. Lens C (module boundaries): `Navbar`'s new `profileSlot`/
+`showSearch`/`showMailbox` props are the `tiered-shared-code` slot pattern correctly applied
+(`ProfileMenu`'s hardcoded `/settings` links don't fit a tenant-less surface); all five web builds stay
+the enforcement. Lens D (seeding): N/A, no seeder touched. Lens E (conventions): `write-boundary`
+(`react-hook-form` + `zodResolver`, checked live via Playwright — a `mode: "onBlur"` +
+`reValidateMode: "onChange"` combination left a stale error after fixing an invalid value, verified
+before and after; fixed to `mode: "onChange"`, see commit `4a39e13c1`), `http-layer`
+(`const BASE`/`INVITATION_BASE`), `contract-naming`, `csharp-style`/`csharp-naming` on the AppHost
+extension — no further findings. Lens F (test coverage): the two hand-rolled-`useState`-to-`react-hook-form`
+migrations and the button-variant changes are UI-only with no new branching logic to assert beyond what
+manual + Playwright verification already covered; the `AddSqlServerContainer` volume-naming change has
+no existing test harness for this extension method to extend (pre-existing gap, not introduced here).
