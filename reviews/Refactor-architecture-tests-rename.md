@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9e44faeb9006ad67ec784a2c342a32e567383567`  _(2026-08-22)_
-**Security-reviewed up to commit:** `cb79c6b590cdf6139cd9f23318bb046573987e63`  _(2026-08-22)_
+**Reviewed up to commit:** `aaedcdc4d6204daba0178e128bfb9f3418e26cfc`  _(2026-08-22)_
+**Security-reviewed up to commit:** `aaedcdc4d6204daba0178e128bfb9f3418e26cfc`  _(2026-08-22)_
 
 > Range reviewed: `549af7cc0..bda4ae413` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -53,3 +53,11 @@ CV1/CV2 fixes (`docs/INDEX.md`, `.agents/skill-routes.json`) — already reviewe
 docs. No security-sensitive path is touched relative to `origin/main` (`CredentialRegisteredHandler.cs` /
 `UserEntity.cs` etc. arrived from main itself, not from this branch), so no security layer applies. No new
 findings.
+
+## Incremental review — 2026-08-22 (second)
+
+Range `9e44faeb9..aaedcdc4d`: the security-review stamp commit, then a second `origin/main` merge (main
+gained 6 more commits, the N5 root-`AGENTS.md` thin, while this review was in flight). `docs/INDEX.md`
+auto-merged cleanly — the CV1 fix line survived intact (`grep` confirmed post-merge). True branch-owned diff
+(`merge-base(origin/main, HEAD)..HEAD`) is byte-identical in file set to the first incremental pass; nothing
+new to review. No findings.
