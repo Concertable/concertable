@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through Deal CI-fix work head
-  `93d9d3ee49177534581c5c2238ecf75099ae363a`. Starting remote head was
-  `d22d41d04ab94c6619e252d3eb52cb810500417c`; local, remote-tracking, and PR heads were verified equal.
+  through migration-closure work head
+  `7eb5e7a88db900621c637c5302abe6232031c157`. Starting remote head for that checkpoint was
+  `5b18da56f7444d2d2ee6d94c3a594b20751274ef`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -283,7 +283,16 @@ closure failures. The Deal unit suite still carried five source-text assertions 
 workflow registries and registrations; they now assert that `FrozenDictionary<DealType>` is absent and
 self-verify the live Deal and Concert strategy families, passing 54/54 locally. The Admin integration shard
 did not reach a test: B2B host startup reported pending model changes for `ConcertDbContext`, so the
-repository-wide `InitialCreate` re-scaffold is the next mechanical closure step.
+repository-wide `InitialCreate` re-scaffold was the next mechanical closure step.
+
+The canonical repository-wide `InitialCreate` re-scaffold is complete at published work head
+`7eb5e7a88`. Opportunity, Application, and Booking are now included in `api/initial-migrations.ps1`, each
+has a module-local design-time factory, and each owns its first migration and model snapshot. The corrected
+Concert migration contains only Concert-owned persistence. The scaffold reported every pre-existing
+unaffected context unchanged, and EF reports no pending model changes for Opportunity, Application,
+Booking, or Concert. The B2B Release solution builds with 0 errors; architecture tests pass 10/10,
+composition tests pass 5/5, Deal unit tests pass 54/54, the plan graph reports 0 errors/warnings, and
+`git diff --check` passes. No local integration or E2E runtime suite was executed.
 
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
@@ -301,8 +310,8 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: regenerate the repository's `InitialCreate` migrations to clear the `ConcertDbContext`
-pending-model gate from exact-head CI run `32542251616`, then remote-validate the resulting PR #633 head.
+Active slice: reconcile the newly advanced `origin/main` into published migration work head `7eb5e7a88`,
+repeat the B2B build and focused topology gates, then remote-validate the resulting exact PR #633 head.
 Do not edit aggregate transition tables or state-machine implementation files owned by the parallel
 state-machine slice. When CI is green, the topology correction is terminal and the parallel state-machine
 slice owns the next implementation change. Do not resume the superseded file-by-file Concert compile
@@ -310,6 +319,13 @@ recovery.
 
 ## Completed work
 
+- Published migration-closure checkpoint `7eb5e7a88`; local HEAD, the remote branch, and PR #633
+  `headRefOid` all equalled `7eb5e7a88db900621c637c5302abe6232031c157`. The canonical full re-scaffold
+  added module-owned Opportunity, Application, and Booking migrations plus design-time factories, and
+  removed those tables from Concert's migration. All pre-existing unaffected contexts retained their
+  migration IDs; all four affected B2B contexts report no pending model changes. The B2B Release solution
+  builds with 0 errors; architecture tests pass 10/10, composition tests pass 5/5, Deal unit tests pass
+  54/54, the plan graph reports 0 errors/warnings, and `git diff --check` passes.
 - Published Deal CI-fix checkpoint `93d9d3ee4`; local HEAD, the remote branch, and PR #633 `headRefOid`
   all equalled `93d9d3ee49177534581c5c2238ecf75099ae363a`. It removes five stale architecture
   assertions for deleted Concert workflow registries and strategy registrations. The guard now requires
