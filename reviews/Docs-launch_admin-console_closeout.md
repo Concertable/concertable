@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9442cacc5` _(2026-08-22)_
+**Reviewed up to commit:** `6f6998e15` _(2026-08-22)_
 
-> Range reviewed: this branch's own diff (`plans/launch/ADMIN_CONSOLE_PROGRESS.md` only).
+> Range reviewed: `9442cacc5..6f6998e15` (`plans/launch/ADMIN_CONSOLE_PROGRESS.md` only).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
