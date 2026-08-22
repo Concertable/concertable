@@ -72,10 +72,16 @@ Everything else checked clean:
 - **The `origin/main` catch-up merge** (49 commits, clean, no conflicts) — rebuilt `Concertable.B2B.Web`
   (0 errors) and `npm run build:admin` (green) post-merge; no stray `routeTree.gen.ts`/build-artifact
   diffs left in the working tree after either build.
-- **Security layer:** the endpoint is `[Admin]`-gated at the action level on a controller with no class-
-  level `[Authorize]` gap, consistent with every other admin-only endpoint in this module; no
-  authentication/authorization *logic* changed (no new policy, no claim handling) — just a new gated
-  read endpoint using the existing `[Admin]` attribute verbatim. No security-sensitive path pattern
-  (`.github/workflows/`, `authoriz|authentic|credential|secret|password|apikey`) beyond the `[Admin]`
-  attribute usage itself, which is unchanged mechanism, not new surface — no separate security-reviewed
-  marker needed.
+- **Security layer (`merge_review_gate.py`'s repo-local `security_paths`, matched on `Controller[A-Za-z]*\.cs$`
+  — `VenueController.cs`; corrected from an earlier, wrong "no security-sensitive path" conclusion in
+  this review that only checked the hook's *generic* patterns, not this repo's own `.agents/merge-gate.json`
+  inventory):** the new endpoint is gated by `[Admin]` (`Concertable.B2B.Admin.Api.Authorization.AdminAttribute`
+  — a plain `AuthorizeAttribute` with `Policy = "Admin"`), the exact same attribute already guarding
+  `VenueController.Approve` two lines above it in this same file. No new policy, no new claim handling, no
+  new authorization mechanism — this endpoint reuses existing, already-audited enforcement verbatim.
+  `[FromQuery] PageParams` binds only page-number/page-size primitives through the existing `IPageParams`
+  shape already used by every other paginated admin endpoint in this codebase (e.g. `ModerationController`) —
+  no raw SQL, no string-built query, EF LINQ only (`Where(!Approved).OrderBy(Id)`). No credential, secret,
+  or auth-*logic* change anywhere in the diff. Verified `GetPendingApproval_ShouldReturn401_WhenUnauthenticated`
+  and `_ShouldReturn403_WhenNotAdmin` integration tests actually exercise both denial paths, not just the
+  200 case.
