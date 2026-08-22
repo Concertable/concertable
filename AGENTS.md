@@ -2,7 +2,7 @@
 
 Concertable connects venues, artists and fans around live music ([`docs/OVERVIEW.md`](./docs/OVERVIEW.md) — the product in one page). It is a monorepo (a convenience, not the architecture) with a `.NET` microservices backend in `api/` and frontend surfaces in `app/`. The backend services own their runtime; cross-service deps are Contracts-only; standalone AppHosts are canonical. **Read the `microservice-boundaries` skill before designing anything that crosses a service boundary** (its design rationale and decision history are the `microservices-architecture` skill). Forgetting this leads to re-monolithing the system.
 
-**No standard lives in this repo — not for code, not for process.** How work gets done is a set of load-on-demand skills installed from the standards plugins — the git, review, merge/PR, test-debug, plan and validation families, plus `docs-and-debt` and `failing-tests`; the always-on behavioral floor (scalable-fix, questions-before-actions, autonomy) loads at every session start via the `floor` skill. What stays in this repo is only what is true of *Concertable* — its real surfaces, scripts and suites, and the pointers below.
+**No standard lives in this repo — not for code, not for process.** How work gets done is a set of load-on-demand skills installed from the standards plugins — the git, review, merge/PR, test-debug, plan and validation families, plus `docs-and-debt` and `failing-tests`; the always-on behavioral floor (scalable-fix, questions-before-actions, autonomy) is injected at every session start (the `floor` skill owns it). What stays in this repo is only what is true of *Concertable* — its real surfaces, scripts and suites, and the pointers below.
 
 ## Per-area guidance
 
