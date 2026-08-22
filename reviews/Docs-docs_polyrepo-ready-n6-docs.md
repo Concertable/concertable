@@ -4,7 +4,7 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `4a6608324cf046629d40f6851f5d8f59ad012ccb`  _(2026-08-22)_
+**Reviewed up to commit:** `3920af0c6c2cc4a5e7d7330bc47e7cf156446cb4`  _(2026-08-22)_
 
 > Range reviewed: `26645ecd..150a6f3f` (N6 delivery) + the ACC1 fix; the ledger commit after it is
 > `reviews/`-adjacent plan bookkeeping. Independent docs-review, all six lenses + reachability hook.
@@ -30,3 +30,12 @@
   descriptive line that carries no rule — below the bar.
 - **E (dangling):** no durable doc bakes in a plan filename / Phase-N.
 - **F (followable):** plan/ledger Next Steps + the endpoint-at-cut clarification are internally consistent.
+
+## Incremental review — 2026-08-22 (currency merge)
+
+`origin/main` advanced (a concurrent `architecture-tests-rename` merge) while this branch was open, so
+`origin/main` was merged in for currency (marker moved `4a660832` → `3920af0c`). No conflict; `INDEX.md`
+auto-merged (my Product rows vs their composition→architecture rows are disjoint). The three-dot diff
+`origin/main...HEAD` is still exactly the nine N6-authored files above — the merge added only content already
+on `main` (reviewed on its own PR). No new branch-authored content to review; re-stamp only. Reachability 0
+errors post-merge.
