@@ -3,64 +3,76 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: none after this close-out merges. (This checkpoint runs from
-  `Concertable/.worktrees/Docs-n4-closeout`; the N4 delivery worktrees are closed.)
-- Branch: `Docs/docs_polyrepo-ready-n4-closeout`; none after this close-out merges — create a fresh
-  plan-managed branch from `origin/main` for N5.
-- PRs: **N4 all MERGED** — producer agent-standards [#18](https://github.com/Concertable/agent-standards/pull/18)
-  (microservices architecture record + host-composition validation) + [#19](https://github.com/Concertable/agent-standards/pull/19)
-  (repoint AppHost route note); consumer [#715](https://github.com/Concertable/concertable/pull/715) (docs
-  delete + link repoint, merge-queue `skip-e2e`) + [#713](https://github.com/Concertable/concertable/pull/713)
-  (non-doc citation repoint → `packages` skill). Publishes succeeded; final platform-sync
-  `chore/platform-sync-0.1.0-alpha.0.1128` [#724](https://github.com/Concertable/concertable/pull/724) MERGED
-  green, non-breaking. Prior: N3 **#15 + #698 + #700**, N2 **#12 + #695**, cross-harness all MERGED.
-- Dependency/package gates: none open. N4 tripped platform-sync (deleting/editing `api/**/*.md` and editing
-  `api/**` csproj/targets comments republished via the coarse `api/**` filter); the sync cascade
-  (`.1125`→…→`.1128`) was **non-breaking** throughout (no published type shape changed) — intermediate syncs
-  superseded/auto-merged, the terminal #724 merged green. No red sync, no `platform-sync-broken` issue.
-- Last reconciled: 2026-08-22 — **N4 terminal.** All four N4 PRs merged, final sync #724 green, delivery
-  worktrees closed. **N5 is the next slice.**
+- Worktree: `Concertable.worktrees/Docs/docs_polyrepo-ready-n6-docs` — the N6 delivery worktree, off
+  `origin/main` (`26645ecd1`, incl. N5). N5 worktree closed.
+- Branch: `Docs/docs_polyrepo-ready-n6-docs` (this branch); `Docs/*` (durable guidance, meta-only).
+- PRs: **N5 MERGED** — consumer [#745](https://github.com/Concertable/concertable/pull/745) (root `AGENTS.md`
+  149 → 23 lines), producer agent-standards [#25](https://github.com/Concertable/agent-standards/pull/25) +
+  [#27](https://github.com/Concertable/agent-standards/pull/27), all merged. **N6 IN PROGRESS = this branch**;
+  product narrative relocated to the new **[`Concertable/docs`](https://github.com/Concertable/docs)** repo
+  (seeded + pushed). Prior: N4 (#18/#19 + #715/#713), N3 (#15 + #698 + #700), N2 (#12 + #695), cross-harness
+  all MERGED.
+- Dependency/package gates: none open. N6 is **meta-only** — edits `AGENTS.md`, `docs/INDEX.md`, `plans/docs/*`
+  and deletes three `docs/*.md`; no `api/**`, so no publish / `chore/platform-sync-*`. (An unrelated
+  pre-existing sync PR #744 predates N5's merge — not ours.)
+- Last reconciled: 2026-08-22 — **N5 merged** (#745, root thinned to 23 lines). **N6 in progress:** product
+  narrative moved to `Concertable/docs`, `INDEX`/root repointed, `REMOTE_VALIDATION.md` kept as a per-repo doc;
+  root not yet deletable (INDEX/validation still anchor to it — a cut-time step). Reachability/plan-graph clean.
 
 ## Current state
 
-**N4 (`api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md`) is complete and merged — this
-checkpoint closes it out.** Both docs are cross-service by definition (the carve, the publish→sync loop,
-Contracts-only deps), so both re-homed platform-wide; nothing stayed behind.
+**N6 (`docs/`) is in progress on this branch — the product-narrative question is RESOLVED and executed.**
+The node had three outcomes; all handled:
 
-- **Producer (agent-standards #18 + #19):** the microservices architecture record homed platform-wide (its
-  design rationale/decision history now the `microservices-architecture` skill; the boundary rule the
-  `microservice-boundaries` skill), plus host-composition validation. #19 repointed the AppHost route note off
-  the deleted `api/ARCHITECTURE.md`. Both MERGED.
-- **Consumer (this repo) — split by branch type, the two-lane pattern:**
-  - `Docs/docs_polyrepo-ready-n4-architecture` (#715) deleted `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md`
-    and repointed every guidance-doc link (root `AGENTS.md` north star, `docs/INDEX.md`, `docs/OVERVIEW.md`,
-    the service `ARCHITECTURE.md`/`AGENTS.md`, `plans/AGENTS.md`, `.agents/skill-routes.json`). Landed through
-    the merge queue with `skip-e2e`.
-  - `Chore/polyrepo-n4-arch-ref-repoint` (#713) repointed the non-doc citations — five service
-    `Directory.Build.props`/`.targets`, five `*.Hosting.csproj`, `.github/workflows/claude-review.yml` — to the
-    `packages` skill (the correct owner of the per-folder-build-closure rule those comments cite). Comment/text
-    only; landed via the queue with `skip-e2e`.
+- **Product narrative → a dedicated central docs repo (Tommy's decision).** `OVERVIEW.md`, `USP.md`,
+  `DEEP_RESEARCH_PROMPT_GUIDE.md` are product/system narrative that belongs to no single service — the
+  standard polyrepo pattern is a central `org/docs` repo (private, free; no Confluence cost). Created
+  **[`Concertable/docs`](https://github.com/Concertable/docs)** (private), moved the three docs there with a
+  README index, rewrote their repo-relative links as absolute GitHub URLs, and pushed. In this repo the three
+  are deleted; root `AGENTS.md` line 1 and `INDEX.md`'s Product rows repoint at the new repo.
+- **`INDEX.md`** — Product rows repointed to the docs repo; the process rows were already fixed in N5. Kept as
+  this repo's topic→owner index, not folded away.
+- **`REMOTE_VALIDATION.md`** — **kept as this repo's standalone validation doc** (deviation from the plan's
+  original "fold into the per-repo floor"; folding would grow the root we are emptying — a per-repo validation
+  doc is the right home and is what a carved service repo keeps).
 
-**Everything from Phase 1, N1 (six families / 28 skills), N2, and N3 is merged on both sides.** Both harnesses
-are provisioned from GitHub with all five standards plugins at user scope. `auto-memory` still needs a
-durable home before close-out (Codex-only utility).
+**Root `AGENTS.md` is at its minimum but not deleted.** With the product docs gone it still anchors
+`INDEX.md` and `REMOTE_VALIDATION.md` (this repo's own navigation + validation), which are genuinely
+this-repo. Literal "nothing at root" is a **cut-time** step (the monorepo dissolves and each service repo
+takes its own INDEX/validation) — the separate `POLYREPO_ROADMAP`, out of scope here.
+
+**Everything from Phase 1, N1–N5 is merged on both sides.** Both harnesses provisioned from GitHub, all five
+standards plugins at user scope. `auto-memory` still needs a durable home before close-out (Codex-only utility).
 
 ## Next Steps
 
-1. **Begin N5 in a fresh plan-managed worktree from `origin/main`** — root `AGENTS.md` (147): split by the
-   same test. Monorepo-only lines (that this *is* a monorepo, where `api/`/`app/` sit) die with the root;
-   everything else (scalable-fix rule, autonomy rules, merge/platform-sync invariants, doc locality, review
-   gates) is platform-wide. Then N6 (`docs/` — carries the open product-narrative question for Tommy:
-   `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` are neither platform standard nor service-specific
-   — surface, don't invent a home), then N7a. N7b waits on roadmap §4c; the **frontend carve seam** (§6/§4c)
-   also gates the generator's `react-app` kind. N8 last, the only carved-repo evidence.
-2. **Ledger deviation to carry forward:** the N4 consumer PRs (#715/#713) were merged in a prior session
-   **without a progress-ledger update in them**, so `worktrees.ps1 close -PlanManaged` refused (no ledger to
-   anchor). This close-out re-establishes the anchor. For N5, keep the ledger checkpoint *on the delivery
-   branch* so the plan-managed close works normally.
+1. **Finish N6 on this branch** — `/docs-review`, then `/merge-docs` (meta-only). Ledger checkpointed on the
+   delivery branch (the N4 lesson) so `worktrees.ps1 close -PlanManaged` anchors normally.
+2. **Then N7a** (`plans/AGENTS.md` content → platform-wide, per-repo values stay). N7b waits on roadmap §4c;
+   the **frontend carve seam** (§6/§4c) also gates the generator's `react-app` kind.
+3. **N8 last** — the only carved-repo evidence. Note the endpoint clarification: **root `AGENTS.md`/`CLAUDE.md`
+   are deleted at the cut, not within this plan** — this plan makes root hold zero shared canon; the cut
+   (separate roadmap) dissolves the monorepo root. The plan table's old "N5 leaves behind: nothing" is
+   corrected to reflect this.
 
 ## Completed work
 
+- **N6 (in progress on this branch) — `docs/` product narrative relocated.** Created private
+  `Concertable/docs`, moved `OVERVIEW`/`USP`/`DEEP_RESEARCH_PROMPT_GUIDE` there (README index, links
+  absolutised), pushed. Deleted them from this repo; repointed root `AGENTS.md` + `INDEX.md` Product rows.
+  `INDEX` kept as this-repo index (process rows fixed in N5, product rows now → docs repo); `REMOTE_VALIDATION.md`
+  kept as a per-repo doc (deviation from "fold into root"). Root stays the minimal anchor — full deletion is
+  cut-time.
+- **N5 — root `AGENTS.md` thinned 149 → 23 lines. MERGED (#745).** Every rule re-homed to the plugins;
+  root holds only per-repo values/pointers. Docs-review found one HIGH (CON1: `INDEX.md` rows pointing at
+  deleted root sections), fixed on-branch. Admin-merged meta-only; no publish fired. Producer:
+- **N5 PRODUCER — root `AGENTS.md`'s platform-wide rules, floor + gate. MERGED (agent-standards, both into
+  `main` at `13fcef1c0`).** #25 re-homed the three behavioral sections to `FLOOR.md`, injected by a new
+  `session_floor.py` SessionStart hook and owned by a `floor` skill, and homed §7's ready-for-review invariant
+  in `MERGING.md`; #27 made `skill_router` fail CLOSED (un-routed write blocked when the plugin didn't load).
+  The remaining destinations were already present from earlier slices (`MERGING.md`, `BRANCHING.md`,
+  `git/WORKTREE.md`, `REMOTE_VALIDATION.md`, `PLANS.md`, `DOCS_AND_DEBT.md`). Machine reprovisioned to
+  `13fcef1c0`, 5/5 plugins, smoke-verified. **Consumer (thin root `AGENTS.md`) on this branch.**
 - **N4 — `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` re-home. Terminal.** Producer
   agent-standards #18 (architecture record + host-composition validation) + #19 (AppHost route-note repoint);
   consumer #715 (both docs deleted, all guidance-doc links repointed) + #713 (non-doc csproj/targets/yml
@@ -84,6 +96,42 @@ durable home before close-out (Codex-only utility).
   `worktree`→`open-worktree`), plan-workflow (#687 + #10, four docs + new `plan-checkpoint`), package-cutover
   (#693 + #11, `dotnet:package-cutover`).
 - **Phase 1** (#669 + #5): plan method into `PLANS.md`; `HANDOFF.md` new.
+
+## Verification — N6
+
+Docs repo (`Concertable/docs`, private):
+- Seeded with `OVERVIEW.md`, `USP.md`, `DEEP_RESEARCH_PROMPT_GUIDE.md` + a `README.md` index; pushed to
+  `main`. The three moved docs' repo-relative links (`../app/README.md`, `../app/AGENTS.md`, `../README.md`,
+  the Deal `ARCHITECTURE.md`) rewritten as absolute `github.com/Concertable/concertable` URLs.
+
+Consumer (this repo, `Docs/docs_polyrepo-ready-n6-docs`):
+- `docs/OVERVIEW.md`, `docs/USP.md`, `docs/DEEP_RESEARCH_PROMPT_GUIDE.md` deleted; the only two in-repo
+  referrers (root `AGENTS.md` line 1, `INDEX.md` Product rows) repointed at `Concertable/docs`. Broad
+  non-md reference sweep: none.
+- `REMOTE_VALIDATION.md` unchanged (kept as per-repo doc). Root `AGENTS.md` stays the minimal anchor.
+- `docs_reachability.py` (scoped): **0 errors**, 29 warnings — all `plans/` dead-link warnings (warn-only,
+  never gating), from the plan/ledger's own `@`-import and relative `AGENTS.md` / `*_PROGRESS.md` references
+  resolved against repo root; none references a deleted doc. `plan_graph.py`: **0 errors**.
+- **Meta-only**: `AGENTS.md`, `docs/INDEX.md`, `plans/docs/*`, three `docs/*.md` deletions — no `api/**`, no
+  publish / platform-sync.
+
+## Verification — N5
+
+Consumer (this repo, `Docs/docs_polyrepo-ready-n5-root-agents`):
+- Root `AGENTS.md` thinned **149 → 23 lines**. Every deleted section's rule confirmed present at its
+  destination by an independent no-rule-lost audit of the installed plugin (`13fcef1c0`): behavioral trio →
+  `FLOOR.md` (injected by `session_floor.py`); ready-for-review + merge invariants + platform-sync →
+  `MERGING.md`; branch-first + durable-guidance → `BRANCHING.md`; worktree cleanup → `git/WORKTREE.md`
+  (+ `plans/AGENTS.md` for plan-managed close/retire); E2E-through-script → `REMOTE_VALIDATION.md`; plans
+  method → `PLANS.md`; one-rule-one-home / doc-locality / reachability → `DOCS_AND_DEBT.md`.
+- KEPT in root (per `DOCS_AND_DEBT.md`'s cost-of-missing table): the worktree-identity gate's **service
+  ownership** clause — a monorepo concern costly to miss silently, so it stays in the always-loaded floor
+  rather than moving to a skill.
+- `docs_reachability.py` (scoped to the worktree): **0 errors**, 28 warnings (all pre-existing `plans/`
+  dead-link warnings, which only warn). `plan_graph.py`: **0 errors**. CLAUDE.md sibling intact
+  (`@AGENTS.md`). All 10 relative links + both script paths resolve.
+- **Meta-only**: touches only `AGENTS.md`, `docs/INDEX.md`, `plans/docs/*` — no `api/**`, so no publish and
+  no `chore/platform-sync-*` fires. Lands via `/merge-docs` admin-merge (never `--auto`).
 
 ## Verification — N4
 
@@ -120,6 +168,25 @@ Consumer (this repo):
 
 ## Reviews
 
+**N6 — docs-reviewed by an independent agent; one LOW finding, fixed on-branch.**
+`reviews/Docs-docs_polyrepo-ready-n6-docs.md`.
+- **ACC1 (LOW, Lens A)** — the N6 verification parenthetical mis-attributed the reachability warning delta
+  (claimed the +1 was a historical `docs/OVERVIEW.md` mention; the hook flags no such warning). Fixed: the
+  29 warnings are all `plans/` dead-link warnings from the ledger's own `@`-import/relative references.
+- Lenses A (durable dead-links / reachability / external-URL shape), B, C, D, E, F all verified clean: no
+  surviving dead link to the three deleted docs, no orphan, the new `Concertable/docs` URLs are well-formed,
+  and no sibling still claims product docs live in `docs/`.
+
+**N5 — docs-reviewed by an independent agent; one finding, fixed on-branch.**
+`reviews/Docs-docs_polyrepo-ready-n5-root-agents.md`.
+- **CON1 (HIGH, Lens B)** — `docs/INDEX.md` still routed seven topic rows to now-deleted root `AGENTS.md`
+  sections, and the thinned root delegates topic lookup to `INDEX.md`, so a reader was sent to sections that
+  no longer exist. Fixed in `595136d8`: six rows repointed to their new owning skills (`floor`, `merging`,
+  `open-worktree`/`git-branching`); the seventh (doc-locality + CLAUDE.md-siblings) dropped as redundant
+  with the existing `docs-and-debt` row + the reachability-hook row.
+- Lenses A / C / D / E / F clean; rule-loss check clean (every deleted section survives at its destination);
+  the retained "service ownership" keep judged correctly placed.
+
 **N4 — all findings addressed and merged; both review files deleted in this close-out.** #715 was docs-reviewed
 (1 finding, ACC1: dead non-doc citations of the deleted doc — fixed by splitting them onto #713, the sanctioned
 branch-ownership move since they were code-adjacent, not docs). #713 reviewed clean (comment/text-only,
@@ -143,6 +210,44 @@ the committed gate test and monorepo/carve replay.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **N6 product-narrative question RESOLVED — dedicated central docs repo (Tommy).** The plan's one genuinely
+  open question. Product narrative fits neither the standards plugins nor a service repo, so it goes to a
+  standalone `Concertable/docs` (private) — the standard polyrepo pattern for cross-cutting product/system
+  narrative (Backstage is the heavyweight version; a docs repo is the pragmatic one). Private repo = free
+  (markdown renders on GitHub; only a *published site* via Pages would cost on a private repo, and we don't
+  need one), which is why it beats Confluence.
+- **N6 deviation — `REMOTE_VALIDATION.md` kept, not folded into root.** The plan said "folds into the per-repo
+  floor with its commands," but folding into root `AGENTS.md` grows the root we are emptying. A standalone
+  per-repo validation doc is the right home and is what a carved service repo keeps.
+- **Endpoint clarified (root `AGENTS.md` deletion).** This plan makes root hold **zero shared canon**; the
+  root *file* is deleted at the **cut** (the separate `POLYREPO_ROADMAP`), not within this plan — because
+  `INDEX.md` and `REMOTE_VALIDATION.md` (this-repo nav/validation) still need a root reachability anchor until
+  the monorepo dissolves and each service repo takes its own. The plan table's old "N5 leaves behind: nothing"
+  was corrected to say so. Creating `Concertable/docs` front-runs the cut roadmap's "repo creation" slightly;
+  low-risk and logged here rather than done silently.
+- **N5 producer is a floor+gate, not just a re-home (the criterion-2 upgrade).** The three behavioral sections
+  are *always-loaded* rules with no route path to fire on — deleting them from a per-repo file would drop them
+  entirely in a carved repo. So the producer delivers them as an injected `FLOOR.md` (SessionStart hook) rather
+  than relying on a route, and #27 hardens the router to fail CLOSED when no routed skill resolves. This is the
+  N3 "add a route rather than trust the always-loaded floor" lesson generalised: the *behavioral* floor gets a
+  hook, the *architectural* floor gets a route.
+- **N5 consumer is genuinely meta-only.** It edits only root `AGENTS.md` — no `api/**`, so unlike N3/N4 it does
+  **not** trip `publish-packages`/`platform-sync`. Lands via `/merge-docs` admin-merge (never `--auto`); the
+  queue would still run E2E on a meta diff inside `merge_group`, hence admin-merge.
+- **Ledger-on-the-delivery-branch, applied (the N4 deviation fixed).** This checkpoint was committed on
+  `Docs/docs_polyrepo-ready-n5-root-agents` *before* the `AGENTS.md` thin, so `worktrees.ps1 close -PlanManaged`
+  will anchor normally at merge.
+- **No-rule-lost audit — one minor producer follow-up logged, two non-losses.** An independent audit of every
+  deletion against its destination found: (8) the worktree gate's "service ownership" nuance is **not lost** —
+  it is a monorepo value kept in root per the cost table; (10) `-PlanManaged`-on-close + retirement-evidence-on-
+  main is **not lost** — both are in `plans/AGENTS.md` (stays) and `git/WORKTREE.md`; (12) **`PLANS.md` omits**
+  root's "opening a `plans/*.md` obliges reading it in the same breath". (12) is a load-on-demand plan-work rule
+  the task summons (safe in the `plans` skill per the cost table), so not a consumer blocker — **producer
+  follow-up: add it to `PLANS.md`** in a later agent-standards PR for completeness.
+- **Review marker vs the merge gate.** `merge_review_gate.py`'s `review_only` treats the review current only
+  when every commit after the marker touches `reviews/` alone. So the ledger verification was committed first,
+  the review marker stamped at that commit, and the review file committed last by itself — otherwise the
+  ledger commit would stale the marker.
 - **N4 split by branch type, not by node (two lanes).** The doc deletions + link repoints rode a `Docs/*`
   branch (#715); the code-adjacent citations (csproj/targets/yml comments) rode a `Chore/*` branch (#713),
   because a `.csproj`/`.cs`/`.yml` edit is not meta-only and must not admin-merge. Both landed through the
@@ -187,5 +292,5 @@ the committed gate test and monorepo/carve replay.
 
 ```
 cd C:/Users/TommySeery/source/repos/Concertable
-Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. N4 is terminal. Create a fresh plan-managed worktree from origin/main for N5 (root AGENTS.md → agent-standards, platform-wide minus the monorepo-only lines), then do what the ledger's `## Next Steps` says.
+Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md. N5 is merged (root AGENTS.md thinned). N6 is on branch Docs/docs_polyrepo-ready-n6-docs — product narrative moved to the Concertable/docs repo. Do what the ledger's `## Next Steps` says (finish N6 via /docs-review + /merge-docs, then N7a). Endpoint: root AGENTS.md/CLAUDE.md are deleted at the cut, not in this plan.
 ```
