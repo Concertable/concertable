@@ -10,7 +10,8 @@
 - Branch: `Feature/launch_admin-console` (Phase 4 — new branch of the same name off `origin/main`; the
   Phase 2/3 branch was closed/deleted post-merge, and the stale local ref left over from that phase was
   deleted before recreating).
-- PR: **Phase 4 — pending, not yet opened** (see Next Steps). **Phase 2 — MERGED** as [#648](https://github.com/Concertable/concertable/pull/648). **Phase 3
+- PR: **Phase 4 — DRAFT, open** as [#737](https://github.com/Concertable/concertable/pull/737) (not yet
+  reviewed; CI running; merge waits on Tommy's explicit instruction). **Phase 2 — MERGED** as [#648](https://github.com/Concertable/concertable/pull/648). **Phase 3
   (moderation UI) — MERGED** as [#722](https://github.com/Concertable/concertable/pull/722)
   (2026-08-22T04:14:31Z), via a required split-PR prerequisite,
   [#733](https://github.com/Concertable/concertable/pull/733) (`Feature/navbar-shell-shell`, MERGED
@@ -347,13 +348,15 @@ those three, kept only admin's.
 
 ## Next Steps
 
-Commit this work (code + this ledger update together, per this repo's "every plan-managed PR must merge
-the current plan and progress ledger"), push, and open a PR for `Feature/launch_admin-console`. Do not
-arm auto-merge or merge without Tommy's explicit instruction (`AGENTS.md` "Ready for review is not merge
-authorization"). Once Phase 4's PR merges, `plans/launch/LAUNCH_ROADMAP.md`'s `launch/admin-console` item
-(line 42) gets ticked `[x]` and this plan closes out (`plans` skill lifecycle — delete plan + progress
-ledger, record terminal evidence) via a `Docs/launch_admin-console_closeout` branch through `/merge-docs`,
-same shape as the Phase 3 close-out (`Docs/launch_admin-console_closeout`, merged as #736).
+Paused: Tommy. PR [#737](https://github.com/Concertable/concertable/pull/737) is pushed and open as a
+draft; CI is running. Resume condition: once `gh pr checks 737` confirms genuinely green (0 pending, 0
+failing — verify the actual job list, not just `gh pr checks`, since that command has shown
+transient/stale entries mid-run earlier in this plan), re-check the `behind` count (main moves fast) and
+mark it ready for review. Do not arm auto-merge or merge without Tommy's explicit instruction (`AGENTS.md`
+"Ready for review is not merge authorization"). Once #737 merges, `plans/launch/LAUNCH_ROADMAP.md`'s
+`launch/admin-console` item (line 42) gets ticked `[x]` and this plan closes out (`plans` skill lifecycle
+— delete plan + progress ledger, record terminal evidence) via a `Docs/launch_admin-console_closeout`
+branch through `/merge-docs`, same shape as the Phase 3 close-out (merged as #736).
 
 ## Completed work
 
@@ -439,6 +442,6 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 ## Resume prompt
 
 ```
-Create a fresh worktree/branch (Feature/launch_admin-console) off current origin/main.
-Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says (Phase 4 — venue approval UI).
+cd C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console
+Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says.
 ```
