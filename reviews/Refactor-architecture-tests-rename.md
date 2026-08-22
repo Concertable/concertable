@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `bda4ae413e7f9eeefe459350007e37d5796e4a8e`  _(2026-08-22)_
+**Reviewed up to commit:** `9e44faeb9006ad67ec784a2c342a32e567383567`  _(2026-08-22)_
 
 > Range reviewed: `549af7cc0..bda4ae413` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -31,3 +31,14 @@
 
 No findings — the subagent reported the mechanical rename/collapse as clean: no dropped references, no CI
 inconsistencies, correct tier-gate and script updates.
+
+## Incremental review — 2026-08-22
+
+Range `bda4ae413..9e44faeb9`. Commits since the watermark: the CV1/CV2 fixes above, two docs-only ledger
+updates, and a merge of `origin/main` to clear a 9-commit currency gap. Diffed against the true branch
+boundary (`merge-base(origin/main, HEAD)..HEAD`, per `FULL.md` Step 1's branch-range definition) rather than
+the stale marker, the only content this branch itself contributes beyond the original review is exactly the
+CV1/CV2 fixes (`docs/INDEX.md`, `.agents/skill-routes.json`) — already reviewed above — plus the ledger
+docs. No security-sensitive path is touched relative to `origin/main` (`CredentialRegisteredHandler.cs` /
+`UserEntity.cs` etc. arrived from main itself, not from this branch), so no security layer applies. No new
+findings.
