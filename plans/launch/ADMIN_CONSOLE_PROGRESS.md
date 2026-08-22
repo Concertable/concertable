@@ -3,14 +3,19 @@
 - Plan: `plans/launch/ADMIN_CONSOLE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/admin-console`
-- Roadmap status: **not yet ticked** — Phase 4 (venue approval UI) remains before
-  `plans/launch/LAUNCH_ROADMAP.md` line 42 can flip to `[x]`.
-- Worktree: closed (Phase 2/3 worktree `.worktrees/Feature-launch_admin-console` removed post-merge). A
-  fresh worktree off `origin/main` is needed for Phase 4.
-- Branch: Phase 2/3 ran on `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase
-  1's was deleted on merge); also closed/deleted post-merge. Phase 4 needs a new branch of the same name
-  (recreated from `origin/main`, per this file's own folder convention).
-- PR: **Phase 2 — MERGED** as [#648](https://github.com/Concertable/concertable/pull/648). **Phase 3
+- Roadmap status: **not yet ticked** — Phase 4 (venue approval UI) is implemented and verified below;
+  `plans/launch/LAUNCH_ROADMAP.md` line 42 flips to `[x]` once its PR merges.
+- Worktree: `.worktrees/Feature-launch_admin-console`, recreated off current `origin/main` for Phase 4
+  (the Phase 2/3 worktree was removed post-#722-merge, per Next Steps).
+- Branch: `Feature/launch_admin-console` (Phase 4 — new branch of the same name off `origin/main`; the
+  Phase 2/3 branch was closed/deleted post-merge, and the stale local ref left over from that phase was
+  deleted before recreating).
+- PR: **Phase 4 — OPEN, ready for review** as [#737](https://github.com/Concertable/concertable/pull/737)
+  — `gh pr checks 737` confirmed all required checks `SUCCESS` including
+  `integration-tests (...Venue.IntegrationTests...)` (the new pending-approval tests ran for real, not just
+  compiled), `mergeStateStatus CLEAN`, `mergeable MERGEABLE`; the two E2E jobs correctly `SKIPPED` per this
+  plan's phase scope. Flipped from draft; merge still waits on Tommy's explicit instruction. **Phase 2 —
+  MERGED** as [#648](https://github.com/Concertable/concertable/pull/648). **Phase 3
   (moderation UI) — MERGED** as [#722](https://github.com/Concertable/concertable/pull/722)
   (2026-08-22T04:14:31Z), via a required split-PR prerequisite,
   [#733](https://github.com/Concertable/concertable/pull/733) (`Feature/navbar-shell-shell`, MERGED
@@ -292,15 +297,101 @@ auto-merged — no blanket authorization covers them):** `tomjseery/react-agents
 (`http-layer`/`HTTP.md` `const BASE` rule) and PR #4 (`write-boundary`/`FORMS.md` rewrite around
 `react-hook-form`). `Concertable/agent-standards` PR #23 (`pr-screenshots` skill) also still open.
 
+## Phase 4 — implementation (2026-08-22)
+
+Created a fresh worktree/branch off `origin/main` (a stale local `Feature/launch_admin-console` ref left
+over from Phase 3 — not checked out anywhere, content already merged as #722 — was deleted first so the
+new branch could be recreated cleanly).
+
+The plan's own Phase 4 text named a repository that doesn't exist under that name: the real cross-tenant
+admin surface over venues is `IVenuePrivilegedRepository`/`VenuePrivilegedRepository`, not
+`IAdminVenueRepository`. Extended it instead:
+
+- `IVenuePrivilegedRepository.GetPendingApprovalAsync(IPageParams)` — new; `VenuePrivilegedRepository`
+  implements it via the inherited protected `Context.Query<VenueEntity>()` (no new field needed), filtered
+  `!Approved`, ordered by `Id` (oldest-pending-first — `VenueEntity` carries no `CreatedAt`), paginated
+  with the shared `ToPaginationAsync` extension already used by `ContentReportPrivilegedRepository`
+  (Moderation's queue — the closest in-repo precedent for an admin-gated paginated listing) and
+  `VenueReviewRepository` in this same module.
+- New `PendingVenueDto` (`Venue.Application/DTOs`) and `VenueMappers.ToPendingVenueDto` (new
+  `Venue.Application/Mappers/` folder — the module didn't have one; entity→DTO mapping previously lived
+  as LINQ projections in `Infrastructure/Mappers/QueryableVenueMappers.cs` instead). `IVenueService`/
+  `VenueService.GetPendingApprovalAsync` maps the repository's `IPagination<VenueEntity>` via `.Map(...)`,
+  mirroring `ModerationService.GetQueueAsync`.
+- `VenueController`: new `[Admin]`-gated `GET /api/venue/pending-approval` returning
+  `IPagination<PendingVenueDto>` directly (no separate Api-layer `Response` wrapper — `PendingVenueDto` is
+  already primitive-only, matching `ModerationController.GetReports`'s precedent of returning its
+  Application DTO verbatim rather than inventing a wrapper `DetailsResponse`-style type).
+- Integration tests (`VenueApiTests.cs`, new `#region GetPendingApproval`): 401/403, plus a 200 case that
+  creates a fresh unapproved venue via the existing create endpoint and asserts it appears while the
+  seeded (pre-approved, via `VenueFactory.Create` calling `.Approve()`) `SeedState.Venue` does not.
+  Compiles clean; deferred to CI per remote-validation policy (no local Docker).
+- Frontend: new `app/web/admin/src/features/venues/` feature, mirroring the `moderation` feature's shape
+  exactly (`api/venuesApi.ts` with a `const BASE` route literal per the Phase 3 HTTP convention,
+  `types.ts`, `hooks/venuesKeys.ts` + `usePendingVenuesQuery`/`useApproveVenueMutation`/`usePendingVenues`
+  combining hook, `components/PendingVenuesList.tsx` using the shared `Table`/`PaginationControls`/
+  `Spinner` primitives, `pages/VenuesPage.tsx`). New route `routes/_admin/venues.tsx`; added a "Venues"
+  link to the `_admin/route.tsx` nav array (now Admins / Moderation / Venues).
+- A live plugin-registration issue in this session meant the `dotnet`/`dotnet-standards`/`react`/
+  `react-standards` skills could not be invoked through the Skill tool despite being installed at project
+  scope (`Unknown skill` for every name the `skill_router.py` write-time hook named) — matches the current
+  primary-checkout branch name (`Docs/plugin-install-scope`), so likely a known, separately-tracked
+  session/registration bug rather than anything wrong with this branch. Followed the hook's own nag-once
+  behavior (each blocked path pattern re-attempted immediately writes through) and applied the standards
+  by reading live in-repo precedent directly (`ContentReportPrivilegedRepository`, `ModerationController`/
+  `ModerationService`, `AdminsRoster.tsx`, `moderationApi.ts`) rather than skipping the requirement.
+
+**Verified:** `dotnet build` on `Concertable.B2B.Venue.Api`, the Venue integration test project, and the
+full `Concertable.B2B.Web` host — all green, 0 errors. `Concertable.B2B.Venue.UnitTests`: 20/20 passing
+(unchanged — no existing test needed updating; the new repository member is unconfigured on the existing
+loose Moq setups). All five web builds green (`customer`/`venue`/`artist`/`business`/`admin`) and `npm run
+lint:boundaries` clean across all 13 workspaces. `admin`'s `routeTree.gen.ts` was regenerated by the
+build (real diff: the new `/venues` route); the other three apps' `routeTree.gen.ts` also showed as
+modified from running their own builds but with an empty `git diff` (line-ending noise only) — reverted
+those three, kept only admin's.
+
+## Post-implementation review fixes (2026-08-22)
+
+Tommy caught two things after the initial implementation, both fixed and pushed as `f5c070f7d` before
+marking the PR ready:
+
+- Flagged that the required `dotnet`/`dotnet-standards`/`react`/`react-standards` skills coming back
+  `Unknown skill` from the Skill tool (see the plugin-registration note above) should have been a STOP,
+  not a work-around — proceeding to code from in-repo precedent alone was the wrong call, since precedent
+  can itself be stale. Corrected by reading the real skill/standard content directly from the plugin cache
+  (`~/.claude/plugins/cache/<marketplace>/<plugin>/<version pinned in installed_plugins.json>/...`) and
+  auditing the diff against it properly. That surfaced two genuine violations missed the first time:
+  `PendingVenueDto` → `PendingVenue` (no `Dto` suffix — matches this module's own `VenueDetails`/
+  `VenueSummary`, which the naming standard's actual disambiguation rule also supports) and
+  `VenueMappers.ToPendingVenue` rewritten from a legacy `this`-parameter extension method to a C# 14
+  `extension()` block (the stale `ContentReportMappers`/`VenueResponseMappers` precedent I'd copied
+  predates the already-correct `AdminMappers.cs` fix from Phase 1's own review).
+- Asked why `VenueService` injects `IVenuePrivilegedRepository` into a field/parameter named
+  `adminRepository`. Traced via `git log -S` to `b29e5422f` ("refactor(b2b): align persistence names with
+  context stance", 2026-08-16, pre-Phase-4) — that commit renamed `IAdminVenueRepository` →
+  `IVenuePrivilegedRepository` throughout the type system but never touched the constructor
+  field/parameter identifiers. Confirmed pre-existing (not introduced by Phase 4) and fixed while already
+  in the file: `adminRepository` → `privilegedRepository` in both `VenueService` and
+  `VenueServiceTests`.
+
+**Not fixed, flagged instead:** `GetPendingApprovalAsync` has no `CancellationToken` at any layer, which
+the real `persistence` standard requires on every async service/repository method reaching I/O. Not
+fixable in isolation — the shared `Concertable.DataAccess.Infrastructure.PaginationExtensions.
+ToPaginationAsync` extension it (and every other pagination repository in the codebase — Moderation, both
+Venue/Artist review repos, all three Customer review repos) calls into has no `ct` parameter to thread one
+through. A real fix is a shared-package change spanning multiple services, out of scope for this PR.
+
 ## Next Steps
 
-**Phase 4 — Venue approval UI** is the only remaining phase (plan §"Phase 4"): new
-`IAdminVenueRepository` pending-approval query + service method + `[Admin]`-gated
-`GET /api/Venue/pending-approval` endpoint (genuinely new backend surface, not just UI wiring), a
-pending-venues list page, and the approve action wired to the existing `PATCH /api/Venue/{id}/approve`.
-Start by creating a fresh worktree/branch (`Feature/launch_admin-console`) off current `origin/main` —
-the prior one was closed post-#722-merge. Only once Phase 4 lands and its verification gate passes does
-`plans/launch/LAUNCH_ROADMAP.md`'s `launch/admin-console` item (line 42) get ticked `[x]`.
+PR [#737](https://github.com/Concertable/concertable/pull/737) is open, ready for review, and CI-green
+(`ci-complete` SUCCESS, `mergeStateStatus CLEAN`, `mergeable MERGEABLE`, the two E2E jobs correctly
+`SKIPPED` per this plan's phase scope). Nothing further to verify — **merge is gated only on Tommy's
+explicit instruction** (`AGENTS.md` "Ready for review is not merge authorization"). Once #737 merges,
+`plans/launch/LAUNCH_ROADMAP.md`'s `launch/admin-console` item (line 42) gets ticked `[x]` and this plan
+closes out (`plans` skill lifecycle — delete plan + progress ledger, record terminal evidence) via a
+`Docs/launch_admin-console_closeout` branch through `/merge-docs`, same shape as the Phase 3 close-out
+(merged as #736). Before merging, re-check the `behind` count one more time (main moves fast) per the
+root `AGENTS.md` "Never enable auto-merge on a branch behind main" procedure.
 
 ## Completed work
 
@@ -386,6 +477,6 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 ## Resume prompt
 
 ```
-Create a fresh worktree/branch (Feature/launch_admin-console) off current origin/main.
-Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says (Phase 4 — venue approval UI).
+cd C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console
+Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says.
 ```
