@@ -5,7 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `503a118112994e3c7e193f2e543d8664bed4dba2`  _(2026-08-22)_
+**Reviewed up to commit:** `a03bf4bc55d86e5cca442edc1a0f95a1a6cd56e7`  _(2026-08-22)_
+**Security-reviewed up to commit:** `a03bf4bc55d86e5cca442edc1a0f95a1a6cd56e7`  _(2026-08-22)_
 
 > Range reviewed: `1452b5b8..503a1181` (6 commits: Phase 4's 3 own commits, a merge of `origin/main`
 > catching the branch up 49 commits, and this review's own tech-debt-logging commit). Phase 4 diff proper
