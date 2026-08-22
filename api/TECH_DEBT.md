@@ -290,9 +290,9 @@ read tagged `[AllowAnonymous]` first).
 **Resolves when:** every anonymous-by-omission read is classified — private reads gain the correct
 `[Authorize]`/`[HasPermission]` (scoped to the caller's own tenant/resource), genuinely public reads gain an
 explicit `[AllowAnonymous]` — with tests proving an anonymous request is rejected on the private ones; then a
-read-side guard *and* the mutating guard both cover every service (via one shared reflection helper rather
-than a per-service copy — see the hand-rolled-boundary-guard item in `Concertable.Shared/TECH_DEBT.md`), so no
-endpoint in any service is reachable anonymously by omission again.
+read-side guard *and* the mutating guard both cover every service (via one shared reflection helper in
+`Concertable.Composition.Testing`, mirroring the consolidated assembly-reference guard, rather than a
+per-service copy), so no endpoint in any service is reachable anonymously by omission again.
 
 ### Public images and private PDFs share one blob container behind an anonymous read endpoint
 

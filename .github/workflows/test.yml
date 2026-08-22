@@ -619,7 +619,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
+        surface: [web/customer, web/admin, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -1083,6 +1083,18 @@ jobs:
       - name: Vendored hooks match upstream and this repo's tables give the expected verdicts
         run: python -m unittest discover -s .agents/hooks/tests -t .agents/hooks/tests -v
 
+  workflow-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test repository workflow policy helpers
+        run: node --test .github/scripts/*.test.mjs
+
   ci-complete:
     # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
     # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
@@ -1106,6 +1118,7 @@ jobs:
       - e2e-api-tests
       - e2e-ui-tests
       - hook-tests
+      - workflow-tests
     if: always()
     steps:
       - name: Fail if any CI job failed or was cancelled

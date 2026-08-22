@@ -1,3 +1,2 @@
-export * from "./deals/common";
-export * from "./persona";
+export * from "./types";
 export * from "./polling";
