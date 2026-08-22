@@ -5,9 +5,11 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `925938841525f1ced2def7016c7e9fc5c3ad7eef`  _(2026-08-22)_
+**Reviewed up to commit:** `c4e0abfd3e951f1251da0adfc715b51f0e9dedac`  _(2026-08-22)_
 
-> Range reviewed: `26645ecd1..925938841` (7 commits).
+> Range reviewed: `26645ecd1..925938841` (7 commits), re-stamped after merging current `main` (platform-sync
+> to 0.1.0-alpha.0.1149 + unrelated Composition→Architecture test-tier rename) — no new findings, both
+> touched suites (Admin.UnitTests 33/33, DataAccess.UnitTests 12/12) still green post-merge.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
