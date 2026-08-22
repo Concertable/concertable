@@ -256,10 +256,12 @@ def context_owns_ledger(path, bases, source):
 def transcript_ledgers(records, cwd):
     paths = set()
     contexts = [context for record in records for context in intentional_contexts(record)]
+    targeted_bases = set()
     for context in contexts:
         values = list(strings(context))
         explicit_bases = {Path(path).resolve() for path in workdirs(context)}
-        bases = explicit_bases or {Path(cwd).resolve()}
+        bases = explicit_bases or targeted_bases or {Path(cwd).resolve()}
+        targeted_bases.update(explicit_bases)
         candidates = set()
         for value in values:
             absolute_matches = list(ABSOLUTE_LEDGER.finditer(value))

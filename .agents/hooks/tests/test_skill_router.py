@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -29,6 +30,20 @@ class SkillRouterTests(unittest.TestCase):
             ROUTES.read_text(encoding="utf-8"), encoding="utf-8"
         )
         self.session = str(uuid.uuid4())
+        # A bare CI runner has no plugin installed anywhere, so with no fake home every one of this
+        # table's skills genuinely fails to resolve - which is the real, correct "corpus absent" case
+        # `agent-standards` #27 fails closed on, not a route-matching question this suite owns (its own
+        # docstring: duplicating a mechanism test here drifts). One resolvable skill is enough to prove
+        # the corpus is loaded and let a genuinely-unrouted write through on its own merits.
+        home = self.root / "home"
+        cache = home / ".claude" / "plugins" / "cache" / "vendor-test" / "plugin" / "1.0.0" / "skills"
+        skill_dir = cache / "csharp-style"
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(
+            "---\nname: csharp-style\ndescription: planted for this suite\n---\n\n# csharp-style\n",
+            encoding="utf-8",
+        )
+        self.env = {"USERPROFILE": str(home), "HOME": str(home)}
 
     def tearDown(self):
         self.temp.cleanup()
@@ -45,6 +60,7 @@ class SkillRouterTests(unittest.TestCase):
             input=json.dumps(payload),
             capture_output=True,
             text=True,
+            env={**os.environ, **self.env},
         )
 
     def run_codex_patch(self, body, session=None):
@@ -60,6 +76,7 @@ class SkillRouterTests(unittest.TestCase):
             input=json.dumps(payload),
             capture_output=True,
             text=True,
+            env={**os.environ, **self.env},
         )
 
     def test_this_repos_table_enforces_against_a_codex_patch_too(self):
