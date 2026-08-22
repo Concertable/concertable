@@ -20,8 +20,9 @@
   `api/**`), so no publish and no `chore/platform-sync-*` fires. Branch-time red-sync check at N5 start: no open
   platform-sync PR.
 - Last reconciled: 2026-08-22 — **N5 producer delivered and live** (floor hook + fail-closed router,
-  machine reprovisioned to `13fcef1c0`, 5/5 plugins, smoke-verified); **N5 consumer (thin root `AGENTS.md`)
-  in progress on this branch.**
+  machine reprovisioned to `13fcef1c0`, 5/5 plugins, smoke-verified). **N5 consumer thinned root `AGENTS.md`
+  149 → 23 lines**, docs-reviewed (one HIGH, fixed on-branch), reachability/plan-graph clean; ready for
+  `/merge-docs`.
 
 ## Current state
 
@@ -98,6 +99,24 @@ a durable home before close-out (Codex-only utility).
   (#693 + #11, `dotnet:package-cutover`).
 - **Phase 1** (#669 + #5): plan method into `PLANS.md`; `HANDOFF.md` new.
 
+## Verification — N5
+
+Consumer (this repo, `Docs/docs_polyrepo-ready-n5-root-agents`):
+- Root `AGENTS.md` thinned **149 → 23 lines**. Every deleted section's rule confirmed present at its
+  destination by an independent no-rule-lost audit of the installed plugin (`13fcef1c0`): behavioral trio →
+  `FLOOR.md` (injected by `session_floor.py`); ready-for-review + merge invariants + platform-sync →
+  `MERGING.md`; branch-first + durable-guidance → `BRANCHING.md`; worktree cleanup → `git/WORKTREE.md`
+  (+ `plans/AGENTS.md` for plan-managed close/retire); E2E-through-script → `REMOTE_VALIDATION.md`; plans
+  method → `PLANS.md`; one-rule-one-home / doc-locality / reachability → `DOCS_AND_DEBT.md`.
+- KEPT in root (per `DOCS_AND_DEBT.md`'s cost-of-missing table): the worktree-identity gate's **service
+  ownership** clause — a monorepo concern costly to miss silently, so it stays in the always-loaded floor
+  rather than moving to a skill.
+- `docs_reachability.py` (scoped to the worktree): **0 errors**, 28 warnings (all pre-existing `plans/`
+  dead-link warnings, which only warn). `plan_graph.py`: **0 errors**. CLAUDE.md sibling intact
+  (`@AGENTS.md`). All 10 relative links + both script paths resolve.
+- **Meta-only**: touches only `AGENTS.md`, `docs/INDEX.md`, `plans/docs/*` — no `api/**`, so no publish and
+  no `chore/platform-sync-*` fires. Lands via `/merge-docs` admin-merge (never `--auto`).
+
 ## Verification — N4
 
 Consumer (this repo, close-out):
@@ -132,6 +151,16 @@ Consumer (this repo):
   skips E2E); platform-sync fires post-merge and is owned to green.
 
 ## Reviews
+
+**N5 — docs-reviewed by an independent agent; one finding, fixed on-branch.**
+`reviews/Docs-docs_polyrepo-ready-n5-root-agents.md`.
+- **CON1 (HIGH, Lens B)** — `docs/INDEX.md` still routed seven topic rows to now-deleted root `AGENTS.md`
+  sections, and the thinned root delegates topic lookup to `INDEX.md`, so a reader was sent to sections that
+  no longer exist. Fixed in `595136d8`: six rows repointed to their new owning skills (`floor`, `merging`,
+  `open-worktree`/`git-branching`); the seventh (doc-locality + CLAUDE.md-siblings) dropped as redundant
+  with the existing `docs-and-debt` row + the reachability-hook row.
+- Lenses A / C / D / E / F clean; rule-loss check clean (every deleted section survives at its destination);
+  the retained "service ownership" keep judged correctly placed.
 
 **N4 — all findings addressed and merged; both review files deleted in this close-out.** #715 was docs-reviewed
 (1 finding, ACC1: dead non-doc citations of the deleted doc — fixed by splitting them onto #713, the sanctioned
@@ -168,6 +197,17 @@ the committed gate test and monorepo/carve replay.
 - **Ledger-on-the-delivery-branch, applied (the N4 deviation fixed).** This checkpoint was committed on
   `Docs/docs_polyrepo-ready-n5-root-agents` *before* the `AGENTS.md` thin, so `worktrees.ps1 close -PlanManaged`
   will anchor normally at merge.
+- **No-rule-lost audit — one minor producer follow-up logged, two non-losses.** An independent audit of every
+  deletion against its destination found: (8) the worktree gate's "service ownership" nuance is **not lost** —
+  it is a monorepo value kept in root per the cost table; (10) `-PlanManaged`-on-close + retirement-evidence-on-
+  main is **not lost** — both are in `plans/AGENTS.md` (stays) and `git/WORKTREE.md`; (12) **`PLANS.md` omits**
+  root's "opening a `plans/*.md` obliges reading it in the same breath". (12) is a load-on-demand plan-work rule
+  the task summons (safe in the `plans` skill per the cost table), so not a consumer blocker — **producer
+  follow-up: add it to `PLANS.md`** in a later agent-standards PR for completeness.
+- **Review marker vs the merge gate.** `merge_review_gate.py`'s `review_only` treats the review current only
+  when every commit after the marker touches `reviews/` alone. So the ledger verification was committed first,
+  the review marker stamped at that commit, and the review file committed last by itself — otherwise the
+  ledger commit would stale the marker.
 - **N4 split by branch type, not by node (two lanes).** The doc deletions + link repoints rode a `Docs/*`
   branch (#715); the code-adjacent citations (csproj/targets/yml comments) rode a `Chore/*` branch (#713),
   because a `.csproj`/`.cs`/`.yml` edit is not meta-only and must not admin-merge. Both landed through the
