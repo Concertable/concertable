@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through current-main product-doc relocation merge checkpoint
-  `c526dc83e2ca7eee5442a8cbf59ce2dfe4276123`. Starting remote head for that checkpoint was
-  `c0d1b3e0c946723f2bc6d218b458e28e7d0c7988`; local, remote-tracking, and PR heads were verified equal.
+  through the Artist profile-query correction checkpoint
+  `ff8db6af7da53c48b69b003a504e0cbaa4704c6d`. Starting remote head for that checkpoint was
+  `d17a4958df681ee2cb2dfd6c4f6396598706ad71`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -318,6 +318,15 @@ recovery.
 
 ## Completed work
 
+- Exact-head CI run `32580443358` passed the complete solution build and 54 other jobs before the new
+  Booking integration shard exposed one production Artist query defect across 19 scenarios. The profile
+  repository projected `Genres.ToHashSet()` before applying its identity predicate, which EF could not
+  translate. Both profile lookups now filter `ArtistEntity` before the top-level profile projection, and
+  the query mapper uses a modern C# extension block. Published fix checkpoint `ff8db6af7`; local HEAD, the
+  remote branch, and PR #633 `headRefOid` all equalled
+  `ff8db6af7da53c48b69b003a504e0cbaa4704c6d`. Artist units pass 18/18, the Booking integration project
+  builds with 0 warnings and 0 errors, the combined B2B Architecture suite passes 18/18, and
+  `git diff --check` passes. No local integration or E2E runtime suite was executed.
 - Reconciled `origin/main` head `1452b5b8b`, whose six-commit delta relocates repository-wide product
   narrative into `Concertable/docs`. The docs-only merge is conflict-free and does not touch the lifecycle
   implementation, test topology, or parallel state-machine slice. Merge checkpoint `c526dc83e`; the plan
