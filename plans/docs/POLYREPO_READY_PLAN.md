@@ -112,8 +112,9 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | ~~N3~~ **done** | `api/AGENTS.md` + `api/CLAUDE.md` deleted | 78 | agent-standards (shared-is-the-intersection → `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) | nothing |
 | ~~N4~~ **done** | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` deleted, refs repointed | 62 + 525 | agent-standards (cross-service by definition) | nothing |
 | ~~N5~~ **done** | root `AGENTS.md` thinned 149 → 23 (#745) | 149 | rules → plugins (floor hook + routes) | a thin per-repo `AGENTS.md` (product/monorepo line, per-area pointers, values) — deleted only at the cut, not here |
-| N6 **in progress** | `docs/` — product narrative → `Concertable/docs`; `INDEX`/root repointed; `REMOTE_VALIDATION.md` kept | 554 | mixed — see N6 | `INDEX.md` + `REMOTE_VALIDATION.md` (this-repo nav/validation) + the thin root — all deleted at the cut |
-| N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
+| ~~N6~~ **done** | `docs/` — product narrative → `Concertable/docs` (#750); `INDEX`/root repointed; `REMOTE_VALIDATION.md` kept | 554 | mixed — see N6 | `INDEX.md` + `REMOTE_VALIDATION.md` (this-repo nav/validation) + the thin root — all deleted at the cut |
+| N7a **in progress** | `plans/AGENTS.md` thinned 68 → 31 | 68 | rules already homed (Phase 1 + N1); pointers only | a thin per-repo `plans/AGENTS.md` (layout, hook/script paths, suite names) |
+| N7b | relocating the plan *documents* | tree | — | gated on roadmap §4c |
 | N8 | *(gate)* prove one carved service standalone | — | — | — |
 
 **One node per slice, in this order.** ~~N1 first~~ and ~~N2~~ are **done**: every hub below N1 points *at*
@@ -312,10 +313,14 @@ minimum: a thin anchor of per-repo pointers.
 
 Two parts on different gates, so it splits:
 
-- **N7a — `plans/AGENTS.md`'s content (not gated).** Every rule in it is platform-wide with per-repo values,
-  so its re-home runs with N3–N6, **not** behind §4c. This is also the answer to the ledger's old "generate
-  it eight times or hand-keep it?" question — neither, the content leaves; the thin per-repo floor keeps only
-  this repo's values (script paths, suite names, debug-tier routing).
+- **N7a — `plans/AGENTS.md`'s content (not gated). In progress — consumer-only.** Every rule in it is
+  platform-wide with per-repo values, so its re-home runs with N3–N6, **not** behind §4c. A rule-by-rule
+  mapping found **every** platform rule already homed by Phase 1 + N1, so nothing needs to move out: the file
+  thins (68 → 31) to this repo's values (layout, hook/script paths, suite names) + pointers to the owning
+  skills — the answer to the old "generate it eight times or hand-keep it?" question is *neither, the content
+  leaves*. Two non-blocking `PLANS.md` follow-ups fall out and are deferred to the epic close-out (the
+  N5-logged read-before-acting obligation; promoting the bare-stem naming from an assumed category to a stated
+  rule) — not opened as a third concurrent PLANS.md PR while agent-standards #20 is in flight.
 - **N7b — relocating the plan *documents* themselves.** Gated on roadmap §4c (where a cross-service plan
   physically lives), which is gated on §6's remaining sub-decision. Nothing in N7a waits on it.
 
