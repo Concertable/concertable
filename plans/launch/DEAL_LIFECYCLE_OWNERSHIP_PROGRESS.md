@@ -274,6 +274,13 @@ short-lived shared-fixture TECH_DEBT item introduced on `main` is removed becaus
 concern is resolved by the existing `CreateClient(Guid, string)` boundary. The final upstream delta was a
 docs-only polyrepo-plan closeout and merged without conflict as `b5c35c095`.
 
+Exact-head CI run `32542251616` passed the solution build and all other completed shards, then exposed two
+closure failures. The Deal unit suite still carried five source-text assertions for deleted Concert
+workflow registries and registrations; they now assert that `FrozenDictionary<DealType>` is absent and
+self-verify the live Deal and Concert strategy families, passing 54/54 locally. The Admin integration shard
+did not reach a test: B2B host startup reported pending model changes for `ConcertDbContext`, so the
+repository-wide `InitialCreate` re-scaffold is the next mechanical closure step.
+
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
 PR #633 therefore resumes against `DealDto` and the proven module-local factory pattern, not against a
@@ -290,15 +297,18 @@ seeders only through their API module boundaries. The B2B Web Release build pass
 
 ## Next Steps
 
-Active slice: publish this current-main reconciliation and remote-validate the resulting exact PR #633
-head. Fix any failure in a moved/new integration shard, architecture rule, composition host,
-or full build without editing aggregate transition tables or state-machine implementation files owned by the
-parallel state-machine slice. When those checks are green, the topology correction is terminal and the
-parallel state-machine slice owns the next implementation change. Do not resume the superseded file-by-file
-Concert compile recovery.
+Active slice: regenerate the repository's `InitialCreate` migrations to clear the `ConcertDbContext`
+pending-model gate from exact-head CI run `32542251616`, then remote-validate the resulting PR #633 head.
+Do not edit aggregate transition tables or state-machine implementation files owned by the parallel
+state-machine slice. When CI is green, the topology correction is terminal and the parallel state-machine
+slice owns the next implementation change. Do not resume the superseded file-by-file Concert compile
+recovery.
 
 ## Completed work
 
+- Removed five stale Deal architecture assertions for deleted Concert workflow registries and strategy
+  registrations. The guard now requires the current Deal and Concert strategy families and asserts that the
+  rejected `FrozenDictionary<DealType>` workflow registry shape is absent.
 - Reconciled `origin/main` through `a091f5342` into the closed integration topology. Verified work heads
   `ab91907232517f990e341a4ef2c1c228392b265a` and
   `b5c35c09545c08eaad22e8800cb1074ce0c5f27c` were each pushed and proven equal across local,
@@ -533,6 +543,10 @@ Concert compile recovery.
 
 ## Verification
 
+- Exact-head CI run `32542251616` passed the solution build and every completed shard except Deal unit tests
+  and the Admin integration shard. The Deal failure reproduces locally and is fixed; its Release suite now
+  passes 54/54. Admin failed before test execution because `ConcertDbContext` has pending model changes;
+  the prescribed full `InitialCreate` re-scaffold remains before the next exact-head run.
 - Current-main reconciliation through work head `b5c35c095`: Admin and User integration projects build
   with 0 errors; architecture
   tests pass 10/10 and composition tests pass 5/5. The full B2B Release solution build succeeds with
