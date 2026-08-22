@@ -5,11 +5,17 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c4e0abfd3e951f1251da0adfc715b51f0e9dedac`  _(2026-08-22)_
+**Reviewed up to commit:** `b23b0f9320ad035d80048686cdc6895ad1ce9ccb`  _(2026-08-22)_
 
-> Range reviewed: `26645ecd1..925938841` (7 commits), re-stamped after merging current `main` (platform-sync
-> to 0.1.0-alpha.0.1149 + unrelated Composition→Architecture test-tier rename) — no new findings, both
-> touched suites (Admin.UnitTests 33/33, DataAccess.UnitTests 12/12) still green post-merge.
+**Security-reviewed up to commit:** `b23b0f9320ad035d80048686cdc6895ad1ce9ccb`  _(2026-08-22)_
+
+> Range reviewed: `26645ecd1..925938841` (7 commits), re-stamped twice after merging current `main`
+> (platform-sync to 0.1.0-alpha.0.1149 + Composition→Architecture test-tier rename, then a second sync
+> bringing in the `.agents/hooks/*` vendoring refresh) — no new findings either time, both touched suites
+> (Admin.UnitTests 33/33, DataAccess.UnitTests 12/12) still green post-merge. Security layer run because
+> `IUserModule.cs` sits under a `.Contracts` path (this repo's `security_paths`): no HTTP surface added,
+> the new `GetIdByEmailAsync` query is EF-parameterized (no injection), and `InviteAsync`'s admin-check
+> guard is behaviourally equivalent to its prior form — no findings.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
