@@ -23,25 +23,30 @@ CI reality: there is **no architecture leg today** — `test.yml`/`test.ps1` gat
 discover `*.ArchitectureTests.csproj`, so B2B's existing architecture tests are currently unrun in CI. The
 collapse builds an `architecture` leg, closing that pre-existing hole.
 
-## Phase 1 — tier collapse — NON-BREAKING (shared lib untouched; every `using` and pin stays valid)
+## Phase 1 — tier collapse — NON-BREAKING (shared lib untouched; every `using` and pin stays valid) — DONE
 
-1. Rename projects `.CompositionTests` → `.ArchitectureTests` (folder, `.csproj`, `namespace`, test class,
+Landed via [PR #746](https://github.com/Concertable/concertable/pull/746) (merged `685f66ec9`); platform-sync
+[#749](https://github.com/Concertable/concertable/pull/749) merged clean (package-only pin bump, no consumer
+migration needed).
+
+1. [x] Rename projects `.CompositionTests` → `.ArchitectureTests` (folder, `.csproj`, `namespace`, test class,
    `AGENTS.md` title): AppHost, Auth, Payment, Search, Customer.
-2. B2B: move `B2BCompositionTests.cs` into `Concertable.B2B.ArchitectureTests` (namespace →
+2. [x] B2B: move `B2BCompositionTests.cs` into `Concertable.B2B.ArchitectureTests` (namespace →
    `Concertable.B2B.ArchitectureTests`), add that project's missing refs (composition-testing lib +
    `Concertable.B2B.Workers` / `.Seed.Simulator` / `.AppHost` / `Concertable.Auth.Hosting` /
    `Concertable.B2B.Admin.Contracts`); delete the `Concertable.B2B.CompositionTests` project + folder.
-3. `api/TestConventions.targets`: delete the `.CompositionTests` tier line; drop `.CompositionTests` from
+3. [x] `api/TestConventions.targets`: delete the `.CompositionTests` tier line; drop `.CompositionTests` from
    the error message's suffix list.
-4. `.agents/skill-routes.json`: repoint the `\.CompositionTests` route regex to `\.ArchitectureTests`
-   (keep the `composition-testing` skill mapping — it documents the dynamic sub-tier activity).
-5. `scripts/test.ps1`: `Composition` suite → `Architecture` suite in `all` and the subcommand
+4. [x] `.agents/skill-routes.json`: repoint the `\.CompositionTests` route regex to `\.ArchitectureTests`
+   (keep the `composition-testing` skill mapping — it documents the dynamic sub-tier activity; also added
+   `module-structure` for the static ArchUnit half, a review finding).
+5. [x] `scripts/test.ps1`: `Composition` suite → `Architecture` suite in `all` and the subcommand
    (`\.ArchitectureTests$`).
-6. `.github/workflows/test.yml`: `composition_projects`/`composition-tests` job + every `needs:` ref →
+6. [x] `.github/workflows/test.yml`: `composition_projects`/`composition-tests` job + every `needs:` ref →
    `architecture_projects`/`architecture-tests`, glob `*.ArchitectureTests.csproj`.
-7. `api/Concertable.slnx` project paths; docs: the affected `AGENTS.md`, `docs/INDEX.md`,
+7. [x] `api/Concertable.slnx` project paths; docs: the affected `AGENTS.md`, `docs/INDEX.md`,
    `api/TECH_DEBT.md`, any `reviews/*` prose.
-8. Gate: `dotnet build api/Concertable.slnx` to 0 errors; `./scripts/test.ps1 architecture` green.
+8. [x] Gate: `dotnet build api/Concertable.slnx` to 0 errors; exact-head PR CI green (76/76 checks).
 
 ## Phase 2 — published-package rename (separate publish-then-bump chain, after Phase 1 merges)
 

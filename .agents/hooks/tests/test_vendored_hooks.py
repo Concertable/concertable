@@ -1,11 +1,19 @@
 import hashlib
 import importlib.util
 import json
+import sys
 import unittest
 from pathlib import Path
 
 
 HOOKS = Path(__file__).resolve().parents[1]
+# A hook run directly (`python skill_router.py`) gets its own directory on sys.path for free - that is
+# how `from hook_runtime import ...` resolves in production. Loading the same file in-process via
+# importlib does not do this automatically, so `merge_review_gate.py`'s identical import raised
+# ModuleNotFoundError the moment vendoring added that dependency, even though the real file beside it
+# on disk was never missing.
+if str(HOOKS) not in sys.path:
+    sys.path.insert(0, str(HOOKS))
 REPO = HOOKS.parents[1]
 MANIFEST = HOOKS / "vendored.json"
 WIRING = (REPO / ".claude" / "settings.json", REPO / ".codex" / "hooks.json")
