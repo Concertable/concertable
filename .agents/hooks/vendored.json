@@ -28,6 +28,13 @@
       "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
       "sha256": "sha256:cfa58050e17da0711f72f2469359056be532a291faeb99fbdac990140f24d3d8"
     },
+    "plan_handoff_stop.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/plan_handoff_stop.py",
+      "delivery": "invoked",
+      "commit": "c62e1b75c4e8e2bba65b0599ad64c08a62d12486",
+      "sha256": "sha256:6827d21233a257a64420ee0c1bbc1b9f15269391d3d1a15169ab2d5d310d18b1"
+    },
     "plan_handoff_stop_launcher.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/plan_handoff_stop_launcher.py",
@@ -35,19 +42,12 @@
       "commit": "8291f69d28b1606e0d21866a63266014a48bd08d",
       "sha256": "sha256:2db295f838a140eeca96cf16644d735ccffbb9b0c83799fe9a1f1942b868174d"
     },
-    "plan_handoff_stop.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/plan_handoff_stop.py",
-      "delivery": "invoked",
-      "commit": "890df4add47cf134272113554cb4f27f3eedb10d",
-      "sha256": "sha256:bc2e626eb7776037bd9747fdc4620b9d75070e55f7d06d89748bad68acda8496"
-    },
     "session_floor.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/session_floor.py",
       "delivery": "hook",
-      "commit": "a8a5bc1fc560712c47c0acda5133f4248789e2c1",
-      "sha256": "sha256:487dfc1e65d87f56c3d7d70763945c072b08cea03ca2c3b449cb9de9af17737c"
+      "commit": "8b9d5e52da24a772529926d40268f0a3858278a3",
+      "sha256": "sha256:5270c70f369cb0377cfa11f13a60429eaf22662e2a25a616af01e8d197ca7f2a"
     },
     "skill_router.py": {
       "source": "Concertable/agent-standards",
