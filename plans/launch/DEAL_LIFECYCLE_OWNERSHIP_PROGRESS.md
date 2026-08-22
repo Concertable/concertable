@@ -6,10 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through integration-topology closure ledger transport head
-  `803adae16a38470c2ad2148225395f728d830f6b`; its work head is
-  `fc678e0edaf5970e01ace03b9400c59a23da3c86`. Starting remote head was
-  `998f3d00f65a3b4d7a37c34775587de9782ebaac`; local, remote-tracking, and PR heads were verified equal.
+  through current-main reconciliation work head
+  `b5c35c09545c08eaad22e8800cb1074ce0c5f27c`. Starting remote head was
+  `803adae16a38470c2ad2148225395f728d830f6b`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -18,7 +17,7 @@
   [#719](https://github.com/Concertable/concertable/pull/719) at exact head
   `541ff90f5b3910815c5835c38c03a52dc47434f4`; exact-head CI is still completing. Its merge, package
   publication, and generated platform-sync version remain the Phase 5 consumer gate.
-- Last reconciled: 2026-08-22 after merging current `origin/main` into the integration-topology closure
+- Last reconciled: 2026-08-22 after merging `origin/main` at `a091f5342` into the integration-topology closure
 
 ## Current state
 
@@ -266,13 +265,14 @@ completion is verified through the Concert HTTP response. Module facades now del
 module-local application services, the Worker host composes every required module, and the mechanical
 architecture rules pass in full. No local integration or E2E suite was executed.
 
-Current `origin/main` at `1c63e4f6b` is reconciled by this checkpoint. Six textual conflicts were
-resolved without restoring the deleted Concert-side Booking service, stale Concert-owned Application
-cancellation tests, or the shared Admin fixture. The merged Admin and User provisioning coverage now
-uses each module's local fixture and public Auth/event boundary; Admin no longer resolves User
-persistence or constructs a User domain entity. The short-lived shared-fixture TECH_DEBT item introduced
-on `main` is removed because its minimal test-identity concern is resolved by the existing
-`CreateClient(Guid, string)` boundary.
+Current `origin/main` at `a091f5342` is reconciled by work head `b5c35c095`. Checkpoint `ab9190723`
+merged the preceding main head with six textual conflicts resolved without restoring the deleted
+Concert-side Booking service, stale Concert-owned Application cancellation tests, or the shared Admin
+fixture. The merged Admin and User provisioning coverage now uses each module's local fixture and public
+Auth/event boundary; Admin no longer resolves User persistence or constructs a User domain entity. The
+short-lived shared-fixture TECH_DEBT item introduced on `main` is removed because its minimal test-identity
+concern is resolved by the existing `CreateClient(Guid, string)` boundary. The final upstream delta was a
+docs-only polyrepo-plan closeout and merged without conflict as `b5c35c095`.
 
 The Deal foundation is now delivered. Its production net10 result is the Deal-owned validated invariant
 factory for `IDealMapper` and `IDealUpdater`; the generator/analyzer prototype was intentionally removed.
@@ -299,10 +299,13 @@ Concert compile recovery.
 
 ## Completed work
 
-- Reconciled `origin/main` at `1c63e4f6b` into the closed integration topology. Admin provisioning now
-  crosses into Auth through the integration-event and HTTP boundaries while retaining only Admin's real
-  persistence stance; User provisioning remains on the User fixture. Deleted Concert-owned and shared
-  multi-owner fixtures remain deleted.
+- Reconciled `origin/main` through `a091f5342` into the closed integration topology. Verified work heads
+  `ab91907232517f990e341a4ef2c1c228392b265a` and
+  `b5c35c09545c08eaad22e8800cb1074ce0c5f27c` were each pushed and proven equal across local,
+  remote-tracking, and PR #633 heads. Admin provisioning now crosses into Auth through the
+  integration-event and HTTP boundaries while retaining only Admin's real persistence stance; User
+  provisioning remains on the User fixture. Deleted Concert-owned and shared multi-owner fixtures remain
+  deleted.
 - Published integration-topology closure checkpoint `fc678e0ed`; local HEAD, the remote branch, and PR
   #633 `headRefOid` all equalled `fc678e0edaf5970e01ace03b9400c59a23da3c86`. The complete B2B solution
   builds with every module and Process integration project plus the host E2E project; architecture tests
@@ -530,7 +533,8 @@ Concert compile recovery.
 
 ## Verification
 
-- Current-main reconciliation: Admin and User integration projects build with 0 errors; architecture
+- Current-main reconciliation through work head `b5c35c095`: Admin and User integration projects build
+  with 0 errors; architecture
   tests pass 10/10 and composition tests pass 5/5. The full B2B Release solution build succeeds with
   0 errors and two generated UI nullable-annotation warnings. The Concert stale-ownership scan is empty,
   the plan graph reports 0 errors and 0 warnings, and both staged and unstaged `git diff --check` pass.
