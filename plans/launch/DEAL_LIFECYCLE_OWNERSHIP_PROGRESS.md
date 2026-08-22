@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through current-main Architecture-tier reconciliation head
-  `de0ed4a31b62896afd302a346959767713671959`. Starting remote head for that checkpoint was
-  `b96c3ed0207854c0ca2217ed8b1be3b136a008c7`; local, remote-tracking, and PR heads were verified equal.
+  through typed Application checkout-error checkpoint
+  `00e5833d12195be9a7ac53e3d0e8f3b4baff1115`. Starting remote head for that checkpoint was
+  `4616fc8261172d59a50262d6ca1a4e59cf86ce1b`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -318,6 +318,16 @@ recovery.
 
 ## Completed work
 
+- Exact-head CI run `32579210710` passed the solution build and exposed one Shared API architecture
+  failure: Application's newly owned checkout slice still threw HTTP exceptions for ordinary not-found,
+  missing-tenant, and unsupported-deal outcomes. `ApplicationCheckoutError` now closes those failures and
+  composes the existing eligibility error; both checkout services return typed Results, and both controller
+  actions terminate them through `ToOkOrProblem`. Published fix checkpoint `00e5833d1`; local HEAD, the
+  remote branch, and PR #633 `headRefOid` all equalled
+  `00e5833d12195be9a7ac53e3d0e8f3b4baff1115`. The exact failing convention is green, the complete Shared
+  API suite passes 72/72, the Application integration project builds with 0 warnings and 0 errors, the
+  combined B2B Architecture suite passes 18/18, and `git diff --check` passes. No local integration or E2E
+  runtime suite was executed.
 - Reconciled `origin/main` head `685f66ec9`, which collapsed each service's separate Composition project
   into its Architecture project, and published merge checkpoint `de0ed4a31`; local HEAD, the remote branch,
   and PR #633 `headRefOid` all equalled `de0ed4a31b62896afd302a346959767713671959`. PR #633's static module
