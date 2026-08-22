@@ -111,8 +111,8 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | ~~N2~~ **done** | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* (`SKILL_ROUTES.md`, skill `skill-routes`) + a generator (`gen_skill_routes.py`) | the table itself: per-repo data; `_comment` repointed |
 | ~~N3~~ **done** | `api/AGENTS.md` + `api/CLAUDE.md` deleted | 78 | agent-standards (shared-is-the-intersection → `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) | nothing |
 | ~~N4~~ **done** | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` deleted, refs repointed | 62 + 525 | agent-standards (cross-service by definition) | nothing |
-| N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
-| N6 | `docs/` — `INDEX.md` 188 · `USP.md` 203 · `DEEP_RESEARCH_PROMPT_GUIDE.md` 81 · `OVERVIEW.md` 55 · `REMOTE_VALIDATION.md` 27 | 554 | mixed — see N6 | nothing |
+| ~~N5~~ **done** | root `AGENTS.md` thinned 149 → 23 (#745) | 149 | rules → plugins (floor hook + routes) | a thin per-repo `AGENTS.md` (product/monorepo line, per-area pointers, values) — deleted only at the cut, not here |
+| N6 **in progress** | `docs/` — product narrative → `Concertable/docs`; `INDEX`/root repointed; `REMOTE_VALIDATION.md` kept | 554 | mixed — see N6 | `INDEX.md` + `REMOTE_VALIDATION.md` (this-repo nav/validation) + the thin root — all deleted at the cut |
 | N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
 | N8 | *(gate)* prove one carved service standalone | — | — | — |
 
@@ -288,13 +288,25 @@ script/suite values; a one-line worktree-identity-gate pointer. DELETE everythin
 
 Three different answers in one folder, so it is one node with three outcomes:
 
-- `INDEX.md` (188) — the topic→owner map. Platform-wide, and its per-repo half is a short "what this repo
-  owns" list. Blocked on N1: the map's rows point at skills, so it can only be written once they have homes.
-- `REMOTE_VALIDATION.md` (27) — already a thin pointer at the `remote-validation` standard; folds into the
-  per-repo floor with its commands.
-- `OVERVIEW.md` (55), `USP.md` (203), `DEEP_RESEARCH_PROMPT_GUIDE.md` (81) — **not agent guidance and not
-  service-specific: product narrative.** Neither destination fits, which makes this the one genuinely open
-  question in the plan. **Do not invent a home** — surface it with N6 and let Tommy place them.
+- `INDEX.md` (188) — the topic→owner map. The process rows were repointed to their owning skills in N5
+  (the CON1 fix); N6 repoints the Product rows to the new central docs repo. It stays this repo's
+  topic→owner index; it is **not** folded away.
+- `REMOTE_VALIDATION.md` (27) — **kept as this repo's standalone validation doc** (deviation from the
+  original "folds into the per-repo floor"). Folding it into root `AGENTS.md` would grow the root we are
+  emptying; a per-repo validation doc is the natural home and is what a carved service repo keeps. Root
+  already points at it.
+- `OVERVIEW.md` (55), `USP.md` (203), `DEEP_RESEARCH_PROMPT_GUIDE.md` (81) — product narrative, **RESOLVED**:
+  Tommy chose a dedicated central docs repo. Relocated to **[`Concertable/docs`](https://github.com/Concertable/docs)**
+  (private), the standard polyrepo pattern for cross-cutting product/system narrative that belongs to no
+  single service. Deleted from this repo; root `AGENTS.md` line 1 and `INDEX.md`'s Product rows repointed at
+  the new repo; the moved docs' repo-relative links rewritten as absolute GitHub URLs.
+
+**Root `AGENTS.md` still cannot be fully deleted here.** Even with the product docs gone, `INDEX.md` and
+`REMOTE_VALIDATION.md` (this repo's own navigation + validation docs) still need a root anchor to stay
+reachable, and they are genuinely this-repo, not standard or service-specific. Literal "nothing at root"
+is therefore a **cut-time** step (when the monorepo dissolves and each service repo takes its own
+`INDEX`/validation), which is the separate `POLYREPO_ROADMAP` — out of scope here. N6 leaves root at its
+minimum: a thin anchor of per-repo pointers.
 
 ### N7 — the `plans/` tree and `plans/AGENTS.md` (75 lines)
 
