@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through the Artist module-fixture correction checkpoint
-  `ac5e7ee0b77b9f49354507c856378509ac7b2705`. Starting remote head for that checkpoint was
-  `94eb159225cecb060169adcba7302589b19eec3f`; local, remote-tracking, and PR heads were verified equal.
+  through the owning integration-fixture guard checkpoint
+  `d3448d7bf6d9d9574d250245d769c43986eee75b`. Starting remote head for that checkpoint was
+  `cfe5e4035e2bd76667d94237675f47bec363cf93`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -318,6 +318,15 @@ recovery.
 
 ## Completed work
 
+- Exact-head CI run `32583248189` passed the complete solution build and reached the module integration
+  matrix, where two re-homed Venue dashboard tests exposed the final exact shared-`ApiFixture` constructor.
+  Both now request `VenueApiFixture`. `IntegrationTestBoundaryTests` now scans every module integration
+  project's C# sources and rejects the exact shared fixture type outside its owning `*ApiFixture.cs`, so
+  this topology mistake fails before container startup. Published fix checkpoint `d3448d7bf`; local HEAD,
+  the remote branch, and PR #633 `headRefOid` all equalled
+  `d3448d7bf6d9d9574d250245d769c43986eee75b`. The exact shared-fixture scan is empty, the Venue integration
+  project builds with 0 warnings and 0 errors, the combined B2B Architecture suite passes 19/19, and
+  `git diff --check` passes. No local integration or E2E runtime suite was executed.
 - Exact-head CI run `32581847089` passed the complete solution build and reached the module integration
   matrix, where two re-homed Artist dashboard tests still requested the shared `ApiFixture`. Their
   `Integration` collection correctly supplies only `ArtistApiFixture`, so xUnit rejected both stale
