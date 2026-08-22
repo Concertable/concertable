@@ -1,6 +1,5 @@
 import { View, Text, Pressable } from "react-native";
-import type { Genre } from "@concertable/shared/types";
-import { genreLabel } from "@concertable/shared/types";
+import { GENRE_LABELS, type Genre } from "@concertable/shared/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -11,7 +10,13 @@ interface Props {
   className?: string;
 }
 
-export function GenreChips({ genres, selected, onToggle, max, className }: Readonly<Props>) {
+export function GenreChips({
+  genres,
+  selected,
+  onToggle,
+  max,
+  className,
+}: Readonly<Props>) {
   const visible = max ? genres.slice(0, max) : genres;
   const isSelectable = onToggle !== undefined;
 
@@ -26,18 +31,27 @@ export function GenreChips({ genres, selected, onToggle, max, className }: Reado
               onPress={() => onToggle!(genre)}
               className={cn(
                 "rounded-full px-2.5 py-1 border",
-                active ? "bg-primary border-primary" : "border-border bg-background"
+                active
+                  ? "bg-primary border-primary"
+                  : "border-border bg-background",
               )}
             >
-              <Text className={cn("text-xs font-medium", active ? "text-primary-foreground" : "text-foreground")}>
-                {genreLabel(genre)}
+              <Text
+                className={cn(
+                  "text-xs font-medium",
+                  active ? "text-primary-foreground" : "text-foreground",
+                )}
+              >
+                {GENRE_LABELS[genre]}
               </Text>
             </Pressable>
           );
         }
         return (
           <View key={genre} className="rounded-full px-2.5 py-1 bg-muted">
-            <Text className="text-xs font-medium text-muted-foreground">{genreLabel(genre)}</Text>
+            <Text className="text-xs font-medium text-muted-foreground">
+              {GENRE_LABELS[genre]}
+            </Text>
           </View>
         );
       })}

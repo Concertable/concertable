@@ -3,32 +3,41 @@
 - Plan: `plans/frontend/DOMAIN_COMPANION_MAPPING_PLAN.md`
 - Roadmap: `plans/frontend/FRONTEND_DOMAIN_MODEL_ROADMAP.md`
 - Roadmap item: `frontend/domain-companion-mapping`
-- Worktree: not created
-- Branch: `Refactor/frontend_domain-companion-mapping` (reserved; not created)
-- Plan worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-frontend-domain-companion-plan`
-- Plan branch: `Docs/frontend_domain-companion-plan`
-- Plan PR: #644 — https://github.com/Concertable/concertable/pull/644 (`skip-e2e`)
-- Dependency/package gates: PRs #595, #600, and #637 must be terminal before the implementation worktree is created; no package publication gate
-- Last reconciled: 2026-08-17 against `origin/main` at `9205e82df4359df8ddf8dfdace07b4aa09b6d186`, open PR inventory, and registered worktrees
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-frontend-domain-apis`
+- Branch: `Refactor/frontend_domain-companion-mapping`
+- PR: none
+- Dependency/package gates: none; PRs #595, #600, and #637 are merged; the branch-time platform-sync check found no completed red check
+- Last reconciled: 2026-08-22 against `origin/main` at `09c535eb8101cccf93b8652f167245732daed244`, current frontend source, open PRs, and registered worktrees
 
 ## Current state
 
-No implementation exists. The repository currently has no frontend `Mapper` objects or `toX`
-companions. The canonical problem is the anonymous Opportunity request projection, but the refreshed
-inventory also found implicit read/write conversions in Organization, Review, Preference, Concert,
-Artist, and Venue flows.
+Phases 0 and 1 are complete. The dependency gate cleared, the canonical branch owns the
+implementation, and the inventory was refreshed after the frontend guidance and package-topology
+changes landed.
 
-The design is resolved: retain interfaces, use a same-name exported `const` companion directly below
-the owning types, use source-owned `toX` names, validate raw form buffers before mapping, and add no
-mapping dependency. Transport encoding, third-party adaptation, presentation projection, exhaustive
-registries, identity mappings, and trivial request bodies remain outside companions.
+The direct label tables, `paymentSummary`, cohesive `consent` service, canonical
+`Opportunity.toRequest`, Organization buffer/request companions, raw-buffer validation, and tenant
+barrel contraction are implemented and verified. Consent-owned absence is `undefined` and its stored
+value is `StoredConsent`; only browser Storage signatures and JavaScript object validation retain
+`null`.
+
+The plan now also owns the audited store boundaries and codebase-wide absence normalization. The
+editor-store work stays in the existing Concert/Artist/Venue phases because those phases already
+change the same buffers. Auth/search encapsulation and the full `null` audit are Phase 4.
 
 ## Next Steps
 
-Blocked: Open PRs #595, #600, and #637 overlap the target concert/messaging types or frontend guidance.
-Blocked by: GitHub PRs #595, #600, and #637, owned by their current branches.
-Unblock action: Let each PR reach merged or closed state; then fetch `origin/main`, confirm no open red platform-sync PR, refresh the plan's baseline inventory, and create `Refactor/frontend_domain-companion-mapping` from current `origin/main`.
-Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`, the refreshed main worktree is clean for the named target paths, and the progress ledger records the new main SHA and any changed paths.
+Begin Phase 2 in this worktree:
+
+1. Split route identity from the shared review request, add the web-customer `ReviewBuffer` companion,
+   and map only its parsed data to `CreateReviewRequest`.
+2. Move report-message normalization into its Zod schema and remove the pre-parse object mapper.
+3. Replace Preference's read-as-write mutation input with a slim parsed request, preserving selected
+   genres for both create and update.
+4. Introduce the shared Concert buffer/request contracts and `Concert.toBuffer`, then make
+   `useMyConcert` the complete editor facade and remove public store consumption.
+5. Run the Phase 2 focused tests and package builds, update this ledger with exact evidence, and commit
+   the coherent phase checkpoint. Do not start Phase 3 in the same turn.
 
 ## Completed work
 
@@ -38,20 +47,48 @@ Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`
   retained or migrated site.
 - Created the roadmap item, implementation plan, and operational ledger in `d09f09f23`.
 - Resolved all five docs-review findings in `18fec1752` and `959dbb516`.
+- Confirmed dependency PRs #595, #600, and #637 merged, created the implementation worktree from
+  current `origin/main`, and renamed its branch to the plan's reserved canonical name.
+- Refreshed the transformation, state-boundary, and absence inventories against the landed frontend
+  topology. The audit found 219 TypeScript `null` occurrences before classification.
+- Completed Phase 1 in this commit: replaced the genre, tenant-role, and message-action label wrappers
+  with exhaustive direct lookup tables and renamed `summaryFor` to `paymentSummary`.
+- Replaced the consent function family with `consent.has/read/write/subscribe`, renamed the persisted
+  shape to `StoredConsent`, and changed owned absence from `null` to `undefined`.
+- Added `OpportunityRequest` and the canonical `Opportunity.toRequest` companion and replaced the
+  anonymous API projection with `desired.map(Opportunity.toRequest)`.
+- Added `Organization.toBuffer` and `OrganizationBuffer.toUpdateRequest`, moved the request contract
+  into `types.ts`, and made the form parse its raw buffer before request construction.
+- Removed unused tenant membership derivations from the public barrel and added focused Opportunity,
+  Organization, schema, and consent coverage.
 
 ## Verification
 
-- Baseline source: `origin/main` at `9205e82df4359df8ddf8dfdace07b4aa09b6d186`.
-- Open-PR overlap checked for #595, #600, #617, #633, and #637; only #595, #600, and #637 gate the
-  frontend implementation.
+- Baseline source: `origin/main` at `09c535eb8101cccf93b8652f167245732daed244`.
+- `gh pr view` confirms #595 merged at 2026-08-20T21:21:17Z, #600 at
+  2026-08-21T10:10:55Z, and #637 at 2026-08-19T19:29:52Z.
+- Branch-time platform-sync inspection found no completed red check on the open sync PR.
 - Registered worktrees checked. `Refactor/OrganizationProfileRouteContraction` has committed
   Artist/Venue changes without an open PR and is explicitly not the implementation base.
 - `python .agents/hooks/plan_graph.py --root <plan-worktree>`: 0 errors, 0 warnings.
 - Local Markdown link check: every relative link in `plans/frontend/` resolves.
-- `git diff --check`: clean through `959dbb516`.
+- `git diff --check`: clean for the Phase 1 checkpoint.
 - Reviewed work head `385441409ab5c88c4361413003785375c8a858a5` pushed and verified equal to
   `origin/Docs/frontend_domain-companion-plan`; PR #644 opened from that exact head with `skip-e2e`.
-- No implementation tests apply yet.
+- `@concertable/shared`: 1 test file, 7 tests passed; build passed.
+- `@concertable/b2b`: 5 test files, 15 tests passed; build passed.
+- `@concertable/web`: 5 test files, 31 tests passed; build passed, including its full source
+  typecheck.
+- `@concertable/web-b2b`: 11 test files, 25 tests passed; build passed.
+- `@concertable/mobile` and `@concertable/customer` package builds passed.
+- Customer, Venue, Artist, Business, and Admin production builds passed. Existing Vite config and
+  chunk-size warnings remain warnings only.
+- Legacy-name search found zero production occurrences of `ConsentRecord`, the four former consent
+  functions, the three label helpers, and `summaryFor`.
+- Canonical call-site search found `desired.map(Opportunity.toRequest)` in `opportunityApi.ts`.
+- Pre-edit audits captured every production import of `useAuthStore`, `useSearchFiltersStore`,
+  `useArtistStore`, `useVenueStore`, and `useConcertStore`; only Opportunities and Tenant already
+  satisfy the private-store boundary.
 
 ## Reviews
 
@@ -69,8 +106,20 @@ findings were fixed; incremental review found no issues in the ledger checkpoint
 - The inventory includes implicit mappings where a read type is reused as a write body, even if no
   function is currently named mapper.
 - Backend mappers are excluded.
+- Direct typed label-table indexing replaces one-line label wrappers.
+- `permissions.has(permission)` remains unchanged; a `can(permission)` alias would be less explicit.
+- `consent` is a justified stateful service; `StoredConsent` names its persisted value.
+- Owned absence uses `undefined`. Browser/DOM/React/SDK-required `null`, JSX no-render, JavaScript
+  object guards, and genuinely distinct explicit-empty states remain.
+- Raw `Query`/`Mutation` hooks remain valid public server-state APIs. Facades are required when a
+  consumer would otherwise assemble store transitions, validation, derivation, or navigation.
+- The worktree's first `npm ci` was interrupted by slow Windows file scanning and left partially
+  extracted ignored dependencies. Verification restored exact locked package contents from a
+  complete sibling worktree or exact npm tarballs; no manifest or lockfile changed.
 
 ## Resume prompt
 
-Not emitted while `## Next Steps` carries the hard-blocker fields. The last dependency owner or a
-fresh status check opens the gate and supplies the implementation pointer.
+```
+cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-frontend-domain-apis
+Read @plans/frontend/DOMAIN_COMPANION_MAPPING_PLAN.md and @plans/frontend/DOMAIN_COMPANION_MAPPING_PROGRESS.md and do what its `## Next Steps` says.
+```

@@ -11,7 +11,7 @@ export const GENRE_VALUES = [
 
 export type Genre = (typeof GENRE_VALUES)[number];
 
-const GENRE_LABELS: Record<Genre, string> = {
+export const GENRE_LABELS: Record<Genre, string> = {
   rock: "Rock",
   pop: "Pop",
   jazz: "Jazz",
@@ -21,10 +21,6 @@ const GENRE_LABELS: Record<Genre, string> = {
   dnB: "DnB",
   house: "House",
 };
-
-export function genreLabel(genre: Genre): string {
-  return GENRE_LABELS[genre];
-}
 
 export interface Pagination<T> {
   data: T[];

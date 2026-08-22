@@ -21,15 +21,11 @@ export type MessageAction =
 
 export type MessageSenderKind = "org" | "member";
 
-const MESSAGE_ACTION_LABELS: Record<MessageAction, string> = {
+export const MESSAGE_ACTION_LABELS: Record<MessageAction, string> = {
   applicationReceived: "Application received",
   applicationAccepted: "Application accepted",
   concertPosted: "Concert posted",
 };
-
-export function messageActionLabel(action: MessageAction): string {
-  return MESSAGE_ACTION_LABELS[action];
-}
 
 export interface MessageSender {
   kind: MessageSenderKind;
