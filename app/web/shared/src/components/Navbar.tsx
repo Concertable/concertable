@@ -16,8 +16,13 @@ export interface NavLink {
 
 interface Props {
   links: NavLink[];
-  profileItems: ProfileMenuItem[];
+  profileItems?: ProfileMenuItem[];
   headerSlot?: ReactNode;
+  /** Replaces the default `ProfileMenu` — for a surface where its hardcoded
+   * `/settings`/`/settings/payment` links don't apply. */
+  profileSlot?: ReactNode;
+  showSearch?: boolean;
+  showMailbox?: boolean;
   onHeightChange: (height: number) => void;
 }
 
@@ -25,6 +30,9 @@ export function Navbar({
   links,
   profileItems,
   headerSlot,
+  profileSlot,
+  showSearch = true,
+  showMailbox = true,
   onHeightChange,
 }: Readonly<Props>) {
   const user = useAuthStore((s) => s.user);
@@ -83,10 +91,10 @@ export function Navbar({
 
       <div className="text-primary-foreground flex items-center gap-2 [&_button]:hover:bg-white/10">
         {headerSlot}
-        <NavbarSearch />
-        {user && <Mailbox />}
+        {showSearch && <NavbarSearch />}
+        {showMailbox && user && <Mailbox />}
         <ThemeToggle />
-        <ProfileMenu items={profileItems} />
+        {profileSlot ?? <ProfileMenu items={profileItems ?? []} />}
       </div>
     </nav>
   );
