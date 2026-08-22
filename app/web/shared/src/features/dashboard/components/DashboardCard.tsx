@@ -28,7 +28,7 @@ export function DashboardCard({
   return (
     <section
       className={cn(
-        "bg-card flex h-full flex-col rounded-lg border p-4 shadow-sm",
+        "bg-card flex h-full min-w-0 flex-col rounded-lg border p-4 shadow-sm",
         className,
       )}
     >
@@ -47,7 +47,7 @@ export function DashboardCard({
         )}
       </header>
 
-      <div className={cn("flex-1", bodyClassName)}>{children}</div>
+      <div className={cn("min-w-0 flex-1", bodyClassName)}>{children}</div>
 
       {footerLabel && footerHref && (
         <footer className="border-border mt-3 border-t pt-2">
