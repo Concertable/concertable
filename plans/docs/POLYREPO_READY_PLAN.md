@@ -260,12 +260,29 @@ what it may depend on, so it cannot be the last node moved.
   repointed to the `packages` skill on `Chore/polyrepo-n4-arch-ref-repoint` (#713). Both MERGED; publishes
   succeeded and the final `chore/platform-sync-0.1.0-alpha.0.1128` sync (#724) merged green, non-breaking.
 
-### N5 — root `AGENTS.md` (147 lines)
+### N5 — root `AGENTS.md` (149 lines)
 
 Split by the same test. The monorepo-only lines (that this *is* a monorepo, where `api/` and `app/` sit) do
 not port and die with the root; everything else — the scalable-fix rule, the autonomy rules, the merge and
 platform-sync invariants, doc locality, the review gates — is platform-wide. Rewording its opening sentence
 so the monorepo reads as "current packaging" is the cosmetic tier and is explicitly **not** the work.
+
+**Producer — DELIVERED (agent-standards #25 + #27, both MERGED into `main` at `13fcef1c0`).** The three
+behavioral sections are *always-loaded* rules with no route path to fire on, so re-homing them to a doc a
+route can name would silently drop them in a carved repo. #25 instead delivers them as
+`standards/process/FLOOR.md`, injected at every session start by a new `session_floor.py` SessionStart hook
+and owned by a name-invokable `floor` skill; §7's ready-for-review CI-workflow invariant homed in `MERGING.md`
+in the same PR. #27 hardens `skill_router` to fail **CLOSED** — an un-routed write is blocked when NOT ONE
+routed skill resolves (the plugin didn't load) — making criterion-2's "a convention is never missing" an
+enforced gate. Every other deleted section already had its destination from an earlier slice: the merge
+invariants + platform-sync → `MERGING.md`, git-branch / worktree-identity / durable-guidance → `BRANCHING.md`,
+worktree-cleanup → `git/WORKTREE.md`, validation/E2E → `REMOTE_VALIDATION.md`, plans → `PLANS.md`,
+one-owning-doc / doc-locality / reachability → `DOCS_AND_DEBT.md`.
+
+**Consumer — thin root `AGENTS.md` to per-repo values/pointers only.** KEEP: the product line; the monorepo
+clause (rewording it is the cosmetic tier, **not** N5's work); the skill roster + per-area bullets thinned to
+this repo's own surfaces; pointers to `docs/INDEX.md`, `plans/AGENTS.md`, `docs/REMOTE_VALIDATION.md`; per-repo
+script/suite values; a one-line worktree-identity-gate pointer. DELETE everything homed above.
 
 ### N6 — `docs/` (554 lines across five files)
 
