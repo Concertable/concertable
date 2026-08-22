@@ -7,7 +7,7 @@
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563)
 - Dependency/package gates: producer packages are published; this API-changing consumer merge must complete its generated platform-sync follow-through
-- Last reconciled: 2026-08-22 against `origin/main` `7f107d98b` in merge `2a0db5198`
+- Last reconciled: 2026-08-22 against `origin/main` `1c63e4f6b` in merge `6b48d0e5f`
 
 ## Current state
 
@@ -18,8 +18,11 @@ was exhausted and the run was cancelled once. `origin/main` then advanced 16 com
 merged cleanly in `2a0db5198`, preserving every dashboard change and known local fix. Proportional validation and the
 mandatory native/security incremental review are green at exact reviewed work head
 `98b526b57d1c5d9ea6f609e290f982094bff2d8b`. The exact reviewed work head was pushed from `8a6086b07`; refreshed
-remote-tracking and PR heads both equal `98b526b57d1c5d9ea6f609e290f982094bff2d8b`. The review transport is the only
-remaining local tail. The delivered work includes:
+remote-tracking and PR heads both equalled `98b526b57d1c5d9ea6f609e290f982094bff2d8b`. Review transport and the verified
+push checkpoint were then transported at `fcaa35f5d`; fresh exact-head CI run `32538773760` passed 73 checks with 3
+expected merge-group-only skips. A final two-commit main advance was then merged cleanly at `6b48d0e5f`; it only moves
+all five service pins to the already-green `0.1.0-alpha.0.1128` platform package and is the pending local review tail.
+The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -74,7 +77,8 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Transport the review and verified-push checkpoint, then require fresh exact-head CI green.
+1. Complete and record incremental review of the pin-only `98b526b57..6b48d0e5f` tail, then transport it and require
+   fresh exact-head CI green.
 2. Recheck base currency, re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
