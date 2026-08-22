@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through current-main/dashboard reconciliation head
-  `12e85e2daf223734e10d013779ac29655f00fd9a`. Starting remote head for that checkpoint was
-  `1c9efcddd659403eb0042c45d1a6214106179721`; local, remote-tracking, and PR heads were verified equal.
+  through provider-inventory reconciliation head
+  `04822c3d9b50bb0666f9c99d23ab564142cb2bf7`. Starting remote head for that checkpoint was
+  `6b02816852a4bda3ef5201664d5f0aef1da4074a`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -318,6 +318,16 @@ recovery.
 
 ## Completed work
 
+- Exact-head CI run `32577680944` exposed the Payment provider-contract inventory's stale references to ten
+  deleted Concert workflow entry points. The replacement calls had moved to Application, Booking, and
+  Concert, but generic collaborator names prevented the mechanical scanner from seeing six of them. The
+  collaborators now use their standard `managerPaymentClient`/`escrowClient` names, and the inventory records
+  all eleven current module-owned entry points, including both Booking refund arrival paths. Published fix
+  checkpoint `04822c3d9`; local HEAD, the remote branch, and PR #633 `headRefOid` all equalled
+  `04822c3d9b50bb0666f9c99d23ab564142cb2bf7`. The focused provider-inventory tests pass 54/54, the complete
+  Payment unit suite passes 490/490, architecture tests pass 12/12, composition tests pass 6/6, the complete
+  B2B Release solution builds with 0 errors, the plan graph reports 0 errors and 0 warnings, and diff checks
+  pass. No local integration or E2E runtime suite was executed.
 - Published topology/dashboard reconciliation checkpoint `1c9efcddd`; local HEAD, the remote branch, and
   PR #633 `headRefOid` all equalled `1c9efcddd659403eb0042c45d1a6214106179721`. Reconciled the dashboard
   landing from `origin/main` at `223e20a75` without restoring stale Concert-owned Application or Opportunity
