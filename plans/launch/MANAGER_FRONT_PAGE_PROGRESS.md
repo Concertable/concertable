@@ -21,8 +21,9 @@ mandatory native/security incremental review are green at exact reviewed work he
 remote-tracking and PR heads both equalled `98b526b57d1c5d9ea6f609e290f982094bff2d8b`. Review transport and the verified
 push checkpoint were then transported at `fcaa35f5d`; fresh exact-head CI run `32538773760` passed 73 checks with 3
 expected merge-group-only skips. A final two-commit main advance was then merged cleanly at `6b48d0e5f`; it only moves
-all five service pins to the already-green `0.1.0-alpha.0.1128` platform package and is the pending local review tail.
-The delivered work includes:
+all five service pins to the already-green `0.1.0-alpha.0.1128` platform package. Incremental review found and fixed
+one stale ledger statement; exact reviewed work head is now `b4eb94e5005a264bb575dcb91a7d8a2a2261f32d` and its
+native/security correction-tail re-reviews are clean. The delivered work includes:
 
 - all five Vite SPAs reuse the already-trusted ASP.NET development certificate, bind explicitly to IPv4, and no
   longer create per-repo `basic-ssl` roots;
@@ -77,8 +78,7 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 
 ## Next Steps
 
-1. Complete and record incremental review of the pin-only `98b526b57..6b48d0e5f` tail, then transport it and require
-   fresh exact-head CI green.
+1. Push exact reviewed work head `b4eb94e50`, transport its review/checkpoint, and require fresh exact-head CI green.
 2. Recheck base currency, re-enqueue with `full-e2e`, complete `/merge`, follow the generated
    package/platform-sync PR to green and
    merged, then close the source worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 563
@@ -201,6 +201,9 @@ This run cannot authorize queue admission because refreshed `origin/main` is now
 - Incremental range `c6cc262b8..98b526b57` (22 commits) was reviewed through both mandatory layers, every mechanically
   routed current-main standard, and all six repository lenses with no findings. Correctness and security watermarks
   are `98b526b57d1c5d9ea6f609e290f982094bff2d8b`.
+- Incremental range `98b526b57..b4eb94e50` (4 commits) produced and resolved COR5, correcting the final pin-only
+  reconciliation state in this ledger. The correction tail passed both mandatory re-review layers with no findings;
+  correctness and security watermarks are `b4eb94e5005a264bb575dcb91a7d8a2a2261f32d`.
 
 ## Decisions, discoveries, blockers, and deviations
 
