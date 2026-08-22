@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through provider-inventory reconciliation head
-  `04822c3d9b50bb0666f9c99d23ab564142cb2bf7`. Starting remote head for that checkpoint was
-  `6b02816852a4bda3ef5201664d5f0aef1da4074a`; local, remote-tracking, and PR heads were verified equal.
+  through current-main Architecture-tier reconciliation head
+  `de0ed4a31b62896afd302a346959767713671959`. Starting remote head for that checkpoint was
+  `b96c3ed0207854c0ca2217ed8b1be3b136a008c7`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -21,7 +21,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-22 through `origin/main` head `26645ecd1`
+- Last reconciled: 2026-08-22 through `origin/main` head `685f66ec9`
 
 ## Current state
 
@@ -318,6 +318,14 @@ recovery.
 
 ## Completed work
 
+- Reconciled `origin/main` head `685f66ec9`, which collapsed each service's separate Composition project
+  into its Architecture project, and published merge checkpoint `de0ed4a31`; local HEAD, the remote branch,
+  and PR #633 `headRefOid` all equalled `de0ed4a31b62896afd302a346959767713671959`. PR #633's static module
+  boundary rules and six B2B host-graph checks now run together in `Concertable.B2B.ArchitectureTests`; the
+  removed `Concertable.B2B.CompositionTests` project and solution entry were not restored. The combined
+  Architecture suite passes 18/18, the complete B2B Release solution builds with 0 errors, the plan graph
+  reports 0 errors and 0 warnings, and the merge diff check passes. No local integration or E2E runtime suite
+  was executed.
 - Exact-head CI run `32577680944` exposed the Payment provider-contract inventory's stale references to ten
   deleted Concert workflow entry points. The replacement calls had moved to Application, Booking, and
   Concert, but generic collaborator names prevented the mechanical scanner from seeing six of them. The
