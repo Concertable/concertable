@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-23` against `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, current and reviewed local head `6632bd3f65bc4413caa535d6d2760cd829dcd96c`, and verified remote/PR head `f765966cbdb9b4aa52337586f1ab9f81a3215711`
+- Last reconciled: `2026-08-23` against `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, reviewed code head `6632bd3f65bc4413caa535d6d2760cd829dcd96c`, and verified local/remote/PR work head `67203aa0fd2c4e0a72203ad569396d73edaf1f89`
 
 ## Current state
 
@@ -51,7 +51,9 @@ was current and native plus security incremental review was clean through that h
 `origin/main` advanced 17 commits through platform sync #758, portable-hook fix #759, and docs checkpoint
 #761. Merge `6632bd3f65bc4413caa535d6d2760cd829dcd96c` imported them without conflict or resolution delta. Payment's
 only upstream change is the platform pin in `Directory.Packages.props`; affected validation and the second
-incremental native/security review are green. Auto-merge remains unarmed.
+incremental native/security review are green. The reviewed reconciliation is pushed, local HEAD, remote branch,
+and PR head all equal `67203aa0fd2c4e0a72203ad569396d73edaf1f89`, and fresh exact-head checks are pending.
+Auto-merge remains unarmed.
 
 The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` completed in
 `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`. Its only conflict was the Payment published-vocabulary guard:
@@ -69,11 +71,11 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Push reviewed reconciliation head `6632bd3f65bc4413caa535d6d2760cd829dcd96c` through the plan checkpoint
-protocol and require the new exact-head checks green. Then select the full E2E tier, mark PR #721 ready,
-enqueue it, confirm `MERGED`, own its package publication and causally generated platform-sync PR through
-green and merged, and close out the plan from a fresh worktree. Do not begin consumer work before the sync
-lands.
+Wait for every PR check on exact head `67203aa0fd2c4e0a72203ad569396d73edaf1f89` to become terminal. If any
+fails, checkpoint and route its owning debug workflow; if all are green, refetch main, select the full E2E
+tier, mark PR #721 ready, and enqueue it. Confirm `MERGED`, own its package publication and causally generated
+platform-sync PR through green and merged, and close out the plan from a fresh worktree. Do not begin consumer
+work before the sync lands.
 
 ## Completed work
 
@@ -122,6 +124,10 @@ lands.
 
 ## Verification
 
+- Second reconciliation push work leg: pushed
+  `f765966cbdb9b4aa52337586f1ab9f81a3215711..67203aa0fd2c4e0a72203ad569396d73edaf1f89`; fetched local HEAD,
+  `origin/Feature/payments_payment-session-state`, and PR #721 `headRefOid` all equal
+  `67203aa0fd2c4e0a72203ad569396d73edaf1f89`. PR remains open and draft; fresh checks are pending.
 - Second current-main reconciliation at `6632bd3f65bc4413caa535d6d2760cd829dcd96c`: merge was conflict-free
   with empty remerge diff; Payment Web and UnitTests builds succeeded with 0 warnings and 0 errors against
   platform `0.1.0-alpha.0.1161`; focused `PaymentSession|PaymentOperationContractTests` passed 33 tests with
