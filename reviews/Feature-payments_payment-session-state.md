@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `0ad5a36edd14147303795c6ef60487b7b616aec3`  _(2026-08-23)_
-**Security-reviewed up to commit:** `0ad5a36edd14147303795c6ef60487b7b616aec3`  _(2026-08-23)_
+**Reviewed up to commit:** `6632bd3f65bc4413caa535d6d2760cd829dcd96c`  _(2026-08-23)_
+**Security-reviewed up to commit:** `6632bd3f65bc4413caa535d6d2760cd829dcd96c`  _(2026-08-23)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -72,3 +72,14 @@ shared assembly-reference assertion; no production Payment file conflicted. Merg
 conflict-resolution delta, and the remaining upstream commits were imported unchanged. The service-boundary,
 module-boundary, persistence, language/framework, changed-behaviour coverage, docs ownership, routed-skill,
 and plan/review lifecycle lenses were also clean.
+
+## Incremental review — 2026-08-23 (second current-main reconciliation)
+
+> Range reviewed: `0ad5a36e..6632bd3f` (21 commits).
+
+No new findings. The native and security passes were clean. The four branch-unique commits contain only
+review/plan checkpoints and conflict-free merge `6632bd3f6`; its remerge diff is empty. Payment's sole
+upstream delta advances `ConcertablePlatformVersion` from `0.1.0-alpha.0.1158` to `.1161`, with no runtime,
+authorization, secret-handling, provider-operation, persistence, contract, or test-behaviour change. The
+service-boundary, module-boundary, package, language/framework, changed-behaviour coverage, docs ownership,
+routed-skill, and plan/review lifecycle lenses were also clean.

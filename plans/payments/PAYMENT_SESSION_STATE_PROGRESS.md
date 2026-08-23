@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-23` against `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, reviewed code head `0ad5a36edd14147303795c6ef60487b7b616aec3`, and verified local/remote/PR head `f765966cbdb9b4aa52337586f1ab9f81a3215711`
+- Last reconciled: `2026-08-23` against `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, current and reviewed local head `6632bd3f65bc4413caa535d6d2760cd829dcd96c`, and verified remote/PR head `f765966cbdb9b4aa52337586f1ab9f81a3215711`
 
 ## Current state
 
@@ -49,8 +49,9 @@ are terminal with zero failures. Local merge head `61e13b0c6d6b2a69113e168be28b6
 validation ran; merge `0ad5a36edd14147303795c6ef60487b7b616aec3` imported them without conflict or Payment changes. The branch
 was current and native plus security incremental review was clean through that head. During exact-head CI,
 `origin/main` advanced 17 commits through platform sync #758, portable-hook fix #759, and docs checkpoint
-#761. Payment's only upstream change is the platform pin in `Directory.Packages.props`; the source PR is now
-behind again. Auto-merge remains unarmed.
+#761. Merge `6632bd3f65bc4413caa535d6d2760cd829dcd96c` imported them without conflict or resolution delta. Payment's
+only upstream change is the platform pin in `Directory.Packages.props`; affected validation and the second
+incremental native/security review are green. Auto-merge remains unarmed.
 
 The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` completed in
 `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`. Its only conflict was the Payment published-vocabulary guard:
@@ -68,12 +69,11 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Merge current `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, restore and rebuild the affected
-Payment Web and UnitTests projects against the new platform pin, rerun the focused Payment session/contract
-tests, and incrementally review the reconciliation. Push through the plan checkpoint protocol and require the
-new exact-head checks green. Then select the full E2E tier, mark PR #721 ready, enqueue it, confirm `MERGED`,
-own its package publication and causally generated platform-sync PR through green and merged, and close out
-the plan from a fresh worktree. Do not begin consumer work before the sync lands.
+Push reviewed reconciliation head `6632bd3f65bc4413caa535d6d2760cd829dcd96c` through the plan checkpoint
+protocol and require the new exact-head checks green. Then select the full E2E tier, mark PR #721 ready,
+enqueue it, confirm `MERGED`, own its package publication and causally generated platform-sync PR through
+green and merged, and close out the plan from a fresh worktree. Do not begin consumer work before the sync
+lands.
 
 ## Completed work
 
@@ -122,6 +122,11 @@ the plan from a fresh worktree. Do not begin consumer work before the sync lands
 
 ## Verification
 
+- Second current-main reconciliation at `6632bd3f65bc4413caa535d6d2760cd829dcd96c`: merge was conflict-free
+  with empty remerge diff; Payment Web and UnitTests builds succeeded with 0 warnings and 0 errors against
+  platform `0.1.0-alpha.0.1161`; focused `PaymentSession|PaymentOperationContractTests` passed 33 tests with
+  0 failures and 0 skips. Incremental native/security review of `0ad5a36e..6632bd3f` (21 commits) found no
+  findings; Payment's only upstream delta is the platform pin.
 - Exact-head CI on `f765966cbdb9b4aa52337586f1ab9f81a3215711`: 70 terminal checks, zero pending and zero
   failures; `ci-complete`, build, all carves, architecture, unit, and integration jobs passed, with PR-level
   merge-group E2E jobs expectedly skipped. A post-CI fetch found `origin/main`
@@ -272,7 +277,7 @@ Full review artifact: `reviews/Feature-payments_payment-session-state.md`. The i
 `69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`;
 the clean current-main incremental review covers
 `7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`.
-Incrementally reviewed and security-reviewed through `0ad5a36edd14147303795c6ef60487b7b616aec3` on `2026-08-23`.
+Incrementally reviewed and security-reviewed through `6632bd3f65bc4413caa535d6d2760cd829dcd96c` on `2026-08-23`.
 
 - `NAT1` resolved in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, medium: a cancellation-race loser re-reads
   provider truth and accepts a confirmed canceled predecessor before successor reservation/replay;
