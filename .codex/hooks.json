@@ -1,5 +1,5 @@
 {
-  "description": "Block an incomplete plan-managed handoff once before Codex ends a turn, and route a write to the standard that owns the path being written.",
+  "description": "Block an incomplete plan-managed handoff once before Codex ends a turn, route a write to the standard that owns the path being written, and inject the always-on behavioral floor at session start.",
   "hooks": {
     "PreToolUse": [
       {
@@ -11,6 +11,19 @@
             "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/skill_router.py'), run_name='__main__')\"",
             "timeout": 15,
             "statusMessage": "Checking which standard owns this path"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py\"",
+            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/session_floor.py'), run_name='__main__')\"",
+            "timeout": 15,
+            "statusMessage": "Loading the always-on behavioral floor"
           }
         ]
       }

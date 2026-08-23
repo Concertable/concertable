@@ -17,30 +17,32 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 
 ## Product — what is being built
 
+Product & system narrative lives in the central [`Concertable/docs`](https://github.com/Concertable/docs) repo, not here — it belongs to no single service.
+
 | Topic | Owner |
 |---|---|
-| What the product is, the core loop, the four deal types | [`OVERVIEW.md`](./OVERVIEW.md) |
-| Product thesis and competitive landscape | [`USP.md`](./USP.md) |
-| How to run a `/deep-research` discovery | [`DEEP_RESEARCH_PROMPT_GUIDE.md`](./DEEP_RESEARCH_PROMPT_GUIDE.md) |
+| What the product is, the core loop, the four deal types | [`OVERVIEW.md`](https://github.com/Concertable/docs/blob/main/OVERVIEW.md) |
+| Product thesis and competitive landscape | [`USP.md`](https://github.com/Concertable/docs/blob/main/USP.md) |
+| How to run a `/deep-research` discovery | [`DEEP_RESEARCH_PROMPT_GUIDE.md`](https://github.com/Concertable/docs/blob/main/DEEP_RESEARCH_PROMPT_GUIDE.md) |
 
 ## Process — how work gets done
 
 | Topic | Owner |
 |---|---|
-| Long-term-over-hack; questions before actions; autonomy on reversible work | [`AGENTS.md`](../AGENTS.md) |
+| Long-term-over-hack; questions before actions; autonomy on reversible work | skill `floor` (injected at SessionStart) |
 | Branching — `<Type>/<Name>` casing, branching from `origin/main`, refactors that stay on their feature branch | skill `git-branching` |
-| The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
+| The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | skills `open-worktree`, `git-branching`; the repo's identity-gate keep in [`AGENTS.md`](../AGENTS.md) |
 | When to commit, when to push, fewest safe merges | skill `committing` |
 | Committing procedure — slicing by workstream, or the whole tree in one commit | skills `commit`, `commit-all` |
 | Pushing a head and proving the remote carries it; pulling and recovering a failed pull | skills `push`, `pull` |
 | Bringing a checkout up to date — a stale `origin/HEAD`, a branch that already shipped, drift against the default | skill `sync-checkout` |
-| Ready-for-review ≠ merge authorization | [`AGENTS.md`](../AGENTS.md) |
+| Ready-for-review ≠ merge authorization | skill `merging` |
 | Merge procedure — currency check, enqueue, the four terminal states, sync follow-through | skill `merge` (the reasoning behind each state: skill `merging`) |
 | Opening a PR, and the read-only gate that clears a branch first | skills `open-pr`, `pr-preflight` |
 | Landing a meta-only change without the queue's E2E gate | skill `merge-docs` |
-| The merge invariants too expensive to wait for a skill | [`AGENTS.md`](../AGENTS.md) "Merging" |
+| The merge invariants — never arm auto-merge behind `main`, a failed check is real, whoever merges owns the sync | skill `merging` |
 | Which E2E tier a merge runs | skill `merge`, Step 4 |
-| Platform sync gate after an `api/**` merge | [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate" |
+| Platform sync gate after an `api/**` merge | skill `merging` |
 | Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
 | A red suite is never just reported, and which tier's skill owns it | skill `failing-tests` |
 | Driving a red suite to green — the in-process, service-E2E and browser-E2E tiers, the baseline regression check, both tiers at once | skills `integration-debug`, `e2e-api-debug`, `e2e-ui-debug`, `e2e-ui-regress`, `e2e-debug` |
@@ -51,9 +53,8 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Continuation, handoff and resume prompt shape | skill `handoff` |
 | One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
 | Code comments — default to none | global agent instructions (mechanics: skill `comments`) |
-| Doc locality and `CLAUDE.md` siblings as enforced here | [`AGENTS.md`](../AGENTS.md) "Per-area guidance" |
 | Creating, inspecting or closing one worktree | skill `open-worktree` |
-| Worktree cleanup | [`AGENTS.md`](../AGENTS.md) + `scripts/worktrees.ps1` |
+| Worktree cleanup — audit/close/retire | skill `open-worktree`; plan-managed close [`plans/AGENTS.md`](../plans/AGENTS.md); `scripts/worktrees.ps1` |
 
 ## Architecture — what may depend on what
 
@@ -153,7 +154,7 @@ diagnostic or test name, not an argument.
 | Private instance fields camelCase, no underscore | `.editorconfig` naming rule | **No** — IDE only; no `EnforceCodeStyleInBuild` is set |
 | File-scoped namespaces, `IDE0130` | `.editorconfig` | **No** — same reason |
 | Keyed-strategy coverage and no service location | `DealStrategyArchitectureTests`, plus `RequireAll`/`RequireExactly` at composition | Yes |
-| Every executable .NET host has strict provider validation and real composition-test coverage or a reviewed exclusion | `ExecutableHostInventory` + the `composition-tests` CI matrix | Yes |
+| Every executable .NET host has strict provider validation and real composition-test coverage or a reviewed exclusion | `ExecutableHostInventory` + the `architecture-tests` CI matrix | Yes |
 | No legacy Result carriers; no Dunet in shared production | `ReunionArchitectureTests`, `TypedResultArchitectureTests` | Yes |
 | One read-context contract, one generic read repository | `RepositoryArchitectureTests` | Yes |
 | Service boundaries hold when carved | `EnforceServiceBoundary` + the `carve-*` CI jobs | Yes |

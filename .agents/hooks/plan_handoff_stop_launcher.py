@@ -1,9 +1,12 @@
+import io
 import json
 import os
 import runpy
 import subprocess
 import sys
 from pathlib import Path
+
+from hook_runtime import claim_invocation, declared_plugin_root
 
 
 IMPLEMENTATION = ".agents/hooks/plan_handoff_stop.py"
@@ -62,23 +65,25 @@ def plugin_delivered():
     plugin has no such repo above it, so the check can only ever fail - which would block every
     turn. Under plugin delivery the plugin IS the author, so there is nothing to verify.
     """
-    plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
-    if not plugin_root:
-        return False
-    try:
-        return Path(plugin_root).resolve() in Path(__file__).resolve().parents
-    except OSError:
-        return False
+    return declared_plugin_root(__file__) is not None
 
 
 def main():
+    raw = sys.stdin.buffer.read()
+    try:
+        data = json.loads(raw.decode("utf-8-sig"))
+    except Exception:
+        data = {}
+    if not claim_invocation(data, "plan-handoff-gate"):
+        return
+    sys.stdin = io.TextIOWrapper(io.BytesIO(raw), encoding="utf-8")
     if plugin_delivered():
         runpy.run_path(str(Path(__file__).resolve().parent / "plan_handoff_stop.py"), run_name="__main__")
         return
     root = Path(__file__).resolve().parents[2]
     if not implementation_is_current(root):
         try:
-            data = json.loads(sys.stdin.buffer.read().decode("utf-8-sig"))
+            data = json.loads(raw.decode("utf-8-sig"))
         except Exception:
             data = {}
         result = block_once(

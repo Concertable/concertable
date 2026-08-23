@@ -111,9 +111,10 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | ~~N2~~ **done** | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* (`SKILL_ROUTES.md`, skill `skill-routes`) + a generator (`gen_skill_routes.py`) | the table itself: per-repo data; `_comment` repointed |
 | ~~N3~~ **done** | `api/AGENTS.md` + `api/CLAUDE.md` deleted | 78 | agent-standards (shared-is-the-intersection → `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) | nothing |
 | ~~N4~~ **done** | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` deleted, refs repointed | 62 + 525 | agent-standards (cross-service by definition) | nothing |
-| N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
-| N6 | `docs/` — `INDEX.md` 188 · `USP.md` 203 · `DEEP_RESEARCH_PROMPT_GUIDE.md` 81 · `OVERVIEW.md` 55 · `REMOTE_VALIDATION.md` 27 | 554 | mixed — see N6 | nothing |
-| N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
+| ~~N5~~ **done** | root `AGENTS.md` thinned 149 → 23 (#745) | 149 | rules → plugins (floor hook + routes) | a thin per-repo `AGENTS.md` (product/monorepo line, per-area pointers, values) — deleted only at the cut, not here |
+| ~~N6~~ **done** | `docs/` — product narrative → `Concertable/docs` (#750); `INDEX`/root repointed; `REMOTE_VALIDATION.md` kept | 554 | mixed — see N6 | `INDEX.md` + `REMOTE_VALIDATION.md` (this-repo nav/validation) + the thin root — all deleted at the cut |
+| N7a **in progress** | `plans/AGENTS.md` thinned 68 → 31 | 68 | rules already homed (Phase 1 + N1); pointers only | a thin per-repo `plans/AGENTS.md` (layout, hook/script paths, suite names) |
+| N7b | relocating the plan *documents* | tree | — | gated on roadmap §4c |
 | N8 | *(gate)* prove one carved service standalone | — | — | — |
 
 **One node per slice, in this order.** ~~N1 first~~ and ~~N2~~ are **done**: every hub below N1 points *at*
@@ -260,33 +261,66 @@ what it may depend on, so it cannot be the last node moved.
   repointed to the `packages` skill on `Chore/polyrepo-n4-arch-ref-repoint` (#713). Both MERGED; publishes
   succeeded and the final `chore/platform-sync-0.1.0-alpha.0.1128` sync (#724) merged green, non-breaking.
 
-### N5 — root `AGENTS.md` (147 lines)
+### N5 — root `AGENTS.md` (149 lines)
 
 Split by the same test. The monorepo-only lines (that this *is* a monorepo, where `api/` and `app/` sit) do
 not port and die with the root; everything else — the scalable-fix rule, the autonomy rules, the merge and
 platform-sync invariants, doc locality, the review gates — is platform-wide. Rewording its opening sentence
 so the monorepo reads as "current packaging" is the cosmetic tier and is explicitly **not** the work.
 
+**Producer — DELIVERED (agent-standards #25 + #27, both MERGED into `main` at `13fcef1c0`).** The three
+behavioral sections are *always-loaded* rules with no route path to fire on, so re-homing them to a doc a
+route can name would silently drop them in a carved repo. #25 instead delivers them as
+`standards/process/FLOOR.md`, injected at every session start by a new `session_floor.py` SessionStart hook
+and owned by a name-invokable `floor` skill; §7's ready-for-review CI-workflow invariant homed in `MERGING.md`
+in the same PR. #27 hardens `skill_router` to fail **CLOSED** — an un-routed write is blocked when NOT ONE
+routed skill resolves (the plugin didn't load) — making criterion-2's "a convention is never missing" an
+enforced gate. Every other deleted section already had its destination from an earlier slice: the merge
+invariants + platform-sync → `MERGING.md`, git-branch / worktree-identity / durable-guidance → `BRANCHING.md`,
+worktree-cleanup → `git/WORKTREE.md`, validation/E2E → `REMOTE_VALIDATION.md`, plans → `PLANS.md`,
+one-owning-doc / doc-locality / reachability → `DOCS_AND_DEBT.md`.
+
+**Consumer — thin root `AGENTS.md` to per-repo values/pointers only.** KEEP: the product line; the monorepo
+clause (rewording it is the cosmetic tier, **not** N5's work); the skill roster + per-area bullets thinned to
+this repo's own surfaces; pointers to `docs/INDEX.md`, `plans/AGENTS.md`, `docs/REMOTE_VALIDATION.md`; per-repo
+script/suite values; a one-line worktree-identity-gate pointer. DELETE everything homed above.
+
 ### N6 — `docs/` (554 lines across five files)
 
 Three different answers in one folder, so it is one node with three outcomes:
 
-- `INDEX.md` (188) — the topic→owner map. Platform-wide, and its per-repo half is a short "what this repo
-  owns" list. Blocked on N1: the map's rows point at skills, so it can only be written once they have homes.
-- `REMOTE_VALIDATION.md` (27) — already a thin pointer at the `remote-validation` standard; folds into the
-  per-repo floor with its commands.
-- `OVERVIEW.md` (55), `USP.md` (203), `DEEP_RESEARCH_PROMPT_GUIDE.md` (81) — **not agent guidance and not
-  service-specific: product narrative.** Neither destination fits, which makes this the one genuinely open
-  question in the plan. **Do not invent a home** — surface it with N6 and let Tommy place them.
+- `INDEX.md` (188) — the topic→owner map. The process rows were repointed to their owning skills in N5
+  (the CON1 fix); N6 repoints the Product rows to the new central docs repo. It stays this repo's
+  topic→owner index; it is **not** folded away.
+- `REMOTE_VALIDATION.md` (27) — **kept as this repo's standalone validation doc** (deviation from the
+  original "folds into the per-repo floor"). Folding it into root `AGENTS.md` would grow the root we are
+  emptying; a per-repo validation doc is the natural home and is what a carved service repo keeps. Root
+  already points at it.
+- `OVERVIEW.md` (55), `USP.md` (203), `DEEP_RESEARCH_PROMPT_GUIDE.md` (81) — product narrative, **RESOLVED**:
+  Tommy chose a dedicated central docs repo. Relocated to **[`Concertable/docs`](https://github.com/Concertable/docs)**
+  (private), the standard polyrepo pattern for cross-cutting product/system narrative that belongs to no
+  single service. Deleted from this repo; root `AGENTS.md` line 1 and `INDEX.md`'s Product rows repointed at
+  the new repo; the moved docs' repo-relative links rewritten as absolute GitHub URLs.
+
+**Root `AGENTS.md` still cannot be fully deleted here.** Even with the product docs gone, `INDEX.md` and
+`REMOTE_VALIDATION.md` (this repo's own navigation + validation docs) still need a root anchor to stay
+reachable, and they are genuinely this-repo, not standard or service-specific. Literal "nothing at root"
+is therefore a **cut-time** step (when the monorepo dissolves and each service repo takes its own
+`INDEX`/validation), which is the separate `POLYREPO_ROADMAP` — out of scope here. N6 leaves root at its
+minimum: a thin anchor of per-repo pointers.
 
 ### N7 — the `plans/` tree and `plans/AGENTS.md` (75 lines)
 
 Two parts on different gates, so it splits:
 
-- **N7a — `plans/AGENTS.md`'s content (not gated).** Every rule in it is platform-wide with per-repo values,
-  so its re-home runs with N3–N6, **not** behind §4c. This is also the answer to the ledger's old "generate
-  it eight times or hand-keep it?" question — neither, the content leaves; the thin per-repo floor keeps only
-  this repo's values (script paths, suite names, debug-tier routing).
+- **N7a — `plans/AGENTS.md`'s content (not gated). In progress — consumer-only.** Every rule in it is
+  platform-wide with per-repo values, so its re-home runs with N3–N6, **not** behind §4c. A rule-by-rule
+  mapping found **every** platform rule already homed by Phase 1 + N1, so nothing needs to move out: the file
+  thins (68 → 31) to this repo's values (layout, hook/script paths, suite names) + pointers to the owning
+  skills — the answer to the old "generate it eight times or hand-keep it?" question is *neither, the content
+  leaves*. Two non-blocking `PLANS.md` follow-ups fall out and are deferred to the epic close-out (the
+  N5-logged read-before-acting obligation; promoting the bare-stem naming from an assumed category to a stated
+  rule) — not opened as a third concurrent PLANS.md PR while agent-standards #20 is in flight.
 - **N7b — relocating the plan *documents* themselves.** Gated on roadmap §4c (where a cross-service plan
   physically lives), which is gated on §6's remaining sub-decision. Nothing in N7a waits on it.
 
