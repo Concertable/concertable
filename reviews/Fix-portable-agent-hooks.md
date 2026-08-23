@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a21199b65`  _(2026-08-23)_
+**Reviewed up to commit:** `ad9b8b645`  _(2026-08-23)_
 
 > Range reviewed: `2323c77..4be19b7` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -62,3 +62,6 @@ commit `5c0d433`.
 Current `origin/main` was merged at `a21199b65`. A fresh integration review was clean: the merge changed no
 reviewed hook, manifest, launcher, or review-file blob; the post-merge 24-test suite and 11-file provenance
 gate remained green.
+
+The later no-conflict architecture-test rename merge at `ad9b8b645` also received a clean integration
+review; every reviewed hook and manifest blob was unchanged and the same gates remained green.
