@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `8fe54fc665afc7bcd0e66948c75dfdf88761c011`  _(2026-08-21)_
-**Security-reviewed up to commit:** `8fe54fc665afc7bcd0e66948c75dfdf88761c011`  _(2026-08-21)_
+**Reviewed up to commit:** `0ad5a36edd14147303795c6ef60487b7b616aec3`  _(2026-08-23)_
+**Security-reviewed up to commit:** `0ad5a36edd14147303795c6ef60487b7b616aec3`  _(2026-08-23)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -59,4 +59,16 @@ were clean. The two current-main merges imported their upstream commits unchange
 conflict-resolution delta. The branch-local integration-test correction exercises the fail-closed retry
 contract with earlier persisted failure state and current declined provider truth. The architecture,
 service-boundary, persistence, language/framework, changed-behaviour coverage, docs ownership, routed-skill,
+and plan/review lifecycle lenses were also clean.
+
+## Incremental review — 2026-08-23
+
+> Range reviewed: `8fe54fc6..0ad5a36e` (250 commits).
+
+No new findings. The native correctness, reuse, efficiency, and error-handling pass and the security pass
+were clean. The six branch-unique commits contain plan/review checkpoints and two current-main merges. Merge
+`61e13b0c6` retains the feature's new published request and Client-interface cases while adopting main's
+shared assembly-reference assertion; no production Payment file conflicted. Merge `0ad5a36ed` has no
+conflict-resolution delta, and the remaining upstream commits were imported unchanged. The service-boundary,
+module-boundary, persistence, language/framework, changed-behaviour coverage, docs ownership, routed-skill,
 and plan/review lifecycle lenses were also clean.
