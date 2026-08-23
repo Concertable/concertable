@@ -4,9 +4,17 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `d6a7983d33b7273b1f5bf7827e165639cb57c063`  _(2026-08-23)_
+**Reviewed up to commit:** `c629aee9592e35d8b283d298731756d0c9634248`  _(2026-08-23)_
 
 > Range reviewed: `fb561acee..d6a7983d3` (1 commit).
+
+## Incremental review — 2026-08-23
+
+Merged `origin/main` for currency (17 commits behind: PR #761 architecture-tests-rename checkpoint, #759
+portable-hooks fix, platform-sync #758, and their dependents — all pre-existing, none authored on this
+branch). Merge was clean, no conflicts. `git diff origin/main...HEAD --stat` after the merge shows only the
+three already-reviewed ledger files plus this review file — the merge added no new branch-authored content,
+so this is a clean re-stamp with no new findings.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
