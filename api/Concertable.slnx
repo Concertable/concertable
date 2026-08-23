@@ -262,6 +262,7 @@
     <Project Path="Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/Concertable.Shared.Api.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Shared.Email.UnitTests/Concertable.Shared.Email.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj" />
+    <Project Path="Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing.Integration/Concertable.Testing.Integration.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing.E2E/Concertable.Testing.E2E.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing.Architecture/Concertable.Testing.Architecture.csproj" />
