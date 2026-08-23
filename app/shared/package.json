@@ -128,6 +128,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
     "@microsoft/signalr": "^10.0.0",
     "@tanstack/react-query": "^5.90.21",
     "@types/qs": "^6.15.0",
@@ -137,6 +138,7 @@
     "oidc-client-ts": "^3.5.0",
     "qs": "^6.15.0",
     "query-string": "^9.3.1",
+    "react-hook-form": "^7.86.0",
     "use-immer": "^0.11.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"

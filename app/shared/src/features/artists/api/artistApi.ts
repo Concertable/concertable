@@ -1,16 +1,42 @@
 import { apiClient } from "../../../lib/apiClient";
-import type { Artist } from "../types";
-import type { ImageFile } from "../../../types/image";
-import type { Genre } from "../../../types/common";
+import type {
+  Artist,
+  CreateArtistRequest,
+  UpdateArtistRequest,
+} from "../types";
 
-export interface CreateArtist {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
-  genres: Genre[];
-  banner: File;
-  avatar: File;
+type FormDataValue = Parameters<FormData["append"]>[1];
+
+function toCreateFormData(request: CreateArtistRequest): FormData {
+  const formData = new FormData();
+  formData.append("Name", request.name);
+  formData.append("About", request.about);
+  formData.append("Latitude", String(request.latitude));
+  formData.append("Longitude", String(request.longitude));
+  request.genres.forEach((genre, index) => {
+    formData.append(`Genres[${index}]`, genre);
+  });
+  formData.append("Banner", request.banner as unknown as FormDataValue);
+  formData.append("Avatar", request.avatar as unknown as FormDataValue);
+  return formData;
+}
+
+function toUpdateFormData(request: UpdateArtistRequest): FormData {
+  const formData = new FormData();
+  formData.append("Name", request.name);
+  formData.append("About", request.about);
+  formData.append("Latitude", String(request.latitude));
+  formData.append("Longitude", String(request.longitude));
+  request.genres.forEach((genre, index) => {
+    formData.append(`Genres[${index}]`, genre);
+  });
+  if (request.banner) {
+    formData.append("Banner", request.banner as unknown as FormDataValue);
+  }
+  if (request.avatar) {
+    formData.append("Avatar", request.avatar as unknown as FormDataValue);
+  }
+  return formData;
 }
 
 const artistApi = {
@@ -29,40 +55,19 @@ const artistApi = {
     return data;
   },
 
-  createArtist: async (input: CreateArtist): Promise<Artist> => {
-    const formData = new FormData();
-    formData.append("Name", input.name);
-    formData.append("About", input.about);
-    formData.append("Latitude", String(input.latitude));
-    formData.append("Longitude", String(input.longitude));
-    formData.append("Banner", input.banner);
-    formData.append("Avatar", input.avatar);
-    input.genres.forEach((g, i) => {
-      formData.append(`Genres[${i}]`, g);
-    });
+  createArtist: async (request: CreateArtistRequest): Promise<Artist> => {
     const { data } = await apiClient.post<Artist>(
       "/organization/artist",
-      formData,
+      toCreateFormData(request),
     );
     return data;
   },
 
-  updateArtist: async (
-    artist: Artist,
-    banner?: ImageFile,
-    avatar?: ImageFile,
-  ): Promise<Artist> => {
-    const formData = new FormData();
-    formData.append("Name", artist.name);
-    formData.append("About", artist.about);
-    formData.append("Latitude", String(artist.latitude));
-    formData.append("Longitude", String(artist.longitude));
-    artist.genres.forEach((g, i) => {
-      formData.append(`Genres[${i}]`, g);
-    });
-    if (banner) formData.append("Banner", banner as any);
-    if (avatar) formData.append("Avatar", avatar as any);
-    const { data } = await apiClient.put<Artist>("/organization/artist", formData);
+  updateArtist: async (request: UpdateArtistRequest): Promise<Artist> => {
+    const { data } = await apiClient.put<Artist>(
+      "/organization/artist",
+      toUpdateFormData(request),
+    );
     return data;
   },
 };
