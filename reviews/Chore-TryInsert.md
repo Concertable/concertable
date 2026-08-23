@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `af0998f01110a6d328e4a26398c36f58891639c0`  _(2026-08-23)_
+**Reviewed up to commit:** `41f4916cb5458c5cf8933702bb7c4a8d9ce89835`  _(2026-08-23)_
 
 > Range reviewed: `b7d0fcb..81775ce` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -48,3 +48,12 @@ files from an already-merged, already-reviewed upstream PR (#764, `Docs/docs_pol
 `plans/docs/DOCS_ROADMAP.md`, `plans/docs/POLYREPO_READY_PLAN.md`, `plans/docs/POLYREPO_READY_PROGRESS.md`,
 `reviews/Docs-docs_polyrepo-ready-n8-carve-evidence.md`. None of it touches this branch's own diff
 (`api/Concertable.Customer`, `api/Concertable.DataAccess`) — no new findings.
+
+## Incremental review — 2026-08-23 (2)
+
+> Range reviewed: `af0998f..41f4916` (5 commits, currency merge only).
+
+Another `origin/main` currency merge, again entirely spent/closed plan and review docs from an
+already-merged upstream branch (architecture-tests-rename close-out) — deletions of `plans/` and
+`reviews/` files that had already served their purpose. No `api/` or `app/` path touched — no new
+findings.
