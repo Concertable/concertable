@@ -14,6 +14,8 @@ import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as AdminRouteRouteImport } from './routes/_admin/route'
 import { Route as AdminIndexRouteImport } from './routes/_admin/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AdminVenuesRouteImport } from './routes/_admin/venues'
+import { Route as AdminModerationRouteImport } from './routes/_admin/moderation'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -39,16 +41,30 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVenuesRoute = AdminVenuesRouteImport.update({
+  id: '/venues',
+  path: '/venues',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminModerationRoute = AdminModerationRouteImport.update({
+  id: '/moderation',
+  path: '/moderation',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AdminIndexRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/moderation': typeof AdminModerationRoute
+  '/venues': typeof AdminVenuesRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/moderation': typeof AdminModerationRoute
+  '/venues': typeof AdminVenuesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/': typeof AdminIndexRoute
 }
@@ -57,19 +73,35 @@ export interface FileRoutesById {
   '/_admin': typeof AdminRouteRouteWithChildren
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/_admin/moderation': typeof AdminModerationRoute
+  '/_admin/venues': typeof AdminVenuesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/forbidden' | '/login' | '/auth/callback'
+  fullPaths:
+    | '/'
+    | '/forbidden'
+    | '/login'
+    | '/moderation'
+    | '/venues'
+    | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/forbidden' | '/login' | '/auth/callback' | '/'
+  to:
+    | '/forbidden'
+    | '/login'
+    | '/moderation'
+    | '/venues'
+    | '/auth/callback'
+    | '/'
   id:
     | '__root__'
     | '/_admin'
     | '/forbidden'
     | '/login'
+    | '/_admin/moderation'
+    | '/_admin/venues'
     | '/auth/callback'
     | '/_admin/'
   fileRoutesById: FileRoutesById
@@ -118,14 +150,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/venues': {
+      id: '/_admin/venues'
+      path: '/venues'
+      fullPath: '/venues'
+      preLoaderRoute: typeof AdminVenuesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_admin/moderation': {
+      id: '/_admin/moderation'
+      path: '/moderation'
+      fullPath: '/moderation'
+      preLoaderRoute: typeof AdminModerationRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
 interface AdminRouteRouteChildren {
+  AdminModerationRoute: typeof AdminModerationRoute
+  AdminVenuesRoute: typeof AdminVenuesRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminModerationRoute: AdminModerationRoute,
+  AdminVenuesRoute: AdminVenuesRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

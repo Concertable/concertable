@@ -10,9 +10,11 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Concertable.B2B.Venue.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route($"api/{RouteSegment}")]
 internal sealed class VenueController : ControllerBase
 {
+    internal const string RouteSegment = "venue";
+
     private readonly IVenueService venueService;
 
     public VenueController(IVenueService venueService)
@@ -37,6 +39,12 @@ internal sealed class VenueController : ControllerBase
         return (await venueService.ApproveAsync(venueId, ct)).ToNoContentOrProblem();
     }
 
+    [Admin]
+    [HttpGet("pending-approval")]
+    public async Task<ActionResult<IPagination<PendingVenue>>> GetPendingApproval(
+        [FromQuery] PageParams pageParams) =>
+        Ok(await venueService.GetPendingApprovalAsync(pageParams));
+
     [HttpGet("{venueId:int}/ownership")]
     public async Task<ActionResult<bool>> IsOwner(int venueId, CancellationToken ct)
     {
@@ -45,7 +53,7 @@ internal sealed class VenueController : ControllerBase
 
     [RequiredTenantType(TenantType.Venue)]
     [HasPermission(SharedPermissions.OperationsView)]
-    [HttpGet("/api/organization/[controller]")]
+    [HttpGet($"/api/organization/{RouteSegment}")]
     public async Task<ActionResult<DetailsResponse>> GetDetails(CancellationToken ct) =>
         (await venueService.GetDetailsAsync(ct))
             .ToOkOrNoContent(venue => venue.ToDetailsResponse());
@@ -53,7 +61,7 @@ internal sealed class VenueController : ControllerBase
     [RequiredTenantType(TenantType.Venue)]
     [HasPermission(SharedPermissions.ProfileEdit)]
     [EnableRateLimiting(RateLimitPolicies.ProfileImage)]
-    [HttpPost("/api/organization/[controller]")]
+    [HttpPost($"/api/organization/{RouteSegment}")]
     public async Task<ActionResult<DetailsResponse>> Create(
         [FromForm] CreateVenueRequest request,
         CancellationToken ct) =>
@@ -65,7 +73,7 @@ internal sealed class VenueController : ControllerBase
     [RequiredTenantType(TenantType.Venue)]
     [HasPermission(SharedPermissions.ProfileEdit)]
     [EnableRateLimiting(RateLimitPolicies.ProfileImage)]
-    [HttpPut("/api/organization/[controller]")]
+    [HttpPut($"/api/organization/{RouteSegment}")]
     public async Task<ActionResult<DetailsResponse>> Update(
         [FromForm] UpdateVenueRequest request,
         CancellationToken ct) =>

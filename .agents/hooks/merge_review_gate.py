@@ -37,6 +37,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_runtime import claim_invocation
+
 # This message is what the agent acts on, and Windows defaults these streams to cp1252,
 # which turns the punctuation in it into mojibake.
 for _stream in (sys.stdout, sys.stderr):
@@ -310,6 +312,8 @@ def main():
     # merge RUNS in, so a `cd <other-repo> && merge` is judged by that repo's opt-in.
     config_path = find_config(_GIT_CWD[0])
     if config_path is None:
+        sys.exit(0)
+    if not claim_invocation(data, "merge-review-gate"):
         sys.exit(0)
     try:
         patterns = security_patterns(config_path)

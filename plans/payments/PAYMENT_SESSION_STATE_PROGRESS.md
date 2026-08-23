@@ -48,6 +48,11 @@ Draft PR #721 is open against `main`. Local HEAD, the remote branch, and the PR 
 review predates those upstream commits, so current-main reconciliation, affected verification, and an
 incremental review are required before delivery.
 
+The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` is staged. Its only conflict was
+the Payment published-vocabulary guard: the resolution preserves this branch's new request and Client
+coverage while adopting current main's shared `ReferencesToAssembliesStartingWith` assertion. No production
+Payment file conflicted.
+
 The reconciled exact tree builds Payment Web and UnitTests with zero warnings or errors, all 521 Payment unit
 tests pass, and all 18 focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests` pass against
 Docker Desktop's Linux engine. The focused run exposed one stale gRPC test setup: it persisted a future failed
@@ -59,13 +64,12 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Merge current `origin/main` into the clean branch, resolve any conflicts without weakening the Payment-owned
-session-state design, build and test the affected Payment surface, and incrementally review the resulting
-delta. Push through the plan checkpoint protocol, require exact-head PR checks green, select the full E2E tier
-because the diff adds an authenticated backend RPC and published Contracts/Client API, then mark PR #721
-ready and enqueue it. Confirm `MERGED`, own its package publication and causally generated platform-sync PR
-through green and merged, and close out the plan from a fresh worktree. Do not begin consumer work before the
-sync lands.
+Commit the staged current-main merge, build and test the affected Payment surface, and incrementally review
+the resulting delta. Push through the plan checkpoint protocol, require exact-head PR checks green, select
+the full E2E tier because the diff adds an authenticated backend RPC and published Contracts/Client API, then
+mark PR #721 ready and enqueue it. Confirm `MERGED`, own its package publication and causally generated
+platform-sync PR through green and merged, and close out the plan from a fresh worktree. Do not begin consumer
+work before the sync lands.
 
 ## Completed work
 
@@ -114,6 +118,10 @@ sync lands.
 
 ## Verification
 
+- Current-main merge staging: one content conflict in `PaymentOperationContractTests.cs`; resolved by retaining
+  the feature's `PaymentSessionOperationRequest` and `IPaymentSessionOperationsClient` cases on current main's
+  shared assembly-reference assertion. `rg` found no conflict markers, and both staged and unstaged
+  `git diff --check` passed.
 - Resume reconciliation on `2026-08-23`: clean local/remote/PR head
   `f9dd6dba7d163647b1a7120456da62998bbc122d`; PR #721 is open and draft with all PR-head checks terminal and
   green, no labels or auto-merge request, and `DIRTY` merge state; fetched `origin/main`
