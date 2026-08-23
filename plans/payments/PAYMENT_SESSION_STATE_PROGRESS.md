@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-23` against fetched `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc`, clean local/remote/PR head `f9dd6dba7d163647b1a7120456da62998bbc122d`, and draft PR #721's terminal green PR-head checks
+- Last reconciled: `2026-08-23` against `origin/main` `fb561acee4aac4dafeb7d57f87f28cf2af35b9a7`, local merge head `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`, remote/PR head `f9dd6dba7d163647b1a7120456da62998bbc122d`, and green affected Payment validation
 
 ## Current state
 
@@ -42,16 +42,16 @@ the review file remains while current-main reconciliation and its incremental re
 merged base is `2323c77e74bc58bbde6394c360af673c402a8b5f`, and that tree's Payment platform pin is
 `0.1.0-alpha.0.1124`.
 
-Draft PR #721 is open against `main`. Local HEAD, the remote branch, and the PR head all equal
-`f9dd6dba7d163647b1a7120456da62998bbc122d`, and every PR-head check is terminal and green. The branch is
-241 commits behind current `origin/main`, GitHub reports `DIRTY`, and auto-merge is not armed. Its recorded
-review predates those upstream commits, so current-main reconciliation, affected verification, and an
-incremental review are required before delivery.
+Draft PR #721 is open against `main`. The remote branch and PR head both equal
+`f9dd6dba7d163647b1a7120456da62998bbc122d`, and every check on that superseded head is terminal and green.
+Local head `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33` includes the plan checkpoint and resolved merge of the prior
+241-commit main advance. Current `origin/main` moved three more commits for a docs/review cleanup while local
+validation ran; no Payment path changed. Auto-merge remains unarmed, and incremental review is pending.
 
-The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` is staged. Its only conflict was
-the Payment published-vocabulary guard: the resolution preserves this branch's new request and Client
-coverage while adopting current main's shared `ReferencesToAssembliesStartingWith` assertion. No production
-Payment file conflicted.
+The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` completed in
+`61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`. Its only conflict was the Payment published-vocabulary guard:
+the resolution preserves this branch's new request and Client coverage while adopting current main's shared
+`ReferencesToAssembliesStartingWith` assertion. No production Payment file conflicted.
 
 The reconciled exact tree builds Payment Web and UnitTests with zero warnings or errors, all 521 Payment unit
 tests pass, and all 18 focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests` pass against
@@ -64,12 +64,12 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Commit the staged current-main merge, build and test the affected Payment surface, and incrementally review
-the resulting delta. Push through the plan checkpoint protocol, require exact-head PR checks green, select
-the full E2E tier because the diff adds an authenticated backend RPC and published Contracts/Client API, then
-mark PR #721 ready and enqueue it. Confirm `MERGED`, own its package publication and causally generated
-platform-sync PR through green and merged, and close out the plan from a fresh worktree. Do not begin consumer
-work before the sync lands.
+Merge the three docs/review-only commits now at current `origin/main`, confirm no Payment delta, and
+incrementally review the branch changes since watermark `8fe54fc665afc7bcd0e66948c75dfdf88761c011`. Push through the plan
+checkpoint protocol, require exact-head PR checks green, select the full E2E tier because the diff adds an
+authenticated backend RPC and published Contracts/Client API, then mark PR #721 ready and enqueue it. Confirm
+`MERGED`, own its package publication and causally generated platform-sync PR through green and merged, and
+close out the plan from a fresh worktree. Do not begin consumer work before the sync lands.
 
 ## Completed work
 
@@ -118,6 +118,10 @@ work before the sync lands.
 
 ## Verification
 
+- Local current-main reconciliation validation at `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`: Payment Web and
+  UnitTests builds succeeded with 0 warnings and 0 errors; focused
+  `PaymentSession|PaymentOperationContractTests` scope passed 33 tests with 0 failures and 0 skips. The three
+  commits that reached `origin/main` during validation change only docs/review artifacts.
 - Current-main merge staging: one content conflict in `PaymentOperationContractTests.cs`; resolved by retaining
   the feature's `PaymentSessionOperationRequest` and `IPaymentSessionOperationsClient` cases on current main's
   shared assembly-reference assertion. `rg` found no conflict markers, and both staged and unstaged
