@@ -48,19 +48,28 @@ migration needed).
    `api/TECH_DEBT.md`, any `reviews/*` prose.
 8. [x] Gate: `dotnet build api/Concertable.slnx` to 0 errors; exact-head PR CI green (76/76 checks).
 
-## Phase 2 — published-package rename (separate publish-then-bump chain, after Phase 1 merges)
+## Phase 2 — published-package rename — CODE DONE, sync PR in flight
 
 Rename `Concertable.Composition.Testing` → `Concertable.Testing.Architecture` (folder, `.csproj`,
-`namespace`). It is a **published** package the six consumers pin via `Directory.Packages.props`, so per the
-carve it cannot land in one PR:
+`namespace`).
 
-- Producer PR: rename the lib; migrate ProjectReference consumers in-PR (AppHost, and B2B after the Phase 1
-  merge). Merge → `publish-packages` publishes the new id.
-- Platform-sync PR: the four PackageReference services go red on the old id; migrate their
-  `PackageReference` + `PackageVersion` + `using` there, build `api/Concertable.slnx` to 0, push.
-- Decide there whether to also rename the DI-validation *types* (`CompositionValidationOptions`,
-  `ValidateComposition`, `CompositionTestArguments`). Default = keep — they name the composition-root
-  validation *act*, where "composition" is accurate, unlike the tier label.
+**Deviation from the original plan:** landed as **one PR**, not a producer/sync split. This repo validates
+package identity via `local-platform.ps1`'s `UseLocalPlatformPackages` (packs from current source, forces
+every consumer through `PackageReference`), so a split would go red on the main `build` CI job for no
+benefit — the `carve-*` jobs never build these test projects at all. Migrated all six consumers'
+`ProjectReference` paths, `PackageReference`/`PackageVersion` identifiers, and `using` directives together.
+
+1. [x] Rename the package (folder, `.csproj`, namespace) under `Concertable.Shared/tests/`.
+2. [x] Migrate all six consumers (AppHost, Auth, B2B, Customer, Payment, Search).
+3. [x] Kept the DI-validation *types* (`CompositionValidationOptions`, `ValidateComposition`,
+   `CompositionTestArguments`) unchanged, per the plan's default — "composition" is accurate for the
+   validation *act*, unlike the tier label.
+4. [x] Landed via [PR #754](https://github.com/Concertable/concertable/pull/754) (merged `1d25c3b58`).
+5. [~] Platform-sync [#758](https://github.com/Concertable/concertable/pull/758) — a routine version-only
+   bump, auto-merge already armed by automation, all checks green when last observed — stuck in the merge
+   queue behind heavy, unrelated CI/runner congestion in this environment (stale `in_progress` merge_group
+   runs not completing). Not a code problem; no action needed beyond letting automation land it. Follow up
+   to confirm it reached `MERGED`.
 
 ## Risks
 
