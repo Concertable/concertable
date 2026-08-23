@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through current-main merge checkpoint `f1f37959263aaa57308055db3be0b4af885369de`. Starting remote
-  head was `a66104573be1ce82cebc68b2e6422f7f99a64ca4`; local, remote-tracking, and PR heads were
+  through current-main merge checkpoint `4f1c65b508fa05aa5d50eedcbda09bc58956c176`. Starting remote
+  head was `115d14cd694ab6647f2888a244efd21b078a9263`; local, remote-tracking, and PR heads were
   verified equal. This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -20,7 +20,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-23 through published current-main merge checkpoint `f1f379592`
+- Last reconciled: 2026-08-23 through published current-main merge checkpoint `4f1c65b50`
 
 ## Current state
 
@@ -66,6 +66,11 @@ PR #633 now owns the complete remaining decomposition through the plan's definit
 diff size, and a green intermediate build are not reasons to land a half-owned architecture; a separate
 PR is allowed only if a real published-package, deployment, or other external-artifact dependency is
 discovered. None is currently present.
+
+The integration-test topology correction is complete. The only known substantive implementation slice
+not yet present at published head `4f1c65b50` is the parallel module-local state-machine adoption for
+Application, Booking, and Concert; the Kernel primitive is published, but no B2B module currently consumes
+`IStateMachine<TState, TTrigger>`.
 
 Phase 1 characterization is complete. Existing integration coverage already pins both
 payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
@@ -317,13 +322,20 @@ solution directories without a named solution or repository-layout walk.
 
 ## Next Steps
 
-Active slice: remote-validate exact PR #633 head `f1f379592`. If GitHub registers a red check, read that job
-first and reproduce only its failing scope; do not run local integration or E2E. Do not edit aggregate
-transition tables or state-machine implementation files owned by the parallel state-machine slice. Do not
-resume the superseded file-by-file Concert compile recovery.
+Active slice: remote-validate exact PR #633 head `4f1c65b50` while the parallel state-machine slice lands.
+If GitHub registers a red check, read that job first and reproduce only its failing scope; do not run local
+integration or E2E. Do not edit aggregate transition tables or state-machine implementation files owned by
+the parallel state-machine slice. Once that slice is published, reconcile current `origin/main`, run the
+focused state-machine and module-boundary gates, push the verified final candidate, then run the complete
+staged branch review. Do not resume the superseded file-by-file Concert compile recovery.
 
 ## Completed work
 
+- Published documentation-only current-main merge checkpoint `4f1c65b50` from starting remote head
+  `115d14cd6`; local HEAD, the remote-tracking branch, and PR #633 `headRefOid` all equalled
+  `4f1c65b508fa05aa5d50eedcbda09bc58956c176`. Reconciled `origin/main` head `fb561acee`, whose net
+  change only removes spent review work orders and records their review sweep. The plan graph reports
+  0 errors and 0 warnings, and `git diff --check` passes.
 - Published current-main merge checkpoint `f1f379592` from starting remote head `a66104573`; local HEAD,
   the remote-tracking branch, and PR #633 `headRefOid` all equalled
   `f1f37959263aaa57308055db3be0b4af885369de`. Reconciled `origin/main` head `1d25c3b58` into the
