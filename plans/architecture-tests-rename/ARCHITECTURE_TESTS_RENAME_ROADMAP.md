@@ -6,7 +6,7 @@ package.
 
 ## Items
 
-- [ ] `architecture-tests-rename/tier-collapse` — rename the six composition-test projects to
+- [x] `architecture-tests-rename/tier-collapse` — rename the six composition-test projects to
   `.ArchitectureTests` (B2B merged into its existing ArchitectureTests), collapse the `Composition` tier in
   `TestConventions.targets`, build an `architecture` CI leg + `test.ps1` suite, update skill-routes and docs.
   Non-breaking (shared lib untouched). *(Phase 2 — the published-package rename — is folded into this item's
