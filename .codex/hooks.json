@@ -1,5 +1,5 @@
 {
-  "description": "Block an incomplete plan-managed handoff once before Codex ends a turn, route a write to the standard that owns the path being written, and inject the always-on behavioral floor at session start.",
+  "description": "Load the behavioral floor, route writes, gate merges on a current review, and block incomplete plan-managed handoffs. Repo-local wiring remains active before plugin provisioning; shared invocation claims deduplicate it from the installed plugin.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,10 +7,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/skill_router.py\"",
-            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/skill_router.py'), run_name='__main__')\"",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh\" skill_router.py",
+            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" skill_router.py",
             "timeout": 15,
             "statusMessage": "Checking which standard owns this path"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh\" merge_review_gate.py",
+            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" merge_review_gate.py",
+            "timeout": 15,
+            "statusMessage": "Checking merge review"
           }
         ]
       }
@@ -21,7 +33,7 @@
           {
             "type": "command",
             "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py\"",
-            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/session_floor.py'), run_name='__main__')\"",
+            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" session_floor.py",
             "timeout": 15,
             "statusMessage": "Loading the always-on behavioral floor"
           }
@@ -33,8 +45,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/plan_handoff_stop_launcher.py\"",
-            "commandWindows": "python -c \"import runpy, subprocess; from pathlib import Path; root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip(); runpy.run_path(str(Path(root) / '.agents/hooks/plan_handoff_stop_launcher.py'), run_name='__main__')\"",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh\" plan_handoff_stop_launcher.py",
+            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" plan_handoff_stop_launcher.py",
             "timeout": 15,
             "statusMessage": "Checking plan handoff"
           }

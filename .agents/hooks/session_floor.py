@@ -73,16 +73,18 @@ def main():
     data = _read_payload()
     if not _is_standards_repo(_project_dir(data)):
         return 0
-    # One session gets one floor even though the plugin copy and a vendored copy both register.
-    if not claim_invocation(data, HOOK_NAME):
-        return 0
     floor = own_payload_root(__file__).joinpath(*FLOOR_DOC)
     try:
         text = floor.read_text(encoding="utf-8").strip()
     except OSError:
         return 0
-    if text:
-        sys.stdout.write(text + "\n")
+    if not text:
+        return 0
+    # A payload-less vendored copy must not suppress the installed plugin copy that can inject the
+    # floor. Claim only after this copy has proved it has non-empty context to emit.
+    if not claim_invocation(data, HOOK_NAME):
+        return 0
+    sys.stdout.write(text + "\n")
     return 0
 
 
