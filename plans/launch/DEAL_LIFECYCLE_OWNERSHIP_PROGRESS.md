@@ -20,7 +20,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-23 through published current-main merge checkpoint `4f1c65b50`
+- Last reconciled: 2026-08-23 through staged-review area 1 at anchored head `c50469d48`
 
 ## Current state
 
@@ -71,6 +71,12 @@ The integration-test topology correction is complete. The only known substantive
 not yet present at published head `4f1c65b50` is the parallel module-local state-machine adoption for
 Application, Booking, and Concert; the Kernel primitive is published, but no B2B module currently consumes
 `IStateMachine<TState, TTrigger>`.
+
+Exact-head CI run `32643447747` at `c50469d48` passed the solution build, service carves, architecture
+matrix, and unit matrix, then failed the Booking integration shard: 19 of 21 tests hit an untranslatable
+Venue profile query because its predicate was applied after projection. The current candidate filters the
+Venue entity query before the new C# 14 `ToProfiles` projection extension; no local integration or E2E was
+run.
 
 Phase 1 characterization is complete. Existing integration coverage already pins both
 payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
@@ -322,12 +328,13 @@ solution directories without a named solution or repository-layout walk.
 
 ## Next Steps
 
-Active slice: remote-validate exact PR #633 head `4f1c65b50` while the parallel state-machine slice lands.
-If GitHub registers a red check, read that job first and reproduce only its failing scope; do not run local
-integration or E2E. Do not edit aggregate transition tables or state-machine implementation files owned by
-the parallel state-machine slice. Once that slice is published, reconcile current `origin/main`, run the
-focused state-machine and module-boundary gates, push the verified final candidate, then run the complete
-staged branch review. Do not resume the superseded file-by-file Concert compile recovery.
+Active slice: publish and remote-validate the Venue profile query fix, then continue
+`reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md` with its next unticked stage,
+Application and Opportunity implementations, against plan anchor `c50469d48`. Do not edit aggregate
+transition tables or state-machine implementation files owned by the parallel state-machine slice. Once
+that slice is published, recheck open findings NAT1/NAT2 against the incoming delta, reconcile current
+`origin/main`, and use an incremental review for commits after the staged-review anchor. Do not run local
+integration or E2E and do not resume the superseded file-by-file Concert compile recovery.
 
 ## Completed work
 
@@ -680,6 +687,9 @@ staged branch review. Do not resume the superseded file-by-file Concert compile 
 
 ## Verification
 
+- Venue profile query correction: `Concertable.B2B.Venue.Infrastructure` builds in Release with 0 warnings
+  and 0 errors; Venue unit tests pass 20/20; `git diff --check` passes. No local integration or E2E test was
+  run. Exact-head CI run `32643447747` supplies the remote failing-path evidence above.
 - Current-main merge candidate through `origin/main` `1d25c3b58`: Venue unit tests passed 20/20; User
   integration tests build with 0 warnings and 0 errors; the B2B Architecture dependency build compiled all
   11 module integration projects with 0 warnings and 0 errors; the B2B Architecture suite passed 19/19;
@@ -953,6 +963,13 @@ staged branch review. Do not resume the superseded file-by-file Concert compile 
   projects rebuilt with 0 errors and the branch was 0 commits behind `origin/main` before checkpointing.
 
 ## Reviews
+
+- Max-effort staged review `reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md` is anchored
+  to `fb561acee..c50469d48` and has completed 1 of 7 mutually exclusive areas. The lifecycle contracts and
+  domain-foundation area has two open high-severity correctness findings: Booking cannot retry a rejected
+  cancellation refund, and Concert retries reuse Payment's terminal cancellation operation ID. The parallel
+  state-machine slice was not present at the anchor and must recheck both findings when it lands. Its
+  required security layer found no issues and is stamped at the same anchor.
 
 - Docs review of `89361e99e..d06422710` found three issues: the checkout boundary was ambiguous, the
   typed-result ledger retained a transferred return path, and graph evidence was stale. All were fixed
