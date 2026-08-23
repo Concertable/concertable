@@ -6,10 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through compiled integration-boundary checkpoint
-  `47d5a157016aca70981543122f73883fa4379afd`. Starting remote head was
-  `ed5c448616dab41b0e3f42df24e983ff555ab3b4`; local, remote-tracking, and PR heads were verified equal.
-  This ledger commit is the checkpoint-transport leg.
+  through current-main merge checkpoint `f1f37959263aaa57308055db3be0b4af885369de`. Starting remote
+  head was `a66104573be1ce82cebc68b2e6422f7f99a64ca4`; local, remote-tracking, and PR heads were
+  verified equal. This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
   merged green as `d0b8f616fc95052629fc745d9b24fdcfc05a6167` at `0.1.0-alpha.0.1108`. The
@@ -21,7 +20,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-23 through current-main merge candidate `origin/main` head `1d25c3b58`
+- Last reconciled: 2026-08-23 through published current-main merge checkpoint `f1f379592`
 
 ## Current state
 
@@ -318,15 +317,17 @@ solution directories without a named solution or repository-layout walk.
 
 ## Next Steps
 
-Active slice: publish the verified current-main merge candidate, prove local, remote-tracking, and PR heads
-match, then remote-validate that exact PR #633 head. If GitHub registers a red check, read that job first and
-reproduce only its failing scope; do not run local integration or E2E. Do not edit aggregate transition tables
-or state-machine implementation files owned by the parallel state-machine slice. Do not resume the superseded
-file-by-file Concert compile recovery.
+Active slice: remote-validate exact PR #633 head `f1f379592`. If GitHub registers a red check, read that job
+first and reproduce only its failing scope; do not run local integration or E2E. Do not edit aggregate
+transition tables or state-machine implementation files owned by the parallel state-machine slice. Do not
+resume the superseded file-by-file Concert compile recovery.
 
 ## Completed work
 
-- Reconciled `origin/main` head `1d25c3b58` into the topology checkpoint without restoring foreign module
+- Published current-main merge checkpoint `f1f379592` from starting remote head `a66104573`; local HEAD,
+  the remote-tracking branch, and PR #633 `headRefOid` all equalled
+  `f1f37959263aaa57308055db3be0b4af885369de`. Reconciled `origin/main` head `1d25c3b58` into the
+  topology checkpoint without restoring foreign module
   persistence access. Venue retains this branch's profile/current-venue APIs alongside Admin Console's
   pending-approval API, B2B Architecture retains the wildcard integration-project guard alongside the renamed
   `Concertable.Testing.Architecture` package, and the completed Admin Console plan remains deleted. The merged
