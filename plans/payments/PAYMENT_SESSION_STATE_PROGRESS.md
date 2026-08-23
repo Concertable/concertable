@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-21` against current `origin/main` `2323c77e74bc58bbde6394c360af673c402a8b5f`, merge head `268b48c47196cf446244c1c32c126a0807a79290`, incremental review watermark `8fe54fc665afc7bcd0e66948c75dfdf88761c011`, verified pushed work and draft-PR head `46330f02811b7b42a6b881513b75bf7c5717efdc`, and Payment platform pin `0.1.0-alpha.0.1124`
+- Last reconciled: `2026-08-23` against fetched `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc`, clean local/remote/PR head `f9dd6dba7d163647b1a7120456da62998bbc122d`, and draft PR #721's terminal green PR-head checks
 
 ## Current state
 
@@ -37,12 +37,16 @@ provider truth is normalized fail-closed and must match a safe declined, expired
 retry shape before the persisted attempt is evaluated and cancellation is allowed. Known active or unknown
 incompatible truth creates neither cancellation nor a successor. The follow-up native, security, architecture,
 persistence, language/framework, changed-behaviour coverage, docs ownership, and plan/review lifecycle lenses
-are clean through the reconciled implementation head `8fe54fc665afc7bcd0e66948c75dfdf88761c011`. All findings are resolved; the review file remains until exact-head draft-PR CI
-is green. Current `origin/main` is merged through `2323c77e74bc58bbde6394c360af673c402a8b5f`; the branch is 0 commits
-behind and the Payment platform pin is `0.1.0-alpha.0.1124`.
+are clean through the reconciled implementation head `8fe54fc665afc7bcd0e66948c75dfdf88761c011`. All findings are resolved;
+the review file remains while current-main reconciliation and its incremental review are pending. The last
+merged base is `2323c77e74bc58bbde6394c360af673c402a8b5f`, and that tree's Payment platform pin is
+`0.1.0-alpha.0.1124`.
 
-Draft PR #721 is open against `main`. Before checkpoint transport, local HEAD, the remote branch, and the PR
-head all equaled `46330f02811b7b42a6b881513b75bf7c5717efdc`; its `changes` and `hook-tests` checks were pending.
+Draft PR #721 is open against `main`. Local HEAD, the remote branch, and the PR head all equal
+`f9dd6dba7d163647b1a7120456da62998bbc122d`, and every PR-head check is terminal and green. The branch is
+241 commits behind current `origin/main`, GitHub reports `DIRTY`, and auto-merge is not armed. Its recorded
+review predates those upstream commits, so current-main reconciliation, affected verification, and an
+incremental review are required before delivery.
 
 The reconciled exact tree builds Payment Web and UnitTests with zero warnings or errors, all 521 Payment unit
 tests pass, and all 18 focused `PaymentSessionOperationsGrpcTests|PaymentSessionServiceTests` pass against
@@ -55,10 +59,13 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-When explicitly authorized, run `/merge` for draft PR #721. Apply the merge workflow fresh: confirm exact-head
-CI and review state, reconcile current `origin/main` and repeat affected verification/review if the branch is
-behind, select the required E2E tier, mark ready and enqueue, confirm `MERGED`, then own package publication
-and the generated platform-sync PR through green and merged. Do not begin consumer work before that sync lands.
+Merge current `origin/main` into the clean branch, resolve any conflicts without weakening the Payment-owned
+session-state design, build and test the affected Payment surface, and incrementally review the resulting
+delta. Push through the plan checkpoint protocol, require exact-head PR checks green, select the full E2E tier
+because the diff adds an authenticated backend RPC and published Contracts/Client API, then mark PR #721
+ready and enqueue it. Confirm `MERGED`, own its package publication and causally generated platform-sync PR
+through green and merged, and close out the plan from a fresh worktree. Do not begin consumer work before the
+sync lands.
 
 ## Completed work
 
@@ -107,6 +114,10 @@ and the generated platform-sync PR through green and merged. Do not begin consum
 
 ## Verification
 
+- Resume reconciliation on `2026-08-23`: clean local/remote/PR head
+  `f9dd6dba7d163647b1a7120456da62998bbc122d`; PR #721 is open and draft with all PR-head checks terminal and
+  green, no labels or auto-merge request, and `DIRTY` merge state; fetched `origin/main`
+  `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` is 241 commits ahead of the branch.
 - `git rev-list --left-right --count HEAD...origin/main`: branch ahead and 0 behind at merge head
   `268b48c47196cf446244c1c32c126a0807a79290`; Payment platform pin `0.1.0-alpha.0.1124`.
 - Exact-tree Payment Web and UnitTests builds: succeeded with 0 warnings and 0 errors.
