@@ -11,9 +11,10 @@
 
 ## Current state
 
-Phases 0 through 3 are complete. The dependency gate cleared, the canonical branch owns the
-implementation, and the inventory and plan now reflect React Hook Form as the interactive form-state
-boundary.
+Phases 0 through 3 are complete. Phase 4 implementation is complete and its source, unit, boundary,
+typecheck, and web-production-build gates are green. The dependency gate cleared, the canonical
+branch owns the implementation, and the inventory and plan now reflect React Hook Form as the
+interactive form-state boundary.
 
 The direct label tables, `paymentSummary`, cohesive `consent` service, canonical
 `Opportunity.toRequest`, RHF/Zod form boundaries, slim request contracts, and tenant barrel
@@ -22,8 +23,15 @@ is `StoredConsent`; only browser Storage signatures and JavaScript object valida
 
 The Concert, Artist, and Venue editor stores are deleted. Artist and Venue now expose slim request
 contracts and same-name read-to-update companions; their create and edit workflows own RHF/Zod state,
-while exact PascalCase multipart encoding remains private to each API module. Auth/search
-encapsulation and the full `null` audit remain Phase 4.
+while exact PascalCase multipart encoding remains private to each API module. Web identity now has
+one TanStack Query owner; mobile identity and universal search state are private behind their
+hook/session facades. The production `null` audit is complete and every retained case is one of the
+plan's explicit runtime-boundary categories.
+
+The two Android Expo export checks remain blocked by the worktree's incomplete ignored
+`react-native-svg` installation. Both mobile TypeScript checks pass, and Metro reaches that missing
+package only after resolving the changed source, so this is a local dependency-install blocker rather
+than a tracked-source failure.
 
 The refreshed mainline contains an unconsumed `@concertable/b2b` package with parallel Artist/Venue
 multipart contracts and encoder tests. No current surface imports that package; the completed Phase 3
@@ -32,19 +40,13 @@ ownership of the separate package cut-over.
 
 ## Next Steps
 
-Begin Phase 4 in this worktree:
+Finish the Phase 4 gate before beginning Phase 5:
 
-1. Reconcile the current web/mobile identity state, search-filter state, auth/search barrels, tests,
-   technical debt, and every production `null` occurrence against the Phase 4 inventory before editing.
-2. Replace the web user Zustand mirror with query-client-backed identity guards, then delete
-   `useSyncUser` and every web `useAuthStore` import.
-3. Move mobile identity state behind `useCurrentUser` and `mobileAuthSession`; remove the universal
-   auth-store export and migrate every mobile consumer.
-4. Put search-filter state behind the universal and web `useSearchFilters` facades; remove every
-   public/direct store import and `getState()` call.
-5. Complete and record the `null` classification, delete the resolved auth technical-debt entry, run
-   focused and required surface gates, update this ledger, and commit the Phase 4 checkpoint. Do not
-   start Phase 5 in the same turn.
+1. Restore the worktree's ignored npm dependencies from the lockfile with a complete install; do not
+   change tracked manifests solely to repair the local installation.
+2. Re-run the B2B and Customer Android production Expo exports.
+3. If both exports pass, begin Phase 5 in a fresh turn and close the complete inventory. Do not redo
+   the completed Phase 4 source migration.
 
 ## Completed work
 
@@ -86,6 +88,14 @@ Begin Phase 4 in this worktree:
   import; Hero components now receive image transitions explicitly.
 - Added separate companion, schema, and exact PascalCase multipart encoder coverage for Artist and
   Venue create/update paths, including conditional image omission.
+- Completed Phase 4: web identity components and guards now share `meQueryOptions`/`useMeQuery`, and
+  the duplicate universal/web auth stores plus both `useSyncUser` layers are deleted.
+- Moved mobile identity into the mobile package behind `useCurrentUser` and `mobileAuthSession`, then
+  migrated initialization, login/logout, SignalR, client configuration, navigation, and screens.
+- Encapsulated universal search state behind `useSearchFilters`, composed router synchronization in
+  the web facade, removed the web duplicate store, and added focused replace/update coverage.
+- Normalized owned optional state, contracts, API results, and error details to `undefined`; deleted
+  the resolved web auth technical-debt entry.
 
 ## Verification
 
@@ -149,6 +159,20 @@ Begin Phase 4 in this worktree:
   carve tests passed.
 - Phase 3 production searches found no `useArtistStore` or `useVenueStore` occurrences and no added
   code comments; final multipart API consumers use the workflow contracts or read-only guard methods.
+- Phase 4 focused Vitest runs passed: `@concertable/shared` 10 files/23 tests,
+  `@concertable/web` 5 files/31 tests, and `@concertable/web-b2b` 12 files/25 tests.
+- Phase 4 package/source typechecks passed for shared, web-shared, web-B2B, mobile-shared, both mobile
+  apps, and all five web apps.
+- Customer, Admin, Business, Artist, and Venue production Vite builds passed. The existing Node
+  version and chunk-size notices remained warnings only.
+- All seven frontend dependency-cruiser scopes and all seven boundary-script carve tests passed.
+- Production searches found no `useAuthStore` or `useSyncUser`, no search-store import outside its
+  private facade and focused test, no production search `getState()` call, and no
+  `T | null | undefined` type.
+- `git diff --check` passed for the Phase 4 source changes.
+- B2B and Customer Android Expo exports progressed through the changed application source but could
+  not resolve the incomplete ignored `react-native-svg` package in this worktree. No tracked source or
+  lockfile dependency version was changed to work around the damaged local install.
 
 ## Reviews
 
@@ -179,6 +203,13 @@ findings were fixed; incremental review found no issues in the ledger checkpoint
   workspace manifests and lockfile workspace entries for direct RHF/Zod/Vitest dependencies.
 - The landed `app/b2b/shared` Artist/Venue API copies are not consumed by any surface and belong to
   the separate cross-platform B2B package cut-over; Phase 3 does not redirect consumers to them.
+- The retained production `null` cases are JSX no-render branches; React, DOM, and native ref values
+  and callbacks; browser Storage results; Stripe and Expo SDK signatures; JavaScript object guards;
+  and defensive `!= null` checks at optional wire/UI boundaries. None represents client-owned
+  optional state, and no production type combines `null` with `undefined`.
+- Phase 4's only remaining gate is environmental: the interrupted ignored install left
+  `react-native-svg` without a complete package payload. Repeated local package extraction was stopped
+  rather than risk more filesystem damage; a clean lockfile install is the required recovery.
 
 ## Resume prompt
 

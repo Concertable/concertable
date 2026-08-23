@@ -40,12 +40,12 @@ export interface ConsentGatedScript {
 export function registerConsentGatedScript(
   script: ConsentGatedScript,
 ): () => void {
-  let element: HTMLScriptElement | null = null;
+  let element: HTMLScriptElement | undefined;
 
   return registerConsentGated({
     category: script.category,
     activate: () => {
-      if (typeof document === "undefined" || element !== null) return;
+      if (typeof document === "undefined" || element !== undefined) return;
       element = document.createElement("script");
       element.src = script.src;
       element.async = true;
@@ -57,7 +57,7 @@ export function registerConsentGatedScript(
     },
     deactivate: () => {
       element?.remove();
-      element = null;
+      element = undefined;
     },
   });
 }

@@ -50,7 +50,7 @@ const artistApi = {
     return data;
   },
 
-  getMyArtist: async (): Promise<Artist | null> => {
+  getMyArtist: async (): Promise<Artist | undefined> => {
     const { data } = await apiClient.getOptional<Artist>("/organization/artist");
     return data;
   },

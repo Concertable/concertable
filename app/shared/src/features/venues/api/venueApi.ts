@@ -44,7 +44,7 @@ const venueApi = {
     return data;
   },
 
-  getMyVenue: async (): Promise<Venue | null> => {
+  getMyVenue: async (): Promise<Venue | undefined> => {
     const { data } = await apiClient.getOptional<Venue>("/organization/venue");
     return data;
   },

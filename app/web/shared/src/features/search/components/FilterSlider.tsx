@@ -17,7 +17,6 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useSearchFiltersStore } from "../store/useSearchFiltersStore";
 import { useSearchFilters } from "../hooks/useSearchFilters";
 import { useGenresQuery } from "../hooks/useGenreQuery";
 import type { SearchFilters } from "../schemas/searchSchema";
@@ -29,14 +28,13 @@ const ORDER_BY_OPTIONS = [
 ];
 
 export function FilterSlider() {
-  const { filters, setFilters } = useSearchFiltersStore();
-  const { updateFilters } = useSearchFilters();
+  const { filters, updateFilters, applyFilters } = useSearchFilters();
   const { data: genres } = useGenresQuery();
   const [open, setOpen] = useState(false);
   const [pendingGenre, setPendingGenre] = useState<Genre | "">("");
 
   function update(next: Partial<SearchFilters>) {
-    setFilters({ ...filters, ...next });
+    updateFilters(next);
   }
 
   function addGenre() {
@@ -47,7 +45,7 @@ export function FilterSlider() {
   }
 
   function apply() {
-    updateFilters(filters);
+    applyFilters();
     setOpen(false);
   }
 

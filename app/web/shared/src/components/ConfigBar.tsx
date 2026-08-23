@@ -12,7 +12,7 @@ interface Props {
   onCancel: () => void;
   actions?: ReactNode;
   canSave: boolean;
-  error?: string | null;
+  error?: string;
 }
 
 export function ConfigBar({

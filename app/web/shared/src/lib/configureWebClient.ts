@@ -6,7 +6,7 @@ export const configureWebClient = (instance: AxiosInstance, baseURL: string) => 
   const client = configureClient(instance, baseURL);
   attachAuth(
     instance,
-    async () => (await userManager.getUser())?.access_token ?? null,
+    async () => (await userManager.getUser())?.access_token,
     () => userManager.removeUser(),
   );
   return client;

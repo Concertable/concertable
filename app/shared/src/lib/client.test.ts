@@ -62,23 +62,23 @@ describe("configureClient", () => {
     expect(error.message).toBe("Unavailable");
   });
 
-  it("resolves an optional 404 as null after client configuration", async () => {
+  it("resolves an optional 404 as undefined after client configuration", async () => {
     const { client } = createConfiguredClient();
 
     const response = await client.getOptional<{ id: number }>("/missing");
 
     expect(response.status).toBe(404);
-    expect(response.data).toBeNull();
+    expect(response.data).toBeUndefined();
   });
 
-  it("resolves an optional 404 as null without auth configuration", async () => {
+  it("resolves an optional 404 as undefined without auth configuration", async () => {
     const client = createApiClient();
     configureClient(client, baseURL);
 
     const response = await client.getOptional<{ id: number }>("/missing");
 
     expect(response.status).toBe(404);
-    expect(response.data).toBeNull();
+    expect(response.data).toBeUndefined();
   });
 
   it("preserves caller-provided Axios configuration", async () => {
