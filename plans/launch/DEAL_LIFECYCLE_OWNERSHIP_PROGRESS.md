@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through the owning integration-fixture guard checkpoint
-  `d3448d7bf6d9d9574d250245d769c43986eee75b`. Starting remote head for that checkpoint was
-  `cfe5e4035e2bd76667d94237675f47bec363cf93`; local, remote-tracking, and PR heads were verified equal.
+  through compiled integration-boundary checkpoint
+  `47d5a157016aca70981543122f73883fa4379afd`. Starting remote head was
+  `ed5c448616dab41b0e3f42df24e983ff555ab3b4`; local, remote-tracking, and PR heads were verified equal.
   This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -21,7 +21,8 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-22 through `origin/main` head `1452b5b8b`
+- Last reconciled: 2026-08-23 through published PR head `47d5a1570`; fetched `origin/main` is
+  `2d6f7e3a9` and remains for the parallel state-machine/current-main reconciliation slice
 
 ## Current state
 
@@ -308,16 +309,32 @@ context uses the renamed `PrivilegedDbContext`, and the B2B host composes Artist
 seeders only through their API module boundaries. The B2B Web Release build passes with 0 warnings and
 0 errors.
 
+The integration guards now inspect compiled module test assemblies instead of walking source directories
+or parsing project XML. The architecture project references every module integration project through one
+wildcard, and the guard derives service and module identities from assembly names, so a new module project
+cannot be omitted from the build or protected by a stale module-name list. The host-neutral fixture exposes
+immutable seed snapshots rather than module Domain entities while retaining its public `Services`
+composition capability. Shared modern extension properties resolve an assembly's output and nearest
+solution directories without a named solution or repository-layout walk.
+
 ## Next Steps
 
-Active slice: remote-validate the exact published PR #633 head. The integration-test topology correction,
-dashboard ownership reconciliation, and current-main merge are terminal locally. Do not edit aggregate
-transition tables or state-machine implementation files owned by the parallel state-machine slice. That
-parallel slice owns the next implementation change. Do not resume the superseded file-by-file Concert compile
-recovery.
+Active slice: remote-validate exact published PR #633 head `47d5a1570`. If GitHub registers a red check,
+read that job first and reproduce only its failing scope; do not run local integration or E2E. Do not edit
+aggregate transition tables or state-machine implementation files owned by the parallel state-machine slice,
+which also owns the fetched current-main reconciliation. Do not resume the superseded file-by-file Concert
+compile recovery.
 
 ## Completed work
 
+- Published compiled integration-boundary checkpoint `47d5a1570` from starting remote head `ed5c44861`;
+  local HEAD, the remote-tracking branch, and PR #633 `headRefOid` all equalled
+  `47d5a157016aca70981543122f73883fa4379afd`. The guard builds and loads all 11 module integration
+  assemblies, rejects cross-module Domain/Infrastructure references and direct shared-fixture consumers,
+  and no longer scans hardcoded source locations. The shared fixture exposes boundary-neutral seed
+  snapshots and retains `IServiceProvider Services`; Tenant's two final public `User.Domain` leaks are gone.
+  `Concertable.Testing` now supplies modern assembly/directory extension properties used by both B2B
+  architecture guards.
 - Exact-head CI run `32583248189` passed the complete solution build and reached the module integration
   matrix, where two re-homed Venue dashboard tests exposed the final exact shared-`ApiFixture` constructor.
   Both now request `VenueApiFixture`. `IntegrationTestBoundaryTests` now scans every module integration
@@ -646,6 +663,11 @@ recovery.
 
 ## Verification
 
+- Compiled integration-boundary checkpoint `47d5a1570`: the Architecture project dependency build compiled
+  all 11 module integration projects with 0 warnings and 0 errors; `Concertable.Testing` and the focused
+  Architecture rebuild each passed with 0 warnings and 0 errors; the complete B2B Architecture suite passed
+  19/19; and B2B Process integration tests compiled with 0 warnings and 0 errors. `git diff --check` passed.
+  No local integration or E2E test was run.
 - Exact-head CI run `32542251616` passed the solution build and every completed shard except Deal unit tests
   and the Admin integration shard. The Deal failure reproduces locally and is fixed; its Release suite now
   passes 54/54. Admin failed before test execution because `ConcertDbContext` has pending model changes;
