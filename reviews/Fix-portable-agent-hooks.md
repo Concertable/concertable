@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `4be19b792cff06c64c9f6cd05c9110f0b6820fa0`  _(2026-08-21)_
+**Reviewed up to commit:** `a5380e553`  _(2026-08-23)_
 
 > Range reviewed: `2323c77..4be19b7` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -51,3 +51,10 @@
   as all other repo-local Claude hooks and explicitly selects Bash. The wiring regression requires that
   exact launcher and shell on all four registrations, executes every native command, and the complete
   24-test hook suite plus the PowerShell 7 vendor provenance check pass.
+
+## Incremental review closure
+
+All finding commits through `a5380e553` were reviewed in fresh native contexts. The final increment
+`540d83005..a5380e553` was clean with no actionable findings. The complete consumer hook suite passed 24
+tests with one expected non-native Codex POSIX skip, and all 11 vendored files matched merged producer
+commit `5c0d433`.
