@@ -21,8 +21,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-23 through published PR head `47d5a1570`; fetched `origin/main` is
-  `2d6f7e3a9` and remains for the parallel state-machine/current-main reconciliation slice
+- Last reconciled: 2026-08-23 through current-main merge candidate `origin/main` head `1d25c3b58`
 
 ## Current state
 
@@ -319,14 +318,19 @@ solution directories without a named solution or repository-layout walk.
 
 ## Next Steps
 
-Active slice: remote-validate exact published PR #633 head `47d5a1570`. If GitHub registers a red check,
-read that job first and reproduce only its failing scope; do not run local integration or E2E. Do not edit
-aggregate transition tables or state-machine implementation files owned by the parallel state-machine slice,
-which also owns the fetched current-main reconciliation. Do not resume the superseded file-by-file Concert
-compile recovery.
+Active slice: publish the verified current-main merge candidate, prove local, remote-tracking, and PR heads
+match, then remote-validate that exact PR #633 head. If GitHub registers a red check, read that job first and
+reproduce only its failing scope; do not run local integration or E2E. Do not edit aggregate transition tables
+or state-machine implementation files owned by the parallel state-machine slice. Do not resume the superseded
+file-by-file Concert compile recovery.
 
 ## Completed work
 
+- Reconciled `origin/main` head `1d25c3b58` into the topology checkpoint without restoring foreign module
+  persistence access. Venue retains this branch's profile/current-venue APIs alongside Admin Console's
+  pending-approval API, B2B Architecture retains the wildcard integration-project guard alongside the renamed
+  `Concertable.Testing.Architecture` package, and the completed Admin Console plan remains deleted. The merged
+  User integration coverage retains `ApiFixture.Services` and uses the standard DI scope extension.
 - Published compiled integration-boundary checkpoint `47d5a1570` from starting remote head `ed5c44861`;
   local HEAD, the remote-tracking branch, and PR #633 `headRefOid` all equalled
   `47d5a157016aca70981543122f73883fa4379afd`. The guard builds and loads all 11 module integration
@@ -663,6 +667,10 @@ compile recovery.
 
 ## Verification
 
+- Current-main merge candidate through `origin/main` `1d25c3b58`: Venue unit tests passed 20/20; User
+  integration tests build with 0 warnings and 0 errors; the B2B Architecture dependency build compiled all
+  11 module integration projects with 0 warnings and 0 errors; the B2B Architecture suite passed 19/19;
+  the plan graph and `git diff --check` pass. No local integration or E2E test was run.
 - Compiled integration-boundary checkpoint `47d5a1570`: the Architecture project dependency build compiled
   all 11 module integration projects with 0 warnings and 0 errors; `Concertable.Testing` and the focused
   Architecture rebuild each passed with 0 warnings and 0 errors; the complete B2B Architecture suite passed
