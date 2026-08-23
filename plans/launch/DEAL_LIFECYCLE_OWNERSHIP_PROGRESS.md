@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) is published
-  through current-main merge checkpoint `4f1c65b508fa05aa5d50eedcbda09bc58956c176`. Starting remote
-  head was `115d14cd694ab6647f2888a244efd21b078a9263`; local, remote-tracking, and PR heads were
+  through Venue query correction work head `91615f386e7dd278e468c530bc15a5c6ab597379`. Starting remote
+  head was `c50469d483f697890dc9b4f3d2b3013ee1b8c1c9`; local, remote-tracking, and PR heads were
   verified equal. This ledger commit is the checkpoint-transport leg.
 - Dependency/package gates: the Deal dispatch foundation is terminal. PR #678 merged as
   `1e26f824472fb5329e22eaca8ecd53cab49c1e86`; package publication succeeded; platform-sync PR #694
@@ -20,7 +20,7 @@
   `0.1.0-alpha.0.1133`; generated platform-sync PR
   [#730](https://github.com/Concertable/concertable/pull/730) merged green as
   `067438ccf8442e10aa05fa4b8f40d0b045c0aaf1`. The Phase 5 consumer gate is clear.
-- Last reconciled: 2026-08-23 through staged-review area 1 at anchored head `c50469d48`
+- Last reconciled: 2026-08-23 through published Venue query correction `91615f386`
 
 ## Current state
 
@@ -328,16 +328,23 @@ solution directories without a named solution or repository-layout walk.
 
 ## Next Steps
 
-Active slice: publish and remote-validate the Venue profile query fix, then continue
+Active slice: remote-validate exact PR #633 work head `91615f386`, then continue
 `reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md` with its next unticked stage,
-Application and Opportunity implementations, against plan anchor `c50469d48`. Do not edit aggregate
-transition tables or state-machine implementation files owned by the parallel state-machine slice. Once
-that slice is published, recheck open findings NAT1/NAT2 against the incoming delta, reconcile current
-`origin/main`, and use an incremental review for commits after the staged-review anchor. Do not run local
-integration or E2E and do not resume the superseded file-by-file Concert compile recovery.
+Application and Opportunity implementations, against plan anchor `c50469d48`. If CI is red, read its failing
+job first and reproduce only that scope. Do not edit aggregate transition tables or state-machine
+implementation files owned by the parallel state-machine slice. Once that slice is published, recheck open
+findings NAT1/NAT2 against the incoming delta, reconcile current `origin/main`, and use an incremental review
+for commits after the staged-review anchor. Do not run local integration or E2E and do not resume the
+superseded file-by-file Concert compile recovery.
 
 ## Completed work
 
+- Published Venue profile query correction and staged-review checkpoint `91615f386` from starting remote
+  head `c50469d48`; local HEAD, the remote-tracking branch, and PR #633 `headRefOid` all equalled
+  `91615f386e7dd278e468c530bc15a5c6ab597379`. Entity predicates now execute before the C# 14
+  `ToProfiles` projection extension, correcting the EF translation failure from run `32643447747`.
+  The first of seven full-review areas is recorded at its `c50469d48` anchor with two open high-severity
+  cancellation-retry findings and a clean required security layer.
 - Published documentation-only current-main merge checkpoint `4f1c65b50` from starting remote head
   `115d14cd6`; local HEAD, the remote-tracking branch, and PR #633 `headRefOid` all equalled
   `4f1c65b508fa05aa5d50eedcbda09bc58956c176`. Reconciled `origin/main` head `fb561acee`, whose net
