@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `6632bd3f65bc4413caa535d6d2760cd829dcd96c`  _(2026-08-23)_
-**Security-reviewed up to commit:** `6632bd3f65bc4413caa535d6d2760cd829dcd96c`  _(2026-08-23)_
+**Reviewed up to commit:** `c685747a421be9919cd189f5991d2634f620abdd`  _(2026-08-23)_
+**Security-reviewed up to commit:** `c685747a421be9919cd189f5991d2634f620abdd`  _(2026-08-23)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -83,3 +83,13 @@ upstream delta advances `ConcertablePlatformVersion` from `0.1.0-alpha.0.1158` t
 authorization, secret-handling, provider-operation, persistence, contract, or test-behaviour change. The
 service-boundary, module-boundary, package, language/framework, changed-behaviour coverage, docs ownership,
 routed-skill, and plan/review lifecycle lenses were also clean.
+
+## Incremental review — 2026-08-23 (docs-only currency tail)
+
+> Range reviewed: `6632bd3f..c685747a` (9 commits).
+
+No new findings. Native and security passes were clean. The four branch-unique commits are review/plan
+checkpoints plus conflict-free merge `c685747a4`; its remerge diff is empty. The five imported commits belong
+to docs-only PR #764 and touch no Payment or runtime path. The service-boundary, module-boundary, package,
+language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
+were also clean.

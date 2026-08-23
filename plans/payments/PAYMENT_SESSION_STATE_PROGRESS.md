@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-23` against `origin/main` `75b564bc9b7d92da2acafde5cb4ace88485aef2b`, reviewed code head `6632bd3f65bc4413caa535d6d2760cd829dcd96c`, and verified local/remote/PR head `2a7b77892bd5f66ff31d5850b446941c29011cfe`
+- Last reconciled: `2026-08-23` against `origin/main` `75b564bc9b7d92da2acafde5cb4ace88485aef2b`, current and reviewed local head `c685747a421be9919cd189f5991d2634f620abdd`, and verified remote/PR head `2a7b77892bd5f66ff31d5850b446941c29011cfe`
 
 ## Current state
 
@@ -54,7 +54,8 @@ only upstream change is the platform pin in `Directory.Packages.props`; affected
 incremental native/security review are green. The reviewed reconciliation is pushed, local HEAD, remote branch,
 and PR head all equal `2a7b77892bd5f66ff31d5850b446941c29011cfe`, and fresh exact-head checks are pending. During that push,
 docs-only PR #764 advanced `origin/main` five commits without any Payment delta, so the source branch is again
-behind. Auto-merge remains unarmed.
+behind. Merge `c685747a421be9919cd189f5991d2634f620abdd` imported that tail without conflict or resolution delta; native
+and security incremental review are clean. Auto-merge remains unarmed.
 
 The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` completed in
 `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`. Its only conflict was the Payment published-vocabulary guard:
@@ -72,9 +73,8 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Merge docs-only `origin/main` `75b564bc9b7d92da2acafde5cb4ace88485aef2b`, confirm an empty Payment and
-conflict-resolution delta, incrementally review the merge, then push through the plan checkpoint protocol and
-require exact-head checks green. Refetch main, select the full E2E tier, mark PR #721 ready, and enqueue it.
+Push reviewed currency head `c685747a421be9919cd189f5991d2634f620abdd` through the plan checkpoint protocol
+and require exact-head checks green. Refetch main, select the full E2E tier, mark PR #721 ready, and enqueue it.
 Confirm `MERGED`, own its package publication and causally generated platform-sync PR through green and merged,
 and close out the plan from a fresh worktree. Do not begin consumer work before the sync lands.
 
@@ -125,6 +125,9 @@ and close out the plan from a fresh worktree. Do not begin consumer work before 
 
 ## Verification
 
+- Docs-only currency reconciliation at `c685747a421be9919cd189f5991d2634f620abdd`: conflict-free merge with
+  empty remerge diff and no Payment path change; incremental native/security review of
+  `6632bd3f..c685747a` (9 commits) found no findings.
 - Second reconciliation checkpoint transport: local HEAD,
   `origin/Feature/payments_payment-session-state`, and PR #721 `headRefOid` all equal
   `2a7b77892bd5f66ff31d5850b446941c29011cfe`; a concurrent `origin/main` advance to
@@ -288,7 +291,7 @@ Full review artifact: `reviews/Feature-payments_payment-session-state.md`. The i
 `69df07b8b1ff36e98e82a0c6938b7bb849ee4383..7e165607881895c735ac60055d9c479c336b7278`;
 the clean current-main incremental review covers
 `7e165607881895c735ac60055d9c479c336b7278..e7f2e36a8415752bf3aea04630f568f53b417179`.
-Incrementally reviewed and security-reviewed through `6632bd3f65bc4413caa535d6d2760cd829dcd96c` on `2026-08-23`.
+Incrementally reviewed and security-reviewed through `c685747a421be9919cd189f5991d2634f620abdd` on `2026-08-23`.
 
 - `NAT1` resolved in `9801e2d0d8fe0314a669bb9b8f4cce7d2a6370c4`, medium: a cancellation-race loser re-reads
   provider truth and accepts a confirmed canceled predecessor before successor reservation/replay;
