@@ -26,6 +26,12 @@ POSIX_LAUNCH_PREFIX = (
 POSIX_SESSION_COMMAND = (
     'python3 "$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py"'
 )
+CLAUDE_LAUNCH_PREFIX = (
+    'repo_root="$CLAUDE_PROJECT_DIR"; '
+    'if command -v cygpath >/dev/null 2>&1; then '
+    'repo_root="$(cygpath -u "$repo_root")"; fi; '
+    'exec bash "$repo_root/.agents/hooks/run-repo-hook.sh" '
+)
 
 
 def handlers(path):
@@ -145,9 +151,19 @@ class RepoHookWiringTests(unittest.TestCase):
     def test_claude_manifest_wires_every_repo_hook(self):
         actual = list(handlers(REPO / ".claude" / "settings.json"))
         self.assertEqual(len(CODEX_SCRIPTS), len(actual))
+        self.assertTrue(all(item.get("shell") == "bash" for item in actual))
         self.assertEqual(
             CODEX_SCRIPTS,
-            {script_name(item["command"]) for item in actual},
+            {
+                item["command"].removeprefix(CLAUDE_LAUNCH_PREFIX)
+                for item in actual
+            },
+        )
+        self.assertTrue(
+            all(
+                item["command"].startswith(CLAUDE_LAUNCH_PREFIX)
+                for item in actual
+            )
         )
 
     def test_claude_commands_launch_every_repo_hook(self):

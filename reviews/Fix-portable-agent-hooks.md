@@ -39,3 +39,15 @@
   while native execution runs all four exact Windows commands through `cmd.exe` or all four exact POSIX
   commands through Bash from a nested checkout directory. Claude wiring validation now also accounts for
   its `SessionStart` hook, and its complete native command set continues to execute.
+
+- [x] **NAT4 — HIGH — native incremental** — `.claude/settings.json:44`
+  Claude's repo-local `SessionStart` hook still invokes `python` directly instead of the portable Bash
+  launcher. Linux/macOS systems with only `python3` can therefore report a failing duplicate registration.
+  Route `session_floor.py` through the same `CLAUDE_PROJECT_DIR`/`cygpath` and `run-repo-hook.sh` command as
+  every other Claude hook, declare Bash explicitly, and require that launcher for every Claude command in
+  the wiring regression.
+
+  **Resolved:** Claude `SessionStart` now uses the same quoted `CLAUDE_PROJECT_DIR`/`cygpath` Bash launcher
+  as all other repo-local Claude hooks and explicitly selects Bash. The wiring regression requires that
+  exact launcher and shell on all four registrations, executes every native command, and the complete
+  24-test hook suite plus the PowerShell 7 vendor provenance check pass.
