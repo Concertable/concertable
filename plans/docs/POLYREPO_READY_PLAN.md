@@ -333,6 +333,17 @@ candidate — an adapter service with the fewest inbound dependencies.
 **This is the only node that produces evidence rather than edits**, and it depends on N1–N6: a carved
 Payment repo with no review, merge or debug skill cannot prove anything.
 
+**Recorded — see the ledger's `## Verification — N8`.** Carved Payment (tracked subtree extracted as repo
+root, `gen_skill_routes.py --kind dotnet-service`, real `skill_router.py`): the 30-row table fires on every
+representative path, the floor catches all 396 routable files with zero unrouted `.cs` and zero deny hits,
+the service's own `*.Contracts` correctly does not trip the shared-tier row, and all 37 routed skills resolve.
+N8 did its job by surfacing one real defect — **generator drift**: the live table's `\.ArchitectureTests`
+route (hand-added by the architecture-tests-rename epic) was never propagated to the generator CANONICAL, so
+`gen --kind monorepo` no longer reproduces the live table and a carve would lose that tier's routing. The doc
+criteria are met modulo the expected carve-time deltas (README monorepo lines, the `../../AGENTS.md` and
+shared-tree inheritance links) that resolve at the cut. Fix disposition and remaining debt: ledger
+`## Next Steps`.
+
 ## Acceptance criteria — polyrepo-ready, and usable from both harnesses
 
 Done when both hold, **verified rather than asserted**:

@@ -1,17 +1,43 @@
 {
   "_comment": [
-    "Path -> the skills to load before writing that path; this table is the only place the mapping lives.",
-    "EVERY matching row fires, not the first: the area floors and layer routes always apply and a",
-    "specific row below ADDS to them. skill_router.py enforces it on write and the review reads the same",
-    "table, so a review cannot miss what an author was required to load.",
-    "",
-    "The convention this table follows - the layered floor+route model, why a row keyed on a top-level",
-    "directory cannot port to a carved repo while one keyed on architecture ports verbatim, and the field",
-    "semantics (path, skills, content_requires, note, deny) - is standards/process/SKILL_ROUTES.md in",
-    "Concertable/agent-standards (skill `skill-routes`). A carved service repo derives its table from that",
-    "convention's generator (.agents/gen_skill_routes.py --kind dotnet-service) rather than hand-copying one."
+    "Path -> the skills that must be loaded before writing that path. EVERY matching row fires, not the",
+    "first: the area floors and layer routes always apply, and a specific row below ADDS to them.",
+    "The convention this table follows \u2014 the layered floor+route model, why a row keyed on a top-level",
+    "directory cannot port to a carved repo while one keyed on architecture ports verbatim, and the",
+    "field semantics \u2014 is standards/process/SKILL_ROUTES.md in Concertable/agent-standards (skill",
+    "`skill-routes`). This file is emitted by that convention's generator (.agents/gen_skill_routes.py);",
+    "a carved repo derives its table rather than hand-copying one, so re-run the generator, do not edit",
+    "the floors by hand."
   ],
   "routes": [
+    {
+      "path": "^plans/.*\\.md$",
+      "skills": [
+        "plans"
+      ],
+      "note": "The lifecycle and method a plan or ledger must satisfy - what each artifact is, its phases and their gates, when a useful context continues versus transfers, when the artifact is deleted, the two dependency graphs, cross-plan blockers. This repo's layout, hooks and commands are plans/AGENTS.md; the exact prompt for a selected context transfer is the handoff skill."
+    },
+    {
+      "path": "(^|/)TECH_DEBT\\.md$",
+      "skills": [
+        "docs-and-debt"
+      ],
+      "note": "Debt is recorded in the TECH_DEBT.md of the area that owns the problem, and the whole entry is deleted once fixed - never kept as an archive."
+    },
+    {
+      "path": "(^|/)(AGENTS|CLAUDE)\\.md$|^\\.agents/skills/[^/]+/SKILL\\.md$",
+      "skills": [
+        "docs-and-debt"
+      ],
+      "note": "Writing guidance is the moment one-rule-one-home is won or lost: check docs/INDEX.md for an existing owner first, and never add a second copy of a rule that already has one."
+    },
+    {
+      "path": "^reviews/.*\\.md$",
+      "skills": [
+        "review-lifecycle"
+      ],
+      "note": "The review-file lifecycle used to arrive from a reviews/AGENTS.md sitting in the directory. That doc is now the shared standard, so this row is what delivers it."
+    },
     {
       "path": "^api/(?!.*(GlobalUsings|AssemblyInfo)\\.cs$).*\\.cs$",
       "skills": [
@@ -19,14 +45,6 @@
         "csharp-naming"
       ],
       "note": "Area floor. Every C# file gets the style and naming standard, so a shape nobody wrote a route for is still gated. Specific routes below add to this, they do not replace it."
-    },
-    {
-      "path": "^app/(?!.*(\\.d\\.ts|routeTree\\.gen\\.ts)$).*\\.(ts|tsx)$",
-      "skills": [
-        "react-standards:typescript-style",
-        "react:typescript-style"
-      ],
-      "note": "Area floor, same reason as the .NET one above."
     },
     {
       "path": "\\.Application/.*\\.cs$",
@@ -200,30 +218,6 @@
       ]
     },
     {
-      "path": "app/.*/api/[^/]*\\.ts$",
-      "skills": [
-        "react-standards:http-layer",
-        "react:http-layer",
-        "react-standards:contract-naming",
-        "react:contract-naming"
-      ]
-    },
-    {
-      "path": "app/.*/(hooks|queries)/use[^/]*\\.ts$",
-      "skills": [
-        "server-state",
-        "react-standards:client-state",
-        "react:client-state"
-      ]
-    },
-    {
-      "path": "app/.*/schemas/[^/]*\\.ts$",
-      "skills": [
-        "react-standards:write-boundary",
-        "react:write-boundary"
-      ]
-    },
-    {
       "path": "Directory\\.(Build|Packages)\\.(props|targets)$",
       "skills": [
         "packages"
@@ -250,40 +244,44 @@
       ]
     },
     {
+      "path": "^app/(?!.*(\\.d\\.ts|routeTree\\.gen\\.ts)$).*\\.(ts|tsx)$",
+      "skills": [
+        "react-standards:typescript-style",
+        "react:typescript-style"
+      ],
+      "note": "Area floor, same reason as the .NET one above."
+    },
+    {
+      "path": "app/.*/api/[^/]*\\.ts$",
+      "skills": [
+        "react-standards:http-layer",
+        "react:http-layer",
+        "react-standards:contract-naming",
+        "react:contract-naming"
+      ]
+    },
+    {
+      "path": "app/.*/(hooks|queries)/use[^/]*\\.ts$",
+      "skills": [
+        "server-state",
+        "react-standards:client-state",
+        "react:client-state"
+      ]
+    },
+    {
+      "path": "app/.*/schemas/[^/]*\\.ts$",
+      "skills": [
+        "react-standards:write-boundary",
+        "react:write-boundary"
+      ]
+    },
+    {
       "path": "app/.*/features/tenant/.*\\.ts$",
       "skills": [
         "react:client-state",
         "react:identity",
         "react:permissions"
       ]
-    },
-    {
-      "path": "^plans/.*\\.md$",
-      "skills": [
-        "plans"
-      ],
-      "note": "The lifecycle and method a plan or ledger must satisfy - what each artifact is, its phases and their gates, when it is deleted, the two dependency graphs, cross-plan blockers. This repo's layout, hooks and commands are plans/AGENTS.md; the handoff prompt a non-terminal ledger must end with is the handoff skill."
-    },
-    {
-      "path": "(^|/)TECH_DEBT\\.md$",
-      "skills": [
-        "docs-and-debt"
-      ],
-      "note": "Debt is recorded in the TECH_DEBT.md of the area that owns the problem, and the whole entry is deleted once fixed - never kept as an archive."
-    },
-    {
-      "path": "(^|/)(AGENTS|CLAUDE)\\.md$|^\\.agents/skills/[^/]+/SKILL\\.md$",
-      "skills": [
-        "docs-and-debt"
-      ],
-      "note": "Writing guidance is the moment one-rule-one-home is won or lost: check docs/INDEX.md for an existing owner first, and never add a second copy of a rule that already has one."
-    },
-    {
-      "path": "^reviews/.*\\.md$",
-      "skills": [
-        "review-lifecycle"
-      ],
-      "note": "The review-file lifecycle used to arrive from a reviews/AGENTS.md sitting in the directory. That doc is now the shared standard, so this row is what delivers it."
     },
     {
       "path": "app/(shared|b2b/shared|customer/shared|web/shared|web/b2b/shared|mobile/shared)/.*\\.(ts|tsx)$",
