@@ -265,7 +265,7 @@
     <Project Path="Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing.Integration/Concertable.Testing.Integration.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing.E2E/Concertable.Testing.E2E.csproj" />
-    <Project Path="Concertable.Shared/tests/Concertable.Composition.Testing/Concertable.Composition.Testing.csproj" />
+    <Project Path="Concertable.Shared/tests/Concertable.Testing.Architecture/Concertable.Testing.Architecture.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/">
     <Project Path="Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj" />
