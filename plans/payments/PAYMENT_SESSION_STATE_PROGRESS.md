@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-23` against `origin/main` `fb561acee4aac4dafeb7d57f87f28cf2af35b9a7`, reviewed code head `0ad5a36edd14147303795c6ef60487b7b616aec3`, and verified local/remote/PR work head `9b4af14938e8855c9e580f1208ca6b0ff45f01b5`
+- Last reconciled: `2026-08-23` against `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, reviewed code head `0ad5a36edd14147303795c6ef60487b7b616aec3`, and verified local/remote/PR head `f765966cbdb9b4aa52337586f1ab9f81a3215711`
 
 ## Current state
 
@@ -43,12 +43,14 @@ merged base is `2323c77e74bc58bbde6394c360af673c402a8b5f`, and that tree's Payme
 `0.1.0-alpha.0.1124`.
 
 Draft PR #721 is open against `main`. The remote branch and PR head both equal
-`9b4af14938e8855c9e580f1208ca6b0ff45f01b5`, verified after the reviewed current-main work push. That head's
-fresh PR checks are pending. Local merge head `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33` includes the plan checkpoint and resolved merge of the prior
+`f765966cbdb9b4aa52337586f1ab9f81a3215711`, verified after both push legs. All 70 checks on that exact head
+are terminal with zero failures. Local merge head `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33` includes the plan checkpoint and resolved merge of the prior
 241-commit main advance. Current `origin/main` moved three more commits for a docs/review cleanup while local
 validation ran; merge `0ad5a36edd14147303795c6ef60487b7b616aec3` imported them without conflict or Payment changes. The branch
-is current with main, affected local validation is green, and native plus security incremental review is clean
-through that head. Auto-merge remains unarmed.
+was current and native plus security incremental review was clean through that head. During exact-head CI,
+`origin/main` advanced 17 commits through platform sync #758, portable-hook fix #759, and docs checkpoint
+#761. Payment's only upstream change is the platform pin in `Directory.Packages.props`; the source PR is now
+behind again. Auto-merge remains unarmed.
 
 The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` completed in
 `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`. Its only conflict was the Payment published-vocabulary guard:
@@ -66,11 +68,12 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Wait for every PR check on exact head `9b4af14938e8855c9e580f1208ca6b0ff45f01b5` to become terminal. If any
-fails, checkpoint and route its owning debug workflow; if all are green, select the full E2E tier because the
-diff adds an authenticated backend RPC and published Contracts/Client API, mark PR #721 ready, and enqueue it.
-Confirm `MERGED`, own its package publication and causally generated platform-sync PR through green and merged,
-and close out the plan from a fresh worktree. Do not begin consumer work before the sync lands.
+Merge current `origin/main` `b7d0fcbd95d4986909915d3b6122abc161affcea`, restore and rebuild the affected
+Payment Web and UnitTests projects against the new platform pin, rerun the focused Payment session/contract
+tests, and incrementally review the reconciliation. Push through the plan checkpoint protocol and require the
+new exact-head checks green. Then select the full E2E tier, mark PR #721 ready, enqueue it, confirm `MERGED`,
+own its package publication and causally generated platform-sync PR through green and merged, and close out
+the plan from a fresh worktree. Do not begin consumer work before the sync lands.
 
 ## Completed work
 
@@ -119,6 +122,10 @@ and close out the plan from a fresh worktree. Do not begin consumer work before 
 
 ## Verification
 
+- Exact-head CI on `f765966cbdb9b4aa52337586f1ab9f81a3215711`: 70 terminal checks, zero pending and zero
+  failures; `ci-complete`, build, all carves, architecture, unit, and integration jobs passed, with PR-level
+  merge-group E2E jobs expectedly skipped. A post-CI fetch found `origin/main`
+  `b7d0fcbd95d4986909915d3b6122abc161affcea` 17 commits ahead; its only Payment delta is the platform pin.
 - Push work leg: pushed range `f9dd6dba7d163647b1a7120456da62998bbc122d..9b4af14938e8855c9e580f1208ca6b0ff45f01b5`;
   fetched local HEAD, `origin/Feature/payments_payment-session-state`, and PR #721 `headRefOid` all equal
   `9b4af14938e8855c9e580f1208ca6b0ff45f01b5`. PR remains open and draft; fresh exact-head checks are pending.
