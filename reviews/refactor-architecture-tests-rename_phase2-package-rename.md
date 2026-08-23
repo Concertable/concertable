@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `7d843e6a834d38b313cbd1d3e83baccaae4d6c79`  _(2026-08-22)_
-**Security-reviewed up to commit:** `7d843e6a834d38b313cbd1d3e83baccaae4d6c79`  _(2026-08-22)_
+**Reviewed up to commit:** `ae68e52991fd8e0a4e7269a9a83bc27349cb5a17`  _(2026-08-23)_
+**Security-reviewed up to commit:** `ae68e52991fd8e0a4e7269a9a83bc27349cb5a17`  _(2026-08-23)_
 
 > Range reviewed: `2b20c91a0..281a1c16b` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -43,3 +43,12 @@ credentials, tokens, or security policy changed anywhere in this diff.
 ## Incremental review — 2026-08-22 (second)
 
 Range `ab439f0a3..7d843e6a8`: the security-review marker/section commit only. No code change. No findings.
+
+## Incremental review — 2026-08-23 (third)
+
+Range `7d843e6a8..ae68e5299`: a third `origin/main` merge (17 commits — B2B admin/user module work, a
+DataAccess test refactor, an unrelated Chore PR) to clear a currency gap. Auto-merged cleanly across five
+`Directory.Packages.props` files and `Concertable.slnx` — no conflicts; spot-checked all five
+`PackageVersion` lines and the `.slnx` project path post-merge, all still correctly say
+`Concertable.Testing.Architecture`. True branch-owned diff (`merge-base(origin/main, HEAD)..HEAD`) is
+byte-identical in file set to the original review pass. No findings.
