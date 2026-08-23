@@ -5,12 +5,16 @@
 - Roadmap item: `architecture-tests-rename/tier-collapse`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable`
 - Branch: `Refactor/architecture-tests-rename`
-- PR: [#746](https://github.com/Concertable/concertable/pull/746) — **MERGED** (`685f66ec9`)
-- Platform-sync: [#749](https://github.com/Concertable/concertable/pull/749) — **MERGED** (`6a5db574c`,
-  version `0.1.0-alpha.0.1149`)
-- Package gate: Phase 2 renames the published `Concertable.Composition.Testing` package (publish-then-bump).
+- Phase 1 PR: [#746](https://github.com/Concertable/concertable/pull/746) — **MERGED** (`685f66ec9`)
+- Phase 1 platform-sync: [#749](https://github.com/Concertable/concertable/pull/749) — **MERGED**
+  (`6a5db574c`, version `0.1.0-alpha.0.1149`)
+- Phase 2 branch: `refactor/architecture-tests-rename_phase2-package-rename`
+- Phase 2 PR: [#754](https://github.com/Concertable/concertable/pull/754) — **MERGED** (`1d25c3b58`)
+- Phase 2 platform-sync: [#758](https://github.com/Concertable/concertable/pull/758) — **OPEN**, auto-merge
+  armed by automation, all checks green when last observed; stuck in the merge queue behind unrelated
+  CI/runner congestion (not a code problem)
 
-## Current state — TERMINAL
+## Current state — Phase 1 terminal, Phase 2 code merged, sync PR in flight
 
 Phase 1 landed. PR #746 merged into `main` (`685f66ec9`); the resulting `publish-packages` republish and
 `chore/platform-sync-0.1.0-alpha.0.1149` (#749) both went green and merged (`6a5db574c`) with no consumer
@@ -33,6 +37,22 @@ and left `main`'s ref stale with a partially-updated working tree; recovered by 
 had drifted — `scripts/test.ps1` itself remains permanently un-restorable in this working tree and is
 flagged separately for Tommy to investigate (not a branch or plan concern).
 
+**Phase 2** landed as one PR rather than the plan's original producer/sync split — see the plan doc's
+"Deviation" note for why (this repo's `UseLocalPlatformPackages` CI mechanism makes the split actively
+counterproductive here). PR #754 merged clean through the queue after three more `origin/main` merges (same
+fast-moving-main pattern) and a security-layer review (touches `Concertable.Auth`/`Concertable.Payment`
+paths per this repo's `security_paths` inventory — no findings, confirmed no actual auth/payment code
+changed). The same `checkout main` file-lock issue recurred after this merge too, plus a second untracked-
+stale-file cleanup (leftover pre-closeout copies of another team's `admin-console` plan/review files from
+the same interrupted-checkout pattern — confirmed via `git log --diff-filter=D` that they were already
+`git rm`'d on `main`, so deleting the stale on-disk copies was safe). The resulting platform-sync PR #758
+(`0.1.0-alpha.0.1161`) is a routine, no-consumer-migration-needed version bump; automation already armed its
+auto-merge and every check that completed was green, but it's been stuck in the merge queue for an extended
+period behind what looks like genuine CI-runner congestion (merge_group runs staying `in_progress` well past
+normal completion time, unrelated PRs' queue entries repeatedly rebatching). This is an environment issue,
+not a code or process one — no action needed from this session; automation will land it once the queue
+clears.
+
 ## Completed milestones
 
 - Categorization verdict + full reference inventory gathered (subagents).
@@ -50,24 +70,27 @@ flagged separately for Tommy to investigate (not a branch or plan concern).
 
 ## Reviews
 
-`reviews/Refactor-architecture-tests-rename.md`, reviewed up to `45d746d7d` (re-stamped three times as
-`main`'s fast pace forced repeated merges; each pass confirmed the true branch-owned diff was unchanged, so
-no re-review was needed beyond the first). Native layer (Layer 1): no findings. Repo lenses: two findings,
-both fixed and committed (`349920c18`) — `docs/INDEX.md` named the pre-rename `composition-tests` CI matrix;
-the `.ArchitectureTests` skill route was missing `module-structure` for the static ArchUnit half B2B's own
-AGENTS.md says that skill governs. Security layer: stamped at `45d746d7d` — no findings (pure identifier
-rename in `.github/workflows/test.yml`, no new untrusted-context interpolation).
+Phase 1: `reviews/Refactor-architecture-tests-rename.md` (spent — Phase 1 fully merged, findings fixed;
+delete once Phase 2 also closes, per review-lifecycle). Reviewed up to `45d746d7d`, re-stamped three times
+as main's pace forced repeated merges. Native layer: no findings. Repo lenses: two findings, fixed —
+`docs/INDEX.md` named the pre-rename CI matrix; the `.ArchitectureTests` skill route was missing
+`module-structure`. Security layer: no findings.
+
+Phase 2: `reviews/refactor-architecture-tests-rename_phase2-package-rename.md` (spent — PR #754 merged, no
+open findings; delete once the sync PR closes). Reviewed up to `ae68e5299`, re-stamped three times across
+main merges (each pass confirmed the true branch-owned diff was byte-identical to the first, so no
+re-review was needed beyond the first pass). Native layer: no findings. Security layer (triggered by the
+`Concertable.Auth`/`Concertable.Payment` path touches): no findings, confirmed no actual auth/payment
+production code changed.
 
 ## Next Steps
 
-Phase 1 is done; the plan and roadmap item stay open — per the roadmap, Phase 2 (renaming the published
-`Concertable.Composition.Testing` package to `Concertable.Testing.Architecture`) is folded into this same
-workstream, not a separate item. Start Phase 2 per `ARCHITECTURE_TESTS_RENAME_PLAN.md`'s Phase 2 section: a
-producer PR (rename the lib, migrate ProjectReference consumers — AppHost and B2B — in-PR, merge, let
-`publish-packages` publish the new id), then a platform-sync PR migrating the four `PackageReference`
-services' `PackageReference`/`PackageVersion`/`using` to the new id. Decide there whether to also rename the
-DI-validation types (`CompositionValidationOptions`, `ValidateComposition`, `CompositionTestArguments`) —
-plan's default is keep. Only once Phase 2's consumer migration lands and the grep gate
-(`grep -rniE "composition\.testing|compositiontests"` empty but the two allowlisted unit-test classes) is
-clean does this plan close: delete the plan and ledger together (`git rm`) and tick the roadmap item, per
-the `plans` skill's lifecycle step 5.
+Confirm platform-sync PR #758 reached `MERGED` (it was green and auto-merge-armed, just stuck behind CI
+queue congestion when last checked — `gh pr view 758 --json state,mergeCommit`). Once it's merged: this
+plan's whole rename is terminal — run the grep gate
+(`grep -rniE "composition\.testing|compositiontests"`, expect only the two allowlisted unit-test classes),
+`git rm` both spent review files (`reviews/Refactor-architecture-tests-rename.md` and
+`reviews/refactor-architecture-tests-rename_phase2-package-rename.md`), delete this plan and ledger
+together, and tick `architecture-tests-rename/tier-collapse` done in
+`plans/architecture-tests-rename/ARCHITECTURE_TESTS_RENAME_ROADMAP.md`, landed as a `Docs/*` closeout PR
+through `/merge-docs` per the `plans` skill's lifecycle step 5.

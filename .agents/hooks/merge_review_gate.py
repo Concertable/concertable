@@ -23,12 +23,18 @@ Security layer: when the head being merged touches security-sensitive paths, the
 also requires a current `**Security-reviewed up to commit:** \`<sha>\`` marker —
 stamped by `review` Step 1d after it runs `/security-review`.
 
-A repo opts in by carrying `.agents/merge-gate.json`; without one the hook exits 0
-and claims no jurisdiction. A `--repo <owner>/<name>` naming some other repository is
-likewise not this gate's business, for the same reason a `cd <other-repo> && merge` is
-not. That file also names the repo's own security-sensitive paths, which are its
-inventory rather than this mechanism's — the generic patterns below (workflows,
-auth/secret vocabulary) apply everywhere and stay here.
+A repo opts in by carrying `.agents/merge-gate.json`; without one the review check exits 0
+and claims no jurisdiction. Codex is the exception at the target-proof boundary: its hook
+payload omits an `exec_command` workdir override, so every Codex merge must use the narrow
+`pushd "<absolute-checkout>" && gh pr merge <number> ...` form below. An ambiguous Codex
+merge is rejected before repository jurisdiction because there is no safe directory in
+which to ask the opt-in question. Claude uses the same canonical target when present,
+while retaining its legacy `cd`/payload-cwd fallback. A `--repo
+<owner>/<name>` naming some other repository is likewise not this gate's business for
+Claude, for the same reason a `cd <other-repo> && merge` is not. The config file also names
+the repo's own security-sensitive paths, which are its inventory rather than this
+mechanism's — the generic patterns below (workflows, auth/secret vocabulary) apply
+everywhere and stay here.
 """
 
 import json
@@ -193,6 +199,57 @@ def local_repo_slug():
 
 _CD_RE = re.compile(r"(?:^|[;&|]|&&)\s*cd\s+((?:\"[^\"]*\")|(?:\'[^\']*\')|(?:[^\s;&|]+))")
 
+# Deliberately a contract, not a shell parser. Codex does not report an exec_command
+# workdir to hooks, and trying to infer one from arbitrary cmd/PowerShell/Bash text means
+# reimplementing three shells. The shared `pushd` + `&&` envelope works in all three;
+# restricting the tail to gh's valueless merge switches keeps the target proof exact.
+_CANONICAL_MERGE_RE = re.compile(
+    r'\Apushd "(?P<target>[^"\r\n]+)" && gh pr merge (?P<pr>[1-9]\d*)'
+    r'(?P<options>(?: --(?:auto|admin|merge|squash|rebase|delete-branch))*)\Z'
+)
+_PUSHD_TOKEN_RE = re.compile(r"\bpushd\b", re.IGNORECASE)
+_CANONICAL_UNSAFE_TARGET_CHARS = frozenset('$%!`&|;<>^\r\n')
+
+
+def is_codex_invocation(data):
+    """Codex hook payloads carry a turn id; Claude hook payloads do not."""
+    return "turn_id" in data or "turnId" in data
+
+
+def canonical_merge_target_dir(command):
+    """Return the proven checkout from the shared cross-harness merge envelope."""
+    match = _CANONICAL_MERGE_RE.fullmatch(command)
+    if match is None:
+        return None
+
+    raw = match.group("target")
+    if raw.endswith("\\") or any(char in raw for char in _CANONICAL_UNSAFE_TARGET_CHARS):
+        return None
+    target = Path(raw)
+    if not target.is_absolute() or not target.is_dir():
+        return None
+    try:
+        return str(target.resolve(strict=True))
+    except OSError:
+        return None
+
+
+def invokes_pushd_before_merge(command):
+    """Whether a merge command attempts to select its checkout with ``pushd``.
+
+    This is deliberately lexical, not a partial Bash parser. Any standalone ``pushd`` word
+    before the last detected merge is treated as an attempted target, including a word inside
+    an exotic quoted mention. Looking through the last merge matters for the documented
+    ``--disable-auto && pushd ... && --auto`` re-assert compound: the first merge is safe, but
+    the later enabling merge changes checkout. That conservative false positive is preferable
+    to falling back to another checkout when Bash could execute a form the detector does not
+    understand.
+    """
+    merge_start = None
+    for merge in _INVOCATION_RE.finditer(command):
+        merge_start = merge.start()
+    return merge_start is not None and _PUSHD_TOKEN_RE.search(command, 0, merge_start) is not None
+
 
 def merge_target_dir(command, data):
     """The directory the merge actually runs in: the last `cd` before it, else the tool cwd.
@@ -286,8 +343,37 @@ def main():
     if not isinstance(command, str) or not is_merge_enable(command):
         sys.exit(0)
 
-    # Run every git query where the merge runs, not where the hook process happens to sit.
-    _GIT_CWD[0] = merge_target_dir(command, data)
+    # Both harnesses prefer the canonical target, so the review gate judges the checkout
+    # where the documented command actually merges. Codex requires that proof because its
+    # hook input omits exec_command's workdir; Claude keeps its established cd/payload-cwd
+    # fallback for older callers that do not yet use the envelope.
+    canonical_target = canonical_merge_target_dir(command)
+    if is_codex_invocation(data):
+        if canonical_target is None:
+            if not claim_invocation(data, "merge-review-gate"):
+                sys.exit(0)
+            block(
+                "MERGE GATE: Codex cannot prove this merge's checkout because hooks do not "
+                "receive an exec_command workdir. Use exactly `pushd \"<absolute-checkout>\" "
+                "&& gh pr merge <number> [--merge|--squash|--rebase] [--auto]`, with no "
+                "additional shell commands, then retry."
+            )
+        _GIT_CWD[0] = canonical_target
+    else:
+        if canonical_target is not None:
+            _GIT_CWD[0] = canonical_target
+        elif invokes_pushd_before_merge(command):
+            if not claim_invocation(data, "merge-review-gate"):
+                sys.exit(0)
+            block(
+                "MERGE GATE: Claude cannot prove this merge's pushd checkout. Use exactly "
+                "`pushd \"<absolute-checkout>\" && gh pr merge <number> "
+                "[--merge|--squash|--rebase] [--auto]`, with no additional shell commands, "
+                "then retry."
+            )
+        else:
+            # Run every git query where the merge runs, not where the hook process happens to sit.
+            _GIT_CWD[0] = merge_target_dir(command, data)
 
     # From here on the command WOULD merge — fail closed on anything unproven.
     try:

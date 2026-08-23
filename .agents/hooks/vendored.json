@@ -18,8 +18,8 @@
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/merge_review_gate.py",
       "delivery": "hook",
-      "commit": "8291f69d28b1606e0d21866a63266014a48bd08d",
-      "sha256": "sha256:cdfa13a700acd4f1c9eb9c01dbc60bb8250e2bff1a7329004d300713d92b5d30"
+      "commit": "5c0d4339ce5c4e61c30ef8f0e1ef2aa4e750f209",
+      "sha256": "sha256:6d5ed307efbf1a6522cd52535ecb078b7d492a81e8f59aaa9daba59454a5b527"
     },
     "plan_graph.py": {
       "source": "Concertable/agent-standards",
@@ -28,19 +28,19 @@
       "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
       "sha256": "sha256:cfa58050e17da0711f72f2469359056be532a291faeb99fbdac990140f24d3d8"
     },
-    "plan_handoff_stop.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/plan_handoff_stop.py",
-      "delivery": "invoked",
-      "commit": "c62e1b75c4e8e2bba65b0599ad64c08a62d12486",
-      "sha256": "sha256:6827d21233a257a64420ee0c1bbc1b9f15269391d3d1a15169ab2d5d310d18b1"
-    },
     "plan_handoff_stop_launcher.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/plan_handoff_stop_launcher.py",
       "delivery": "hook",
       "commit": "8291f69d28b1606e0d21866a63266014a48bd08d",
       "sha256": "sha256:2db295f838a140eeca96cf16644d735ccffbb9b0c83799fe9a1f1942b868174d"
+    },
+    "plan_handoff_stop.py": {
+      "source": "Concertable/agent-standards",
+      "path": ".agents/hooks/plan_handoff_stop.py",
+      "delivery": "invoked",
+      "commit": "c62e1b75c4e8e2bba65b0599ad64c08a62d12486",
+      "sha256": "sha256:6827d21233a257a64420ee0c1bbc1b9f15269391d3d1a15169ab2d5d310d18b1"
     },
     "session_floor.py": {
       "source": "Concertable/agent-standards",
