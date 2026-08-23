@@ -5,9 +5,9 @@
 - Roadmap item: `payments/payment-session-state`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state`
 - Branch: `Feature/payments_payment-session-state`
-- PR: draft #721 — https://github.com/Concertable/concertable/pull/721
+- PR: ready #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: implementation dependency satisfied by PR #597, platform `0.1.0-alpha.0.1061`, and merged sync PR #645; this producer's publication and generated platform-sync are pending implementation and delivery
-- Last reconciled: `2026-08-23` against `origin/main` `75b564bc9b7d92da2acafde5cb4ace88485aef2b`, reviewed code head `c685747a421be9919cd189f5991d2634f620abdd`, and verified local/remote/PR work head `b9396764871e6c8042bc6471cc65eef5a6ca9b63`
+- Last reconciled: `2026-08-23` against `origin/main` `cc1f9fe6a58d1c70ec73963481f7a69e66b5c991`, reviewed code head `c685747a421be9919cd189f5991d2634f620abdd`, and verified local/remote/PR head `f3a549eb065d1c4432e00265b52e45bb64e67dd2`
 
 ## Current state
 
@@ -56,8 +56,9 @@ and PR head all equal `2a7b77892bd5f66ff31d5850b446941c29011cfe`, and fresh exac
 docs-only PR #764 advanced `origin/main` five commits without any Payment delta, so the source branch is again
 behind. Merge `c685747a421be9919cd189f5991d2634f620abdd` imported that tail without conflict or resolution delta; native
 and security incremental review are clean. The reviewed work push is verified: local HEAD, remote branch, and
-PR head all equal `b9396764871e6c8042bc6471cc65eef5a6ca9b63`; the branch is 0 behind main and fresh checks are pending.
-Auto-merge remains unarmed.
+PR head all equal `f3a549eb065d1c4432e00265b52e45bb64e67dd2`; exact-head CI is green with 70 terminal
+checks and zero failures, and PR #721 is ready for review. `origin/main` subsequently advanced three docs-only
+closeout commits with no Payment delta, so the PR is ready but not enqueued. Auto-merge remains unarmed.
 
 The merge of `origin/main` `1d25c3b58c09d2f9f9ada7d46cd46b1b79fde3dc` completed in
 `61e13b0c6d6b2a69113e168be28b6c0ec13b5f33`. Its only conflict was the Payment published-vocabulary guard:
@@ -75,10 +76,11 @@ merged, its packages have published, and the generated platform-sync PR is green
 
 ## Next Steps
 
-Transport this push checkpoint, verify local/remote/PR equality, and require exact-head checks green on the
-transported head. Refetch main, select the full E2E tier, mark PR #721 ready, and enqueue it. Confirm `MERGED`,
-own its package publication and causally generated platform-sync PR through green and merged, and close out the
-plan from a fresh worktree. Do not begin consumer work before the sync lands.
+Before enqueueing, merge current docs-only `origin/main` `cc1f9fe6a58d1c70ec73963481f7a69e66b5c991`,
+confirm no Payment or conflict-resolution delta, push through the plan checkpoint protocol, and require the
+new exact-head checks green. Select the full E2E tier, enqueue PR #721, confirm `MERGED`, own its package
+publication and causally generated platform-sync PR through green and merged, and close out the plan from a
+fresh worktree. Do not begin consumer work before the sync lands.
 
 ## Completed work
 
@@ -127,6 +129,9 @@ plan from a fresh worktree. Do not begin consumer work before the sync lands.
 
 ## Verification
 
+- Ready-for-review gate: exact PR head `f3a549eb065d1c4432e00265b52e45bb64e67dd2` has 70 terminal checks
+  (65 passed, 5 expected PR-level skips) and zero failures; PR #721 is marked ready. A final fetch found three
+  newer docs-only closeout commits on `origin/main` with no Payment delta, so the PR was not enqueued.
 - Latest reviewed work push: local HEAD, `origin/Feature/payments_payment-session-state`, and PR #721
   `headRefOid` all equal `b9396764871e6c8042bc6471cc65eef5a6ca9b63`; the branch is 0 behind current main,
   clean, and fresh checks have started with no failures.
