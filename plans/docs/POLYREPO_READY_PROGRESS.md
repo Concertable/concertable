@@ -3,61 +3,49 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: `Concertable.worktrees/Docs/docs_polyrepo-ready-n8-carve-evidence` — the N8 evidence worktree, off
-  `origin/main` (`fb561acee`, incl. #752 N7a + #760 review sweep).
-- Branch: `Docs/docs_polyrepo-ready-n8-carve-evidence` (this branch); `Docs/*` (durable guidance, meta-only).
-- PRs: **Phase 1 + N1–N7a all MERGED.** N7a = [#752](https://github.com/Concertable/concertable/pull/752)
-  (thin `plans/AGENTS.md`); spent-review sweep = [#760](https://github.com/Concertable/concertable/pull/760).
-  Earlier: N6 #750, N5 #745 (+ agent-standards #25/#27), N4 #18/#19 + #715/#713, N3 #15 + #698 + #700, N2 #12
-  + #695, N1 six families, Phase 1 #669 + #5, cross-harness prerequisite. **N8 = this branch** (evidence-only,
-  no code edits).
-- Standards install: last reprovision **`13fcef1c0`**; agent-standards `main` is now
-  **`ab1755d`** (#20 plans-consumption-contract merged) — ahead of the install. The gap is material: it is
-  what surfaced the N8 generator-drift finding below, and closing it is part of the remaining debt.
-- Dependency/package gates: none open. N8 is **evidence-only** — edits `plans/docs/*` (this ledger + plan +
-  roadmap); no `api/**`, so no publish / `chore/platform-sync-*`.
-- Last reconciled: **2026-08-23** — reconciled the ledger to merged reality (N7a #752, sweep #760 both merged;
-  Phase 1 + N1–N7a all merged) and recorded **N8**. N8 proved the carved Payment table's routing/skills and
-  surfaced one real defect (generator drift) plus the expected carve-time doc deltas — details below.
+- Worktree: `Concertable.worktrees/Docs/polyrepo-ready-consumer-sync` — the consumer-sync worktree, off
+  `origin/main` (`75b564bc9`, incl. #764 N8 evidence). N8 evidence worktree closed (merged #764).
+- Branch: `Docs/polyrepo-ready-consumer-sync` (this branch); `Docs/*` (durable guidance, meta-only).
+- PRs: **Phase 1 + N1–N7a all MERGED; N8 evidence MERGED ([#764](https://github.com/Concertable/concertable/pull/764)).**
+  Producer follow-ups MERGED as **agent-standards [#34](https://github.com/Concertable/agent-standards/pull/34)**
+  (generator CANONICAL → `\.ArchitectureTests`; two `PLANS.md` follow-ups; `auto-memory` home). **This branch**
+  = the consumer sync (regen the route table + delete the in-repo `auto-memory` copies). Earlier: N7a #752,
+  sweep #760, N6 #750, N5 #745 (+ agent-standards #25/#27), N4 #18/#19 + #715/#713, N3 #15 + #698 + #700, N2 #12
+  + #695, N1 six families, Phase 1 #669 + #5.
+- Standards install: reprovisioned to **`1aefd60`** (#34 merged) — both harnesses at 5/5 plugins; the fixed
+  generator and the `auto-memory` skill are installed. The earlier `13fcef1c0`-vs-`ab1755d` gap is closed.
+- Dependency/package gates: none open. Meta-only — edits `plans/docs/*` + `.agents/skill-routes.json` + the
+  `auto-memory` skill deletion; no `api/**`, so no publish / `chore/platform-sync-*`.
+- Last reconciled: **2026-08-23** — N8 evidence merged (#764); both session decisions taken and delivered
+  (agent-standards #34 merged, machine reprovisioned); this branch regenerates the route table (restoring
+  `gen --check`) and removes the in-repo `auto-memory` copies now the plugin ships it.
 
 ## Current state
 
-**N7a is MERGED (#752); N8 (the last real milestone) is recorded on this branch as evidence.** Every re-home
-node — Phase 1 and N1 through N7a — has landed on both sides. What remains before epic close-out is the small
-debt in `## Next Steps`, and N7b (relocating the plan *documents*), which stays gated on roadmap §4c/§6 (the
-frontend-carve seam) — **do not attempt N7b.**
+**Every node is landed: Phase 1 + N1–N7a re-homed, N8 evidence recorded (#764), and both session decisions
+delivered.** Finding A (generator drift) is fixed at the source — agent-standards #34 repointed the generator
+CANONICAL to `\.ArchitectureTests` + module-structure — and `auto-memory` now lives in the agent-process
+plugin. The machine is reprovisioned to `1aefd60`. **This branch closes the consumer loop:** the route table
+is regenerated from the fixed generator (so `gen --check` is clean again — the N2 invariant restored), and the
+in-repo `auto-memory` copies are deleted now the plugin ships it.
 
-**N8 — carved Payment service, standalone readiness (evidence, not edits).** The tracked
-`api/Concertable.Payment` subtree was extracted as a simulated carved repo root (410 files, `git init`), its
-table generated with `gen_skill_routes.py --kind dotnet-service`, and the real `skill_router.py` run against
-it. Routing and skill-resolution criteria **pass**; the doc criteria are met modulo the expected carve-time
-deltas; and N8 did its job — it surfaced the one place the carve tooling is wrong today (the generator drift,
-finding A). Full evidence under `## Verification — N8`.
+Only close-out housekeeping and the separately-gated work remain (see `## Next Steps`). N7b (relocating the
+plan *documents*) stays gated on roadmap §4c/§6 (the frontend-carve seam) — **do not attempt N7b.**
 
 ## Next Steps
 
-Two decisions are owed to Tommy before the remaining debt can be cleared (both surfaced this session); neither
-blocks the recorded N8 evidence, which is complete.
+All producer and consumer work for the epic body is done; nothing is blocked. What is left is close-out and
+separately-gated work only.
 
-1. **N8 finding A — generator drift (a real defect, decision owed).** The live `.agents/skill-routes.json`
-   carries a `\.ArchitectureTests` route the agent-standards generator does not emit (it still emits
-   `\.CompositionTests`), so `gen --kind monorepo` no longer reproduces the live table and a carve would lose
-   that tier's routing. The scalable fix: update the generator CANONICAL in **agent-standards** (rename the
-   CompositionTests row → `\.ArchitectureTests` and add `module-structure`, matching the live table) and
-   regenerate the live consumer table so `gen --check` is clean again. **Recommendation:** fold the producer
-   half into a **single consolidated agent-standards PR** together with the two `PLANS.md` follow-ups below
-   (now safe — #20 has landed), then a consumer regen worktree here. Pending Tommy's go-ahead on that bundling.
-2. **`auto-memory` durable home (decision owed — ask Tommy).** Criterion 1 still requires a durable home for
-   this Codex-only utility before close-out; the cross-harness delivery removed its former blocker but did not
-   choose a destination.
-3. **Two agent-standards `PLANS.md` follow-ups (non-blocking).** (a) the "opening/naming a `plans/*.md`
-   obliges reading it before acting" obligation (only workflow-scoped in `RESUME.md`/`CHECKPOINT.md` today);
-   (b) promote the standing-reference **bare-stem** naming from an assumed category to a stated one-line rule.
-   Bundle with finding A into the consolidated agent-standards PR (never a third concurrent `PLANS.md` PR).
-4. **Close-out housekeeping (at final epic close-out, not now).** `git rm`
-   `reviews/Docs-docs_polyrepo-ready-review-sweep.md` (the sweep's own spent review record). N7b and the cut
-   itself stay separate/gated (roadmap §4c/§6). Endpoint: root `AGENTS.md`/`CLAUDE.md` are deleted at the
-   **cut**, not in this plan.
+1. **Close-out housekeeping (final epic close-out).** `git rm`
+   `reviews/Docs-docs_polyrepo-ready-review-sweep.md` and `reviews/Docs-docs_polyrepo-ready-n8-carve-evidence.md`
+   (spent review records of merged PRs), then delete this plan + ledger together per the `plans` lifecycle,
+   landed as a docs-only close-out. Do this only once N7b and the cut are also resolved, or when Tommy calls
+   the epic body done.
+2. **N7b (gated, do not attempt).** Relocating the plan *documents* waits on roadmap §4c/§6 (the frontend-carve
+   seam), which also gates the generator's `react-app` kind.
+3. **Endpoint reminder.** Root `AGENTS.md`/`CLAUDE.md` are deleted at the **cut** (separate `POLYREPO_ROADMAP`),
+   not in this plan — this plan makes root hold zero shared canon.
 
 ## Verification — N8
 
@@ -114,6 +102,13 @@ scoped).
 
 ## Completed work (compact — full detail is in git history / spent ledgers)
 
+- **N8 evidence + generator-drift fix + `auto-memory` home.** N8 recorded and MERGED (#764). Both session
+  decisions delivered: agent-standards **#34** (MERGED) repointed the generator CANONICAL to `\.ArchitectureTests`
+  + module-structure (matching the live table), added the two `PLANS.md` follow-ups, and homed `auto-memory`
+  in the agent-process plugin (router+doc). Machine reprovisioned `13fcef1c0` → `1aefd60`. **Consumer sync
+  (this branch):** regenerated `.agents/skill-routes.json` from the fixed generator — `gen --check` clean,
+  route SET provably unchanged (cosmetic reorder + `_comment` only) — and `git rm`'d the in-repo
+  `auto-memory` copies (`.agents/skills`, `.claude/skills`) now the plugin ships it.
 - **N7a — `plans/AGENTS.md` thinned 68 → 31 lines. MERGED (#752).** Consumer-only: an independent rule-by-rule
   mapping confirmed every platform rule was already homed (Phase 1 + N1), so the file thinned to this repo's
   values (layout, hook/script paths, suite names) + pointers to the owning skills.
@@ -137,23 +132,27 @@ scoped).
 
 ## Reviews
 
-**N8 is evidence-only (no code diff)** — a `## Reviews` entry is still owed on the ledger diff for the local
-merge gate; the delivery route is `/docs-review` then `/merge-docs` (meta-only: `plans/docs/*`). Prior nodes'
-findings were all fixed on-branch before merge and their review files swept in #760 (N3–N7a) — reconstruct
-from git history if needed.
+- **N8 evidence (#764)** — docs-reviewed clean, merged; review record
+  `reviews/Docs-docs_polyrepo-ready-n8-carve-evidence.md` (spent — delete at final close-out).
+- **agent-standards #34** — independently reviewed clean (one INFO, NAT1: `gen --check` still stale on cosmetic
+  divergences, owned by the consumer regen on this branch); recorded in agent-standards
+  `reviews/Fix-polyrepo-carve-followups.md`; MERGED.
+- **This branch (consumer sync)** — meta-only (`plans/docs/*` + `.agents/skill-routes.json` regen + the
+  `auto-memory` skill deletion); delivery route `/docs-review` then `/merge-docs`.
 
 ## Decisions, discoveries, blockers, and deviations (durable — still bind close-out)
 
-- **N8 discovered generator drift (finding A), untracked by either epic.** The architecture-tests-rename epic
-  hand-edited the live consumer route table (its `PLAN.md` step 4) but never propagated the change to the
-  agent-standards generator CANONICAL — the exact copy-and-drift failure this epic exists to kill, reintroduced
-  one row at a time. The N2 invariant ("`gen --kind monorepo` reproduces the live table exactly") is currently
-  **broken**. Fix owned here (Next Steps 1); the architecture-tests-rename epic is otherwise terminal.
+- **N8 discovered generator drift (finding A) — FIXED (agent-standards #34) + consumer regen (this branch).**
+  The architecture-tests-rename epic hand-edited the live consumer route table (its `PLAN.md` step 4) but never
+  propagated the change to the agent-standards generator CANONICAL — the exact copy-and-drift failure this epic
+  exists to kill. #34 repointed the CANONICAL; this branch regenerated the live table, so the N2 invariant
+  ("`gen --kind monorepo` reproduces the live table exactly") is **restored** (`gen --check` clean). Route SET
+  was unchanged throughout — the live table already routed correctly; only `gen --check` was broken.
 - **The two-destination test is the design, not "does it mention Concertable".** Confirmed again by N8: every
   Payment doc that mentions the monorepo or links outside the service is either a value or a carve-time delta,
   never a rule with no home.
-- **`auto-memory`** stays in-repo; criterion 1 still requires a durable home for this Codex-only utility before
-  close-out (decision owed — Next Steps 2).
+- **`auto-memory` homed** in the agent-process plugin (agent-standards #34) as a router+doc, and its in-repo
+  copies deleted here — criterion 1 satisfied for this Codex-only utility.
 - **Durable cross-slice rules that still bind close-out:**
   - **Collision-check a new skill name across *every* repo on the machine** (the family-2/3/4 lesson).
   - **No values file — resolve per-repo values at run time** (the generator parameterises only the floor
@@ -172,10 +171,10 @@ from git history if needed.
 ```
 cd C:/Users/TommySeery/source/repos/Concertable
 Read @plans/AGENTS.md, @plans/docs/POLYREPO_READY_PLAN.md, and @plans/docs/POLYREPO_READY_PROGRESS.md.
-Phase 1 + N1–N7a are all MERGED; N8 evidence is recorded (carved Payment table routes/skills pass; one real
-defect found — generator drift, finding A). Do what the ledger's `## Next Steps` says: (1) once Tommy
-approves, fix finding A + the two PLANS.md follow-ups in one consolidated agent-standards PR, then regen the
-live consumer table; (2) give auto-memory a durable home (ask Tommy); (4) delete the spent review-sweep file
-at final close-out. N7b stays gated on §4c/§6 — do not attempt. Endpoint: root AGENTS.md/CLAUDE.md are
-deleted at the cut, not in this plan.
+The epic body is DONE: Phase 1 + N1–N7a re-homed; N8 evidence merged (#764); the generator drift is fixed
+(agent-standards #34) and the live route table regenerated so `gen --check` is clean; auto-memory is homed in
+the agent-process plugin and its in-repo copies deleted; machine reprovisioned to 1aefd60. Only close-out and
+gated work remain (ledger `## Next Steps`): at final close-out, git rm the spent review-sweep +
+n8-carve-evidence review files and delete this plan+ledger; N7b stays gated on §4c/§6 (do not attempt); root
+AGENTS.md/CLAUDE.md are deleted at the cut, not in this plan.
 ```
