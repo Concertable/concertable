@@ -1,54 +1,15 @@
 {
-  "description": "Load the behavioral floor, route writes, gate merges on a current review, and block incomplete plan-managed handoffs. Repo-local wiring remains active before plugin provisioning; shared invocation claims deduplicate it from the installed plugin.",
+  "description": "Load the behavioral floor at SessionStart. Repo-local wiring remains active before plugin provisioning; shared invocation claims deduplicate it from the installed plugin.",
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit|apply_patch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh\" skill_router.py",
-            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" skill_router.py",
-            "timeout": 15,
-            "statusMessage": "Checking which standard owns this path"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh\" merge_review_gate.py",
-            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" merge_review_gate.py",
-            "timeout": 15,
-            "statusMessage": "Checking merge review"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py\"",
-            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" session_floor.py",
+            "commandWindows": "python -B \".agents/hooks/session_floor.py\"",
             "timeout": 15,
             "statusMessage": "Loading the always-on behavioral floor"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh\" plan_handoff_stop_launcher.py",
-            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" plan_handoff_stop_launcher.py",
-            "timeout": 15,
-            "statusMessage": "Checking plan handoff"
           }
         ]
       }

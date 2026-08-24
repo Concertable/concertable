@@ -138,10 +138,11 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
 
 **When the cut runs — gated on the launch plan.** Executing the cut — creating the service repos and
 deleting the monorepo — does **not** begin until the entire launch plan
-([`plans/launch/LAUNCH_ROADMAP.md`](../launch/LAUNCH_ROADMAP.md)) is delivered; that is months out. What
-runs first, and now, is the polyrepo-*ready* corpus work
-([`plans/docs/POLYREPO_READY_PLAN.md`](../docs/POLYREPO_READY_PLAN.md)): re-homing every rule out of the
-doomed nodes so the eventual repos inherit a correct corpus on day one. `api/AGENTS.md` is one of those
+([`plans/launch/LAUNCH_ROADMAP.md`](../launch/LAUNCH_ROADMAP.md)) is delivered; that is months out. What ran
+first was the polyrepo-*ready* corpus work (tracked by `docs/polyrepo-ready` in
+[`../docs/DOCS_ROADMAP.md`](../docs/DOCS_ROADMAP.md), now **DONE** — plan and ledger deleted, git history the
+archive): re-homing every rule out of the doomed nodes so the eventual repos inherit a correct corpus on day
+one. `api/AGENTS.md` is one of those
 nodes (its N3) and re-homes **well before** the cut — it is not itself launch-gated; only the physical
 split is. N3 re-homes its content to `Concertable/agent-standards` (the shared-is-the-intersection rule into
 `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) and deletes `api/AGENTS.md` +
@@ -177,5 +178,9 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
   skipped — nothing service-specific). Docs-reviewed (3 accuracy findings fixed). Owning plan
   `SERVICE_DOC_LOCALITY_*` deleted; git history is the archive. **4c** (plans-tree relocation) remains, gated on §6.
 - **2026-08-20 — Cut execution gated on launch.** The one-way cut (repo creation + monorepo deletion) waits
-  for the entire launch plan to ship. The polyrepo-ready corpus re-home (`POLYREPO_READY_PLAN.md`, incl.
-  `api/AGENTS.md` N3) is the prerequisite that runs first and is not launch-gated.
+  for the entire launch plan to ship. The polyrepo-ready corpus re-home (incl. `api/AGENTS.md` N3) was the
+  prerequisite that ran first and is not launch-gated.
+- **2026-08-24 — polyrepo-ready corpus re-home DONE.** All nodes shipped and N8 proved a carved service stands
+  alone; its plan/ledger are deleted (tracked done as `docs/polyrepo-ready`). The only residual is §4c
+  plans-locality — relocating the plan *documents* — which is cut-time work owned here, still gated on the §6
+  colocation sub-decision below.

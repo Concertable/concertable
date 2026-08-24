@@ -13,13 +13,10 @@ SCRIPTS = {
     "merge_review_gate.py",
     "plan_handoff_stop_launcher.py",
 }
-CODEX_SCRIPTS = SCRIPTS | {"session_floor.py"}
+CODEX_SCRIPTS = {"session_floor.py"}
+CLAUDE_SCRIPTS = SCRIPTS | {"session_floor.py"}
 
-WINDOWS_LAUNCH_PREFIX = (
-    'for /f "delims=" %R in '
-    "('git rev-parse --show-toplevel 2^>nul') "
-    'do @call "%R\\.agents\\hooks\\run-repo-hook.cmd" '
-)
+WINDOWS_SESSION_COMMAND = 'python -B ".agents/hooks/session_floor.py"'
 POSIX_LAUNCH_PREFIX = (
     'bash "$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh" '
 )
@@ -91,24 +88,10 @@ class RepoHookWiringTests(unittest.TestCase):
         actual = list(handlers(REPO / ".codex" / "hooks.json"))
         self.assertEqual(len(CODEX_SCRIPTS), len(actual))
         windows_commands = [item["commandWindows"] for item in actual]
-        self.assertTrue(
-            all(
-                command.startswith(WINDOWS_LAUNCH_PREFIX)
-                for command in windows_commands
-            )
-        )
-        windows_scripts = {
-            command.removeprefix(WINDOWS_LAUNCH_PREFIX)
-            for command in windows_commands
-        }
-        self.assertEqual(CODEX_SCRIPTS, windows_scripts)
+        self.assertEqual({WINDOWS_SESSION_COMMAND}, set(windows_commands))
 
         posix_commands = [item["command"] for item in actual]
-        self.assertEqual(
-            {POSIX_LAUNCH_PREFIX + script for script in SCRIPTS}
-            | {POSIX_SESSION_COMMAND},
-            set(posix_commands),
-        )
+        self.assertEqual({POSIX_SESSION_COMMAND}, set(posix_commands))
         self.assertEqual(
             CODEX_SCRIPTS,
             {script_name(command) for command in posix_commands},
@@ -117,16 +100,15 @@ class RepoHookWiringTests(unittest.TestCase):
     def test_codex_windows_commands_launch_every_repo_hook(self):
         if os.name != "nt":
             self.skipTest("Windows command execution contract")
-        nested_cwd = REPO / ".agents" / "hooks" / "tests"
         actual = list(handlers(REPO / ".codex" / "hooks.json"))
         for item in actual:
-            script = item["commandWindows"].removeprefix(WINDOWS_LAUNCH_PREFIX)
+            script = script_name(item["commandWindows"])
             result = subprocess.run(
                 f'cmd.exe /D /S /C "{item["commandWindows"]}"',
-                input=payload(script, nested_cwd),
+                input=payload(script),
                 capture_output=True,
                 text=True,
-                cwd=nested_cwd,
+                cwd=REPO,
             )
             self.assert_launched(result)
 
@@ -150,10 +132,10 @@ class RepoHookWiringTests(unittest.TestCase):
 
     def test_claude_manifest_wires_every_repo_hook(self):
         actual = list(handlers(REPO / ".claude" / "settings.json"))
-        self.assertEqual(len(CODEX_SCRIPTS), len(actual))
+        self.assertEqual(len(CLAUDE_SCRIPTS), len(actual))
         self.assertTrue(all(item.get("shell") == "bash" for item in actual))
         self.assertEqual(
-            CODEX_SCRIPTS,
+            CLAUDE_SCRIPTS,
             {
                 item["command"].removeprefix(CLAUDE_LAUNCH_PREFIX)
                 for item in actual
