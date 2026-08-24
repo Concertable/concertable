@@ -3,54 +3,68 @@
 - Plan: `plans/launch/TENANT_VERIFICATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/tenant-verification`
-- Worktree: none — not yet opened; planning creates no delivery worktree
-- Branch: next proposed `Feature/launch_tenant-verification`
-- PR: not opened
+- Worktree: `C:/Users/tommy/source/repos/Concertable.worktrees/Feature/launch_tenant-verification`
+- Branch: `Feature/launch_tenant-verification`
+- PR: [#772](https://github.com/Concertable/concertable/pull/772) (draft), head `89c9addfc`
 - Dependency/package gates: none — single-service (`Concertable.B2B`) + `app/web/admin` +
   `app/web/b2b/shared`, no published-contract boundary crossed
-- Last reconciled: 2026-08-23, plan written from repository evidence in the normal checkout (this session)
+- Last reconciled: 2026-08-24, Phase 1 reviewed and fixed in this session
 
 ## Current state
 
-Plan and ledger just written in the normal checkout; no implementation started, no delivery worktree
-open.
-
-Verified before writing the plan (this session, 2026-08-23):
-- No branch, worktree, ledger, or open PR previously owned this roadmap item.
-- `VenueEntity.Approved` (`api/Concertable.B2B/src/Modules/Venue/.../VenueEntity.cs`) is set once by
-  `Approve()` and read by nothing except `VenuePrivilegedRepository.GetPendingApprovalAsync`'s own
-  filter — no query, guard, or workflow elsewhere reads it.
-- `ArtistEntity` carries no verification concept at all.
-- The exact fail-closed dual-gate pattern this plan follows already exists twice in
-  `FinishExecutor.FinishAsync` (tax compliance via `ITenantModule.IsTaxComplianceCompleteAsync`, and
-  self-billing via `ISelfBillingAgreementGate`) — both deferring to `SettlementOutcome` cases retried by
-  the hourly `ConcertCompletionRunner` sweep.
+Phase 1 (domain: `TenantVerificationEntity` + evidence + migration) is complete, reviewed (clean, 0 open
+findings), and pushed as PR #772 (draft). Worktree tree is clean. No implementation started yet on
+Phase 2 (tenant-facing submission API).
 
 ## Next Steps
 
-Open the delivery worktree and start Phase 1 of `TENANT_VERIFICATION_PLAN.md`:
-
-1. `/open-worktree Feature/launch_tenant-verification` (branch off `origin/main`).
-2. In that worktree, add `TenantVerificationEntity` + `VerificationDocumentEntity` to
-   `Concertable.B2B.Tenant.Domain.Entities`, per plan §1.2/§1.3 and Phase 1's checklist.
-3. Add EF configurations, compose into `TenantDbContext`, re-scaffold migrations via
-   `./initial-migrations.ps1` from `api/`.
-4. Write `TenantVerificationEntityTests` covering every legal/illegal transition.
-5. Build `api/Concertable.slnx`, run Tenant module unit tests, commit the code in the delivery worktree.
-6. Update this ledger and tick Phase 1 in the plan **in the normal checkout** — never inside the
-   delivery worktree.
+1. Confirm PR #772's exact-head CI is green, then merge it (queue or admin bypass per the `merge` skill).
+2. Continue in the same worktree/branch — start Phase 2 of `TENANT_VERIFICATION_PLAN.md` (tenant-facing
+   submission API):
+   - Add `IVerificationService`/`VerificationService` (Tenant.Application/Infrastructure):
+     `GetOwnAsync`, `SubmitAsync(files, documentTypes)` — uploads each file to `verification-evidence/`
+     via `IBlobStorageService`, transitions to `Pending` via `TenantVerificationEntity.Submit`/`Resubmit`.
+   - `VerificationController` (`api/organization/verification`), `[Authorize]`,
+     `[HasPermission(SharedPermissions.TenantSettingsEdit)]` on the mutating endpoint,
+     `[EnableRateLimiting(RateLimitPolicies.Upload)]` on the upload endpoint.
+   - Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path.
+   - Unit tests for the service; integration tests for the controller (round-trip submit → read status).
+   - Build + focused tests; commit; open a fresh delivery worktree from current `origin/main` if #772
+     has already merged by then.
+3. Update this ledger **in the normal checkout** — never inside the delivery worktree.
 
 ## Completed work
 
-None yet.
+- **Phase 1 — Domain** (PR #772, reviewed clean at `89c9addfc`): `TenantVerificationEntity`
+  (`Pending`/`Approved`/`Rejected`, transitions validated through `Concertable.Kernel.StateMachine<TState,
+  TTrigger>` — the first real consumer of that shared abstraction in this codebase) and
+  `VerificationDocumentEntity` (append-only evidence, `Licence`/`ProofOfAddress`/`CompanyRegistration`).
+  EF configurations composed into `TenantDbContext` (confirmed no new tenancy stance needed —
+  `TenantDbContext` is already unscoped, matching `TenantMembershipEntity`/`TenantInvitationEntity`,
+  neither of which is `ITenantScoped`). Migration re-scaffolded via `./initial-migrations.ps1`.
+  19 unit tests.
 
 ## Verification
 
-None run yet.
+- `dotnet test Concertable.B2B.Tenant.UnitTests` (2026-08-24, commit `89c9addfc`): 156 passed, 0 failed.
+- `dotnet build Concertable.B2B.Web.csproj` (2026-08-24, commit `2a66f1a03`): 0 warnings, 0 errors — the
+  full B2B service, every module.
+- Full-solution `./initial-migrations.ps1` run hit an unrelated, pre-existing build error in
+  `Concertable.Customer.DataAccess.Infrastructure` (MSB3030, CoreCompile silently producing no output) —
+  reproduces on a clean worktree checkout but not on the normal checkout in the same session, and touches
+  no file this plan changes. Not investigated further; flagged here in case it recurs for the next phase's
+  full-solution build. The Tenant module's own re-scaffold (this phase's actual requirement) completed and
+  is verified above.
 
 ## Reviews
 
-None yet — no review recorded. Do not merge before Phase 1's own review, per the `plans` standard.
+`reviews/Feature-launch_tenant-verification.md`, reviewed up to `20a5061f1` (marker) / pushed to `89c9addfc`
+(review-file-only commit on top — current per the review-only exception). 2 findings, both fixed and
+verified: **NAT1** — `TenantVerificationChangedDomainEvent` carried a live entity reference instead of a
+snapshot, risking stale data if two transitions raised before one dispatch; now snapshots primitives via a
+new `Announce()` helper. **NAT2** — `Reject`/`VerificationDocumentEntity.Create` didn't validate length
+against their EF max-length columns; now throw `DomainException` instead of hitting a raw SQL error at
+`SaveChanges`. 0 open findings — clear to merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -62,17 +76,14 @@ None yet — no review recorded. Do not merge before Phase 1's own review, per t
   Application/Apply is deliberately not gated — see plan §1.4.
 - Phase 6 (removing `VenueEntity.Approved` and its admin surface) must not start before Phase 3's new
   gate is merged and green — the old signal cannot be dropped before the new one is proven.
-- **Process correction (2026-08-23):** this plan was initially written inside a delivery worktree
-  (`Feature/launch_tenant-verification`), because `agent-standards` PR #20 ("Keep planning state in the
-  normal checkout") had CI-passed but was left unmerged. That PR is now merged
-  (`ab1755df0a67d9f537fe6f74df4909b204b71286`, 2026-08-23). The wrongly-placed worktree/branch was
-  deleted (it carried only the misplaced planning commit, no real delivery work) and this plan/ledger
-  were rewritten here, in the normal checkout, per the corrected standard. Future phases must never
-  write to a delivery worktree's copy of these files.
+- `TenantVerificationEntity` raises `TenantVerificationChangedDomainEvent` on every transition (Submit/
+  Resubmit/Approve/Reject) with no handler yet — legal per the domain-events standard ("zero handlers for
+  an event is valid"). No consumer is scoped in this plan; a future phase (or a separate one) may add a
+  pre-commit handler if a real need arises (e.g. activity-feed integration). Do not add one speculatively.
 
 ## Resume prompt
 
 ```
-/open-worktree Feature/launch_tenant-verification
+cd C:/Users/tommy/source/repos/Concertable.worktrees/Feature/launch_tenant-verification
 Read @plans/launch/TENANT_VERIFICATION_PLAN.md and @plans/launch/TENANT_VERIFICATION_PROGRESS.md and do what its `## Next Steps` says.
 ```
