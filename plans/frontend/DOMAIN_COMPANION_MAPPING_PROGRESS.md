@@ -19,13 +19,12 @@ their planned boundaries.
 
 The full branch review through `4b69e66ce` found two remaining boundary-projection convention misses.
 Both were fixed in `539c1a520`; its incremental review was clean. Every Phase 5 invariant and the
-complete post-merge frontend matrix now pass. Only the post-`539c1a520` incremental review and remote
-PR/CI delivery gates remain.
+complete post-merge frontend matrix now pass. The post-`539c1a520` incremental review is clean and
+has no open findings. Only the remote PR/CI delivery gates remain.
 
 ## Next Steps
 
-1. Incrementally review every commit after `539c1a520` and leave no open findings.
-2. Push the stable candidate, open its PR, and require exact-head CI before merge readiness.
+Push the stable candidate, open its PR, and require exact-head CI before merge readiness.
 
 ## Completed work
 
@@ -38,7 +37,7 @@ PR/CI delivery gates remain.
 - Cleared the dependency gate and completed Phases 1 through 4 in `e9a8fe7c9`, `a5ba13de2`,
   `70bfc8ac3`, and `cce96a5e7`.
 - Closed the remaining inventory and review fixes through `539c1a520`.
-- Merged current `origin/main` without conflicts in `ce15ef075`.
+- Merged current `origin/main` without conflicts through `588c4e36b`.
 
 ## Verification
 
@@ -56,9 +55,9 @@ PR/CI delivery gates remain.
 ## Reviews
 
 Full implementation review covered `70af43a..4b69e66` in
-`reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; the
-incremental review through that commit found no new issues. The merge/checkpoint delta still needs an
-incremental pass before delivery.
+`reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; NAT1
+corrected the latest-main merge checkpoint. Incremental review through this commit is clean with no
+open findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
