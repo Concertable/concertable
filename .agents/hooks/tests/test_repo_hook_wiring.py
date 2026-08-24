@@ -13,7 +13,8 @@ SCRIPTS = {
     "merge_review_gate.py",
     "plan_handoff_stop_launcher.py",
 }
-CODEX_SCRIPTS = SCRIPTS | {"session_floor.py"}
+CODEX_SCRIPTS = {"session_floor.py"}
+CLAUDE_SCRIPTS = SCRIPTS | {"session_floor.py"}
 
 WINDOWS_LAUNCH_PREFIX = (
     'for /f "delims=" %R in '
@@ -104,11 +105,7 @@ class RepoHookWiringTests(unittest.TestCase):
         self.assertEqual(CODEX_SCRIPTS, windows_scripts)
 
         posix_commands = [item["command"] for item in actual]
-        self.assertEqual(
-            {POSIX_LAUNCH_PREFIX + script for script in SCRIPTS}
-            | {POSIX_SESSION_COMMAND},
-            set(posix_commands),
-        )
+        self.assertEqual({POSIX_SESSION_COMMAND}, set(posix_commands))
         self.assertEqual(
             CODEX_SCRIPTS,
             {script_name(command) for command in posix_commands},
@@ -150,10 +147,10 @@ class RepoHookWiringTests(unittest.TestCase):
 
     def test_claude_manifest_wires_every_repo_hook(self):
         actual = list(handlers(REPO / ".claude" / "settings.json"))
-        self.assertEqual(len(CODEX_SCRIPTS), len(actual))
+        self.assertEqual(len(CLAUDE_SCRIPTS), len(actual))
         self.assertTrue(all(item.get("shell") == "bash" for item in actual))
         self.assertEqual(
-            CODEX_SCRIPTS,
+            CLAUDE_SCRIPTS,
             {
                 item["command"].removeprefix(CLAUDE_LAUNCH_PREFIX)
                 for item in actual
