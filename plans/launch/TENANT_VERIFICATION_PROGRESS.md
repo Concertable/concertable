@@ -5,24 +5,24 @@
 - Roadmap item: `launch/tenant-verification`
 - Worktree: none — Phase 1's worktree closed after merge; Phase 2 opens a fresh one
 - Branch: next proposed `Feature/launch_tenant-verification` (Phase 1's branch merged and deleted)
-- PR: [#772](https://github.com/Concertable/concertable/pull/772) — **MERGED** (`5222bce51`). Version-sync
-  [#778](https://github.com/Concertable/concertable/pull/778) (`0.1.0-alpha.0.1181`) tracking to green.
+- PR: [#772](https://github.com/Concertable/concertable/pull/772) — **MERGED** (`5222bce51`). Its
+  version-sync [#778](https://github.com/Concertable/concertable/pull/778) (`0.1.0-alpha.0.1181`) was
+  superseded (closed, not merged) by an unrelated later publish from PR #776 — "only one platform-sync PR
+  is ever live" — before it could land; ownership transferred to that producer per the `merge` skill.
+  Phase 1's own delivery obligation ends at its own successful publish, which completed.
 - Dependency/package gates: none — single-service (`Concertable.B2B`) + `app/web/admin` +
   `app/web/b2b/shared`, no published-contract boundary crossed
-- Last reconciled: 2026-08-25, Phase 1 merged; watching its version-sync PR
+- Last reconciled: 2026-08-25, Phase 1 fully terminal (merged, published, sync resolved by supersession)
 
 ## Current state
 
 Phase 1 (domain: `TenantVerificationEntity` + evidence + migration) is merged to `main` (PR #772, reviewed
-clean, `api/**` publish fired and opened sync PR #778 — tracking to green). No implementation started yet
-on Phase 2 (tenant-facing submission API).
+clean) and fully terminal — its publish succeeded; its sync PR was superseded by an unrelated later publish
+rather than needing action here. No implementation started yet on Phase 2 (tenant-facing submission API).
 
 ## Next Steps
 
-1. Confirm sync PR #778 lands green (its own automation owns auto-merge; if red, migrate its consumers
-   per the `merge` skill's sync-failure step — unlikely here, since Phase 1 shipped no published-contract
-   change, only new types).
-2. `/open-worktree Feature/launch_tenant-verification` (branch off current `origin/main`) and start
+1. `/open-worktree Feature/launch_tenant-verification` (branch off current `origin/main`) and start
    Phase 2 of `TENANT_VERIFICATION_PLAN.md` (tenant-facing submission API):
    - Add `IVerificationService`/`VerificationService` (Tenant.Application/Infrastructure):
      `GetOwnAsync`, `SubmitAsync(files, documentTypes)` — uploads each file to `verification-evidence/`
@@ -33,7 +33,7 @@ on Phase 2 (tenant-facing submission API).
    - Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path.
    - Unit tests for the service; integration tests for the controller (round-trip submit → read status).
    - Build + focused tests; commit; review; push to a new PR.
-3. Update this ledger **in the normal checkout** — never inside the delivery worktree.
+2. Update this ledger **in the normal checkout** — never inside the delivery worktree.
 
 ## Completed work
 
