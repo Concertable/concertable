@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-frontend-domain-apis`
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: not opened
-- Dependency/package gates: none; PRs #595, #600, and #637 are merged and no open platform-sync PR exists
-- Last reconciled: 2026-08-25 against `origin/main` at `5222bce517966a2320caeaff0d19415268425eee`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
+- Dependency/package gates: PRs #595, #600, and #637 are merged; platform-sync PR #780 is pending and automation-owned, so it blocks only if it turns red
+- Last reconciled: 2026-08-25 against `origin/main` at `39430cd14ef1adc7821cffd4ec038b383ad7960c`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
 
 ## Current state
 
@@ -24,7 +24,9 @@ has no open findings. Only the remote PR/CI delivery gates remain.
 
 ## Next Steps
 
-Push the stable candidate, open its PR, and require exact-head CI before merge readiness.
+Do not wait for healthy or pending platform-sync PR #780. Reconcile current `origin/main` again if it
+lands before push; then push the stable candidate, open its PR, and require exact-head CI before merge
+readiness.
 
 ## Completed work
 
@@ -37,12 +39,13 @@ Push the stable candidate, open its PR, and require exact-head CI before merge r
 - Cleared the dependency gate and completed Phases 1 through 4 in `e9a8fe7c9`, `a5ba13de2`,
   `70bfc8ac3`, and `cce96a5e7`.
 - Closed the remaining inventory and review fixes through `539c1a520`.
-- Merged `origin/main` at `5222bce51` without conflicts.
+- Merged `origin/main` at `39430cd14` without conflicts.
 
 ## Verification
 
-- GitHub reports PRs #595, #600, and #637 merged; no open platform-sync PR or implementation PR exists.
-- Current baseline: `origin/main` at `5222bce517966a2320caeaff0d19415268425eee`, merged without conflicts.
+- GitHub reports PRs #595, #600, and #637 merged; platform-sync PR #780 is pending and no
+  implementation PR exists.
+- Current baseline: `origin/main` at `39430cd14ef1adc7821cffd4ec038b383ad7960c`, merged without conflicts.
 - Tests passed: `@concertable/b2b` 5 files / 15 tests; `@concertable/shared` 10 / 23;
   `@concertable/web` 5 / 31; `@concertable/customer` 3 / 3 through its build preflight.
 - B2B, shared, customer, all five web SPA, and both mobile TypeScript builds passed.
