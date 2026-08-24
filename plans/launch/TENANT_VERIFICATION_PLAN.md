@@ -156,27 +156,28 @@ Single service (`Concertable.B2B`) + one admin SPA (`app/web/admin`) + the b2b-s
 published-package boundary is crossed, so no publish/platform-sync hard stop is needed anywhere in this
 plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to `main`.
 
-### Phase 1 — Domain: `TenantVerificationEntity` + evidence + migration
+### Phase 1 — Domain: `TenantVerificationEntity` + evidence + migration ✅ shipped (`2a66f1a03`, PR #772)
 
-- [ ] Add `Concertable.B2B.Tenant.Domain.Entities.TenantVerificationEntity` (`IGuidEntity`,
+- [x] Add `Concertable.B2B.Tenant.Domain.Entities.TenantVerificationEntity` (`IGuidEntity`,
   `IEventRaiser`): `Id`, `TenantId` (unique FK to `TenantEntity`), `Status`
   (`Pending`/`Approved`/`Rejected`), `RejectionReason` (nullable), `ReviewedByAdminSub` (nullable
   `Guid`), `ReviewedAt` (nullable), `SubmittedAt`. Domain methods `Submit`/`Resubmit`,
   `Approve(adminSub, nowUtc)`, `Reject(adminSub, reason, nowUtc)` — each validates the current state
   before transitioning and throws `DomainException` on an illegal call, following
-  `VenueEntity.Approve`/`TenantEntity.UpdateLegalDetails`.
-- [ ] Add `VerificationDocumentEntity` (`IIdEntity`): `TenantVerificationId` FK, `DocumentType`
+  `VenueEntity.Approve`/`TenantEntity.UpdateLegalDetails`. Transitions validated through the shared
+  `Concertable.Kernel.StateMachine<TState, TTrigger>`.
+- [x] Add `VerificationDocumentEntity` (`IIdEntity`): `TenantVerificationId` FK, `DocumentType`
   (`Licence`/`ProofOfAddress`/`CompanyRegistration`), `BlobName`, `UploadedAt`. Owned collection on
   `TenantVerificationEntity`, append-only.
-- [ ] EF configurations in `Concertable.B2B.Tenant.Infrastructure.Data.Configurations`, composed into
+- [x] EF configurations in `Concertable.B2B.Tenant.Infrastructure.Data.Configurations`, composed into
   the existing `TenantDbContext` (no new stance — `TenantEntity` is the tenant root and is already
   unscoped by definition; confirm this holds for the new entities before assuming it).
-- [ ] Re-scaffold Tenant module migrations via `./initial-migrations.ps1` from `api/` (the `migrations`
+- [x] Re-scaffold Tenant module migrations via `./initial-migrations.ps1` from `api/` (the `migrations`
   skill) — never an additive migration.
-- [ ] Unit tests: `TenantVerificationEntityTests` covering every legal and illegal transition, mirroring
+- [x] Unit tests: `TenantVerificationEntityTests` covering every legal and illegal transition, mirroring
   `SelfBillingAgreementEntityTests`/`TenantEntityTests` style.
-- [ ] Build `api/Concertable.slnx`; run Tenant module unit tests.
-- [ ] Update this plan (check off) and the ledger in the implementation commit.
+- [x] Build `api/Concertable.slnx`; run Tenant module unit tests.
+- [x] Update this plan (check off) and the ledger in the implementation commit.
 
 ### Phase 2 — Tenant-facing submission API
 
