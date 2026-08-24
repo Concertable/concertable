@@ -5,46 +5,48 @@
 - Roadmap item: `launch/tenant-verification`
 - Worktree: `C:/Users/tommy/source/repos/Concertable.worktrees/Feature/launch_tenant-verification`
 - Branch: `Feature/launch_tenant-verification`
-- PR: [#772](https://github.com/Concertable/concertable/pull/772) (draft), head `2a66f1a03`
+- PR: [#772](https://github.com/Concertable/concertable/pull/772) (draft), head `89c9addfc`
 - Dependency/package gates: none — single-service (`Concertable.B2B`) + `app/web/admin` +
   `app/web/b2b/shared`, no published-contract boundary crossed
-- Last reconciled: 2026-08-24, Phase 1 implemented, committed, and pushed in this session
+- Last reconciled: 2026-08-24, Phase 1 reviewed and fixed in this session
 
 ## Current state
 
-Phase 1 (domain: `TenantVerificationEntity` + evidence + migration) is complete and pushed as PR #772
-(draft). Worktree tree is clean. No implementation started yet on Phase 2 (tenant-facing submission API).
+Phase 1 (domain: `TenantVerificationEntity` + evidence + migration) is complete, reviewed (clean, 0 open
+findings), and pushed as PR #772 (draft). Worktree tree is clean. No implementation started yet on
+Phase 2 (tenant-facing submission API).
 
 ## Next Steps
 
-Continue in the existing worktree/branch/PR above — start Phase 2 of `TENANT_VERIFICATION_PLAN.md`
-(tenant-facing submission API):
-
-1. `cd` into the existing worktree (path above) — do not open a new one.
-2. Add `IVerificationService`/`VerificationService` (Tenant.Application/Infrastructure):
-   `GetOwnAsync`, `SubmitAsync(files, documentTypes)` — uploads each file to `verification-evidence/`
-   via `IBlobStorageService`, transitions to `Pending` via `TenantVerificationEntity.Submit`/`Resubmit`.
-3. `VerificationController` (`api/organization/verification`), `[Authorize]`,
-   `[HasPermission(SharedPermissions.TenantSettingsEdit)]` on the mutating endpoint,
-   `[EnableRateLimiting(RateLimitPolicies.Upload)]` on the upload endpoint.
-4. Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path.
-5. Unit tests for the service; integration tests for the controller (round-trip submit → read status).
-6. Build + focused tests; commit in the delivery worktree; push to PR #772.
-7. Update this ledger **in the normal checkout** — never inside the delivery worktree.
+1. Confirm PR #772's exact-head CI is green, then merge it (queue or admin bypass per the `merge` skill).
+2. Continue in the same worktree/branch — start Phase 2 of `TENANT_VERIFICATION_PLAN.md` (tenant-facing
+   submission API):
+   - Add `IVerificationService`/`VerificationService` (Tenant.Application/Infrastructure):
+     `GetOwnAsync`, `SubmitAsync(files, documentTypes)` — uploads each file to `verification-evidence/`
+     via `IBlobStorageService`, transitions to `Pending` via `TenantVerificationEntity.Submit`/`Resubmit`.
+   - `VerificationController` (`api/organization/verification`), `[Authorize]`,
+     `[HasPermission(SharedPermissions.TenantSettingsEdit)]` on the mutating endpoint,
+     `[EnableRateLimiting(RateLimitPolicies.Upload)]` on the upload endpoint.
+   - Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path.
+   - Unit tests for the service; integration tests for the controller (round-trip submit → read status).
+   - Build + focused tests; commit; open a fresh delivery worktree from current `origin/main` if #772
+     has already merged by then.
+3. Update this ledger **in the normal checkout** — never inside the delivery worktree.
 
 ## Completed work
 
-- **Phase 1 — Domain** (`2a66f1a03`, PR #772): `TenantVerificationEntity` (`Pending`/`Approved`/`Rejected`,
-  transitions validated through `Concertable.Kernel.StateMachine<TState, TTrigger>` — the first real
-  consumer of that shared abstraction in this codebase) and `VerificationDocumentEntity` (append-only
-  evidence, `Licence`/`ProofOfAddress`/`CompanyRegistration`). EF configurations composed into
-  `TenantDbContext` (confirmed no new tenancy stance needed — `TenantDbContext` is already unscoped,
-  matching `TenantMembershipEntity`/`TenantInvitationEntity`, neither of which is `ITenantScoped`).
-  Migration re-scaffolded via `./initial-migrations.ps1`. 17 new unit tests.
+- **Phase 1 — Domain** (PR #772, reviewed clean at `89c9addfc`): `TenantVerificationEntity`
+  (`Pending`/`Approved`/`Rejected`, transitions validated through `Concertable.Kernel.StateMachine<TState,
+  TTrigger>` — the first real consumer of that shared abstraction in this codebase) and
+  `VerificationDocumentEntity` (append-only evidence, `Licence`/`ProofOfAddress`/`CompanyRegistration`).
+  EF configurations composed into `TenantDbContext` (confirmed no new tenancy stance needed —
+  `TenantDbContext` is already unscoped, matching `TenantMembershipEntity`/`TenantInvitationEntity`,
+  neither of which is `ITenantScoped`). Migration re-scaffolded via `./initial-migrations.ps1`.
+  19 unit tests.
 
 ## Verification
 
-- `dotnet test Concertable.B2B.Tenant.UnitTests` (2026-08-24, commit `2a66f1a03`): 153 passed, 0 failed.
+- `dotnet test Concertable.B2B.Tenant.UnitTests` (2026-08-24, commit `89c9addfc`): 156 passed, 0 failed.
 - `dotnet build Concertable.B2B.Web.csproj` (2026-08-24, commit `2a66f1a03`): 0 warnings, 0 errors — the
   full B2B service, every module.
 - Full-solution `./initial-migrations.ps1` run hit an unrelated, pre-existing build error in
@@ -56,7 +58,13 @@ Continue in the existing worktree/branch/PR above — start Phase 2 of `TENANT_V
 
 ## Reviews
 
-None yet — no review recorded. Do not merge before a review, per the `plans` standard.
+`reviews/Feature-launch_tenant-verification.md`, reviewed up to `20a5061f1` (marker) / pushed to `89c9addfc`
+(review-file-only commit on top — current per the review-only exception). 2 findings, both fixed and
+verified: **NAT1** — `TenantVerificationChangedDomainEvent` carried a live entity reference instead of a
+snapshot, risking stale data if two transitions raised before one dispatch; now snapshots primitives via a
+new `Announce()` helper. **NAT2** — `Reject`/`VerificationDocumentEntity.Create` didn't validate length
+against their EF max-length columns; now throw `DomainException` instead of hitting a raw SQL error at
+`SaveChanges`. 0 open findings — clear to merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -76,6 +84,6 @@ None yet — no review recorded. Do not merge before a review, per the `plans` s
 ## Resume prompt
 
 ```
-/open-worktree Feature/launch_tenant-verification
+cd C:/Users/tommy/source/repos/Concertable.worktrees/Feature/launch_tenant-verification
 Read @plans/launch/TENANT_VERIFICATION_PLAN.md and @plans/launch/TENANT_VERIFICATION_PROGRESS.md and do what its `## Next Steps` says.
 ```
