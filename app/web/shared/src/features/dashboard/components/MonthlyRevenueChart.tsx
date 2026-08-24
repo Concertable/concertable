@@ -17,6 +17,22 @@ interface MonthlyRevenueChartProps {
   currency?: string;
 }
 
+interface ChartRevenuePoint {
+  month: string;
+  gross: number;
+  net: number;
+  count: number;
+}
+
+function toChartRevenuePoint(point: MonthlyRevenuePoint): ChartRevenuePoint {
+  return {
+    month: dayjs(point.month).format("MMM"),
+    gross: point.grossCents / 100,
+    net: point.netCents / 100,
+    count: point.count,
+  };
+}
+
 const accentColors = {
   emerald: { gross: "#10b981", net: "#059669" },
   sky: { gross: "#0ea5e9", net: "#0284c7" },
@@ -28,12 +44,7 @@ export function MonthlyRevenueChart({
   currency = "GBP",
 }: MonthlyRevenueChartProps) {
   const colors = accentColors[accent];
-  const chartData = data.map((p) => ({
-    month: dayjs(p.month).format("MMM"),
-    gross: p.grossCents / 100,
-    net: p.netCents / 100,
-    count: p.count,
-  }));
+  const chartData = data.map(toChartRevenuePoint);
 
   return (
     <ResponsiveContainer width="100%" height={180}>
