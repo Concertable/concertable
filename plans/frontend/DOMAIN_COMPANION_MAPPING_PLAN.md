@@ -286,16 +286,12 @@ no production type contains `T | null | undefined`; the ledger classifies every 
 
 ### Phase 5 — close the inventory and deliver
 
-1. Revisit every baseline row. Confirm each is either a companion, an identity/direct request, an
-   API-local transport encoder, a third-party adapter, a presentation projection, or an exhaustive
-   registry exactly as specified.
-2. Search for new global mapper folders, `XMapper` objects, destination-owned `.from`, prototype
-   augmentation, read types used as mutation bodies, and unparsed editable buffers. Resolve every hit
-   or record why it belongs to a named excluded category in the ledger.
-3. Run focused package tests/builds while editing, then the frontend boundary checks and every web and
-   mobile surface gate required by `app/AGENTS.md`.
-4. Push the coherent implementation checkpoint so draft-PR CI validates the exact remote head; review
-   the full diff before merge.
+1. ~~Revisit every baseline row and confirm its final owner.~~
+2. ~~Run the mapper, augmentation, read-as-write, buffer, state-boundary, and owned-absence invariant
+   searches and resolve or classify every hit.~~
+3. ~~Run the complete package, boundary, web, mobile typecheck, and Android export matrix.~~
+4. Incrementally review every commit after `539c1a520`, then push the coherent candidate and open its
+   PR so CI validates the exact reviewed head.
 5. Select the merge-queue E2E tier mechanically from the merge policy. This refactor does not by
    itself justify a local E2E run.
 

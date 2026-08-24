@@ -7,7 +7,7 @@
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: not opened
 - Dependency/package gates: none; PRs #595, #600, and #637 are merged and no open platform-sync PR exists
-- Last reconciled: 2026-08-24 after merging `origin/main` at `acf729372e46fc8a03f706a77f8e68931a899efd` into branch head `ce15ef0758a8d69fe788b9bd26d47b60afc7a8fe`
+- Last reconciled: 2026-08-25 against `origin/main` at `2482a6c553e91eb8a1b103393e1fc6261d76c19c` and verified branch head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
 
 ## Current state
 
@@ -18,14 +18,14 @@ normalization, consent service, transport encoders, adapters, and presentation p
 their planned boundaries.
 
 The full branch review through `4b69e66ce` found two remaining boundary-projection convention misses.
-Both were fixed in `539c1a520`; focused tests/builds passed and the incremental review was clean. The
-post-merge plan checkpoint and final exact-head verification/review remain before PR delivery.
+Both were fixed in `539c1a520`; its incremental review was clean. Every Phase 5 invariant and the
+complete post-merge frontend matrix now pass. Only the post-`539c1a520` incremental review and remote
+PR/CI delivery gates remain.
 
 ## Next Steps
 
-1. Run the Phase 4 invariant searches and the complete frontend verification matrix on the merged head.
-2. Incrementally review every commit after `539c1a520` and leave no open findings.
-3. Push the stable candidate, open its PR, and require exact-head CI before merge readiness.
+1. Incrementally review every commit after `539c1a520` and leave no open findings.
+2. Push the stable candidate, open its PR, and require exact-head CI before merge readiness.
 
 ## Completed work
 
@@ -43,11 +43,15 @@ post-merge plan checkpoint and final exact-head verification/review remain befor
 ## Verification
 
 - GitHub reports PRs #595, #600, and #637 merged; no open platform-sync PR or implementation PR exists.
-- Current baseline: `origin/main` at `acf729372e46fc8a03f706a77f8e68931a899efd`, merged without conflicts.
-- `@concertable/shared`: 10 test files / 23 tests passed; build passed at `539c1a520`.
-- `@concertable/web`: 5 test files / 31 tests passed; build passed at `539c1a520`.
-- `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings before this checkpoint.
-- The complete post-merge Phase 4 matrix has not yet run.
+- Current baseline: `origin/main` at `2482a6c553e91eb8a1b103393e1fc6261d76c19c`, merged without conflicts.
+- Tests passed: `@concertable/b2b` 5 files / 15 tests; `@concertable/shared` 10 / 23;
+  `@concertable/web` 5 / 31; `@concertable/customer` 3 / 3 through its build preflight.
+- B2B, shared, customer, all five web SPA, and both mobile TypeScript builds passed.
+- Dependency-cruiser reported no violations; all 7 carve/boundary tests passed.
+- B2B and Customer Android exports passed with 3,691 and 4,283 modules respectively.
+- Phase 5 mapper/buffer/store/absence searches passed with only the three intended binary
+  `ArrayBuffer` sites and private search-store facade/test sites allowlisted.
+- `git diff --check` and `python .agents/hooks/plan_graph.py --root <worktree>` passed.
 
 ## Reviews
 
