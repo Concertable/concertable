@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `20a5061f18fa9f8f8c182de10993d1e8f164f525`  _(2026-08-24)_
+**Reviewed up to commit:** `bd7b758676137426170b195d3ba619e986e17c43`  _(2026-08-25)_
 
-> Range reviewed: `f033dc7e..20a5061f1` (2 commits).
+> Range reviewed: `f033dc7e..bd7b75867` (5 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -40,3 +40,11 @@ no seeder touched), E (`csharp-naming`, `csharp-style`, `dotnet:persistence`/`de
 `dotnet:multitenancy` — confirmed `TenantDbContext` is unscoped and sibling entities aren't `ITenantScoped`,
 so no new stance was needed — `dotnet:domain-events`, `dotnet:unit-testing` — all clean), F (test coverage —
 every success and failure branch on every new method has a covering test).
+
+## Incremental review — 2026-08-25
+
+Range `20a5061f1..bd7b75867` (3 commits) is exclusively the merge-base-in from `origin/main` plus the
+review-file marker update itself: `plans/launch/TENANT_VERIFICATION_PLAN.md`/`TENANT_VERIFICATION_PROGRESS.md`
+(ledger checkpoints from separate merged docs PRs) and two spent review-file stubs (`Docs-tv-review-cleanup.md`,
+`Docs-tv-p1-review-checkpoint.md`). No `api/` file changed — confirmed via `git diff --name-only`. No new
+findings; marker re-stamped to current head.
