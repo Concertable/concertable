@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_floor.py\"",
-            "commandWindows": "for /f \"delims=\" %R in ('git rev-parse --show-toplevel 2^>nul') do @call \"%R\\.agents\\hooks\\run-repo-hook.cmd\" session_floor.py",
+            "commandWindows": "python -B \".agents/hooks/session_floor.py\"",
             "timeout": 15,
             "statusMessage": "Loading the always-on behavioral floor"
           }

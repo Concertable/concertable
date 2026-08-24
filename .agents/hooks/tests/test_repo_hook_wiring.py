@@ -16,11 +16,7 @@ SCRIPTS = {
 CODEX_SCRIPTS = {"session_floor.py"}
 CLAUDE_SCRIPTS = SCRIPTS | {"session_floor.py"}
 
-WINDOWS_LAUNCH_PREFIX = (
-    'for /f "delims=" %R in '
-    "('git rev-parse --show-toplevel 2^>nul') "
-    'do @call "%R\\.agents\\hooks\\run-repo-hook.cmd" '
-)
+WINDOWS_SESSION_COMMAND = 'python -B ".agents/hooks/session_floor.py"'
 POSIX_LAUNCH_PREFIX = (
     'bash "$(git rev-parse --show-toplevel)/.agents/hooks/run-repo-hook.sh" '
 )
@@ -92,17 +88,7 @@ class RepoHookWiringTests(unittest.TestCase):
         actual = list(handlers(REPO / ".codex" / "hooks.json"))
         self.assertEqual(len(CODEX_SCRIPTS), len(actual))
         windows_commands = [item["commandWindows"] for item in actual]
-        self.assertTrue(
-            all(
-                command.startswith(WINDOWS_LAUNCH_PREFIX)
-                for command in windows_commands
-            )
-        )
-        windows_scripts = {
-            command.removeprefix(WINDOWS_LAUNCH_PREFIX)
-            for command in windows_commands
-        }
-        self.assertEqual(CODEX_SCRIPTS, windows_scripts)
+        self.assertEqual({WINDOWS_SESSION_COMMAND}, set(windows_commands))
 
         posix_commands = [item["command"] for item in actual]
         self.assertEqual({POSIX_SESSION_COMMAND}, set(posix_commands))
@@ -114,16 +100,15 @@ class RepoHookWiringTests(unittest.TestCase):
     def test_codex_windows_commands_launch_every_repo_hook(self):
         if os.name != "nt":
             self.skipTest("Windows command execution contract")
-        nested_cwd = REPO / ".agents" / "hooks" / "tests"
         actual = list(handlers(REPO / ".codex" / "hooks.json"))
         for item in actual:
-            script = item["commandWindows"].removeprefix(WINDOWS_LAUNCH_PREFIX)
+            script = script_name(item["commandWindows"])
             result = subprocess.run(
                 f'cmd.exe /D /S /C "{item["commandWindows"]}"',
-                input=payload(script, nested_cwd),
+                input=payload(script),
                 capture_output=True,
                 text=True,
-                cwd=nested_cwd,
+                cwd=REPO,
             )
             self.assert_launched(result)
 
