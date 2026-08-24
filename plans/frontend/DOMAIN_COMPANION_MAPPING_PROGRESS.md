@@ -3,32 +3,29 @@
 - Plan: `plans/frontend/DOMAIN_COMPANION_MAPPING_PLAN.md`
 - Roadmap: `plans/frontend/FRONTEND_DOMAIN_MODEL_ROADMAP.md`
 - Roadmap item: `frontend/domain-companion-mapping`
-- Worktree: not created
-- Branch: `Refactor/frontend_domain-companion-mapping` (reserved; not created)
-- Plan worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-frontend-domain-companion-plan`
-- Plan branch: `Docs/frontend_domain-companion-plan`
-- Plan PR: #644 — https://github.com/Concertable/concertable/pull/644 (`skip-e2e`)
-- Dependency/package gates: PRs #595, #600, and #637 must be terminal before the implementation worktree is created; no package publication gate
-- Last reconciled: 2026-08-17 against `origin/main` at `9205e82df4359df8ddf8dfdace07b4aa09b6d186`, open PR inventory, and registered worktrees
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-frontend-domain-apis`
+- Branch: `Refactor/frontend_domain-companion-mapping`
+- PR: not opened
+- Dependency/package gates: none; PRs #595, #600, and #637 are merged and no open platform-sync PR exists
+- Last reconciled: 2026-08-24 after merging `origin/main` at `acf729372e46fc8a03f706a77f8e68931a899efd` into branch head `ce15ef0758a8d69fe788b9bd26d47b60afc7a8fe`
 
 ## Current state
 
-No implementation exists. The repository currently has no frontend `Mapper` objects or `toX`
-companions. The canonical problem is the anonymous Opportunity request projection, but the refreshed
-inventory also found implicit read/write conversions in Organization, Review, Preference, Concert,
-Artist, and Venue flows.
+Phases 0 through 4 are complete. The Phase 5 source inventory and review fixes are complete, the
+branch is current with `origin/main`, and no partial code changes remain. The companion/request
+migrations, direct typed labels, RHF write boundaries, private editor/auth/search state, owned-absence
+normalization, consent service, transport encoders, adapters, and presentation projections are at
+their planned boundaries.
 
-The design is resolved: retain interfaces, use a same-name exported `const` companion directly below
-the owning types, use source-owned `toX` names, validate raw form buffers before mapping, and add no
-mapping dependency. Transport encoding, third-party adaptation, presentation projection, exhaustive
-registries, identity mappings, and trivial request bodies remain outside companions.
+The full branch review through `4b69e66ce` found two remaining boundary-projection convention misses.
+Both were fixed in `539c1a520`; focused tests/builds passed and the incremental review was clean. The
+post-merge plan checkpoint and final exact-head verification/review remain before PR delivery.
 
 ## Next Steps
 
-Blocked: Open PRs #595, #600, and #637 overlap the target concert/messaging types or frontend guidance.
-Blocked by: GitHub PRs #595, #600, and #637, owned by their current branches.
-Unblock action: Let each PR reach merged or closed state; then fetch `origin/main`, confirm no open red platform-sync PR, refresh the plan's baseline inventory, and create `Refactor/frontend_domain-companion-mapping` from current `origin/main`.
-Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`, the refreshed main worktree is clean for the named target paths, and the progress ledger records the new main SHA and any changed paths.
+1. Run the Phase 4 invariant searches and the complete frontend verification matrix on the merged head.
+2. Incrementally review every commit after `539c1a520` and leave no open findings.
+3. Push the stable candidate, open its PR, and require exact-head CI before merge readiness.
 
 ## Completed work
 
@@ -38,26 +35,26 @@ Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`
   retained or migrated site.
 - Created the roadmap item, implementation plan, and operational ledger in `d09f09f23`.
 - Resolved all five docs-review findings in `18fec1752` and `959dbb516`.
+- Cleared the dependency gate and completed Phases 1 through 4 in `e9a8fe7c9`, `a5ba13de2`,
+  `70bfc8ac3`, and `cce96a5e7`.
+- Closed the remaining inventory and review fixes through `539c1a520`.
+- Merged current `origin/main` without conflicts in `ce15ef075`.
 
 ## Verification
 
-- Baseline source: `origin/main` at `9205e82df4359df8ddf8dfdace07b4aa09b6d186`.
-- Open-PR overlap checked for #595, #600, #617, #633, and #637; only #595, #600, and #637 gate the
-  frontend implementation.
-- Registered worktrees checked. `Refactor/OrganizationProfileRouteContraction` has committed
-  Artist/Venue changes without an open PR and is explicitly not the implementation base.
-- `python .agents/hooks/plan_graph.py --root <plan-worktree>`: 0 errors, 0 warnings.
-- Local Markdown link check: every relative link in `plans/frontend/` resolves.
-- `git diff --check`: clean through `959dbb516`.
-- Reviewed work head `385441409ab5c88c4361413003785375c8a858a5` pushed and verified equal to
-  `origin/Docs/frontend_domain-companion-plan`; PR #644 opened from that exact head with `skip-e2e`.
-- No implementation tests apply yet.
+- GitHub reports PRs #595, #600, and #637 merged; no open platform-sync PR or implementation PR exists.
+- Current baseline: `origin/main` at `acf729372e46fc8a03f706a77f8e68931a899efd`, merged without conflicts.
+- `@concertable/shared`: 10 test files / 23 tests passed; build passed at `539c1a520`.
+- `@concertable/web`: 5 test files / 31 tests passed; build passed at `539c1a520`.
+- `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings before this checkpoint.
+- The complete post-merge Phase 4 matrix has not yet run.
 
 ## Reviews
 
-Full docs review covered `9205e82df..959dbb516`. Five accuracy, contradiction, and followability
-findings were fixed; incremental review found no issues in the ledger checkpoint through
-`385441409`. No implementation review exists.
+Full implementation review covered `70af43a..4b69e66` in
+`reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; the
+incremental review through that commit found no new issues. The merge/checkpoint delta still needs an
+incremental pass before delivery.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -69,8 +66,8 @@ findings were fixed; incremental review found no issues in the ledger checkpoint
 - The inventory includes implicit mappings where a read type is reused as a write body, even if no
   function is currently named mapper.
 - Backend mappers are excluded.
-
-## Resume prompt
-
-Not emitted while `## Next Steps` carries the hard-blocker fields. The last dependency owner or a
-fresh status check opens the gate and supplies the implementation pointer.
+- Transport encoders remain API-private; third-party adapters and presentation projections remain
+  boundary-local rather than becoming domain companions.
+- Current `write-boundary` guidance requires RHF/Zod to produce the request directly; the superseded
+  parse-then-buffer-mapper shape was not restored.
+- Local E2E is not part of this refactor's pre-PR gate.
