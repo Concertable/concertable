@@ -7,7 +7,7 @@
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: not opened
 - Dependency/package gates: none; PRs #595, #600, and #637 are merged and no open platform-sync PR exists
-- Last reconciled: 2026-08-25 against `origin/main` at `2482a6c553e91eb8a1b103393e1fc6261d76c19c` and verified branch head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
+- Last reconciled: 2026-08-25 against `origin/main` at `5222bce517966a2320caeaff0d19415268425eee`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
 
 ## Current state
 
@@ -37,12 +37,12 @@ Push the stable candidate, open its PR, and require exact-head CI before merge r
 - Cleared the dependency gate and completed Phases 1 through 4 in `e9a8fe7c9`, `a5ba13de2`,
   `70bfc8ac3`, and `cce96a5e7`.
 - Closed the remaining inventory and review fixes through `539c1a520`.
-- Merged current `origin/main` without conflicts through `588c4e36b`.
+- Merged `origin/main` at `5222bce51` without conflicts.
 
 ## Verification
 
 - GitHub reports PRs #595, #600, and #637 merged; no open platform-sync PR or implementation PR exists.
-- Current baseline: `origin/main` at `2482a6c553e91eb8a1b103393e1fc6261d76c19c`, merged without conflicts.
+- Current baseline: `origin/main` at `5222bce517966a2320caeaff0d19415268425eee`, merged without conflicts.
 - Tests passed: `@concertable/b2b` 5 files / 15 tests; `@concertable/shared` 10 / 23;
   `@concertable/web` 5 / 31; `@concertable/customer` 3 / 3 through its build preflight.
 - B2B, shared, customer, all five web SPA, and both mobile TypeScript builds passed.
@@ -56,7 +56,7 @@ Push the stable candidate, open its PR, and require exact-head CI before merge r
 
 Full implementation review covered `70af43a..4b69e66` in
 `reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; NAT1
-corrected the latest-main merge checkpoint. Incremental review through this commit is clean with no
+corrected the preceding main merge checkpoint. Incremental review through this commit is clean with no
 open findings.
 
 ## Decisions, discoveries, blockers, and deviations
