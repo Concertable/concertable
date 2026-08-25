@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: PR #597 and platform sync #645 supplied the implementation baseline; this producer's publication and generated platform-sync remain pending
-- Last reconciled: `2026-08-24` against `origin/main` `08ffa92e7a54a0c47391da914d22cd8a24319b38`, merge head `843c82cd25548010579931376ebdeb7cca8eedc1`, Payment platform `0.1.0-alpha.0.1171`, and review watermark `c685747a421be9919cd189f5991d2634f620abdd`
+- Last reconciled: `2026-08-25` at producer head `9367612cb6e18574111151b07d0e626a97d7cebf`, Payment platform `0.1.0-alpha.0.1171`, clean native/security review through that head, and exact-head draft CI run `32780879706` green; PR #721 now requires current-main reconciliation
 
 ## Current state
 
@@ -16,21 +16,24 @@ request fingerprint, race-safe reservation and revision history, provider-neutra
 refresh, and additive backend-only gRPC/Client operations for create/replay, payer-only retry, and
 participant-scoped status reads. Public status remains secret-free and every legacy RPC remains live.
 
-Current `origin/main` is merged without conflict. Its only Payment delta was the platform pin from `.1161`
-to `.1171`; the branch is 0 commits behind. This commit replaces the raw idempotency-key generator with the
+The reviewed producer head replaces the raw idempotency-key generator with the
 internal `PaymentSessionIdempotencyKey` value object, carries it through `IStripeSessionClient`, and converts
 it to provider text only inside the real and fake Stripe adapters. No reverse parser is added because no
 string ingress exists.
 
-PR #721 is draft while this new executable candidate receives incremental review and exact-head CI. Consumer
+PR #721 remains draft. The reviewed executable head completed exact-head CI green, but `main` advanced and
+GitHub now reports the PR conflicted; current-main reconciliation, focused validation, and review of that
+delta are required before the PR is made ready. Consumer
 work remains delivery-gated until the producer merges, its packages publish, and the causally generated
 platform-sync PR is green and merged. The roadmap item remains unchecked until those gates are terminal.
 
 ## Next Steps
 
-Run `/incremental-review` from `c685747a421be9919cd189f5991d2634f620abdd` through this commit, including
-the required Payment security layer, and resolve every finding. Do not mark PR #721 ready or enqueue it until
-that review is clean and exact-head draft CI is green.
+Merge current `origin/main`, resolve any conflicts without changing the Payment session contract, run the
+smallest affected Payment build and focused tests, then run `/incremental-review` from
+`9367612cb6e18574111151b07d0e626a97d7cebf` through the reconciled head including the required Payment security
+layer. Push only the resulting clean executable candidate plus its review tail, then require exact-head draft
+CI green before making PR #721 ready and entering `/merge`.
 
 ## Completed work
 
@@ -61,8 +64,7 @@ that review is clean and exact-head draft CI is green.
 ## Reviews
 
 Review artifact: `reviews/Feature-payments_payment-session-state.md`. Full and incremental native/security
-review is clean through `c685747a421be9919cd189f5991d2634f620abdd`; NAT1 and SEC1–SEC3 are resolved.
-The range from that watermark through this commit is pending incremental review.
+review is clean through `9367612cb6e18574111151b07d0e626a97d7cebf`; NAT1 and SEC1–SEC3 are resolved.
 
 ## Decisions, discoveries, blockers, and deviations
 

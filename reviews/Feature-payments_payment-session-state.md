@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c685747a421be9919cd189f5991d2634f620abdd`  _(2026-08-23)_
-**Security-reviewed up to commit:** `c685747a421be9919cd189f5991d2634f620abdd`  _(2026-08-23)_
+**Reviewed up to commit:** `9367612cb6e18574111151b07d0e626a97d7cebf`  _(2026-08-25)_
+**Security-reviewed up to commit:** `9367612cb6e18574111151b07d0e626a97d7cebf`  _(2026-08-25)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -91,5 +91,17 @@ routed-skill, and plan/review lifecycle lenses were also clean.
 No new findings. Native and security passes were clean. The four branch-unique commits are review/plan
 checkpoints plus conflict-free merge `c685747a4`; its remerge diff is empty. The five imported commits belong
 to docs-only PR #764 and touch no Payment or runtime path. The service-boundary, module-boundary, package,
+language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
+were also clean.
+
+## Incremental review — 2026-08-25
+
+> Range reviewed: `c685747a..9367612c` (49 commits).
+
+No new findings. The native correctness, reuse, simplification, efficiency, and error-handling pass and the
+required Payment security pass were clean. The branch-local change preserves the canonical provider
+idempotency key while carrying its identity as an opaque value through the application/provider seam; text
+conversion remains inside the real and fake Stripe adapters. Imported main changes and conflict-free merge
+`843c82cd2` introduce no branch-specific resolution delta. The service-boundary, module-boundary, package,
 language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
 were also clean.
