@@ -257,3 +257,26 @@ commits is part of final closure and is not asserted here.
   Resolved: `AddB2BTopology` now provisions all three event topics and both B2B command queues, with the
   Booking contracts reference owned by the composition project. `ServiceTopologyTests` enforces the complete
   topic and queue inventory.
+
+- [x] **IR7 — HIGH — Booking financial concurrency** — `api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure/Events/VerifyPaymentSucceededHandler.cs:21`
+  Verify-payment handlers track a Booking before the later update-lock query, allowing EF to return stale
+  state and recreate the cancellation/confirmation race. Resolve only the Booking id before the locked
+  transition and add handler-level overlap coverage.
+  - Resolved by projecting only the Booking id before entering the locked transition and compiling a
+    deterministic cancellation/payment-confirmation overlap test through the real pre-commit handler.
+
+- [ ] **IR8 — HIGH — Application lifecycle concurrency** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationService.cs:284`
+  Accept pre-tracks the Application before its lock, while Withdraw and Reject use unlocked lifecycle reads.
+  Acquire the lifecycle lock before validation for all three transitions and prove deterministic overlap
+  convergence.
+
+- [ ] **IR9 — HIGH — Concert financial concurrency/idempotency** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Executors/CompleteExecutor.cs:49`
+  Concert Cancel and Complete use unlocked reads, and settlement performs external money movement without a
+  durable operation identity before saving local state. Serialize the lifecycle operations, persist a stable
+  settlement identity before the provider call, use it as the provider idempotency key, and prove overlap and
+  post-provider retry convergence.
+
+- [ ] **IR10 — MEDIUM — messaging subscription parity** — `api/Concertable.B2B/src/Concertable.B2B.Hosting/B2BTopology.cs:41`
+  B2B provisions a `RefundEscrowDeferredEvent` subscription but registers no runtime receiver or handler.
+  Remove the orphan subscription when deferred refund is intentionally a no-op, or implement the convergence
+  handler and enforce runtime/provisioning parity.

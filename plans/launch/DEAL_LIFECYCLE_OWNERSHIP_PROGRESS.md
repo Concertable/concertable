@@ -33,16 +33,19 @@ a rejected edge leaves state, auxiliary facts, and events untouched. Operation e
 `InvalidTransition(TransitionError<State, Trigger>)`. The old combined `LifecycleState`, per-`DealType`
 `LifecycleStateMachine`, `IConcertStateMachineRegistry`, and `ILifecycleTransitioner` are gone from source.
 
-The staged review work order is fully addressed: every fixed-anchor finding and every incremental finding
-(IR1–IR5) is closed on the branch. No `[ ]` finding remains. `ConcertAvailabilityEntity` naming/layer
+The final security review added IR7-IR10. IR7 is closed: verify-payment handlers now resolve only the
+Booking id before entering the repository's serialized financial transition, and deterministic overlap
+coverage compiles through the real handler. IR8-IR10 remain active. The earlier review work order had
+every fixed-anchor finding and every incremental finding (IR1–IR6) closed on the branch.
+`ConcertAvailabilityEntity` naming/layer
 placement remains recorded Application technical debt in
 `api/Concertable.B2B/src/Modules/Application/TECH_DEBT.md`, deliberately outside this PR's scope.
 
 ## Next Steps
 
-Implementation is complete; the branch is delivery-gated on the final review closure. Run a fresh
-incremental review over the IR1–IR6 fix commits from the recorded watermark, `python .agents/hooks/plan_graph.py
---root <worktree>`, and `git diff --check`; do not run local E2E. Then push one stable candidate, prove local,
+Close IR8-IR10, then run a fresh incremental review over the fix commits from the recorded watermark,
+`python .agents/hooks/plan_graph.py --root <worktree>`, and `git diff --check`; do not run local E2E. Then
+push one stable candidate, prove local,
 remote-tracking, and PR heads match, mark PR #633 ready, and follow it through merge-queue E2E, merge,
 publication, and platform sync to terminal. Delete this ledger, the plan, and the review artifact in the
 closeout once the lifecycle is terminal.
@@ -82,7 +85,7 @@ closeout once the lifecycle is terminal.
 
 - Work order: `reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md`. Fixed-anchor review
   `fb561acee..c50469d48`, security-reviewed through `c50469d48`; incremental through `b61fc7feb`.
-- All findings resolved; no `[ ]` remains. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`), IR5
+- IR7 is resolved; IR8-IR10 remain active. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`), IR5
   (`c61566685`), and the current IR6 topology checkpoint landed after `b61fc7feb`; a fresh incremental review
   over those fix commits is the remaining review gate. Keep the artifact until PR #633 merges, then delete it.
 
