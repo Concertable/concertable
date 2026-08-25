@@ -6,7 +6,7 @@
 > in one line, take the safe path, keep going.
 
 **Reviewed up to commit:** `ca7b8ba0d2516d8efa0a4aa15d456896ed44d54b`  _(2026-08-25)_
-**Security-reviewed up to commit:** `84e4d61b0d47533645e5813d39f39413a2a4073e`  _(2026-08-25)_
+**Security-reviewed up to commit:** `94720507209682c8cf9dc324f66d3f69831d94e0`  _(2026-08-25)_
 
 > Range reviewed: `ac7ff7f17..c72c79161` (1 commit; findings fixed across `84e4d61b0`, `2f2e7218d`,
 > `cec78027d`, and `81b097381`; `ca7b8ba0d` is a no-conflict merge of `origin/main`, no reviewed file
@@ -90,3 +90,12 @@ against the finished diff during the review itself. All five findings below are 
   shown to the session multiple times while the file was being written. **Fixed:** renamed to
   `GetStatusAsync`, matching `TenantService.GetDetailsAsync`'s precedent — name for what's returned,
   not the default scope.
+
+## Security re-review — commit `84e4d61b0` → `94720507`
+
+The security marker went stale after CV5/CV6/CV7 touched `VerificationController.cs` and
+`VerificationService.cs` again. Re-reviewed the delta: a method rename + call-site update, the
+`SubmitVerificationRequest` → `IReadOnlyList<EvidenceUpload>` extraction (mapping now lives in
+`VerificationMappers`), the entity-owned blob-naming change, and the repository field removal. No
+permission attribute, route, tenant-scoping (`tenantContext.GetTenantId()`/`.TenantId`), or
+upload/validation flow changed. 0 findings — marker re-stamped at `94720507`.
