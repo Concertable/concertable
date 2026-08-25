@@ -5,12 +5,13 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `81b0973813b2127547276692b6747fb32a24cffb`  _(2026-08-25)_
+**Reviewed up to commit:** `ca7b8ba0d2516d8efa0a4aa15d456896ed44d54b`  _(2026-08-25)_
 **Security-reviewed up to commit:** `84e4d61b0d47533645e5813d39f39413a2a4073e`  _(2026-08-25)_
 
 > Range reviewed: `ac7ff7f17..c72c79161` (1 commit; findings fixed across `84e4d61b0`, `2f2e7218d`,
-> `cec78027d`, and `81b097381`). Diff touches `VerificationController.cs`, matching this repo's
-> `Controller[A-Za-z]*\.cs$` security-sensitive pattern (`.agents/merge-gate.json`).
+> `cec78027d`, and `81b097381`; `ca7b8ba0d` is a no-conflict merge of `origin/main`, no reviewed file
+> touched). Diff touches `VerificationController.cs`, matching this repo's `Controller[A-Za-z]*\.cs$`
+> security-sensitive pattern (`.agents/merge-gate.json`).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
