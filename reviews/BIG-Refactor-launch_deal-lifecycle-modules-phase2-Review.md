@@ -220,7 +220,7 @@ was reviewed through the native general and required security layers. Five findi
   Acceptance checks Concert availability through tenant-filtered `ApplicationDbContext`. An accepting venue
   therefore cannot see the target artist's conflicting Concert at another venue and can double-book the artist.
   Query the Application-owned projection through `IApplicationReadDbContext` and cover the cross-venue case.
-- [ ] **IR4 — HIGH — financial integrity / concurrency** — `api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure/Services/BookingService.cs:121`
+- [x] **IR4 — HIGH — financial integrity / concurrency** — `api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure/Services/BookingService.cs:121`
   Cancellation and both financial-outcome paths read Booking without an update lock or concurrency retry.
   Concurrent operations can both observe `AwaitingConfirmation`, then overwrite one another so a confirmed
   Booking is refunded with its Concert intact or a cancellation is overwritten without compensation. Serialize
