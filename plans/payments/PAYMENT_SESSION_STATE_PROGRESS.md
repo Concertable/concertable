@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: PR #597 and platform sync #645 supplied the implementation baseline; this producer's publication and generated platform-sync remain pending
-- Last reconciled: `2026-08-25` against `origin/main` `69e060958b529c0e4851f9983c3244dd150d466d`, Payment platform `0.1.0-alpha.0.1186`, and clean native/security review through `9367612cb6e18574111151b07d0e626a97d7cebf`; the current-main merge and its resolution delta are pending incremental review
+- Last reconciled: `2026-08-25` against `origin/main` `69e060958b529c0e4851f9983c3244dd150d466d`, merge head `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`, Payment platform `0.1.0-alpha.0.1186`, and clean native/security review through that merge head
 
 ## Current state
 
@@ -24,17 +24,15 @@ string ingress exists.
 PR #721 remains draft. Current `origin/main` is merged in this commit. The Payment migration was re-scaffolded
 from the combined model so the session operation/attempt schema and main's `DateTimeOffset` audit model both
 remain present. The protobuf compatibility tests retain the session contract assertions while main's assembly
-reference guards remain in the architecture tier. The merge delta requires incremental review and exact-head
-CI before the PR is made ready. Consumer
+reference guards remain in the architecture tier. The merge delta is cleanly reviewed; exact-head CI remains
+before the PR is made ready. Consumer
 work remains delivery-gated until the producer merges, its packages publish, and the causally generated
 platform-sync PR is green and merged. The roadmap item remains unchecked until those gates are terminal.
 
 ## Next Steps
 
-Run `/incremental-review` from `9367612cb6e18574111151b07d0e626a97d7cebf` through this current-main merge,
-including the required Payment security layer, and resolve every finding. Push only the resulting clean
-executable candidate plus its review tail, then require exact-head draft CI green before making PR #721 ready
-and entering `/merge`.
+Push the reviewed current-main candidate plus its review tail, verify the remote and PR head exactly match,
+then require exact-head draft CI green before making PR #721 ready and entering `/merge`.
 
 ## Completed work
 
@@ -60,7 +58,7 @@ and entering `/merge`.
 ## Reviews
 
 Review artifact: `reviews/Feature-payments_payment-session-state.md`. Full and incremental native/security
-review is clean through `9367612cb6e18574111151b07d0e626a97d7cebf`; NAT1 and SEC1–SEC3 are resolved.
+review is clean through `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`; NAT1 and SEC1–SEC3 are resolved.
 
 ## Decisions, discoveries, blockers, and deviations
 

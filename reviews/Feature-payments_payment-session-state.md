@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9367612cb6e18574111151b07d0e626a97d7cebf`  _(2026-08-25)_
-**Security-reviewed up to commit:** `9367612cb6e18574111151b07d0e626a97d7cebf`  _(2026-08-25)_
+**Reviewed up to commit:** `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`  _(2026-08-25)_
+**Security-reviewed up to commit:** `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`  _(2026-08-25)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -103,5 +103,18 @@ required Payment security pass were clean. The branch-local change preserves the
 idempotency key while carrying its identity as an opaque value through the application/provider seam; text
 conversion remains inside the real and fake Stripe adapters. Imported main changes and conflict-free merge
 `843c82cd2` introduce no branch-specific resolution delta. The service-boundary, module-boundary, package,
+language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
+were also clean.
+
+## Incremental review — 2026-08-25 (current-main reconciliation)
+
+> Range reviewed: `9367612c..96b8a328` (36 commits).
+
+No new findings. Native and required Payment security passes were clean. The merge-resolution delta
+re-scaffolds the combined Payment model, preserving every session operation/attempt table, constraint, index,
+rowversion and relationship while adopting main's `DateTimeOffset` audit columns. The protobuf contract tests
+retain every session enum, field-number/type and service-method assertion; assembly-reference guards moved to
+the architecture tier without reducing Contracts or Client assembly coverage. Imported main commits introduce
+no branch-specific regression. The service-boundary, module-boundary, persistence, package,
 language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
 were also clean.
