@@ -179,19 +179,20 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Build `api/Concertable.slnx`; run Tenant module unit tests.
 - [x] Update this plan (check off) and the ledger in the implementation commit.
 
-### Phase 2 — Tenant-facing submission API
+### Phase 2 — Tenant-facing submission API ✅ merged (PR #784, `1867f0a72`)
 
-- [ ] `IVerificationService`/`VerificationService` in `Concertable.B2B.Tenant.Application`/
-  `Infrastructure`: `GetOwnAsync` (current tenant's status/reason/documents), `SubmitAsync(files,
+- [x] `IVerificationService`/`VerificationService` in `Concertable.B2B.Tenant.Application`/
+  `Infrastructure`: `GetStatusAsync` (current tenant's status/reason/documents), `SubmitAsync(files,
   documentTypes)` (creates or resubmits, uploads each file to `verification-evidence/` via
   `IBlobStorageService`, transitions to `Pending`).
-- [ ] `VerificationController` (`api/organization/verification`), `[Authorize]`,
+- [x] `VerificationController` (`api/organization/verification`), `[Authorize]`,
   `[HasPermission(SharedPermissions.TenantSettingsEdit)]` on the mutating endpoint,
   `[EnableRateLimiting(RateLimitPolicies.Upload)]` on the upload endpoint. `GET` (status) needs no
   special permission beyond `[Authorize]`, matching `OrganizationController.Get`.
-- [ ] Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path.
-- [ ] Unit tests for the service; integration tests for the controller (round-trip submit → read status).
-- [ ] Build + focused tests; commit.
+- [x] Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path, plus a magic-byte
+  check against the declared type (added during review — the header alone is attacker-controlled).
+- [x] Unit tests for the service; integration tests for the controller (round-trip submit → read status).
+- [x] Build + focused tests; commit.
 
 ### Phase 3 — Cross-module gate + enforcement at publication and settlement
 
