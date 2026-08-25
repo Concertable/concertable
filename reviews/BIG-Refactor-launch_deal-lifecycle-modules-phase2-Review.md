@@ -216,7 +216,7 @@ was reviewed through the native general and required security layers. Five findi
   published and are also subscribed back to B2B through the broker. The broker delivery has a different
   message id, so inbox deduplication cannot prevent the local handlers running twice. Remove the three
   self-subscriptions while retaining their publish registrations and local handlers, and cover the topology.
-- [ ] **IR3 — HIGH — tenant isolation / correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationAvailabilityProjection.cs:8`
+- [x] **IR3 — HIGH — tenant isolation / correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationAvailabilityProjection.cs:8`
   Acceptance checks Concert availability through tenant-filtered `ApplicationDbContext`. An accepting venue
   therefore cannot see the target artist's conflicting Concert at another venue and can double-book the artist.
   Query the Application-owned projection through `IApplicationReadDbContext` and cover the cross-venue case.
