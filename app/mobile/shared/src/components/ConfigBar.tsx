@@ -6,7 +6,7 @@ interface Props {
   editMode: boolean;
   isDirty: boolean;
   isSaving: boolean;
-  canSave: boolean;
+  canSave?: boolean;
   error?: string;
   onToggleEdit: () => void;
   onSave: () => void;
@@ -17,7 +17,7 @@ export function ConfigBar({
   editMode,
   isDirty,
   isSaving,
-  canSave,
+  canSave = true,
   error,
   onToggleEdit,
   onSave,

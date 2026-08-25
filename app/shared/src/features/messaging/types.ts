@@ -33,11 +33,15 @@ export const MESSAGE_ACTION_LABELS: Record<MessageAction, string> = {
   concertPosted: "Concert posted",
 };
 
+export function messageActionLabel(action: MessageAction): string {
+  return MESSAGE_ACTION_LABELS[action];
+}
+
 export interface MessageSender {
   kind: MessageSenderKind;
   displayName: string;
-  county?: string;
-  town?: string;
+  county?: string | null;
+  town?: string | null;
 }
 
 export interface MessageActions {

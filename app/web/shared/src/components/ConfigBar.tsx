@@ -11,7 +11,7 @@ interface Props {
   onSave: () => void;
   onCancel: () => void;
   actions?: ReactNode;
-  canSave: boolean;
+  canSave?: boolean;
   error?: string;
 }
 
@@ -23,7 +23,7 @@ export function ConfigBar({
   onSave,
   onCancel,
   actions,
-  canSave,
+  canSave = true,
   error,
 }: Readonly<Props>) {
   const ref = useRef<HTMLDivElement>(null);

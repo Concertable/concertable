@@ -42,22 +42,24 @@ function b2bChecks(name, tenantExport = "features/tenant") {
 const CHECKS = {
   "@concertable/shared": {
     node: [
-      'import { genreLabel } from "@concertable/shared";',
+      'import { GENRE_LABELS, genreLabel } from "@concertable/shared";',
       'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
       'import type { Genre } from "@concertable/shared/types";',
       'import { useAuthStore, type User } from "@concertable/shared/features/auth";',
       'const genre: Genre = "rock";',
       'if (genreLabel(genre) !== "Rock") throw new Error("Unexpected genre label");',
+      'if (GENRE_LABELS[genre] !== "Rock") throw new Error("Unexpected genre labels");',
       'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
       'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
       "const user = {} as User;",
       "void user;",
     ],
     nodeRuntime: [
-      'import { genreLabel } from "@concertable/shared";',
+      'import { GENRE_LABELS, genreLabel } from "@concertable/shared";',
       'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
       'import { useAuthStore } from "@concertable/shared/features/auth";',
       'if (genreLabel("rock") !== "Rock") throw new Error("Unexpected genre label");',
+      'if (GENRE_LABELS.rock !== "Rock") throw new Error("Unexpected genre labels");',
       'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
       'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
     ],
@@ -80,8 +82,10 @@ const CHECKS = {
     node: [
       'import { cn } from "@concertable/web/lib/utils";',
       'import { ReviewRouteProvider, b2bReviewBasePath, customerReviewBasePath } from "@concertable/web/features/reviews";',
+      'import { useMeQuery } from "@concertable/web/features/user";',
       'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
       'if (typeof ReviewRouteProvider !== "function") throw new Error("Missing review route provider export");',
+      'if (typeof useMeQuery !== "function") throw new Error("Missing useMeQuery export");',
       'if (b2bReviewBasePath("artist", 12) !== "/artist/12/review") throw new Error("Unexpected B2B review route");',
       'if (customerReviewBasePath("artist", 12) !== "/artists/12/reviews") throw new Error("Unexpected customer review route");',
     ],

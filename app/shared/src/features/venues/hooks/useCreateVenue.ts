@@ -26,10 +26,13 @@ export interface UseCreateVenueResult {
 }
 
 const initialVenue = {
+  id: 0,
   name: "",
   about: "",
   bannerUrl: "",
   avatar: undefined,
+  rating: 0,
+  email: "",
   county: "",
   town: "",
   latitude: 51.5074,
@@ -83,9 +86,6 @@ export function useCreateVenue(
 
   const state = venueDraft ?? initialVenue;
   const draft: Venue = {
-    id: 0,
-    rating: 0,
-    email: "",
     ...state,
   };
 

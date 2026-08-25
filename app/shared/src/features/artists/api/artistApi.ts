@@ -4,10 +4,24 @@ import type {
   CreateArtistRequest,
   UpdateArtistRequest,
 } from "../types";
+import type { ImageFile } from "../../../types/image";
+import type { Genre } from "../../../types/common";
+
+export interface CreateArtist {
+  name: string;
+  about: string;
+  latitude: number;
+  longitude: number;
+  genres: Genre[];
+  banner: File;
+  avatar: File;
+}
 
 type FormDataValue = Parameters<FormData["append"]>[1];
 
-function toCreateFormData(request: CreateArtistRequest): FormData {
+function toCreateFormData(
+  request: CreateArtistRequest | CreateArtist,
+): FormData {
   const formData = new FormData();
   formData.append("Name", request.name);
   formData.append("About", request.about);
@@ -39,6 +53,46 @@ function toUpdateFormData(request: UpdateArtistRequest): FormData {
   return formData;
 }
 
+async function createArtist(
+  request: CreateArtistRequest | CreateArtist,
+): Promise<Artist> {
+  const { data } = await apiClient.post<Artist>(
+    "/organization/artist",
+    toCreateFormData(request),
+  );
+  return data;
+}
+
+async function updateArtist(request: UpdateArtistRequest): Promise<Artist>;
+async function updateArtist(
+  artist: Artist,
+  banner?: ImageFile,
+  avatar?: ImageFile,
+): Promise<Artist>;
+async function updateArtist(
+  requestOrArtist: UpdateArtistRequest | Artist,
+  banner?: ImageFile,
+  avatar?: ImageFile,
+): Promise<Artist> {
+  const request =
+    "id" in requestOrArtist
+      ? {
+          name: requestOrArtist.name,
+          about: requestOrArtist.about,
+          latitude: requestOrArtist.latitude,
+          longitude: requestOrArtist.longitude,
+          genres: requestOrArtist.genres,
+          banner,
+          avatar,
+        }
+      : requestOrArtist;
+  const { data } = await apiClient.put<Artist>(
+    "/organization/artist",
+    toUpdateFormData(request),
+  );
+  return data;
+}
+
 const artistApi = {
   getArtist: async (id: number): Promise<Artist> => {
     const { data } = await apiClient.get<Artist>(`/artist/${id}`);
@@ -52,24 +106,11 @@ const artistApi = {
 
   getMyArtist: async (): Promise<Artist | undefined> => {
     const { data } = await apiClient.getOptional<Artist>("/organization/artist");
-    return data;
+    return data ?? undefined;
   },
 
-  createArtist: async (request: CreateArtistRequest): Promise<Artist> => {
-    const { data } = await apiClient.post<Artist>(
-      "/organization/artist",
-      toCreateFormData(request),
-    );
-    return data;
-  },
-
-  updateArtist: async (request: UpdateArtistRequest): Promise<Artist> => {
-    const { data } = await apiClient.put<Artist>(
-      "/organization/artist",
-      toUpdateFormData(request),
-    );
-    return data;
-  },
+  createArtist,
+  updateArtist,
 };
 
 export default artistApi;

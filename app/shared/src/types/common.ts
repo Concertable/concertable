@@ -22,6 +22,10 @@ export const GENRE_LABELS: Record<Genre, string> = {
   house: "House",
 };
 
+export function genreLabel(genre: Genre): string {
+  return GENRE_LABELS[genre];
+}
+
 export interface Pagination<T> {
   data: T[];
   totalCount: number;

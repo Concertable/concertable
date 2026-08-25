@@ -11,6 +11,7 @@ export type { UseArtistByIdResult } from "./hooks/useArtistById";
 export { useMyArtist } from "./hooks/useMyArtist";
 export type { UseMyArtistOptions, UseMyArtistResult } from "./hooks/useMyArtist";
 export { useCreateArtist } from "./hooks/useCreateArtist";
+export { useArtistStore } from "./store/useArtistStore";
 export type {
   UseCreateArtistOptions,
   UseCreateArtistResult,

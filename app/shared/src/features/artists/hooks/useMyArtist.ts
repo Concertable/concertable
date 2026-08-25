@@ -11,6 +11,7 @@ import { artistKeys, useMyArtistQuery } from "./useArtistQuery";
 
 export interface UseMyArtistOptions {
   onSuccess?: (saved: Artist) => void;
+  onError?: () => void;
 }
 
 export interface UseMyArtistResult {
@@ -65,7 +66,8 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
   useMountEffect(() => () => endEdit());
 
   const mutation = useMutation({
-    mutationFn: artistApi.updateArtist,
+    mutationFn: (request: UpdateArtistRequest) =>
+      artistApi.updateArtist(request),
     onSuccess: (saved) => {
       queryClient.setQueryData(artistKeys.my(), saved);
       queryClient.setQueryData(artistKeys.byId(saved.id), saved);
@@ -73,6 +75,7 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
       endEdit();
       options?.onSuccess?.(saved);
     },
+    onError: () => options?.onError?.(),
   });
 
   const artist = query.data ?? undefined;

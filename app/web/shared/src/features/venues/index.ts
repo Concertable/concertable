@@ -9,4 +9,5 @@ export {
   venueKeys,
 } from "./hooks/useVenueQuery";
 export { useVenue, useVenueById } from "@concertable/shared/features/venues";
+export { useVenueStore } from "./store/useVenueStore";
 export type { Venue } from "./types";

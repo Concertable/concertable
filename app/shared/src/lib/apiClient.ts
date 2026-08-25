@@ -11,7 +11,7 @@ export type ApiClient = AxiosInstance & {
   getOptional<T = unknown, D = unknown>(
     url: string,
     config?: AxiosRequestConfig<D>,
-  ): Promise<AxiosResponse<T | undefined, D>>;
+  ): Promise<AxiosResponse<T | null, D>>;
 };
 
 export function createApiClient(options?: CreateAxiosDefaults): ApiClient {
@@ -19,13 +19,13 @@ export function createApiClient(options?: CreateAxiosDefaults): ApiClient {
   client.getOptional = async <T = unknown, D = unknown>(
     url: string,
     config?: AxiosRequestConfig<D>,
-  ): Promise<AxiosResponse<T | undefined, D>> => {
+  ): Promise<AxiosResponse<T | null, D>> => {
     try {
       return await client.get<T, AxiosResponse<T, D>, D>(url, config);
     } catch (error) {
       const requestError = isApiError(error) ? error.cause : error;
       if (isAxiosError(requestError) && requestError.response?.status === 404)
-        return { ...requestError.response, data: undefined };
+        return { ...requestError.response, data: null };
       throw error;
     }
   };

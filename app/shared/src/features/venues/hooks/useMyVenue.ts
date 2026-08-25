@@ -12,6 +12,7 @@ import { venueKeys, useMyVenueQuery } from "./useVenueQuery";
 
 export interface UseMyVenueOptions {
   onSuccess?: (saved: Venue) => void;
+  onError?: () => void;
   afterSave?: () => Promise<void>;
   onToggleEdit?: () => void;
   onResetDraft?: () => void;
@@ -85,6 +86,7 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
       endEdit();
       options?.onSuccess?.(saved);
     },
+    onError: () => options?.onError?.(),
   });
 
   const venue = query.data ?? undefined;

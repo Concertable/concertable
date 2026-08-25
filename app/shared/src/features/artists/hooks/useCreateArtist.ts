@@ -26,11 +26,14 @@ export interface UseCreateArtistResult {
 }
 
 const initialArtist = {
+  id: 0,
   name: "",
   about: "",
   bannerUrl: "",
   avatar: undefined,
+  rating: 0,
   genres: [],
+  email: "",
   county: "",
   town: "",
   latitude: 51.5074,
@@ -85,9 +88,6 @@ export function useCreateArtist(
 
   const state = artistDraft ?? initialArtist;
   const draft: Artist = {
-    id: 0,
-    rating: 0,
-    email: "",
     ...state,
   };
 
