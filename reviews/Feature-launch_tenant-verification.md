@@ -44,3 +44,34 @@
   self-contained (no new `SixLabors.ImageSharp` dependency + cross-service package-version pin) rather than
   reusing `ImageValidator`'s full image-decode approach, consistent with plan §1.3's "add a dedicated
   check rather than reusing the image-specific service."
+
+## User review — caught after the above was reported clean
+
+Lens E (language/framework conventions) was under-applied in the first pass: the invoked skills
+(`result-carriers`, `csharp-style`/`NAMING.md`, `persistence`) were read at write time but not re-checked
+against the finished diff during the review itself. All five findings below are fixed.
+
+- [x] **CV1 — convention (result-carriers)** — `VerificationService.cs` (`UploadEvidenceAsync`)
+  Returned `Task<List<VerificationDocumentEntity>>`. `CARRIERS.md`: "Zero or more values | `IReadOnlyList<T>`".
+  **Fixed:** return type is `IReadOnlyList<VerificationDocumentEntity>`.
+- [x] **CV2 — convention (csharp-style / csharp-naming)** — `VerificationMappers.cs`
+  Used legacy `public static X ToDto(this Y y)` methods. `STYLE.md`: "New extension members go in
+  `extension()` blocks... Do not add a new legacy `public static … (this X x)` method." `NAMING.md` shows
+  the exact `XMappers`-with-`extension()` shape. **Fixed:** converted to `extension(Y y) { public X ToDto()
+  => ...; }` blocks.
+- [x] **CV3 — convention (persistence)** — `VerificationRepository.cs`
+  Took `TenantDbContext` and re-stored it in a private field purely to call `.Verifications.Include(...)`.
+  `PERSISTENCE.md`: "Keep the concrete context in a `private readonly` field only when the repository
+  genuinely needs typed `DbSet`s..." — it didn't; `Context.Query<TEntity>()` (inherited) does the same
+  query. **Fixed:** primary-constructor repository, no field, queries via `Context.Query<TenantVerificationEntity>()`.
+- [x] **CV4 — design (DDD)** — `VerificationService.cs` (blob-name construction)
+  The evidence blob-naming convention (documented in plan §1.3) was built ad hoc as an interpolated string
+  in the infrastructure service. **Fixed:** moved to `VerificationDocumentEntity.BuildBlobName(tenantId,
+  documentType, fileExtension)` — the domain owns its own naming rule; infrastructure just calls it and
+  performs the I/O. Covered by two new domain unit tests.
+- [x] **CV5 — design (reusability)** — `IVerificationService.SubmitAsync`
+  Took `SubmitVerificationRequest` directly, which carries `IFormFileCollection` — an ASP.NET Core type,
+  making the service uncallable from anything that isn't already inside an HTTP request. **Fixed:**
+  service now takes `IReadOnlyList<EvidenceUpload>` (a plain `Stream` + extension + document type); the
+  controller maps the MVC-bound request via a new `SubmitVerificationRequest.ToEvidenceUploads()` extension.
+  Also proposed as a standards addition — see Decisions below.
