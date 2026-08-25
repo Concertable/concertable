@@ -200,3 +200,34 @@ does not set up the new batch profile read; the Opportunity integration shard fa
 integration matrix, including Process tests, from providing behavioural evidence. No local integration
 or E2E suite was run during review. Concurrent uncommitted state-machine work after `6ba7a13c5` was not
 included in the incremental range.
+
+## Incremental review — 2026-08-25
+
+Range `c50469d483f697890dc9b4f3d2b3013ee1b8c1c9..b61fc7feb2033047e69fd44896646ec85b6e4262`
+was reviewed through the native general and required security layers. Five findings remain open.
+
+- [x] **IR1 — HIGH — messaging correctness** — `api/Concertable.B2B/src/Concertable.B2B.Web/B2BWebHostExtensions.cs:177`
+  `ConcertService` durably stages `NotifyConcertDraftCreatedCommand` and its handler is registered in DI,
+  but the production message registry does not handle the command, so Azure Service Bus creates no receiver
+  for it and the post-commit notification is never delivered. Register the command in the production topology
+  and mechanically cover the registry.
+- [x] **IR2 — HIGH — messaging correctness / idempotency** — `api/Concertable.B2B/src/Concertable.B2B.Web/B2BWebHostExtensions.cs:174`
+  `BookingCancelledEvent`, `ConcertCancelledEvent`, and `ConcertCreatedEvent` are locally dispatched when
+  published and are also subscribed back to B2B through the broker. The broker delivery has a different
+  message id, so inbox deduplication cannot prevent the local handlers running twice. Remove the three
+  self-subscriptions while retaining their publish registrations and local handlers, and cover the topology.
+- [ ] **IR3 — HIGH — tenant isolation / correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationAvailabilityProjection.cs:8`
+  Acceptance checks Concert availability through tenant-filtered `ApplicationDbContext`. An accepting venue
+  therefore cannot see the target artist's conflicting Concert at another venue and can double-book the artist.
+  Query the Application-owned projection through `IApplicationReadDbContext` and cover the cross-venue case.
+- [ ] **IR4 — HIGH — financial integrity / concurrency** — `api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure/Services/BookingService.cs:121`
+  Cancellation and both financial-outcome paths read Booking without an update lock or concurrency retry.
+  Concurrent operations can both observe `AwaitingConfirmation`, then overwrite one another so a confirmed
+  Booking is refunded with its Concert intact or a cancellation is overwritten without compensation. Serialize
+  all three transition reads and prove both commit orders with deterministic overlap tests.
+- [ ] **IR5 — HIGH — plan conformance / lifecycle correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Entities/ApplicationEntity.cs:96`
+  The ledger claims PR #633 adopted the published Kernel state machine, but Application, Booking, and Concert
+  still enforce transitions with hand-written guards and direct state assignments, and no B2B source consumes
+  `IStateMachine`. Implement the documented module-local `Lifecycle.State`, `Trigger`, and `StateMachine`
+  definitions, funnel aggregate mutation through the private Result-based transition helper, add exhaustive
+  edge and no-mutation tests, and add the mechanical assignment guard.
