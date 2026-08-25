@@ -5,12 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `2f2e7218d9b00aa9b8c208230a8cf3220792d936`  _(2026-08-25)_
+**Reviewed up to commit:** `cec78027dea2ee37dcc0eb93cf735e93cd57954b`  _(2026-08-25)_
 **Security-reviewed up to commit:** `84e4d61b0d47533645e5813d39f39413a2a4073e`  _(2026-08-25)_
 
-> Range reviewed: `ac7ff7f17..c72c79161` (1 commit; findings fixed in `84e4d61b0` and `2f2e7218d`). Diff
-> touches `VerificationController.cs`, matching this repo's `Controller[A-Za-z]*\.cs$` security-sensitive
-> pattern (`.agents/merge-gate.json`).
+> Range reviewed: `ac7ff7f17..c72c79161` (1 commit; findings fixed across `84e4d61b0`, `2f2e7218d`, and
+> `cec78027d`). Diff touches `VerificationController.cs`, matching this repo's `Controller[A-Za-z]*\.cs$`
+> security-sensitive pattern (`.agents/merge-gate.json`).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -66,12 +66,20 @@ against the finished diff during the review itself. All five findings below are 
   query. **Fixed:** primary-constructor repository, no field, queries via `Context.Query<TenantVerificationEntity>()`.
 - [x] **CV4 — design (DDD)** — `VerificationService.cs` (blob-name construction)
   The evidence blob-naming convention (documented in plan §1.3) was built ad hoc as an interpolated string
-  in the infrastructure service. **Fixed:** moved to `VerificationDocumentEntity.BuildBlobName(tenantId,
-  documentType, fileExtension)` — the domain owns its own naming rule; infrastructure just calls it and
-  performs the I/O. Covered by two new domain unit tests.
+  in the infrastructure service, then threaded through two separate calls. First fix (a static
+  `BuildBlobName` helper) still didn't use the entity — it just moved the same string-building elsewhere.
+  **Fixed properly:** a new `VerificationDocumentEntity.Create(tenantId, documentType, fileExtension,
+  uploadedAt)` overload derives and owns the name internally; the service constructs the entity first and
+  reads `document.BlobName` back off it for the blob upload — the entity is genuinely used, not just
+  consulted for a string. Covered by two domain unit tests.
 - [x] **CV5 — design (reusability)** — `IVerificationService.SubmitAsync`
   Took `SubmitVerificationRequest` directly, which carries `IFormFileCollection` — an ASP.NET Core type,
   making the service uncallable from anything that isn't already inside an HTTP request. **Fixed:**
   service now takes `IReadOnlyList<EvidenceUpload>` (a plain `Stream` + extension + document type); the
   controller maps the MVC-bound request via a new `SubmitVerificationRequest.ToEvidenceUploads()` extension.
   Also proposed as a standards addition — see Decisions below.
+- [x] **CV6 — convention (result-carriers)** — `VerificationService.cs` (`GetOwnAsync`)
+  Used the explicit `.ToOption().Map(v => v.ToDto())` chain (copied from `TenantService.cs` precedent).
+  `CARRIERS.md` prefers target typing over `.ToOption()` where a target-typed site exists. **Fixed:**
+  `(await repository.GetByTenantIdAsync(tenantId, ct))?.ToDto()` — the nullable result and the `null`/
+  `VerificationStatusDto` outcomes convert implicitly at the `Option<VerificationStatusDto>`-typed return.
