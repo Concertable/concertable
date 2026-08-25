@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: draft #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: PR #597 and platform sync #645 supplied the implementation baseline; this producer's publication and generated platform-sync remain pending
-- Last reconciled: `2026-08-25` at producer head `9367612cb6e18574111151b07d0e626a97d7cebf`, Payment platform `0.1.0-alpha.0.1171`, clean native/security review through that head, and exact-head draft CI run `32780879706` green; PR #721 now requires current-main reconciliation
+- Last reconciled: `2026-08-25` against `origin/main` `69e060958b529c0e4851f9983c3244dd150d466d`, Payment platform `0.1.0-alpha.0.1186`, and clean native/security review through `9367612cb6e18574111151b07d0e626a97d7cebf`; the current-main merge and its resolution delta are pending incremental review
 
 ## Current state
 
@@ -21,19 +21,20 @@ internal `PaymentSessionIdempotencyKey` value object, carries it through `IStrip
 it to provider text only inside the real and fake Stripe adapters. No reverse parser is added because no
 string ingress exists.
 
-PR #721 remains draft. The reviewed executable head completed exact-head CI green, but `main` advanced and
-GitHub now reports the PR conflicted; current-main reconciliation, focused validation, and review of that
-delta are required before the PR is made ready. Consumer
+PR #721 remains draft. Current `origin/main` is merged in this commit. The Payment migration was re-scaffolded
+from the combined model so the session operation/attempt schema and main's `DateTimeOffset` audit model both
+remain present. The protobuf compatibility tests retain the session contract assertions while main's assembly
+reference guards remain in the architecture tier. The merge delta requires incremental review and exact-head
+CI before the PR is made ready. Consumer
 work remains delivery-gated until the producer merges, its packages publish, and the causally generated
 platform-sync PR is green and merged. The roadmap item remains unchecked until those gates are terminal.
 
 ## Next Steps
 
-Merge current `origin/main`, resolve any conflicts without changing the Payment session contract, run the
-smallest affected Payment build and focused tests, then run `/incremental-review` from
-`9367612cb6e18574111151b07d0e626a97d7cebf` through the reconciled head including the required Payment security
-layer. Push only the resulting clean executable candidate plus its review tail, then require exact-head draft
-CI green before making PR #721 ready and entering `/merge`.
+Run `/incremental-review` from `9367612cb6e18574111151b07d0e626a97d7cebf` through this current-main merge,
+including the required Payment security layer, and resolve every finding. Push only the resulting clean
+executable candidate plus its review tail, then require exact-head draft CI green before making PR #721 ready
+and entering `/merge`.
 
 ## Completed work
 
@@ -45,21 +46,16 @@ CI green before making PR #721 ready and entering `/merge`.
   exhaustive error mapping, compatibility guards, and focused unit/integration coverage.
 - Resolved review findings NAT1 and SEC1–SEC3 in commits `9801e2d0d`, `17f3fcc71`, `9751bd838`, and
   `6bf01d7b4`; subsequent current-main incremental reviews were clean through `c685747a4`.
-- Opened PR #721 and repeatedly reconciled it with current `main`; the latest merge is
-  `843c82cd25548010579931376ebdeb7cca8eedc1`.
+- Opened PR #721 and reconciled it with current `main`, most recently through this commit.
 - Replaced the string generator with an opaque idempotency-key value object at the Application/provider seam
   and added direct value-equality and canonical-format coverage in this commit.
 
 ## Verification
 
-- `dotnet build tests\Concertable.Payment.UnitTests\Concertable.Payment.UnitTests.csproj --no-restore
-  --disable-build-servers`: succeeded with 0 warnings and 0 errors against platform `.1171`.
-- Focused `PaymentSessionIdempotencyKeyTests|PaymentSessionProviderExecutionTests`: 4 passed, 0 failed,
-  0 skipped.
-- `dotnet build tests\Concertable.Payment.IntegrationTests\Concertable.Payment.IntegrationTests.csproj
-  --no-restore --disable-build-servers`: succeeded with 0 warnings and 0 errors.
-- The previous reviewed PR head `f3a549eb065d1c4432e00265b52e45bb64e67dd2` completed all 70 CI checks
-  without failure; that evidence is superseded for executable validation by this candidate.
+- `api/initial-migrations.ps1`: succeeded; only the combined Payment model required a new scaffold.
+- Payment UnitTests build: succeeded with 0 warnings and 0 errors against platform `.1186`.
+- Focused session idempotency/provider/protobuf contract tests: 9 passed, 0 failed, 0 skipped.
+- Focused Payment contract/package architecture guards: 6 passed, 0 failed, 0 skipped.
 
 ## Reviews
 

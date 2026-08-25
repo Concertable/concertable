@@ -9,3 +9,4 @@ package and its service consumers.
 - [x] EF context/repository permission hierarchy `data-access/repository-context-permission-hierarchy`
   — the capability seam is stable; any package extraction remains separate while Kernel entity and
   messaging couplings are measured.
+- [ ] DateTimeOffset audit contract and Payment adoption `data-access/audit-datetimeoffset`
