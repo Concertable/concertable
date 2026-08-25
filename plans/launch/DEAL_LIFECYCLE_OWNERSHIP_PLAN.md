@@ -601,7 +601,7 @@ Implementation checkpoints, in order:
 - [ ] Move Application persistence, services, repository, API mapping, actions, and local lifecycle
   state to Application.
 - [ ] Move Booking, Contract, acceptance payment/recovery, and pre-Concert cancellation to Booking.
-- [ ] Replace the combined `LifecycleState` with independent Application and Booking state.
+- [x] Replace the combined `LifecycleState` with independent Application and Booking state.
 - [ ] Preserve the Accept transaction, immutable Contract snapshot, operation IDs, early-verification
   join, late-callback compensation, retry, and idempotency invariants.
 - [ ] Make Opportunity acceptance an atomic `Open` to `Filled` claim and prove concurrent acceptance
@@ -632,16 +632,16 @@ Gate: Concert can validate and complete every operation from its own state plus 
 
 ### Phase 5 — replace the god workflow with local steps
 
-- [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
+- [x] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
 - [x] Deliver the additive Kernel `IStateMachine<TState, TTrigger>`,
   `TransitionError<TState, TTrigger>`, and immutable frozen-table implementation through its shared
   package producer checkpoint; reconcile Kernel's direct Reunion dependency rule, reject duplicate
   edges, and prove the input collection cannot mutate the constructed machine.
-- [ ] After package publication, add independent Application, Booking, and Concert state, trigger, and
+- [x] After package publication, add independent Application, Booking, and Concert state, trigger, and
   configured-machine definitions. Preserve the approved legal edges and return the common transition
   error for every other state/trigger pair.
-- [ ] Route every aggregate lifecycle operation through one private transition helper. Keep semantic
+- [x] Route every aggregate lifecycle operation through one private transition helper. Keep semantic
   public/internal methods, operation-specific validation, state mutation, auxiliary data mutation, and
   domain-event raising on the aggregate; remove direct target-state assignment from callers.
 - [ ] Audit Opportunity's Open/Filled/reopen flow. Keep the atomic conditional claim at persistence;
@@ -669,6 +669,19 @@ auxiliary facts, and domain events unchanged; and an architecture/convention gua
 lifecycle-state assignment outside the owning aggregate's construction/hydration and private transition
 path. Payment PR #707, if still open when the package publishes, replaces only its allowed-edge tables
 and reruns its complete provider-transition matrix.
+
+Delivered (2026-08-25): each module owns `Domain/Lifecycle/{State,Trigger,StateMachine}.cs`. Application
+`State` = {Applied, Accepted, Rejected, Withdrawn}, `Trigger` = {Accept, Reject, Withdraw}, three edges.
+Booking `State` = {AwaitingConfirmation, ConfirmationFailed, Confirmed, CancellationPending,
+CancellationFailed, Cancelled}, `Trigger` = {Confirm, RecordConfirmationFailure, BeginCancellation,
+RecordCancellationFailure, Cancel}, ten edges. Concert `State` = {Draft, Posted, CancellationPending,
+CancellationFailed, AwaitingSettlement, SettlementFailed, Complete, Cancelled}, `Trigger` = {Post,
+BeginCancellation, RecordCancellationFailure, Cancel, BeginSettlement, RecordSettlementFailure,
+CompleteSettlement}, sixteen edges. Each `internal sealed class StateMachine : IStateMachine<State,
+Trigger>` delegates to the Kernel `StateMachine<State, Trigger>`; each aggregate funnels mutation through a
+private `Transition(Trigger)` helper (`State = next` only on success). Operation errors carry
+`InvalidTransition(TransitionError<State, Trigger>)`. `StateMachineTests`, `*EntityLifecycleTests`, and
+`LifecycleStateOwnershipTests` cover the exhaustive-edge, no-mutation, and assignment-guard requirements.
 
 Gate: each command invokes one module-owned operation; every lifecycle mutation is accepted by that
 module's immutable machine and applied by its aggregate; no service calculates a target state, resolves

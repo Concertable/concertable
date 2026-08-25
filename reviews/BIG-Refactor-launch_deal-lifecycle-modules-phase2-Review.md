@@ -28,8 +28,13 @@ Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progr
 All seven fixed-anchor areas and the required security layer are complete. At published head
 `6ba7a13c5`, 24 findings remain open: 14 high, eight medium, and two low. Post-anchor work resolved 21
 anchored findings; those findings are checked below and the incremental reconciliation is recorded in
-the final section. The PR is not merge-ready while the open high findings and exact-head CI failures
-remain.
+the final section.
+
+**Status 2026-08-25:** every finding above and every incremental finding (IR1–IR5) is now resolved on the
+branch; no `[ ]` finding remains. The IR5 state-machine cutover is the last to close. This file stays as the
+local gate's evidence through merge and is deleted immediately after PR #633 merges. Final closure — Shared/
+Kernel and affected B2B build/carve, architecture/package guards, plan graph, `git diff --check`, exact-head
+CI, and PR/remote head equality — is being run separately and is not asserted here.
 
 ## Cross-area notes
 
@@ -204,7 +209,10 @@ included in the incremental range.
 ## Incremental review — 2026-08-25
 
 Range `c50469d483f697890dc9b4f3d2b3013ee1b8c1c9..b61fc7feb2033047e69fd44896646ec85b6e4262`
-was reviewed through the native general and required security layers. Five findings remain open.
+was reviewed through the native general and required security layers. Five findings were raised; all five are
+now resolved. IR2 (`d1c5d252b`), IR3 (`05a685317`), and IR4 (`090308c04`) landed after the reviewed range;
+IR5's state-machine cutover is included in the current candidate. A fresh incremental review over those fix
+commits is part of final closure and is not asserted here.
 
 - [x] **IR1 — HIGH — messaging correctness** — `api/Concertable.B2B/src/Concertable.B2B.Web/B2BWebHostExtensions.cs:177`
   `ConcertService` durably stages `NotifyConcertDraftCreatedCommand` and its handler is registered in DI,
@@ -225,9 +233,18 @@ was reviewed through the native general and required security layers. Five findi
   Concurrent operations can both observe `AwaitingConfirmation`, then overwrite one another so a confirmed
   Booking is refunded with its Concert intact or a cancellation is overwritten without compensation. Serialize
   all three transition reads and prove both commit orders with deterministic overlap tests.
-- [ ] **IR5 — HIGH — plan conformance / lifecycle correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Entities/ApplicationEntity.cs:96`
+- [x] **IR5 — HIGH — plan conformance / lifecycle correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Entities/ApplicationEntity.cs:96`
   The ledger claims PR #633 adopted the published Kernel state machine, but Application, Booking, and Concert
   still enforce transitions with hand-written guards and direct state assignments, and no B2B source consumes
   `IStateMachine`. Implement the documented module-local `Lifecycle.State`, `Trigger`, and `StateMachine`
   definitions, funnel aggregate mutation through the private Result-based transition helper, add exhaustive
   edge and no-mutation tests, and add the mechanical assignment guard.
+  Resolved: Application, Booking, and Concert each own `Domain/Lifecycle/{State,Trigger,StateMachine}.cs` with
+  a module-local `internal sealed class StateMachine : IStateMachine<State, Trigger>` backed by the published
+  Kernel `StateMachine<State, Trigger>` frozen table. Each aggregate funnels every mutation through a private
+  `Transition(Trigger)` helper that assigns `State` only from the success value; operation errors carry
+  `InvalidTransition(TransitionError<State, Trigger>)`. `StateMachineTests` enumerate every state/trigger pair,
+  `*EntityLifecycleTests` prove a rejected transition leaves state, auxiliary facts, and events unchanged, and
+  `LifecycleStateOwnershipTests` mechanically fails any `State` assignment outside the private transition path.
+  The old combined `LifecycleState`, per-`DealType` `LifecycleStateMachine`, `IConcertStateMachineRegistry`, and
+  `ILifecycleTransitioner` no longer exist in source.
