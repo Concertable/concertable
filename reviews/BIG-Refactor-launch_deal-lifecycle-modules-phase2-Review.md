@@ -248,3 +248,12 @@ commits is part of final closure and is not asserted here.
   `LifecycleStateOwnershipTests` mechanically fails any `State` assignment outside the private transition path.
   The old combined `LifecycleState`, per-`DealType` `LifecycleStateMachine`, `IConcertStateMachineRegistry`, and
   `ILifecycleTransitioner` no longer exist in source.
+
+- [x] **IR6 — HIGH — messaging provisioning/correctness** — `api/Concertable.B2B/src/Concertable.B2B.Hosting/B2BTopology.cs:17`
+  The runtime registry publishes `BookingCancelledEvent`, `ConcertCancelledEvent`, and `ConcertCreatedEvent`
+  and handles `NotifyConcertDraftCreatedCommand`, but the Aspire topology provisions none of those topics and
+  no notification-command queue. Add the missing entities and enforce registry/provisioning parity in the
+  shared topology tests.
+  Resolved: `AddB2BTopology` now provisions all three event topics and both B2B command queues, with the
+  Booking contracts reference owned by the composition project. `ServiceTopologyTests` enforces the complete
+  topic and queue inventory.

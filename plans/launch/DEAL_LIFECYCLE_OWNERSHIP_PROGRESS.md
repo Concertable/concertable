@@ -40,9 +40,8 @@ placement remains recorded Application technical debt in
 
 ## Next Steps
 
-Implementation and review are complete; the branch is delivery-gated on final closure being run separately.
-Run the plan-required Shared/Kernel and affected B2B build/carve, architecture/package guards, a fresh
-incremental review over the IR1–IR5 fix commits from the recorded watermark, `python .agents/hooks/plan_graph.py
+Implementation is complete; the branch is delivery-gated on the final review closure. Run a fresh
+incremental review over the IR1–IR6 fix commits from the recorded watermark, `python .agents/hooks/plan_graph.py
 --root <worktree>`, and `git diff --check`; do not run local E2E. Then push one stable candidate, prove local,
 remote-tracking, and PR heads match, mark PR #633 ready, and follow it through merge-queue E2E, merge,
 publication, and platform sync to terminal. Delete this ledger, the plan, and the review artifact in the
@@ -63,6 +62,8 @@ closeout once the lifecycle is terminal.
   notification/email), MB6 (Contract suite re-homed to public boundaries), CV9/CV10 (mock-heavy orchestration
   moved out of UnitTests), IR1/IR2 (production message topology), IR3 (cross-venue availability), and IR4
   (serialized Booking financial transitions).
+- IR6 completed the production message topology by provisioning the three lifecycle topics and the durable
+  Concert-notification command queue in the Aspire composition layer.
 
 ## Verification
 
@@ -73,6 +74,7 @@ closeout once the lifecycle is terminal.
 - B2B's published package closure built in Release with `UseLocalCore=false` and
   `EnforceServiceBoundary=true`: 0 warnings / 0 errors. Direct Kernel/Reunion ownership and the shared
   `0.1.0-alpha.8` Reunion pin were mechanically confirmed.
+- `ServiceTopologyTests`: 7/7 passed with the lifecycle topic and command-queue inventory.
 - Local E2E deliberately not run. Standalone carve, complete integration matrices, and exact-head CI remain
   owned by draft-PR CI; PR/remote head equality remains part of final delivery.
 
@@ -80,9 +82,9 @@ closeout once the lifecycle is terminal.
 
 - Work order: `reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md`. Fixed-anchor review
   `fb561acee..c50469d48`, security-reviewed through `c50469d48`; incremental through `b61fc7feb`.
-- All findings resolved; no `[ ]` remains. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`) and the IR5
-  cutover landed after `b61fc7feb`; a fresh incremental review over those fix commits is part of final
-  closure. Keep the artifact until PR #633 merges, then delete it.
+- All findings resolved; no `[ ]` remains. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`), IR5
+  (`c61566685`), and the current IR6 topology checkpoint landed after `b61fc7feb`; a fresh incremental review
+  over those fix commits is the remaining review gate. Keep the artifact until PR #633 merges, then delete it.
 
 ## Decisions, discoveries, blockers, and deviations
 
