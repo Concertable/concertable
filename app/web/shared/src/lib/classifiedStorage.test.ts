@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/consent", () => ({
-  hasConsent: vi.fn(),
+  consent: { has: vi.fn() },
 }));
 
 vi.mock("@/lib/storageManifest", () => ({
@@ -60,7 +60,7 @@ vi.mock("@/lib/storageManifest", () => ({
   ],
 }));
 
-import { hasConsent } from "@/lib/consent";
+import { consent } from "@/lib/consent";
 import { createClassifiedStorage } from "./classifiedStorage";
 
 function createMemoryStorage(): Storage {
@@ -80,7 +80,7 @@ function createMemoryStorage(): Storage {
 beforeEach(() => {
   vi.stubGlobal("localStorage", createMemoryStorage());
   vi.stubGlobal("sessionStorage", createMemoryStorage());
-  vi.mocked(hasConsent).mockReset();
+  vi.mocked(consent.has).mockReset();
 });
 
 afterEach(() => {
@@ -90,7 +90,6 @@ afterEach(() => {
 describe("createClassifiedStorage", () => {
   it("refuses a key with no first-party manifest entry", () => {
     expect(() => createClassifiedStorage("unknown")).toThrow(/classify it/);
-    // a third-party item is not ours to write through the accessor
     expect(() => createClassifiedStorage("third-party")).toThrow(/classify it/);
   });
 
@@ -110,7 +109,7 @@ describe("createClassifiedStorage", () => {
 
     storage.remove();
     expect(storage.get()).toBeNull();
-    expect(hasConsent).not.toHaveBeenCalled();
+    expect(consent.has).not.toHaveBeenCalled();
   });
 
   it("targets the api named in the manifest entry", () => {
@@ -121,16 +120,16 @@ describe("createClassifiedStorage", () => {
   });
 
   it("withholds a consent-gated write until its category is granted", () => {
-    vi.mocked(hasConsent).mockReturnValue(false);
+    vi.mocked(consent.has).mockReturnValue(false);
     const storage = createClassifiedStorage("analytics-item");
 
     expect(storage.set("id")).toBe(false);
     expect(localStorage.getItem("analytics-item")).toBeNull();
-    expect(hasConsent).toHaveBeenCalledWith("analytics");
+    expect(consent.has).toHaveBeenCalledWith("analytics");
   });
 
   it("writes a consent-gated item once its category is granted", () => {
-    vi.mocked(hasConsent).mockReturnValue(true);
+    vi.mocked(consent.has).mockReturnValue(true);
     const storage = createClassifiedStorage("analytics-item");
 
     expect(storage.set("id")).toBe(true);

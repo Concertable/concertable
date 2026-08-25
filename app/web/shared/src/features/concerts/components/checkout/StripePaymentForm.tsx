@@ -48,7 +48,7 @@ function Form({
 }: Props) {
   const stripe = useStripe();
   const elements = useElements();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentReady, setPaymentReady] = useState(false);
 
@@ -57,7 +57,7 @@ function Form({
     if (!stripe || !elements) return;
 
     setIsSubmitting(true);
-    setError(null);
+    setError(undefined);
 
     const { error: submitError } = await elements.submit();
     if (submitError) {

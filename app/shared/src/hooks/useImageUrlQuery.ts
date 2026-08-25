@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import blobApi from "../api/blobApi";
 
-export function useImageUrlQuery(fileName?: string | null) {
+export function useImageUrlQuery(fileName?: string) {
   return useQuery({
     queryKey: ["image", fileName],
     queryFn: () =>

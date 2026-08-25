@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { registerConsentGated, registerConsentGatedScript } from "./consentGate";
-import { DENIED_DECISION, writeConsent } from "./consent";
+import {
+  registerConsentGated,
+  registerConsentGatedScript,
+} from "./consentGate";
+import { consent, DENIED_DECISION } from "./consent";
 
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
@@ -39,10 +42,10 @@ function createFakeDocument(appended: FakeScript[]): Document {
         id: "",
         attrs: {},
         removed: false,
-        setAttribute(name: string, value: string) {
+        setAttribute(this: FakeScript, name: string, value: string) {
           this.attrs[name] = value;
         },
-        remove() {
+        remove(this: FakeScript) {
           this.removed = true;
           const index = appended.indexOf(this);
           if (index >= 0) appended.splice(index, 1);
@@ -72,7 +75,7 @@ describe("registerConsentGated", () => {
   });
 
   it("activates immediately when consent is already granted at registration", () => {
-    writeConsent({ analytics: true, marketing: false });
+    consent.write({ analytics: true, marketing: false });
     const activate = vi.fn();
     const teardown = registerConsentGated({ category: "analytics", activate });
 
@@ -89,11 +92,11 @@ describe("registerConsentGated", () => {
       deactivate,
     });
 
-    writeConsent({ analytics: false, marketing: true });
+    consent.write({ analytics: false, marketing: true });
     expect(activate).toHaveBeenCalledTimes(1);
     expect(deactivate).not.toHaveBeenCalled();
 
-    writeConsent(DENIED_DECISION);
+    consent.write(DENIED_DECISION);
     expect(deactivate).toHaveBeenCalledTimes(1);
     teardown();
   });
@@ -102,8 +105,8 @@ describe("registerConsentGated", () => {
     const activate = vi.fn();
     const teardown = registerConsentGated({ category: "analytics", activate });
 
-    writeConsent({ analytics: true, marketing: false });
-    writeConsent({ analytics: true, marketing: true });
+    consent.write({ analytics: true, marketing: false });
+    consent.write({ analytics: true, marketing: true });
 
     expect(activate).toHaveBeenCalledTimes(1);
     teardown();
@@ -113,7 +116,7 @@ describe("registerConsentGated", () => {
     const activate = vi.fn();
     const teardown = registerConsentGated({ category: "analytics", activate });
 
-    writeConsent({ analytics: false, marketing: true });
+    consent.write({ analytics: false, marketing: true });
 
     expect(activate).not.toHaveBeenCalled();
     teardown();
@@ -124,7 +127,7 @@ describe("registerConsentGated", () => {
     const teardown = registerConsentGated({ category: "analytics", activate });
     teardown();
 
-    writeConsent({ analytics: true, marketing: false });
+    consent.write({ analytics: true, marketing: false });
 
     expect(activate).not.toHaveBeenCalled();
   });
@@ -142,14 +145,14 @@ describe("registerConsentGatedScript", () => {
       attributes: { "data-domain": "concertable" },
     });
 
-    writeConsent({ analytics: true, marketing: false });
+    consent.write({ analytics: true, marketing: false });
     expect(appended).toHaveLength(1);
     expect(appended[0].src).toBe("https://example.test/tag.js");
     expect(appended[0].async).toBe(true);
     expect(appended[0].id).toBe("ga-tag");
     expect(appended[0].attrs["data-domain"]).toBe("concertable");
 
-    writeConsent(DENIED_DECISION);
+    consent.write(DENIED_DECISION);
     expect(appended).toHaveLength(0);
     teardown();
   });

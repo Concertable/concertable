@@ -2,10 +2,10 @@ import { getStripe } from "@/lib/stripe";
 
 export interface PaymentChallenge {
   requiresAction: boolean;
-  clientSecret?: string | null;
+  clientSecret?: string;
 }
 
-export async function handle3ds(payment: PaymentChallenge | null | undefined): Promise<void> {
+export async function handle3ds(payment?: PaymentChallenge): Promise<void> {
   if (!payment?.requiresAction || !payment.clientSecret) return;
 
   const stripe = await getStripe();

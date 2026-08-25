@@ -3,7 +3,6 @@ import { Pressable, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ChevronRight, CheckCircle, LogIn, XCircle } from "lucide-react-native";
-import { useAuthStore } from "@concertable/shared/features/auth";
 import { Screen } from "@/components/ui/Screen";
 import { Navbar } from "@/components/ui/Navbar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useLogin } from "../../../auth/useLogin";
 import { useLogout } from "../../../auth/useLogout";
+import { useCurrentUser } from "../../../auth/useCurrentUser";
 import Config from "../../../lib/config";
 import { theme } from "../../../lib/theme";
 import type { ProfileStackParamList } from "../../../navigation/types";
@@ -28,7 +28,7 @@ interface Props {
 
 export function ProfileScreen({ accountItems }: Readonly<Props>) {
   const nav = useNavigation<ProfileNav>();
-  const user = useAuthStore((s) => s.user);
+  const user = useCurrentUser();
   const { login, signup, loading, error } = useLogin();
   const { logout } = useLogout();
   const [choosingRole, setChoosingRole] = useState(false);

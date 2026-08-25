@@ -1,87 +1,95 @@
 import { create } from "zustand";
-import { produce } from "immer";
-import type { Venue } from "../types";
+import { immer } from "zustand/middleware/immer";
 import type { ImageFile } from "../../../types/image";
+import type { Venue } from "../types";
 
-interface VenueStore {
-  draft: Venue | undefined;
-  editMode: boolean;
-  isDirty: boolean;
+export interface VenueState {
+  draft:
+    | Pick<
+        Venue,
+        | "name"
+        | "about"
+        | "bannerUrl"
+        | "avatar"
+        | "county"
+        | "town"
+        | "latitude"
+        | "longitude"
+      >
+    | undefined;
   banner: ImageFile | undefined;
   avatar: ImageFile | undefined;
-
-  beginEdit: (venue: Venue) => void;
+  editMode: boolean;
+  beginEdit: (venue: NonNullable<VenueState["draft"]>) => void;
   endEdit: () => void;
-
   setName: (name: string) => void;
   setAbout: (about: string) => void;
-  setLocation: (lat: number, lng: number, county: string, town: string) => void;
-  setBanner: (file: ImageFile) => void;
-  setAvatar: (file: ImageFile) => void;
+  setBanner: (banner: ImageFile) => void;
+  setAvatar: (avatar: ImageFile) => void;
+  setLocation: (
+    latitude: number,
+    longitude: number,
+    county: string,
+    town: string,
+  ) => void;
 }
 
-const notEditing = {
-  draft: undefined,
-  editMode: false,
-  isDirty: false,
-  banner: undefined,
-  avatar: undefined,
-};
-
-export const useVenueStore = create<VenueStore>((set) => ({
-  ...notEditing,
-
-  beginEdit: (venue) => set({ ...notEditing, draft: { ...venue }, editMode: true }),
-
-  endEdit: () => set(notEditing),
-
-  setName: (name) =>
-    set(
-      produce((state: VenueStore) => {
-        if (!state.draft) return;
-        state.draft.name = name;
-        state.isDirty = true;
+export const useVenueStore = create<VenueState>()(
+  immer((set) => ({
+    draft: undefined,
+    banner: undefined,
+    avatar: undefined,
+    editMode: false,
+    beginEdit: (venue) =>
+      set((state) => {
+        state.draft = {
+          name: venue.name,
+          about: venue.about,
+          bannerUrl: venue.bannerUrl,
+          avatar: venue.avatar,
+          county: venue.county,
+          town: venue.town,
+          latitude: venue.latitude,
+          longitude: venue.longitude,
+        };
+        state.banner = undefined;
+        state.avatar = undefined;
+        state.editMode = true;
       }),
-    ),
-
-  setAbout: (about) =>
-    set(
-      produce((state: VenueStore) => {
-        if (!state.draft) return;
-        state.draft.about = about;
-        state.isDirty = true;
+    endEdit: () =>
+      set((state) => {
+        state.draft = undefined;
+        state.banner = undefined;
+        state.avatar = undefined;
+        state.editMode = false;
       }),
-    ),
-
-  setLocation: (latitude, longitude, county, town) =>
-    set(
-      produce((state: VenueStore) => {
+    setName: (name) =>
+      set((state) => {
+        if (state.draft) state.draft.name = name;
+      }),
+    setAbout: (about) =>
+      set((state) => {
+        if (state.draft) state.draft.about = about;
+      }),
+    setBanner: (banner) =>
+      set((state) => {
+        if (!state.draft) return;
+        state.draft.bannerUrl = banner.uri;
+        state.banner = banner;
+      }),
+    setAvatar: (avatar) =>
+      set((state) => {
+        if (!state.draft) return;
+        state.draft.avatar = avatar.uri;
+        state.avatar = avatar;
+      }),
+    setLocation: (latitude, longitude, county, town) =>
+      set((state) => {
         if (!state.draft) return;
         state.draft.latitude = latitude;
         state.draft.longitude = longitude;
         state.draft.county = county;
         state.draft.town = town;
-        state.isDirty = true;
       }),
-    ),
-
-  setBanner: (file) =>
-    set(
-      produce((state: VenueStore) => {
-        if (!state.draft) return;
-        state.draft.bannerUrl = file.uri;
-        state.banner = file;
-        state.isDirty = true;
-      }),
-    ),
-
-  setAvatar: (file) =>
-    set(
-      produce((state: VenueStore) => {
-        if (!state.draft) return;
-        state.draft.avatar = file.uri;
-        state.avatar = file;
-        state.isDirty = true;
-      }),
-    ),
-}));
+  })),
+);

@@ -17,12 +17,10 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useSearchFiltersStore } from "../store/useSearchFiltersStore";
 import { useSearchFilters } from "../hooks/useSearchFilters";
 import { useGenresQuery } from "../hooks/useGenreQuery";
 import type { SearchFilters } from "../schemas/searchSchema";
-import { genreLabel } from "@/types/common";
-import type { Genre } from "@/types/common";
+import { GENRE_LABELS, type Genre } from "@/types/common";
 
 const ORDER_BY_OPTIONS = [
   { value: "name", label: "Name" },
@@ -30,14 +28,13 @@ const ORDER_BY_OPTIONS = [
 ];
 
 export function FilterSlider() {
-  const { filters, setFilters } = useSearchFiltersStore();
-  const { updateFilters } = useSearchFilters();
+  const { filters, updateFilters, applyFilters } = useSearchFilters();
   const { data: genres } = useGenresQuery();
   const [open, setOpen] = useState(false);
   const [pendingGenre, setPendingGenre] = useState<Genre | "">("");
 
   function update(next: Partial<SearchFilters>) {
-    setFilters({ ...filters, ...next });
+    updateFilters(next);
   }
 
   function addGenre() {
@@ -48,12 +45,14 @@ export function FilterSlider() {
   }
 
   function apply() {
-    updateFilters(filters);
+    applyFilters();
     setOpen(false);
   }
 
-  const selectedGenres = genres?.filter((g) => filters.genres?.includes(g)) ?? [];
-  const availableGenres = genres?.filter((g) => !filters.genres?.includes(g)) ?? [];
+  const selectedGenres =
+    genres?.filter((g) => filters.genres?.includes(g)) ?? [];
+  const availableGenres =
+    genres?.filter((g) => !filters.genres?.includes(g)) ?? [];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -82,7 +81,10 @@ export function FilterSlider() {
                 update({ headerType: v as SearchFilters["headerType"] })
               }
             >
-              <SelectTrigger className="w-full" data-testid="filter-header-type">
+              <SelectTrigger
+                className="w-full"
+                data-testid="filter-header-type"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -96,19 +98,30 @@ export function FilterSlider() {
           <div className="space-y-2">
             <p className="text-muted-foreground text-xs">Genre</p>
             <div className="flex gap-2">
-              <Select value={pendingGenre} onValueChange={(v) => setPendingGenre(v as Genre)}>
-                <SelectTrigger className="flex-1" data-testid="filter-genre-select">
+              <Select
+                value={pendingGenre}
+                onValueChange={(v) => setPendingGenre(v as Genre)}
+              >
+                <SelectTrigger
+                  className="flex-1"
+                  data-testid="filter-genre-select"
+                >
                   <SelectValue placeholder="Select genre" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableGenres.map((g) => (
                     <SelectItem key={g} value={g}>
-                      {genreLabel(g)}
+                      {GENRE_LABELS[g]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button size="icon" onClick={addGenre} disabled={!pendingGenre} data-testid="filter-genre-add">
+              <Button
+                size="icon"
+                onClick={addGenre}
+                disabled={!pendingGenre}
+                data-testid="filter-genre-add"
+              >
                 <PlusIcon />
               </Button>
             </div>
@@ -119,10 +132,12 @@ export function FilterSlider() {
                     key={g}
                     className="bg-muted flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs"
                   >
-                    {genreLabel(g)}
+                    {GENRE_LABELS[g]}
                     <button
                       onClick={() =>
-                        update({ genres: filters.genres?.filter((x) => x !== g) })
+                        update({
+                          genres: filters.genres?.filter((x) => x !== g),
+                        })
                       }
                       className="text-muted-foreground hover:text-foreground"
                     >
@@ -139,7 +154,10 @@ export function FilterSlider() {
               <p className="text-muted-foreground text-xs">
                 Distance Radius (km)
               </p>
-              <span className="text-xs font-medium" data-testid="filter-radius-value">
+              <span
+                className="text-xs font-medium"
+                data-testid="filter-radius-value"
+              >
                 {filters.radius ?? 50} km
               </span>
             </div>

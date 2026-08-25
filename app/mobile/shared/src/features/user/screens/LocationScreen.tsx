@@ -26,8 +26,8 @@ export function LocationScreen() {
 
   const hasUserLocation = !!(user?.latitude && user?.longitude);
 
-  const [coordinate, setCoordinate] = useState<{ latitude: number; longitude: number } | null>(
-    hasUserLocation ? { latitude: user!.latitude!, longitude: user!.longitude! } : null,
+  const [coordinate, setCoordinate] = useState<{ latitude: number; longitude: number } | undefined>(
+    hasUserLocation ? { latitude: user!.latitude!, longitude: user!.longitude! } : undefined,
   );
   const [locating, setLocating] = useState(false);
   const mapRef = useRef<MapView>(null);

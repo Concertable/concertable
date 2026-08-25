@@ -4,7 +4,6 @@ import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import { LocationPicker } from "@/components/LocationPicker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useSearchFiltersStore } from "../store/useSearchFiltersStore";
 import { useSearchFilters } from "../hooks/useSearchFilters";
 import { useSearchState } from "../hooks/useSearchState";
 import { DateRangePicker } from "./DateRangePicker";
@@ -13,23 +12,22 @@ import type { AutocompleteResult, HeaderType } from "../types";
 
 export function SearchBar() {
   const mapsLoaded = useApiIsLoaded();
-  const { filters, setFilters } = useSearchFiltersStore();
-  const { updateFilters } = useSearchFilters();
+  const { filters, updateFilters, applyFilters } = useSearchFilters();
   const navigate = useNavigate();
   const { open, close, inputProps } = useSearchState();
   const query = filters.query ?? "";
 
   function setLocation(newLat: number, newLng: number) {
-    setFilters({ ...filters, lat: newLat, lng: newLng });
+    updateFilters({ lat: newLat, lng: newLng });
   }
 
   function setDates(newFrom: string | undefined, newTo: string | undefined) {
-    setFilters({ ...filters, from: newFrom, to: newTo });
+    updateFilters({ from: newFrom, to: newTo });
   }
 
   function handleSearch() {
     close();
-    updateFilters(useSearchFiltersStore.getState().filters);
+    applyFilters();
   }
 
   function handleSelect(result: AutocompleteResult) {
@@ -61,7 +59,7 @@ export function SearchBar() {
       <div className="relative flex flex-1">
         <input
           value={query}
-          onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+          onChange={(e) => updateFilters({ query: e.target.value })}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           {...inputProps}
           data-testid="search-query"

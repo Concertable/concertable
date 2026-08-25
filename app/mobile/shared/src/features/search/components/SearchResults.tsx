@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import { FlatList, View } from "react-native";
-import { useHeaderQuery, useSearchFiltersStore } from "@concertable/shared/features/search";
+import { useHeaderQuery, useSearchFilters } from "@concertable/shared/features/search";
 import type { Header, HeaderType } from "@concertable/shared/features/search";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -16,7 +16,7 @@ const cardRegistry = {
 } as Record<HeaderType, ComponentType<{ data: Header }>>;
 
 export function SearchResults() {
-  const { filters } = useSearchFiltersStore();
+  const { filters } = useSearchFilters();
   const { data: results, isFetching } = useHeaderQuery(filters);
   const Card = cardRegistry[filters.headerType];
 

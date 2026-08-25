@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import { useAuth } from "react-oidc-context";
-import { useAuthStore } from "@/features/auth";
+import { useMeQuery } from "@/features/user";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/IconButton";
 import {
@@ -28,7 +28,7 @@ interface Props {
 }
 
 export function ProfileMenu({ items }: Readonly<Props>) {
-  const user = useAuthStore((s) => s.user);
+  const { data: user } = useMeQuery();
   const auth = useAuth();
 
   async function handleLogout() {
