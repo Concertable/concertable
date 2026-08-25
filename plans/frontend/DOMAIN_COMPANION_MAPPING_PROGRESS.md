@@ -7,7 +7,7 @@
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: not opened
 - Dependency/package gates: platform-sync PR #780 is red because Payment still implements the old `IAuditable` timestamp types; its existing worktree has concurrent uncommitted consumer edits
-- Last reconciled: 2026-08-25 against `origin/main` at `39430cd14ef1adc7821cffd4ec038b383ad7960c`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
+- Last reconciled: 2026-08-25 against `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
 
 ## Current state
 
@@ -39,7 +39,7 @@ review, push the stable candidate, open its PR, and require exact-head CI before
 - Cleared the dependency gate and completed Phases 1 through 4 in `e9a8fe7c9`, `a5ba13de2`,
   `70bfc8ac3`, and `cce96a5e7`.
 - Closed the remaining inventory and review fixes through `539c1a520`.
-- Merged `origin/main` at `39430cd14` without conflicts.
+- Merged `origin/main` at `ac7ff7f17` without conflicts.
 
 ## Verification
 
@@ -47,7 +47,7 @@ review, push the stable candidate, open its PR, and require exact-head CI before
   PR exists. Its build fails with four `CS0738` errors because Payment's `EscrowEntity` and
   `TransactionEntity` expose `DateTime` audit properties while `IAuditable` now requires
   `DateTimeOffset`.
-- Current baseline: `origin/main` at `39430cd14ef1adc7821cffd4ec038b383ad7960c`, merged without conflicts.
+- Current baseline: `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`, merged without conflicts.
 - Tests passed: `@concertable/b2b` 5 files / 15 tests; `@concertable/shared` 10 / 23;
   `@concertable/web` 5 / 31; `@concertable/customer` 3 / 3 through its build preflight.
 - B2B, shared, customer, all five web SPA, and both mobile TypeScript builds passed.
