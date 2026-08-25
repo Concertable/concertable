@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-frontend-domain-apis`
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: not opened
-- Dependency/package gates: PRs #595, #600, and #637 are merged; platform-sync PR #780 is pending and automation-owned, so it blocks only if it turns red
+- Dependency/package gates: platform-sync PR #780 is red because Payment still implements the old `IAuditable` timestamp types; its existing worktree has concurrent uncommitted consumer edits
 - Last reconciled: 2026-08-25 against `origin/main` at `39430cd14ef1adc7821cffd4ec038b383ad7960c`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
 
 ## Current state
@@ -19,14 +19,14 @@ their planned boundaries.
 
 The full branch review through `4b69e66ce` found two remaining boundary-projection convention misses.
 Both were fixed in `539c1a520`; its incremental review was clean. Every Phase 5 invariant and the
-complete post-merge frontend matrix now pass. The post-`539c1a520` incremental review is clean and
-has no open findings. Only the remote PR/CI delivery gates remain.
+complete post-merge frontend matrix now pass. The post-`539c1a520` incremental review found only the
+stale platform-sync gate recorded below. Frontend delivery is blocked on resolving that external red gate.
 
 ## Next Steps
 
-Do not wait for healthy or pending platform-sync PR #780. Reconcile current `origin/main` again if it
-lands before push; then push the stable candidate, open its PR, and require exact-head CI before merge
-readiness.
+Resolve platform-sync PR #780's Payment `IAuditable` consumer failure without colliding with its existing
+uncommitted worktree changes. After it lands, reconcile current `origin/main`, complete the final incremental
+review, push the stable candidate, open its PR, and require exact-head CI before merge readiness.
 
 ## Completed work
 
@@ -43,8 +43,10 @@ readiness.
 
 ## Verification
 
-- GitHub reports PRs #595, #600, and #637 merged; platform-sync PR #780 is pending and no
-  implementation PR exists.
+- GitHub reports PRs #595, #600, and #637 merged; platform-sync PR #780 is red and no implementation
+  PR exists. Its build fails with four `CS0738` errors because Payment's `EscrowEntity` and
+  `TransactionEntity` expose `DateTime` audit properties while `IAuditable` now requires
+  `DateTimeOffset`.
 - Current baseline: `origin/main` at `39430cd14ef1adc7821cffd4ec038b383ad7960c`, merged without conflicts.
 - Tests passed: `@concertable/b2b` 5 files / 15 tests; `@concertable/shared` 10 / 23;
   `@concertable/web` 5 / 31; `@concertable/customer` 3 / 3 through its build preflight.
