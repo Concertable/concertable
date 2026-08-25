@@ -1,10 +1,11 @@
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMountEffect } from "../../../hooks/useMountEffect";
 import type { ImageFile } from "../../../types/image";
 import artistApi from "../api/artistApi";
 import { updateArtistRequestSchema } from "../schemas/artistRequestSchemas";
+import { useArtistStore } from "../store/useArtistStore";
 import { Artist, type UpdateArtistRequest } from "../types";
 import { artistKeys, useMyArtistQuery } from "./useArtistQuery";
 
@@ -42,12 +43,18 @@ const emptyRequest: UpdateArtistRequest = {
 export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
   const query = useMyArtistQuery();
   const queryClient = useQueryClient();
-  const [editMode, setEditMode] = useState(false);
+  const artistDraft = useArtistStore((state) => state.draft);
+  const editMode = useArtistStore((state) => state.editMode);
+  const beginEdit = useArtistStore((state) => state.beginEdit);
+  const endEdit = useArtistStore((state) => state.endEdit);
+  const setStoreName = useArtistStore((state) => state.setName);
+  const setStoreAbout = useArtistStore((state) => state.setAbout);
+  const setStoreBanner = useArtistStore((state) => state.setBanner);
+  const setStoreAvatar = useArtistStore((state) => state.setAvatar);
   const {
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors, isDirty, isValid },
   } = useForm<UpdateArtistRequest>({
     resolver: zodResolver(updateArtistRequestSchema),
@@ -55,48 +62,61 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
     mode: "onChange",
   });
 
+  useMountEffect(() => () => endEdit());
+
   const mutation = useMutation({
     mutationFn: artistApi.updateArtist,
     onSuccess: (saved) => {
       queryClient.setQueryData(artistKeys.my(), saved);
       queryClient.setQueryData(artistKeys.byId(saved.id), saved);
       reset(Artist.toUpdateRequest(saved));
-      setEditMode(false);
+      endEdit();
       options?.onSuccess?.(saved);
     },
   });
 
   const artist = query.data ?? undefined;
-  const request = watch();
   const draft =
-    editMode && artist
-      ? {
-          ...artist,
-          ...request,
-          bannerUrl: request.banner?.uri ?? artist.bannerUrl,
-          avatar: request.avatar?.uri ?? artist.avatar,
-        }
+    editMode && artist && artistDraft
+      ? { ...artist, ...artistDraft }
       : undefined;
 
   const resetDraft = () => {
     if (artist) reset(Artist.toUpdateRequest(artist));
-    setEditMode(false);
+    endEdit();
   };
 
   const toggleEdit = () => {
     if (editMode) {
       resetDraft();
-      return;
-    }
-
-    if (artist) {
+    } else if (artist) {
       reset(Artist.toUpdateRequest(artist));
-      setEditMode(true);
+      beginEdit(artist);
     }
   };
 
   const save = () => {
     void handleSubmit((request) => mutation.mutate(request))();
+  };
+
+  const setName = (name: string) => {
+    setStoreName(name);
+    setValue("name", name, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAbout = (about: string) => {
+    setStoreAbout(about);
+    setValue("about", about, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setBanner = (banner: ImageFile) => {
+    setStoreBanner(banner);
+    setValue("banner", banner, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAvatar = (avatar: ImageFile) => {
+    setStoreAvatar(avatar);
+    setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true });
   };
 
   const saveError = isDirty
@@ -122,13 +142,9 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
     save,
     toggleEdit,
     resetDraft,
-    setName: (name) =>
-      setValue("name", name, { shouldDirty: true, shouldValidate: true }),
-    setAbout: (about) =>
-      setValue("about", about, { shouldDirty: true, shouldValidate: true }),
-    setBanner: (banner) =>
-      setValue("banner", banner, { shouldDirty: true, shouldValidate: true }),
-    setAvatar: (avatar) =>
-      setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true }),
+    setName,
+    setAbout,
+    setBanner,
+    setAvatar,
   };
 }

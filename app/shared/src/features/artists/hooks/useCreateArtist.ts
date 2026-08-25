@@ -1,9 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMountEffect } from "../../../hooks/useMountEffect";
 import type { ImageFile } from "../../../types/image";
 import artistApi from "../api/artistApi";
 import { createArtistRequestSchema } from "../schemas/artistRequestSchemas";
+import { useArtistStore, type ArtistState } from "../store/useArtistStore";
 import type { Artist, CreateArtistRequest } from "../types";
 import { artistKeys } from "./useArtistQuery";
 
@@ -23,22 +25,41 @@ export interface UseCreateArtistResult {
   setAvatar: (avatar: ImageFile) => void;
 }
 
-const defaultValues = {
+const initialArtist = {
   name: "",
   about: "",
+  bannerUrl: "",
+  avatar: undefined,
+  genres: [],
+  county: "",
+  town: "",
   latitude: 51.5074,
   longitude: -0.1278,
-  genres: [],
+} satisfies NonNullable<ArtistState["draft"]>;
+
+const defaultValues = {
+  name: initialArtist.name,
+  about: initialArtist.about,
+  latitude: initialArtist.latitude,
+  longitude: initialArtist.longitude,
+  genres: initialArtist.genres,
 } satisfies Partial<CreateArtistRequest>;
 
 export function useCreateArtist(
   options?: UseCreateArtistOptions,
 ): UseCreateArtistResult {
   const queryClient = useQueryClient();
+  const artistDraft = useArtistStore((state) => state.draft);
+  const beginEdit = useArtistStore((state) => state.beginEdit);
+  const endEdit = useArtistStore((state) => state.endEdit);
+  const setStoreName = useArtistStore((state) => state.setName);
+  const setStoreAbout = useArtistStore((state) => state.setAbout);
+  const setStoreBanner = useArtistStore((state) => state.setBanner);
+  const setStoreAvatar = useArtistStore((state) => state.setAvatar);
   const {
     handleSubmit,
+    reset,
     setValue,
-    watch,
     formState: { errors, isValid },
   } = useForm<CreateArtistRequest>({
     resolver: zodResolver(createArtistRequestSchema),
@@ -46,33 +67,52 @@ export function useCreateArtist(
     mode: "onChange",
   });
 
+  useMountEffect(() => {
+    beginEdit(initialArtist);
+    reset(defaultValues);
+    return endEdit;
+  });
+
   const mutation = useMutation({
     mutationFn: artistApi.createArtist,
     onSuccess: (saved) => {
       queryClient.setQueryData(artistKeys.my(), saved);
       queryClient.setQueryData(artistKeys.byId(saved.id), saved);
+      endEdit();
       options?.onSuccess?.(saved);
     },
   });
 
-  const request = watch();
+  const state = artistDraft ?? initialArtist;
   const draft: Artist = {
     id: 0,
-    name: request.name,
-    about: request.about,
-    bannerUrl: request.banner?.uri ?? "",
-    avatar: request.avatar?.uri,
     rating: 0,
-    genres: request.genres,
     email: "",
-    county: "",
-    town: "",
-    latitude: request.latitude,
-    longitude: request.longitude,
+    ...state,
   };
 
   const create = () => {
     void handleSubmit((request) => mutation.mutate(request))();
+  };
+
+  const setName = (name: string) => {
+    setStoreName(name);
+    setValue("name", name, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAbout = (about: string) => {
+    setStoreAbout(about);
+    setValue("about", about, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setBanner = (banner: ImageFile) => {
+    setStoreBanner(banner);
+    setValue("banner", banner, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAvatar = (avatar: ImageFile) => {
+    setStoreAvatar(avatar);
+    setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true });
   };
 
   const createError =
@@ -90,13 +130,9 @@ export function useCreateArtist(
     canCreate: isValid,
     createError,
     create,
-    setName: (name) =>
-      setValue("name", name, { shouldDirty: true, shouldValidate: true }),
-    setAbout: (about) =>
-      setValue("about", about, { shouldDirty: true, shouldValidate: true }),
-    setBanner: (banner) =>
-      setValue("banner", banner, { shouldDirty: true, shouldValidate: true }),
-    setAvatar: (avatar) =>
-      setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true }),
+    setName,
+    setAbout,
+    setBanner,
+    setAvatar,
   };
 }

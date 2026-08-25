@@ -1,9 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMountEffect } from "../../../hooks/useMountEffect";
 import type { ImageFile } from "../../../types/image";
 import venueApi from "../api/venueApi";
 import { createVenueRequestSchema } from "../schemas/venueRequestSchemas";
+import { useVenueStore, type VenueState } from "../store/useVenueStore";
 import type { CreateVenueRequest, Venue } from "../types";
 import { venueKeys } from "./useVenueQuery";
 
@@ -23,21 +25,39 @@ export interface UseCreateVenueResult {
   setAvatar: (avatar: ImageFile) => void;
 }
 
-const defaultValues = {
+const initialVenue = {
   name: "",
   about: "",
+  bannerUrl: "",
+  avatar: undefined,
+  county: "",
+  town: "",
   latitude: 51.5074,
   longitude: -0.1278,
+} satisfies NonNullable<VenueState["draft"]>;
+
+const defaultValues = {
+  name: initialVenue.name,
+  about: initialVenue.about,
+  latitude: initialVenue.latitude,
+  longitude: initialVenue.longitude,
 } satisfies Partial<CreateVenueRequest>;
 
 export function useCreateVenue(
   options?: UseCreateVenueOptions,
 ): UseCreateVenueResult {
   const queryClient = useQueryClient();
+  const venueDraft = useVenueStore((state) => state.draft);
+  const beginEdit = useVenueStore((state) => state.beginEdit);
+  const endEdit = useVenueStore((state) => state.endEdit);
+  const setStoreName = useVenueStore((state) => state.setName);
+  const setStoreAbout = useVenueStore((state) => state.setAbout);
+  const setStoreBanner = useVenueStore((state) => state.setBanner);
+  const setStoreAvatar = useVenueStore((state) => state.setAvatar);
   const {
     handleSubmit,
+    reset,
     setValue,
-    watch,
     formState: { errors, isValid },
   } = useForm<CreateVenueRequest>({
     resolver: zodResolver(createVenueRequestSchema),
@@ -45,32 +65,52 @@ export function useCreateVenue(
     mode: "onChange",
   });
 
+  useMountEffect(() => {
+    beginEdit(initialVenue);
+    reset(defaultValues);
+    return endEdit;
+  });
+
   const mutation = useMutation({
     mutationFn: venueApi.createVenue,
     onSuccess: (saved) => {
       queryClient.setQueryData(venueKeys.my(), saved);
       queryClient.setQueryData(venueKeys.byId(saved.id), saved);
+      endEdit();
       options?.onSuccess?.(saved);
     },
   });
 
-  const request = watch();
+  const state = venueDraft ?? initialVenue;
   const draft: Venue = {
     id: 0,
-    name: request.name,
-    about: request.about,
-    bannerUrl: request.banner?.uri ?? "",
-    avatar: request.avatar?.uri,
     rating: 0,
-    county: "",
-    town: "",
     email: "",
-    latitude: request.latitude,
-    longitude: request.longitude,
+    ...state,
   };
 
   const create = () => {
     void handleSubmit((request) => mutation.mutate(request))();
+  };
+
+  const setName = (name: string) => {
+    setStoreName(name);
+    setValue("name", name, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAbout = (about: string) => {
+    setStoreAbout(about);
+    setValue("about", about, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setBanner = (banner: ImageFile) => {
+    setStoreBanner(banner);
+    setValue("banner", banner, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAvatar = (avatar: ImageFile) => {
+    setStoreAvatar(avatar);
+    setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true });
   };
 
   const createError =
@@ -87,13 +127,9 @@ export function useCreateVenue(
     canCreate: isValid,
     createError,
     create,
-    setName: (name) =>
-      setValue("name", name, { shouldDirty: true, shouldValidate: true }),
-    setAbout: (about) =>
-      setValue("about", about, { shouldDirty: true, shouldValidate: true }),
-    setBanner: (banner) =>
-      setValue("banner", banner, { shouldDirty: true, shouldValidate: true }),
-    setAvatar: (avatar) =>
-      setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true }),
+    setName,
+    setAbout,
+    setBanner,
+    setAvatar,
   };
 }

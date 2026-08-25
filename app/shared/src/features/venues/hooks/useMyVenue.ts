@@ -1,13 +1,14 @@
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMountEffect } from "../../../hooks/useMountEffect";
 import type { ImageFile } from "../../../types/image";
 import venueApi from "../api/venueApi";
 import { updateVenueRequestSchema } from "../schemas/venueRequestSchemas";
+import { useVenueStore } from "../store/useVenueStore";
 import { Venue, type UpdateVenueRequest } from "../types";
-import { venueKeys, useMyVenueQuery } from "./useVenueQuery";
 import type { UseVenueResult } from "./useVenue";
+import { venueKeys, useMyVenueQuery } from "./useVenueQuery";
 
 export interface UseMyVenueOptions {
   onSuccess?: (saved: Venue) => void;
@@ -49,19 +50,27 @@ const emptyRequest: UpdateVenueRequest = {
 export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
   const query = useMyVenueQuery();
   const queryClient = useQueryClient();
-  const [editMode, setEditMode] = useState(false);
-  const [location, setLocationDisplay] = useState({ county: "", town: "" });
+  const venueDraft = useVenueStore((state) => state.draft);
+  const editMode = useVenueStore((state) => state.editMode);
+  const beginEdit = useVenueStore((state) => state.beginEdit);
+  const endEdit = useVenueStore((state) => state.endEdit);
+  const setStoreName = useVenueStore((state) => state.setName);
+  const setStoreAbout = useVenueStore((state) => state.setAbout);
+  const setStoreBanner = useVenueStore((state) => state.setBanner);
+  const setStoreAvatar = useVenueStore((state) => state.setAvatar);
+  const setStoreLocation = useVenueStore((state) => state.setLocation);
   const {
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors, isDirty: venueIsDirty, isValid },
   } = useForm<UpdateVenueRequest>({
     resolver: zodResolver(updateVenueRequestSchema),
     defaultValues: emptyRequest,
     mode: "onChange",
   });
+
+  useMountEffect(() => () => endEdit());
 
   const mutation = useMutation({
     mutationFn: async (request: UpdateVenueRequest) => {
@@ -73,51 +82,72 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
       queryClient.setQueryData(venueKeys.my(), saved);
       queryClient.setQueryData(venueKeys.byId(saved.id), saved);
       reset(Venue.toUpdateRequest(saved));
-      setLocationDisplay({ county: saved.county, town: saved.town });
-      setEditMode(false);
+      endEdit();
       options?.onSuccess?.(saved);
     },
   });
 
   const venue = query.data ?? undefined;
-  const request = watch();
   const draft =
-    editMode && venue
-      ? {
-          ...venue,
-          ...request,
-          ...location,
-          bannerUrl: request.banner?.uri ?? venue.bannerUrl,
-          avatar: request.avatar?.uri ?? venue.avatar,
-        }
+    editMode && venue && venueDraft
+      ? { ...venue, ...venueDraft }
       : undefined;
 
-  const resetForm = () => {
-    if (venue) {
-      reset(Venue.toUpdateRequest(venue));
-      setLocationDisplay({ county: venue.county, town: venue.town });
-    }
-    setEditMode(false);
-  };
-
   const resetDraft = () => {
-    resetForm();
+    if (venue) reset(Venue.toUpdateRequest(venue));
+    endEdit();
     options?.onResetDraft?.();
   };
 
   const toggleEdit = () => {
     if (editMode) {
-      resetForm();
+      resetDraft();
     } else if (venue) {
       reset(Venue.toUpdateRequest(venue));
-      setLocationDisplay({ county: venue.county, town: venue.town });
-      setEditMode(true);
+      beginEdit(venue);
     }
     options?.onToggleEdit?.();
   };
 
   const save = () => {
     void handleSubmit((request) => mutation.mutate(request))();
+  };
+
+  const setName = (name: string) => {
+    setStoreName(name);
+    setValue("name", name, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAbout = (about: string) => {
+    setStoreAbout(about);
+    setValue("about", about, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setBanner = (banner: ImageFile) => {
+    setStoreBanner(banner);
+    setValue("banner", banner, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAvatar = (avatar: ImageFile) => {
+    setStoreAvatar(avatar);
+    setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setLocation = (
+    latitude: number,
+    longitude: number,
+    county: string,
+    town: string,
+  ) => {
+    setStoreLocation(latitude, longitude, county, town);
+    setValue("latitude", latitude, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    setValue("longitude", longitude, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   const saveError = venueIsDirty
@@ -142,24 +172,10 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
     save,
     toggleEdit,
     resetDraft,
-    setName: (name) =>
-      setValue("name", name, { shouldDirty: true, shouldValidate: true }),
-    setAbout: (about) =>
-      setValue("about", about, { shouldDirty: true, shouldValidate: true }),
-    setBanner: (banner) =>
-      setValue("banner", banner, { shouldDirty: true, shouldValidate: true }),
-    setAvatar: (avatar) =>
-      setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true }),
-    setLocation: (latitude, longitude, county, town) => {
-      setValue("latitude", latitude, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      setValue("longitude", longitude, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      setLocationDisplay({ county, town });
-    },
+    setName,
+    setAbout,
+    setBanner,
+    setAvatar,
+    setLocation,
   };
 }

@@ -5,28 +5,25 @@
 - Roadmap item: `frontend/domain-companion-mapping`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-frontend-domain-apis`
 - Branch: `Refactor/frontend_domain-companion-mapping`
-- PR: not opened
+- PR: draft #783 — https://github.com/Concertable/concertable/pull/783
 - Dependency/package gates: platform-sync PR #780 is red because Payment still implements the old `IAuditable` timestamp types; its existing worktree has concurrent uncommitted consumer edits
-- Last reconciled: 2026-08-25 against `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`; the full frontend matrix last passed at integration head `588c4e36b24c3bedfa8a07d51af01d99ff8fbc1f`
+- Last reconciled: 2026-08-25 against `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`; the full frontend matrix passed for the editor-state correction in this commit
 
 ## Current state
 
-Phases 0 through 4 are complete. The Phase 5 source inventory and review fixes are complete, the
-branch is current with `origin/main`, and no partial code changes remain. The companion/request
-migrations, direct typed labels, RHF write boundaries, private editor/auth/search state, owned-absence
-normalization, consent service, transport encoders, adapters, and presentation projections are at
-their planned boundaries.
+Phases 0 through 4 and the Phase 5 inventory are complete. A post-review architecture correction now
+restores neutral `VenueState`, `ArtistState`, and `ConcertState` Zustand drafts behind their workflow
+facades. RHF/Zod still owns validation, dirty/error state, and parsed create/update request submission;
+the stores are not request types and do not contain server-owned fields.
 
-The full branch review through `4b69e66ce` found two remaining boundary-projection convention misses.
-Both were fixed in `539c1a520`; its incremental review was clean. Every Phase 5 invariant and the
-complete post-merge frontend matrix now pass. The post-`539c1a520` incremental review found only ledger
-corrections, which are resolved. Platform-sync PR #780 blocks readiness and merge, not draft PR creation.
+The prior review through `7965f2bbb` and the incremental editor-state review are clean. The complete
+frontend matrix passes for the correction. Platform-sync PR #780 blocks readiness and merge, not work
+on the draft PR.
 
 ## Next Steps
 
-Push the stable candidate and open its draft PR for exact-head CI. Keep it draft until platform-sync PR #780's
-Payment `IAuditable` consumer failure is resolved without colliding with its existing uncommitted worktree
-changes, #780 lands, and current `origin/main` is reconciled.
+Push the exact reviewed editor-state candidate to draft PR #783 and let CI validate that head. Keep the
+PR draft until platform-sync PR #780 lands and current `origin/main` is reconciled.
 
 ## Completed work
 
@@ -40,11 +37,14 @@ changes, #780 lands, and current `origin/main` is reconciled.
   `70bfc8ac3`, and `cce96a5e7`.
 - Closed the remaining inventory and review fixes through `539c1a520`.
 - Merged `origin/main` at `ac7ff7f17` without conflicts.
+- Opened draft PR #783 and pushed the prior reviewed candidate through `7965f2bbb`.
+- Restored private neutral Zustand editor state for Artist, Venue, and Concert while retaining the
+  RHF/Zod request boundary and the slim multipart/API contracts.
 
 ## Verification
 
-- GitHub reports PRs #595, #600, and #637 merged; platform-sync PR #780 is red and no implementation
-  PR exists. Its build fails with four `CS0738` errors because Payment's `EscrowEntity` and
+- GitHub reports PRs #595, #600, and #637 merged; platform-sync PR #780 is red and implementation
+  draft PR #783 exists. #780's build fails with four `CS0738` errors because Payment's `EscrowEntity` and
   `TransactionEntity` expose `DateTime` audit properties while `IAuditable` now requires
   `DateTimeOffset`.
 - Current baseline: `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`, merged without conflicts.
@@ -53,15 +53,18 @@ changes, #780 lands, and current `origin/main` is reconciled.
 - B2B, shared, customer, all five web SPA, and both mobile TypeScript builds passed.
 - Dependency-cruiser reported no violations; all 7 carve/boundary tests passed.
 - B2B and Customer Android exports passed with 3,691 and 4,283 modules respectively.
-- Phase 5 mapper/buffer/store/absence searches passed with only the three intended binary
-  `ArrayBuffer` sites and private search-store facade/test sites allowlisted.
+- The editor-state correction passed shared 23/23 and web-B2B 25/25 tests; both package builds;
+  dependency-cruiser; all 7 boundary tests; all five web builds; both mobile TypeScript checks; and
+  B2B/Customer Android exports with 3,695/4,287 modules.
+- Phase 5 mapper/buffer/store/absence searches passed with only the intended binary `ArrayBuffer`
+  sites and private store facade/test sites allowlisted.
 - `git diff --check` and `python .agents/hooks/plan_graph.py --root <worktree>` passed.
 
 ## Reviews
 
 Full implementation review covered `70af43a..4b69e66` in
 `reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; NAT1 through
-NAT3 corrected delivery-checkpoint wording. Incremental review through this commit is clean with no open
+NAT3 corrected delivery-checkpoint wording. The incremental editor-state review is clean with no open
 findings.
 
 ## Decisions, discoveries, blockers, and deviations
@@ -76,6 +79,11 @@ findings.
 - Backend mappers are excluded.
 - Transport encoders remain API-private; third-party adapters and presentation projections remain
   boundary-local rather than becoming domain companions.
-- Current `write-boundary` guidance requires RHF/Zod to produce the request directly; the superseded
-  parse-then-buffer-mapper shape was not restored.
+- Commit `93b8e0648` established Zustand as the cross-component editor owner; the later store deletion
+  was an unintended plan reversal and has been corrected.
+- `VenueState`, `ArtistState`, and `ConcertState` are neutral client state. Create/update request types
+  remain submission outputs and are not reused as store drafts.
+- RHF/Zod produces the request directly; stores are updated through the same facade callbacks instead
+- No new frontend tests are added until the repository adopts a test standard; existing tests and
+  build gates still run for verification.
 - Local E2E is not part of this refactor's pre-PR gate.
