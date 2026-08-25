@@ -24,22 +24,17 @@ export interface Artist {
   longitude: number;
 }
 
-export interface CreateArtistRequest {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
-  genres: Genre[];
+type ArtistRequestFields = Pick<
+  Artist,
+  "name" | "about" | "latitude" | "longitude" | "genres"
+>;
+
+export interface CreateArtistRequest extends ArtistRequestFields {
   banner: ImageFile;
   avatar: ImageFile;
 }
 
-export interface UpdateArtistRequest {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
-  genres: Genre[];
+export interface UpdateArtistRequest extends ArtistRequestFields {
   banner?: ImageFile;
   avatar?: ImageFile;
 }

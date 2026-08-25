@@ -11,19 +11,21 @@
 
 ## Current state
 
-Phases 0 through 4 and the Phase 5 inventory are complete. A post-review architecture correction now
-restores neutral `VenueState`, `ArtistState`, and `ConcertState` Zustand drafts behind their workflow
-facades. RHF/Zod still owns validation, dirty/error state, and parsed create/update request submission;
-the stores are not request types and do not contain server-owned fields.
+Phases 0 through 4 and the Phase 5 inventory are complete. Neutral `VenueState`, `ArtistState`, and
+`ConcertState` Zustand drafts remain behind their workflow facades. Request contracts now derive from
+their read models with `Omit` or `Pick` where the fields are association-wise identical; genuinely
+different write shapes remain explicit contracts.
 
-The prior review through `7965f2bbb` and the incremental editor-state review are clean. The complete
-frontend matrix passes for the correction. Platform-sync PR #780 blocks readiness and merge, not work
-on the draft PR.
+The redundant Concert companion mapper is removed and the private store selects its exact RHF draft.
+Artist and Venue companions remain because their read image URLs are incompatible with binary
+`ImageFile` write fields. The complete frontend matrix passes for this refinement. Platform-sync PR
+#780 blocks readiness and merge, not work on the draft PR.
 
 ## Next Steps
 
-Push the exact reviewed editor-state candidate to draft PR #783 and let CI validate that head. Keep the
-PR draft until platform-sync PR #780 lands and current `origin/main` is reconciled.
+Commit and incrementally review the verified request-contract refinement after `d64b143c0`. Resolve any
+findings, then push the exact reviewed head to draft PR #783. Keep the PR draft until platform-sync PR
+#780 lands and current `origin/main` is reconciled.
 
 ## Completed work
 
@@ -40,6 +42,8 @@ PR draft until platform-sync PR #780 lands and current `origin/main` is reconcil
 - Opened draft PR #783 and pushed the prior reviewed candidate through `7965f2bbb`.
 - Restored private neutral Zustand editor state for Artist, Venue, and Concert while retaining the
   RHF/Zod request boundary and the slim multipart/API contracts.
+- Derived aligned Preference, Review, Concert, member-role, and admin-invitation write contracts from
+  their read models; removed duplicate B2B Artist/Venue declarations and the redundant Concert mapper.
 
 ## Verification
 
@@ -56,6 +60,10 @@ PR draft until platform-sync PR #780 lands and current `origin/main` is reconcil
 - The editor-state correction passed shared 23/23 and web-B2B 25/25 tests; both package builds;
   dependency-cruiser; all 7 boundary tests; all five web builds; both mobile TypeScript checks; and
   B2B/Customer Android exports with 3,695/4,287 modules.
+- The request-contract refinement passed shared 22/22, B2B 15/15, customer 3/3, web 31/31, and
+  web-B2B 25/25 existing tests; all affected package builds; dependency-cruiser; all 7 boundary tests;
+  all five web builds; both mobile TypeScript checks; and B2B/Customer Android exports with
+  3,695/4,286 modules.
 - Phase 5 mapper/buffer/store/absence searches passed with only the intended binary `ArrayBuffer`
   sites and private store facade/test sites allowlisted.
 - `git diff --check` and `python .agents/hooks/plan_graph.py --root <worktree>` passed.
@@ -84,6 +92,10 @@ findings.
 - `VenueState`, `ArtistState`, and `ConcertState` are neutral client state. Create/update request types
   remain submission outputs and are not reused as store drafts.
 - RHF/Zod produces the request directly; stores are updated through the same facade callbacks instead
+- Use `Omit<Read, ...>` when a request only excludes identity/server-owned fields and `Pick<Read, ...>`
+  for a strict writable subset. Keep a separate interface when write semantics or field types differ.
+- `TicketPurchaseRequest` remains independent from `TicketCheckout`; the checkout response only
+  incidentally echoes purchase fields and is not the request's domain owner.
 - No new frontend tests are added until the repository adopts a test standard; existing tests and
   build gates still run for verification.
 - Local E2E is not part of this refactor's pre-PR gate.

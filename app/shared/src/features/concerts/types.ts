@@ -84,20 +84,7 @@ export interface Concert {
   genres: Genre[];
 }
 
-export interface UpdateConcertRequest {
-  name: string;
-  about: string;
-  price: number;
-  totalTickets: number;
-}
-
-export const Concert = {
-  toUpdateRequest(concert: Concert): UpdateConcertRequest {
-    return {
-      name: concert.name,
-      about: concert.about,
-      price: concert.price,
-      totalTickets: concert.totalTickets,
-    };
-  },
-};
+export type UpdateConcertRequest = Pick<
+  Concert,
+  "name" | "about" | "price" | "totalTickets"
+>;

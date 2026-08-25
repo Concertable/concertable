@@ -7,6 +7,7 @@ export { updateConcertRequestSchema } from "./schemas/updateConcertRequestSchema
 export { eSignatureRequestSchema } from "./schemas/eSignatureRequestSchema";
 export type {
   UpdateConcertRequest,
+  Concert,
   ConcertArtist,
   ConcertVenue,
   CheckoutSession,
@@ -18,4 +19,3 @@ export type {
   PayeeSummary,
   Checkout,
 } from "./types";
-export { Concert } from "./types";

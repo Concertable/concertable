@@ -62,24 +62,21 @@ feature stores stay behind facade hooks or an imperative session, and client-own
 4. Export the companion through the existing feature barrel only when consumers already import the
    corresponding type through that barrel. Do not widen a package tier solely to share a mapper.
 5. Give every method an explicit parameter and return type. Request return types are exported
-   interfaces from the same feature's `types.ts`, not anonymous objects declared in an API module.
+   contracts from the same feature's `types.ts`, not anonymous objects declared in an API module.
 
 ### Interface and Zod relationship
 
-Object contracts remain interfaces in `types.ts`; schemas validate them but do not replace them with
-schema-derived aliases. When a schema's parsed output is already the request shape, bind the schema to
-the interface explicitly:
+Distinct object contracts remain interfaces in `types.ts`; schemas validate them but do not replace
+them with schema-derived aliases. When a write contract is exactly a read-model subset, derive it with
+`Pick` or `Omit` instead of duplicating its fields. Bind the schema to that contract explicitly:
 
 ```ts
-export interface PreferenceRequest {
-  radiusKm: number;
-  genres: Genre[];
-}
+export type PreferenceRequest = Omit<Preference, "id" | "userId">;
 
-export const preferenceRequestSchema: z.ZodType<PreferenceRequest> = z.object({
+export const preferenceRequestSchema = z.object({
   radiusKm: z.number().min(1),
   genres: z.array(z.enum(GENRE_VALUES)),
-});
+}) satisfies z.ZodType<PreferenceRequest>;
 ```
 
 Do not also declare `type PreferenceRequest = z.infer<typeof preferenceRequestSchema>`. Interactive
@@ -137,6 +134,7 @@ at the wire edge.
 | Transformation                                                         | Required owner and spelling                                                                                                                      |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Shapes are already identical                                           | Delete the mapper and type the value as the destination.                                                                                         |
+| Write shape omits only read/server fields                              | Derive the request with `Omit<Read, ...>`; use `Pick<Read, ...>` for a strict writable subset. Do not add a mapper when selection alone is sufficient. |
 | Reusable or semantic domain/read → request conversion                  | Source companion in feature `types.ts`, named `Source.toRequest` or the specific `toXRequest`.                                                   |
 | User-editable form → request                                           | A private feature store may own a neutral shared draft; React Hook Form owns validation, dirty state, and submission, and `zodResolver` produces the request passed directly to the mutation. Use a schema transform for restructuring. |
 | Query parameters, route construction, headers, JSON/multipart encoding | Keep in `api/xApi.ts`. The complex encoders named by this plan become module-private `toX` helpers; one-use one-or-two-field bodies stay inline. |
@@ -176,8 +174,8 @@ gate without changing the recorded decision unless the underlying shape changed.
 | `app/web/b2b/shared/src/features/organizations/hooks/useOrganization.ts` and `schemas/updateOrganizationRequestSchema.ts`              | The hook constructs a nested request from raw form state and only then validates it.                                          | Make the schema transform RHF form values into the nested request and let the hook accept only `UpdateOrganizationRequest`.                                                                                                                                                                                                                 |
 | `app/web/customer/src/features/reviews/hooks/useAddReview.ts` and `app/customer/shared/src/features/reviews/api/reviewApi.ts`          | The form reshapes local state; the shared request incorrectly contains route-only `concertId`, which the API strips.          | Use RHF plus `zodResolver`, change the shared API to `createReview(concertId, request)`, and remove `concertId` from `CreateReviewRequest`.                                                                                                                                                                                                    |
 | `app/shared/src/features/messaging/hooks/useReportMessage.ts` and `schemas/reportMessageRequestSchema.ts`                              | An object literal trims/omits details before parsing.                                                                         | Use RHF plus `zodResolver`, put normalization in the Zod schema, and pass its `ReportMessageRequest` output directly.                                                                                                                                                                                                                        |
-| `app/customer/shared/src/features/preferences/api/preferenceApi.ts`, `hooks/usePreferenceQuery.ts`, and mobile `PreferencesScreen.tsx` | Update accepts a full `Preference` read and the screen reconstructs server-owned `id`/`user`; create drops selected genres.   | Define one slim `PreferenceRequest`, keep route `id` as a function argument, bind its schema, and use RHF for both create and update.                                                                                                                                                                                                         |
-| `app/web/b2b/shared/src/features/concerts/hooks/useMyConcert.ts` and its private `store/useConcertStore.ts`                            | A full `Concert` read was copied into editor state and silently stripped to an update request by Zod.                         | Define `UpdateConcertRequest` and `Concert.toUpdateRequest`; keep a neutral `ConcertState` draft behind `useMyConcert`, with RHF/Zod owning validation and request submission.                                                                                                                                                                |
+| `app/customer/shared/src/features/preferences/api/preferenceApi.ts`, `hooks/usePreferenceQuery.ts`, and mobile `PreferencesScreen.tsx` | Update accepts a full `Preference` read and the screen reconstructs server-owned `id`/`user`; create drops selected genres.   | Model the actual response with `userId`, derive `PreferenceRequest` by omitting `id` and `userId`, keep route `id` as a function argument, bind its schema, and use RHF for both create and update.                                                                                                                                            |
+| `app/web/b2b/shared/src/features/concerts/hooks/useMyConcert.ts` and its private `store/useConcertStore.ts`                            | A full `Concert` read was copied into editor state and silently stripped to an update request by Zod.                         | Derive `UpdateConcertRequest` as the writable `Pick<Concert, ...>` and let the private `ConcertState` draft perform that selection once when editing begins; RHF/Zod owns validation and request submission. No companion mapper is required.                                                                                                |
 | `app/shared/src/features/artists/api/artistApi.ts`, `hooks/useMyArtist.ts`, and private `store/useArtistStore.ts`                       | Create types lived in the API module; update accepted a full `Artist` read, then manually encoded selected fields as multipart. | Define slim create/update request interfaces and `Artist.toUpdateRequest`; keep a neutral `ArtistState` draft behind workflow hooks, use RHF plus Zod for requests, and keep module-private multipart encoders in `artistApi.ts`.                                                                                                               |
 | `app/shared/src/features/venues/api/venueApi.ts`, `hooks/useMyVenue.ts`, and private `store/useVenueStore.ts`                           | Update accepted a full `Venue` read, then manually encoded selected fields as multipart.                                     | Define slim create/update request interfaces and `Venue.toUpdateRequest`; keep a neutral `VenueState` draft behind workflow hooks, use RHF plus Zod for requests, and keep module-private multipart encoders in `venueApi.ts`.                                                                                                                 |
 | `app/shared/src/features/search/api/headerApi.ts`                                                                                      | `SearchFilters` is renamed and combined into HTTP query parameters.                                                           | Define a private `HeaderSearchParams` interface and module-private `toSearchParams(filters)` in `headerApi.ts`, then pass its result as Axios params. Do not put transport parameters on `SearchFilters`.                                                                                                                                   |
@@ -242,8 +240,8 @@ plus web-shared consent tests and affected package builds are green.
 2. Move report-message normalization into its schema and move the form to RHF.
 3. Replace Preference's read-as-write API with the slim shared request and correct both create and
    update mobile submissions, including selected genres.
-4. Replace the full-Concert edit copy with a neutral `ConcertState` draft behind `useMyConcert`; use
-   `Concert.toUpdateRequest` to initialize RHF and let RHF/Zod produce the update request.
+4. Replace the full-Concert edit copy with a neutral `ConcertState` draft behind `useMyConcert`;
+   derive `UpdateConcertRequest` with `Pick` and initialize RHF from the exact draft selected by the store.
 5. Keep `useConcertStore` private, remove every hand-written `XBuffer` form abstraction, and make
    affected facade hooks submit parsed request contracts only.
 6. Test semantic normalization, route/body separation, create/update parity, form initialization,
@@ -357,7 +355,7 @@ not introduce a second runner.
 - `desired.map(Opportunity.toRequest)` is the canonical Opportunity call site.
 - Every inventoried domain conversion has the exact owner recorded above; no item is left as a generic
   future cleanup.
-- Slim request interfaces live in feature `types.ts`, route ids remain API arguments, and edited APIs
+- Slim request contracts live in feature `types.ts`, route ids remain API arguments, and edited APIs
   do not accept read models as writes.
 - Neutral editor state is private behind workflow facades; React Hook Form owns validation, dirty
   state, errors, and submission, and `zodResolver` produces mutation requests. No hand-written

@@ -14,20 +14,17 @@ export interface Venue {
   longitude: number;
 }
 
-export interface CreateVenueRequest {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
+type VenueRequestFields = Pick<
+  Venue,
+  "name" | "about" | "latitude" | "longitude"
+>;
+
+export interface CreateVenueRequest extends VenueRequestFields {
   banner: ImageFile;
   avatar: ImageFile;
 }
 
-export interface UpdateVenueRequest {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
+export interface UpdateVenueRequest extends VenueRequestFields {
   banner?: ImageFile;
   avatar?: ImageFile;
 }
