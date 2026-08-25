@@ -265,10 +265,13 @@ commits is part of final closure and is not asserted here.
   - Resolved by projecting only the Booking id before entering the locked transition and compiling a
     deterministic cancellation/payment-confirmation overlap test through the real pre-commit handler.
 
-- [ ] **IR8 — HIGH — Application lifecycle concurrency** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationService.cs:284`
+- [x] **IR8 — HIGH — Application lifecycle concurrency** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationService.cs:284`
   Accept pre-tracks the Application before its lock, while Withdraw and Reject use unlocked lifecycle reads.
   Acquire the lifecycle lock before validation for all three transitions and prove deterministic overlap
   convergence.
+  - Resolved by loading the Application through one update-lock repository boundary before acceptance
+    validation and by wrapping Withdraw and Reject in the same serialized unit-of-work path. Deterministic
+    Accept/Withdraw and Accept/Reject queue-order tests compile against the real HTTP operations.
 
 - [ ] **IR9 — HIGH — Concert financial concurrency/idempotency** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Executors/CompleteExecutor.cs:49`
   Concert Cancel and Complete use unlocked reads, and settlement performs external money movement without a
