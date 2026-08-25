@@ -5,9 +5,9 @@
 - Roadmap item: `payments/payment-session-state`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-payments_payment-session-state`
 - Branch: `Feature/payments_payment-session-state`
-- PR: draft #721 — https://github.com/Concertable/concertable/pull/721
+- PR: ready #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: PR #597 and platform sync #645 supplied the implementation baseline; this producer's publication and generated platform-sync remain pending
-- Last reconciled: `2026-08-25` against `origin/main` `69e060958b529c0e4851f9983c3244dd150d466d`, merge head `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`, Payment platform `0.1.0-alpha.0.1186`, and clean native/security review through that merge head
+- Last reconciled: `2026-08-25` against `origin/main` `24145d1e826731f4510edb1cb1f69c7a1fa3f105`, merge head `305806eba2e1aeba20a46957ca466d2b575b1cb1`, Payment platform `0.1.0-alpha.0.1186`, and clean native/security review through that merge head
 
 ## Current state
 
@@ -21,18 +21,18 @@ internal `PaymentSessionIdempotencyKey` value object, carries it through `IStrip
 it to provider text only inside the real and fake Stripe adapters. No reverse parser is added because no
 string ingress exists.
 
-PR #721 remains draft. Current `origin/main` is merged in this commit. The Payment migration was re-scaffolded
+PR #721 is ready. Current `origin/main` is merged in this commit. The Payment migration was re-scaffolded
 from the combined model so the session operation/attempt schema and main's `DateTimeOffset` audit model both
 remain present. The protobuf compatibility tests retain the session contract assertions while main's assembly
-reference guards remain in the architecture tier. The merge delta is cleanly reviewed; exact-head CI remains
-before the PR is made ready. Consumer
+reference guards remain in the architecture tier. The latest conflict-free main merge leaves the Payment tree
+byte-identical and is cleanly reviewed; exact-head CI remains before the merge queue. Consumer
 work remains delivery-gated until the producer merges, its packages publish, and the causally generated
 platform-sync PR is green and merged. The roadmap item remains unchecked until those gates are terminal.
 
 ## Next Steps
 
 Push the reviewed current-main candidate plus its review tail, verify the remote and PR head exactly match,
-then require exact-head draft CI green before making PR #721 ready and entering `/merge`.
+then require exact-head CI green before entering `/merge`.
 
 ## Completed work
 
@@ -58,7 +58,7 @@ then require exact-head draft CI green before making PR #721 ready and entering 
 ## Reviews
 
 Review artifact: `reviews/Feature-payments_payment-session-state.md`. Full and incremental native/security
-review is clean through `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`; NAT1 and SEC1–SEC3 are resolved.
+review is clean through `305806eba2e1aeba20a46957ca466d2b575b1cb1`; NAT1 and SEC1–SEC3 are resolved.
 
 ## Decisions, discoveries, blockers, and deviations
 

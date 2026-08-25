@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`  _(2026-08-25)_
-**Security-reviewed up to commit:** `96b8a3280e156eb6b521b2b7a5eab9dd3abf80ed`  _(2026-08-25)_
+**Reviewed up to commit:** `305806eba2e1aeba20a46957ca466d2b575b1cb1`  _(2026-08-25)_
+**Security-reviewed up to commit:** `305806eba2e1aeba20a46957ca466d2b575b1cb1`  _(2026-08-25)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -93,6 +93,18 @@ checkpoints plus conflict-free merge `c685747a4`; its remerge diff is empty. The
 to docs-only PR #764 and touch no Payment or runtime path. The service-boundary, module-boundary, package,
 language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
 were also clean.
+
+## Incremental review — 2026-08-25 (pre-queue current-main reconciliation)
+
+> Range reviewed: `96b8a328..305806eb` (24 commits).
+
+No new findings. Native and required Payment security passes were clean. The merge is conflict-free, has no
+combined-diff paths, and leaves the `api/Concertable.Payment` tree byte-identical. Imported executable changes
+are confined to B2B tenant verification and match `origin/main` without cross-stream resolution. Payment
+authorization, secret handling, idempotency, persistence constraints, protobuf contracts, package pins,
+migration artifacts, and focused tests remain unchanged. The service-boundary, module-boundary, persistence,
+package, language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review
+lifecycle lenses were also clean.
 
 ## Incremental review — 2026-08-25
 
