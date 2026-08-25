@@ -7,7 +7,7 @@
 - Branch: `Refactor/frontend_domain-companion-mapping`
 - PR: draft #783 — https://github.com/Concertable/concertable/pull/783
 - Dependency/package gates: platform-sync PR #780 is red because Payment still implements the old `IAuditable` timestamp types; its existing worktree has concurrent uncommitted consumer edits
-- Last reconciled: 2026-08-25 against `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`; the full frontend matrix passed for the editor-state correction in this commit
+- Last reconciled: 2026-08-25 against `origin/main` at `ac7ff7f17021a2aaf163171798cde6fff4c7a897`; the full frontend matrix passed for the request-contract refinement in this commit
 
 ## Current state
 
@@ -18,14 +18,14 @@ different write shapes remain explicit contracts.
 
 The redundant Concert companion mapper is removed and the private store selects its exact RHF draft.
 Artist and Venue companions remain because their read image URLs are incompatible with binary
-`ImageFile` write fields. The complete frontend matrix passes for this refinement. Platform-sync PR
-#780 blocks readiness and merge, not work on the draft PR.
+`ImageFile` write fields. The complete frontend matrix passes for this refinement. Both incremental
+reviews are clean after the RHF reset and checkpoint wording fixes. Platform-sync PR #780 blocks
+readiness and merge, not work on the draft PR.
 
 ## Next Steps
 
-Commit and incrementally review the verified request-contract refinement after `d64b143c0`. Resolve any
-findings, then push the exact reviewed head to draft PR #783. Keep the PR draft until platform-sync PR
-#780 lands and current `origin/main` is reconciled.
+Push the exact reviewed head to draft PR #783 and let CI validate it. Keep the PR draft until
+platform-sync PR #780 lands and current `origin/main` is reconciled.
 
 ## Completed work
 
@@ -73,7 +73,8 @@ findings, then push the exact reviewed head to draft PR #783. Keep the PR draft 
 Full implementation review covered `70af43a..4b69e66` in
 `reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; NAT1 through
 NAT3 corrected delivery-checkpoint wording. The incremental editor-state review is clean with no open
-findings.
+findings. The request-contract review found NAT4 and NAT5; both were fixed in the follow-up commit, and
+the incremental fix review is clean.
 
 ## Decisions, discoveries, blockers, and deviations
 
