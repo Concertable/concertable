@@ -5,12 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `cec78027dea2ee37dcc0eb93cf735e93cd57954b`  _(2026-08-25)_
+**Reviewed up to commit:** `81b0973813b2127547276692b6747fb32a24cffb`  _(2026-08-25)_
 **Security-reviewed up to commit:** `84e4d61b0d47533645e5813d39f39413a2a4073e`  _(2026-08-25)_
 
-> Range reviewed: `ac7ff7f17..c72c79161` (1 commit; findings fixed across `84e4d61b0`, `2f2e7218d`, and
-> `cec78027d`). Diff touches `VerificationController.cs`, matching this repo's `Controller[A-Za-z]*\.cs$`
-> security-sensitive pattern (`.agents/merge-gate.json`).
+> Range reviewed: `ac7ff7f17..c72c79161` (1 commit; findings fixed across `84e4d61b0`, `2f2e7218d`,
+> `cec78027d`, and `81b097381`). Diff touches `VerificationController.cs`, matching this repo's
+> `Controller[A-Za-z]*\.cs$` security-sensitive pattern (`.agents/merge-gate.json`).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -78,8 +78,14 @@ against the finished diff during the review itself. All five findings below are 
   service now takes `IReadOnlyList<EvidenceUpload>` (a plain `Stream` + extension + document type); the
   controller maps the MVC-bound request via a new `SubmitVerificationRequest.ToEvidenceUploads()` extension.
   Also proposed as a standards addition — see Decisions below.
-- [x] **CV6 — convention (result-carriers)** — `VerificationService.cs` (`GetOwnAsync`)
+- [x] **CV6 — convention (result-carriers)** — `VerificationService.cs` (`GetStatusAsync`)
   Used the explicit `.ToOption().Map(v => v.ToDto())` chain (copied from `TenantService.cs` precedent).
   `CARRIERS.md` prefers target typing over `.ToOption()` where a target-typed site exists. **Fixed:**
   `(await repository.GetByTenantIdAsync(tenantId, ct))?.ToDto()` — the nullable result and the `null`/
   `VerificationStatusDto` outcomes convert implicitly at the `Option<VerificationStatusDto>`-typed return.
+- [x] **CV7 — convention (csharp-naming)** — `IVerificationService.GetStatusAsync` (was `GetOwnAsync`)
+  `Own` restated the active-tenant scope every B2B service method already runs under by default
+  (`Concertable.B2B/AGENTS.md`: "do not add `ActiveTenant` to ordinary method names"), and this doc was
+  shown to the session multiple times while the file was being written. **Fixed:** renamed to
+  `GetStatusAsync`, matching `TenantService.GetDetailsAsync`'s precedent — name for what's returned,
+  not the default scope.
