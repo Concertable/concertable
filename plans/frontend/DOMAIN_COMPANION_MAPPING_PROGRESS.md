@@ -19,14 +19,14 @@ their planned boundaries.
 
 The full branch review through `4b69e66ce` found two remaining boundary-projection convention misses.
 Both were fixed in `539c1a520`; its incremental review was clean. Every Phase 5 invariant and the
-complete post-merge frontend matrix now pass. The post-`539c1a520` incremental review found only the
-stale platform-sync gate recorded below. Frontend delivery is blocked on resolving that external red gate.
+complete post-merge frontend matrix now pass. The post-`539c1a520` incremental review found only ledger
+corrections, which are resolved. Platform-sync PR #780 blocks readiness and merge, not draft PR creation.
 
 ## Next Steps
 
-Resolve platform-sync PR #780's Payment `IAuditable` consumer failure without colliding with its existing
-uncommitted worktree changes. After it lands, reconcile current `origin/main`, complete the final incremental
-review, push the stable candidate, open its PR, and require exact-head CI before merge readiness.
+Push the stable candidate and open its draft PR for exact-head CI. Keep it draft until platform-sync PR #780's
+Payment `IAuditable` consumer failure is resolved without colliding with its existing uncommitted worktree
+changes, #780 lands, and current `origin/main` is reconciled.
 
 ## Completed work
 
@@ -60,9 +60,9 @@ review, push the stable candidate, open its PR, and require exact-head CI before
 ## Reviews
 
 Full implementation review covered `70af43a..4b69e66` in
-`reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; NAT1
-corrected the preceding main merge checkpoint. Incremental review through this commit is clean with no
-open findings.
+`reviews/Refactor-frontend_domain-companion-mapping.md`. CV1 and CV2 were fixed in `539c1a520`; NAT1 through
+NAT3 corrected delivery-checkpoint wording. Incremental review through this commit is clean with no open
+findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
