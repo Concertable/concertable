@@ -4,12 +4,23 @@ import type { ImageFile } from "../../../types/image";
 import type { Venue } from "../types";
 
 export interface VenueState {
-  draft: Venue | undefined;
+  draft:
+    | Pick<
+        Venue,
+        | "name"
+        | "about"
+        | "bannerUrl"
+        | "avatar"
+        | "county"
+        | "town"
+        | "latitude"
+        | "longitude"
+      >
+    | undefined;
   banner: ImageFile | undefined;
   avatar: ImageFile | undefined;
   editMode: boolean;
-  isDirty: boolean;
-  beginEdit: (venue: Venue) => void;
+  beginEdit: (venue: NonNullable<VenueState["draft"]>) => void;
   endEdit: () => void;
   setName: (name: string) => void;
   setAbout: (about: string) => void;
@@ -29,17 +40,13 @@ export const useVenueStore = create<VenueState>()(
     banner: undefined,
     avatar: undefined,
     editMode: false,
-    isDirty: false,
     beginEdit: (venue) =>
       set((state) => {
         state.draft = {
-          id: venue.id,
           name: venue.name,
           about: venue.about,
           bannerUrl: venue.bannerUrl,
           avatar: venue.avatar,
-          rating: venue.rating,
-          email: venue.email,
           county: venue.county,
           town: venue.town,
           latitude: venue.latitude,
@@ -48,7 +55,6 @@ export const useVenueStore = create<VenueState>()(
         state.banner = undefined;
         state.avatar = undefined;
         state.editMode = true;
-        state.isDirty = false;
       }),
     endEdit: () =>
       set((state) => {
@@ -56,33 +62,26 @@ export const useVenueStore = create<VenueState>()(
         state.banner = undefined;
         state.avatar = undefined;
         state.editMode = false;
-        state.isDirty = false;
       }),
     setName: (name) =>
       set((state) => {
-        if (!state.draft) return;
-        state.draft.name = name;
-        state.isDirty = true;
+        if (state.draft) state.draft.name = name;
       }),
     setAbout: (about) =>
       set((state) => {
-        if (!state.draft) return;
-        state.draft.about = about;
-        state.isDirty = true;
+        if (state.draft) state.draft.about = about;
       }),
     setBanner: (banner) =>
       set((state) => {
         if (!state.draft) return;
         state.draft.bannerUrl = banner.uri;
         state.banner = banner;
-        state.isDirty = true;
       }),
     setAvatar: (avatar) =>
       set((state) => {
         if (!state.draft) return;
         state.draft.avatar = avatar.uri;
         state.avatar = avatar;
-        state.isDirty = true;
       }),
     setLocation: (latitude, longitude, county, town) =>
       set((state) => {
@@ -91,7 +90,6 @@ export const useVenueStore = create<VenueState>()(
         state.draft.longitude = longitude;
         state.draft.county = county;
         state.draft.town = town;
-        state.isDirty = true;
       }),
   })),
 );

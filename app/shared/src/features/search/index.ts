@@ -6,7 +6,6 @@ export {
 } from "./hooks/useHeaderQuery";
 export { useSearchState } from "./hooks/useSearchState";
 export { useSearchFilters } from "./hooks/useSearchFilters";
-export { useSearchFiltersStore } from "./store/useSearchFiltersStore";
 export { SearchSchema } from "./schemas/searchSchema";
 export type { SearchFilters } from "./schemas/searchSchema";
 export {
