@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a7bbbc47ad2f878bd9dffe2283dbeaeb57cea2c7`  _(2026-08-26)_
-**Security-reviewed up to commit:** `a7bbbc47ad2f878bd9dffe2283dbeaeb57cea2c7`  _(2026-08-26)_
+**Reviewed up to commit:** `4d1111157dd817f26b2a97c93163800e89169f97`  _(2026-08-26)_
+**Security-reviewed up to commit:** `4d1111157dd817f26b2a97c93163800e89169f97`  _(2026-08-26)_
 
 > Range reviewed: `7d4dd12fb..a7bbbc47a` (4 commits) — Phase 4 of tenant verification (admin review surface).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -43,3 +43,10 @@ No new findings beyond what's already fixed inline above (the `ToOption()` compi
 ## Incremental review — 2026-08-26 (merge-base)
 
 Range `392a5d782..a7bbbc47a`: merged current `origin/main` in for base currency before enqueueing. Diff is `plans/launch/TENANT_VERIFICATION_PLAN.md`, `plans/launch/TENANT_VERIFICATION_PROGRESS.md`, `reviews/Docs-tv-p4-checkpoint.md`, `reviews/Feature-launch_tenant-verification.md` only — no code path touched. No findings; no security-sensitive path in range.
+
+## Incremental review — 2026-08-26 (tech-debt log)
+
+Range `a7bbbc47a..4d1111157`: `api/Concertable.B2B/TECH_DEBT.md` only, logging the `e2e-api-tests`
+`IImageService`/`VenueService` startup flake investigated after two real merge_group failures (see PR
+history: run `33014869553` for this PR, run `33008827828` for the unrelated PR #802 hitting the byte-
+identical signature). No code path touched; no findings.
