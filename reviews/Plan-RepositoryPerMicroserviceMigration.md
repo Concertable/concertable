@@ -4,7 +4,9 @@
 
 **Judgment:** `approved`
 
-**Reviewed up to commit:** `94880e782`
+**Reviewed up to commit:** `ec8d458aa`
+
+**Security-reviewed up to commit:** `ec8d458aa`
 
 - PR: [#798](https://github.com/Concertable/concertable/pull/798)
 - Branch: `Plan/RepositoryPerMicroserviceMigration`
@@ -127,6 +129,27 @@ Checked: regex compiles and fires for both files; row count unchanged at 40; edi
 regenerated rather than hand-edited; the generator's own 12 tests pass locally, including
 `test_every_tracked_path_is_covered`. Unanchored-suffix matching is the same style as the sibling
 `Directory\.(Build|Packages)\.(props|targets)$` row.
+
+## Security layer — no findings
+
+Triggered by `.github/workflows/test.yml`, a sensitive path in the merge gate's inventory.
+
+- **Dependency confusion — the material risk here, and it is guarded.** Converting 41 references to feed
+  packages means a public package impersonating `Concertable.Testing` could otherwise be substituted. All six
+  folders that consume them (`Auth`, `B2B`, `Customer`, `Payment`, `Search`, `api/tests`) carry a
+  `nuget.config` whose `packageSourceMapping` pins `Concertable.*` to the private GitHub feed, `api/tests`
+  included — verified per folder, not assumed.
+- **New job privileges.** `split-inventory` declares `permissions: {contents: read}`, no `env`, no secrets,
+  and only `actions/checkout@v4` + `actions/setup-python@v5`, both already used in this workflow. No new
+  third-party action enters the supply chain.
+- **No script injection.** Its single `run` is a fixed command; no added workflow line interpolates
+  `${{ github.event.* }}`, and every added `dotnet sln add` argument is a literal path (0 interpolated).
+- **No trigger or privilege escalation.** The `on:` block is untouched; there is no `pull_request_target`.
+- **No gate weakened.** `ci-complete.needs` went 16 → 17 — added, never removed. The B2B/Customer `find`
+  relaxation *adds* projects to the carve build. No secret introduced anywhere.
+- **Build-logic substitution.** `PlatformSourcePackages.targets` resolves only hardcoded in-repo paths, gated
+  to test paths and disabled under `UseLocalPlatformPackages`; `inventory.py` reads tracked files with no
+  network and no `exec`.
 
 ## Not verified here (owned by CI)
 
