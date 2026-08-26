@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `06dca73d57d50f2cf1c128fcf978f928734da7f6`  `(2026-08-26)`
+**Reviewed up to commit:** `6ada5c17c724aa62da7a175e00f5389ca55c4a1c`  `(2026-08-26)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-26 — full
@@ -43,3 +43,23 @@ parent. No security-sensitive path is touched, so no security layer applies.
 BUILD1 verified independently by the parent: AppHost.Shared's only `ProjectReference`
 (`Concertable.Messaging.AzureServiceBus`) is already packable/published, and the project exposes no
 Reunion carrier, so no `PrivateAssets="all"` is owed. Ledger doc changes carry no reviewable defect.
+
+## Review pass — 2026-08-26 — incremental
+
+**Candidate base:** `06dca73d57d50f2cf1c128fcf978f928734da7f6`
+**Candidate head:** `6ada5c17c724aa62da7a175e00f5389ca55c4a1c`
+**Candidate branch:** `Plan/RepoSplit-Stage2-AppHostShared`
+**Candidate scope:** `eng/repository-split/inventory.json`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage2-AppHostShared.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The `split-inventory` CI gate correctly flagged the committed `inventory.json` snapshot as stale after
+AppHost.Shared became packable. Regenerated it with `python eng/repository-split/inventory.py` — a
+deterministic tool, not a hand edit. The whole diff is `Concertable.AppHost.Shared` flipping
+`packable: false → true` and joining `packableProjects`; `inventory.py --check` passes with
+`blockingTestEdges` still 0 and no `apphost` edge collapse yet (that awaits the `*.Hosting` round-trips).
+
+### Findings
+
+No findings — mechanical regeneration matching the source-of-truth generator.
