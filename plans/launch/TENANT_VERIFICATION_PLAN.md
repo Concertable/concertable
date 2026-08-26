@@ -217,22 +217,29 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
   test proving an unverified tenant's `POST` is rejected.
 - [x] Build + focused tests; commit.
 
-### Phase 4 — Admin review + cross-module contact + notification
+### Phase 4 — Admin review + cross-module contact + notification ✅ implemented, PR #799 (open draft, `7fce9d54b`)
 
-- [ ] Admin-listing query: `GetPendingAsync(pageParams)` over `TenantVerificationEntity` where
-  `Status == Pending`, ordered by `SubmittedAt`.
-- [ ] Add `GetContactByTenantIdAsync(Guid tenantId, CancellationToken ct = default)` to `IVenueModule`
-  and `IArtistModule` (returning `Option<TenantContact(Name, Email)>` — decide the shared-type home in
-  this phase). Admin service composes the pending list with the correct module's contact by
-  `TenantType`.
-- [ ] `TenantVerificationAdminController` (`[Admin]`, Tenant.Api):
+- [x] Admin-listing query: `GetPendingAsync(pageParams)` over `TenantVerificationEntity` where
+  `Status == Pending`, ordered by `SubmittedAt`. Named `PendingVerificationProjection` in code (the
+  ephemeral repository-side shape); the enriched API-facing DTO is `PendingVerificationDto`.
+- [x] Add `GetContactByTenantIdAsync(Guid tenantId, CancellationToken ct = default)` to `IVenueModule`
+  and `IArtistModule` (returning `Option<TenantContact(Name, Email)>`). `TenantContact` declared once
+  per module's own Contracts project (Venue, Artist) — matches the existing `DisplayNames` precedent for
+  small per-module value shapes; not `Concertable.Kernel`, which would add a shared-package dependency
+  neither module otherwise needs. Admin service composes the pending list with the correct module's
+  contact by `TenantType`.
+- [x] `TenantVerificationAdminController` (`[Admin]`, Tenant.Api):
   `GET pending`, `POST {tenantId}/approve`, `POST {tenantId}/reject`.
-- [ ] `IVerificationNotifier` (Tenant.Infrastructure), using `IEmailTransport`, called from the admin
+- [x] `IVerificationNotifier` (Tenant.Infrastructure), using `IEmailTransport`, called from the admin
   approve/reject service methods — mirrors `ContentReportNotifier`'s direct-call shape, resolving the
   target email via the new `GetContactByTenantIdAsync`.
-- [ ] Unit tests for the admin service and notifier; integration tests for the admin endpoints
-  mirroring the venue-approval integration coverage from admin-console Phase 4.
-- [ ] Build + focused tests; commit.
+- [x] Integration tests for the admin endpoints (`TenantVerificationAdminApiTests.cs`), mirroring the
+  venue-approval integration coverage from admin-console Phase 4 — **no dedicated unit tests for the
+  admin service/notifier**: per the `unit-testing` standard, orchestration over several collaborators
+  defaults to the integration tier, not mocked unit tests. This caught a real bug a mock would have
+  hidden (see ledger Reviews).
+- [x] Build + focused tests; commit; reviewed (2 findings, both fixed on branch — see ledger); pushed to
+  PR #799.
 
 ### Phase 5 — Admin SPA + tenant-facing UI
 
