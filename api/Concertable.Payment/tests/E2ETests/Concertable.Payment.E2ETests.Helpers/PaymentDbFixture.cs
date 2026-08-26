@@ -1,9 +1,11 @@
 using System.Data.Common;
 using Aspire.Hosting;
+using Concertable.Payment.Hosting;
+using Concertable.Testing.E2E;
 using Respawn;
 using Respawn.Graph;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Payment.E2ETests.Helpers;
 
 /// <summary>
 /// Respawns the Payment DB between scenarios. <c>PayoutAccounts</c> are excluded from resets — they are
@@ -20,7 +22,7 @@ public sealed class PaymentDbFixture
 
     public async Task InitializeAsync(DistributedApplication app)
     {
-        await db.InitializeAsync(app, AppHostConstants.Databases.Payment, new RespawnerOptions
+        await db.InitializeAsync(app, PaymentConstants.Database, new RespawnerOptions
         {
             TablesToIgnore = ["__EFMigrationsHistory", new Table("payment", "PayoutAccounts")],
             DbAdapter = DbAdapter.SqlServer,

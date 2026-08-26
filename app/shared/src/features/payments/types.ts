@@ -1,4 +1,4 @@
-export type PayoutAccountStatus = "NotVerified" | "Pending" | "Verified";
+export type PayoutAccountStatus = "notVerified" | "pending" | "verified";
 
 export interface PaymentMethod {
   brand: string;

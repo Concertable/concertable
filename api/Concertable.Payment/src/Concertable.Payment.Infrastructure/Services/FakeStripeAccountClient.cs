@@ -6,7 +6,7 @@ namespace Concertable.Payment.Infrastructure.Services;
 /// <summary>
 /// Dev-mode stub used when UseRealStripe=false. Skips all real Stripe API calls so you can
 /// exercise business logic (checkout flows, escrow, etc.) without a live Stripe account.
-/// Never used in E2E — E2EStripeAccountClient handles that.
+/// Never used in E2E — the E2E Stripe adapter handles that.
 /// </summary>
 internal sealed class FakeStripeAccountClient : IStripeAccountClient
 {
@@ -71,6 +71,14 @@ internal sealed class FakeStripeAccountClient : IStripeAccountClient
         IReadOnlyDictionary<string, string> metadata,
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("pi_fake_hold_secret", "cuss_fake_secret", stripeCustomerId, "pi_fake_hold"));
+
+    public Task<CheckoutSession> CreateBoundCommissionHoldSessionAsync(
+        string stripeCustomerId,
+        Money amount,
+        IReadOnlyDictionary<string, string> metadata,
+        Guid commissionBindingId,
+        CancellationToken ct = default) =>
+        CreateHoldSessionAsync(stripeCustomerId, amount, metadata, ct);
 
     public Task<CheckoutSession> GetHoldSessionAsync(
         string stripeCustomerId,

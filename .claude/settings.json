@@ -1,0 +1,79 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=\"$CLAUDE_PROJECT_DIR\"; if command -v cygpath >/dev/null 2>&1; then repo_root=\"$(cygpath -u \"$repo_root\")\"; fi; exec bash \"$repo_root/.agents/hooks/run-repo-hook.sh\" merge_review_gate.py",
+            "shell": "bash",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=\"$CLAUDE_PROJECT_DIR\"; if command -v cygpath >/dev/null 2>&1; then repo_root=\"$(cygpath -u \"$repo_root\")\"; fi; exec bash \"$repo_root/.agents/hooks/run-repo-hook.sh\" skill_router.py",
+            "shell": "bash",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=\"$CLAUDE_PROJECT_DIR\"; if command -v cygpath >/dev/null 2>&1; then repo_root=\"$(cygpath -u \"$repo_root\")\"; fi; exec bash \"$repo_root/.agents/hooks/run-repo-hook.sh\" plan_handoff_stop_launcher.py",
+            "shell": "bash",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=\"$CLAUDE_PROJECT_DIR\"; if command -v cygpath >/dev/null 2>&1; then repo_root=\"$(cygpath -u \"$repo_root\")\"; fi; exec bash \"$repo_root/.agents/hooks/run-repo-hook.sh\" session_floor.py",
+            "shell": "bash",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "agent-process@agent-standards": true,
+    "dotnet@agent-standards": true,
+    "react@agent-standards": true,
+    "dotnet-standards@dotagents": true,
+    "react-standards@react-agents": true
+  },
+  "extraKnownMarketplaces": {
+    "agent-standards": {
+      "source": {
+        "source": "github",
+        "repo": "Concertable/agent-standards"
+      }
+    },
+    "dotagents": {
+      "source": {
+        "source": "github",
+        "repo": "tomjseery/dotagents"
+      }
+    },
+    "react-agents": {
+      "source": {
+        "source": "github",
+        "repo": "tomjseery/react-agents"
+      }
+    }
+  }
+}

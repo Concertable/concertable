@@ -1,4 +1,4 @@
-import { stripePromise } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 
 export interface PaymentChallenge {
   requiresAction: boolean;
@@ -8,7 +8,7 @@ export interface PaymentChallenge {
 export async function handle3ds(payment: PaymentChallenge | null | undefined): Promise<void> {
   if (!payment?.requiresAction || !payment.clientSecret) return;
 
-  const stripe = await stripePromise;
+  const stripe = await getStripe();
   if (!stripe) throw new Error("Stripe failed to load. Please refresh and try again.");
 
   const { error } = await stripe.handleNextAction({ clientSecret: payment.clientSecret });

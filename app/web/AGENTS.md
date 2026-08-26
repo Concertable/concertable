@@ -1,24 +1,19 @@
 # Web Apps
 
+Inherits [`../AGENTS.md`](../AGENTS.md) — which names the frontend standards skills every tier below
+obeys. The tier roster, the route contract and the build gate are the `app-tiers` skill; this file covers
+only what the web tree adds.
+
 Two products, three tiers of sharing:
 
-- `shared/` — code every SPA compiles (universal). Rules: [`shared/AGENTS.md`](./shared/AGENTS.md).
-- `b2b/shared/` — code both manager apps (venue + artist) compile, customer can't resolve
-  (`@b2b/*` alias exists only in their configs). Rules: [`b2b/shared/AGENTS.md`](./b2b/shared/AGENTS.md).
+- `shared/` (`@concertable/web`) — code every SPA compiles (universal). Rules:
+  [`shared/AGENTS.md`](./shared/AGENTS.md).
+- `b2b/shared/` (`@concertable/web-b2b`) — code both manager apps (venue + artist) compile; the customer
+  app does not depend on it. Rules: [`b2b/shared/AGENTS.md`](./b2b/shared/AGENTS.md).
 - per-app `src/` — everything only that site can do.
 
-After making any changes to a web app or shared code, run the builds to verify before reporting
-done — **all four green is the boundary gate**: each app's `tsc -b` compiles the shared trees
-against its own route tree, so an app-specific leak in shared fails some other app's build.
-
-```
-npm -w @concertable/web-customer run build
-npm -w @concertable/web-venue run build
-npm -w @concertable/web-artist run build
-npm -w @concertable/web-business run build
-```
-
-The business app uses `vite build` only (no `tsc -b`) — it's a minimal app that only uses a slice of shared and does not implement the full feature set that shared references.
-
-If you add or rename a route file, regenerate that app's `routeTree.gen.ts` before `tsc -b` can see
-it (`npm -w <app> exec -- vite build` once, or run the dev server).
+After making any changes to a web app or shared code, run the five web builds before reporting done —
+all five green is the boundary gate, and `app-tiers` carries the commands, the business app's vite-only
+build and the `routeTree.gen.ts` regeneration step. **`app-tiers` (external `Concertable/agent-standards`
+plugin) still enumerates four SPAs as of this merge — it predates this branch's `web-admin` addition and
+needs a follow-up update there to add the fifth.**

@@ -1,4 +1,5 @@
 using Concertable.Messaging.Contracts;
+using Concertable.Messaging.Application.Extensions;
 
 namespace Concertable.Messaging.UnitTests;
 
@@ -63,18 +64,54 @@ public sealed class MessageTypeRegistryTests
     }
 
     [Fact]
-    public void RegisteredCommandTypes_AfterCommandRegistration_DoesNotContainEvents()
+    public void HandledCommandTypes_AfterHandlerRegistration_DoesNotContainEvents()
     {
         // Arrange
         var registry = new MessageTypeRegistry();
 
         // Act
         registry.RegisterEvent<FakeIntegrationEvent>();
-        registry.RegisterCommand<FakeIntegrationCommand>();
+        registry.RegisterCommandHandler<FakeIntegrationCommand>();
 
         // Assert
-        Assert.DoesNotContain(typeof(FakeIntegrationEvent), registry.RegisteredCommandTypes);
-        Assert.Contains(typeof(FakeIntegrationCommand), registry.RegisteredCommandTypes);
+        Assert.DoesNotContain(typeof(FakeIntegrationEvent), registry.HandledCommandTypes);
+        Assert.Contains(typeof(FakeIntegrationCommand), registry.HandledCommandTypes);
+    }
+
+    [Fact]
+    public void Sends_AfterRegistration_ResolvesWithoutRegisteringHandler()
+    {
+        var registry = new MessageTypeRegistry();
+
+        registry.Sends<FakeIntegrationCommand>();
+
+        Assert.Equal(typeof(FakeIntegrationCommand), registry.ResolveCommand(MessageTypeAttribute.Resolve(typeof(FakeIntegrationCommand))));
+        Assert.False(registry.TryResolveCommandDestination(typeof(FakeIntegrationCommand), out _));
+        Assert.Empty(registry.HandledCommandTypes);
+    }
+
+    [Fact]
+    public void SendsTo_AfterRegistration_ResolvesDestinationWithoutRegisteringHandler()
+    {
+        var registry = new MessageTypeRegistry();
+
+        registry.SendsTo<FakeIntegrationCommand>("payment");
+
+        Assert.True(registry.TryResolveCommandDestination(typeof(FakeIntegrationCommand), out var destination));
+        Assert.Equal("payment", destination);
+        Assert.Empty(registry.HandledCommandTypes);
+    }
+
+    [Fact]
+    public void SendsTo_WhenCommandAlreadyTargetsAnotherService_Throws()
+    {
+        var registry = new MessageTypeRegistry();
+        registry.SendsTo<FakeIntegrationCommand>("payment");
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => registry.SendsTo<FakeIntegrationCommand>("b2b"));
+
+        Assert.Contains("already routed to service 'payment'", exception.Message);
     }
 
     [Fact]

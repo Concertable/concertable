@@ -13,9 +13,18 @@ internal static class PaymentMappers
         Currency = money.Currency.ToProtoCurrency()
     };
 
+    public static Money ToMoney(this Proto.Money money) =>
+        Money.FromMinorUnits(money.AmountMinor, money.Currency.ToCurrency());
+
     public static Proto.Currency ToProtoCurrency(this Currency currency) => currency switch
     {
         Currency.Gbp => Proto.Currency.Gbp,
+        _ => throw new ArgumentOutOfRangeException(nameof(currency), currency, null)
+    };
+
+    private static Currency ToCurrency(this Proto.Currency currency) => currency switch
+    {
+        Proto.Currency.Gbp => Currency.Gbp,
         _ => throw new ArgumentOutOfRangeException(nameof(currency), currency, null)
     };
 
@@ -44,4 +53,20 @@ internal static class PaymentMappers
         Proto.PayoutAccountStatusType.PayoutVerified => PayoutAccountStatus.Verified,
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
     };
+
+    public static MonthlyPaymentPoint ToMonthlyPaymentPoint(this Proto.MonthlyPaymentPointResponse point) =>
+        new(
+            DateOnly.FromDateTime(point.Month.ToDateTime()),
+            point.Gross.ToMoney(),
+            point.Net.ToMoney(),
+            point.Count);
+
+    public static ManagerSettlement ToManagerSettlement(this Proto.SettlementReportItemResponse settlement) =>
+        new(
+            settlement.Id,
+            settlement.BookingId,
+            Guid.Parse(settlement.PayerId),
+            Guid.Parse(settlement.PayeeId),
+            settlement.Amount.ToMoney(),
+            settlement.At.ToDateTime());
 }

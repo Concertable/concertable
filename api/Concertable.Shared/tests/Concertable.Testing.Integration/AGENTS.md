@@ -4,20 +4,21 @@ Shared integration-test infrastructure. This is a reusable library — treat it 
 
 Integration-test conventions (fixtures, `Respawn`, `TestAuthHandler`, test-seeding) are imported here:
 
-@../../../agents/INTEGRATION_CONVENTIONS.md
 
 ## What belongs here
 
 Only add something here if it is used by **two or more microservices**, *or* it is a **service-agnostic
 contract** that services implement with their own service-specific types (the contract is shared; the
-implementations are not). Current consumers: B2B, Customer, Search.
+implementations are not). Current consumers: Auth, B2B, Customer, Search.
 
-- `SqlFixture` — Testcontainers MsSql + Respawn reset
-- `TestAuthHandler` — injects `sub` / `role` / `email` claims via request headers
+The imported conventions above already document every shared member and how to use it; this file names only
+what they do not:
+
+- `IntegrationTestHostExtensions` — the type composing the shared `ConfigureTestServices` steps
 - `IResettable` — marker interface for mocks that flush state between tests
 - `Mocks/MockBusTransport` — no-op `IBusTransport` (suppresses real ASB)
 - `Mocks/MockEmailSender` / `IMockEmailSender` — captures sent emails, exposes `Sent` list
-- `Mocks/MockGeocodingService` / `MockGeocodingServiceFail` — stub geocoding
+- `Mocks/MockGeocodingClient` / `MockGeocodingClientFail` — stub geocoding
 - `Mocks/MockImageService` — stub image upload/replace/delete
 - `IWebhookSimulator` — service-agnostic contract for driving an inbound payment webhook in-process
   (e.g. dispatching `PaymentSucceededEvent` to its handlers). The **implementations**

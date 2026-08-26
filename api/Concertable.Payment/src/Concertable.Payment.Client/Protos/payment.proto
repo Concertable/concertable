@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 package payment;
 
 option csharp_namespace = "Concertable.Payment.Grpc";
@@ -7,6 +9,21 @@ option csharp_namespace = "Concertable.Payment.Grpc";
 enum Currency {
   CURRENCY_UNSPECIFIED = 0;
   CURRENCY_GBP = 826;
+}
+
+enum OperationErrorKind {
+  OPERATION_ERROR_INVALID = 0;
+  OPERATION_ERROR_NOT_FOUND = 1;
+  OPERATION_ERROR_CONFLICT = 2;
+  OPERATION_ERROR_UNAUTHENTICATED = 3;
+  OPERATION_ERROR_FORBIDDEN = 4;
+  OPERATION_ERROR_PAYMENT_REQUIRED = 5;
+}
+
+message OperationErrorDetail {
+  string code = 1;
+  string message = 2;
+  OperationErrorKind kind = 3;
 }
 
 message Money {
@@ -17,6 +34,124 @@ message Money {
 enum PaymentSessionType {
   ON_SESSION = 0;
   OFF_SESSION = 1;
+}
+
+enum PaymentSessionKind {
+  PAYMENT_SESSION_KIND_UNSPECIFIED = 0;
+  PAYMENT_SESSION_KIND_PAYMENT = 1;
+  PAYMENT_SESSION_KIND_AUTHORIZATION = 2;
+  PAYMENT_SESSION_KIND_PAYMENT_METHOD_SETUP = 3;
+  PAYMENT_SESSION_KIND_PAYMENT_METHOD_VERIFICATION = 4;
+}
+
+enum PaymentSessionFundsRouting {
+  PAYMENT_SESSION_FUNDS_ROUTING_UNSPECIFIED = 0;
+  PAYMENT_SESSION_FUNDS_ROUTING_NONE = 1;
+  PAYMENT_SESSION_FUNDS_ROUTING_PLATFORM = 2;
+  PAYMENT_SESSION_FUNDS_ROUTING_DESTINATION = 3;
+}
+
+enum PaymentOperationState {
+  PAYMENT_OPERATION_STATE_UNSPECIFIED = 0;
+  PAYMENT_OPERATION_STATE_CREATING = 1;
+  PAYMENT_OPERATION_STATE_REQUIRES_PAYMENT_METHOD = 2;
+  PAYMENT_OPERATION_STATE_REQUIRES_CONFIRMATION = 3;
+  PAYMENT_OPERATION_STATE_REQUIRES_ACTION = 4;
+  PAYMENT_OPERATION_STATE_PROCESSING = 5;
+  PAYMENT_OPERATION_STATE_AUTHORIZED = 6;
+  PAYMENT_OPERATION_STATE_SUCCEEDED = 7;
+  PAYMENT_OPERATION_STATE_CANCELED = 8;
+  PAYMENT_OPERATION_STATE_FAILED = 9;
+}
+
+enum PaymentOperationTerminalDisposition {
+  PAYMENT_OPERATION_TERMINAL_DISPOSITION_UNSPECIFIED = 0;
+  PAYMENT_OPERATION_TERMINAL_DISPOSITION_NON_TERMINAL = 1;
+  PAYMENT_OPERATION_TERMINAL_DISPOSITION_ATTEMPT_TERMINAL = 2;
+  PAYMENT_OPERATION_TERMINAL_DISPOSITION_OPERATION_TERMINAL = 3;
+}
+
+enum PaymentOperationRetryDisposition {
+  PAYMENT_OPERATION_RETRY_DISPOSITION_UNSPECIFIED = 0;
+  PAYMENT_OPERATION_RETRY_DISPOSITION_CONTINUE_CURRENT_ATTEMPT = 1;
+  PAYMENT_OPERATION_RETRY_DISPOSITION_RETRY_CURRENT_ATTEMPT = 2;
+  PAYMENT_OPERATION_RETRY_DISPOSITION_CREATE_NEW_ATTEMPT = 3;
+  PAYMENT_OPERATION_RETRY_DISPOSITION_CREATE_NEW_OPERATION = 4;
+  PAYMENT_OPERATION_RETRY_DISPOSITION_RECONCILE = 5;
+  PAYMENT_OPERATION_RETRY_DISPOSITION_NOT_RETRYABLE = 6;
+}
+
+enum PaymentOperationFailureCode {
+  PAYMENT_OPERATION_FAILURE_CODE_UNSPECIFIED = 0;
+  PAYMENT_OPERATION_FAILURE_CODE_PAYMENT_METHOD_REQUIRED = 1;
+  PAYMENT_OPERATION_FAILURE_CODE_AUTHENTICATION_REQUIRED = 2;
+  PAYMENT_OPERATION_FAILURE_CODE_DECLINED = 3;
+  PAYMENT_OPERATION_FAILURE_CODE_EXPIRED = 4;
+  PAYMENT_OPERATION_FAILURE_CODE_CANCELED = 5;
+  PAYMENT_OPERATION_FAILURE_CODE_OPERATION_CONFLICT = 6;
+  PAYMENT_OPERATION_FAILURE_CODE_PROVIDER_UNAVAILABLE = 7;
+  PAYMENT_OPERATION_FAILURE_CODE_UNKNOWN = 8;
+}
+
+message PaymentOperationIdentity {
+  string operation_id = 1;
+  string attempt_id = 2;
+  int64 revision = 3;
+}
+
+message PaymentOperationFailure {
+  PaymentOperationFailureCode code = 1;
+  string message = 2;
+}
+
+message PaymentSessionDescriptor {
+  PaymentOperationIdentity identity = 1;
+  PaymentSessionKind kind = 2;
+  string client_secret = 3;
+  string customer_session_secret = 4;
+  string customer_token = 5;
+}
+
+message PaymentOperationSnapshot {
+  PaymentOperationIdentity identity = 1;
+  PaymentOperationState state = 2;
+  PaymentOperationTerminalDisposition terminal_disposition = 3;
+  PaymentOperationRetryDisposition retry_disposition = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  google.protobuf.Timestamp capture_before = 6;
+  PaymentOperationFailure failure = 7;
+}
+
+service PaymentSessionOperations {
+  rpc CreateOrReplay(PaymentSessionOperationRequest) returns (PaymentSessionDescriptor);
+  rpc Retry(PaymentSessionRetryRequest) returns (PaymentSessionDescriptor);
+  rpc GetStatus(PaymentSessionStatusRequest) returns (PaymentOperationSnapshot);
+}
+
+message PaymentSessionOperationRequest {
+  string operation_id = 1;
+  PaymentSessionKind kind = 2;
+  string operation_type = 3;
+  string consumer_correlation = 4;
+  string payer_owner_id = 5;
+  optional string payee_owner_id = 6;
+  optional int64 amount_minor = 7;
+  optional Currency currency = 8;
+  PaymentSessionFundsRouting funds_routing = 9;
+  PaymentSessionType session = 10;
+  optional string payment_method_id = 11;
+}
+
+message PaymentSessionRetryRequest {
+  string operation_id = 1;
+  string expected_attempt_id = 2;
+  int64 expected_revision = 3;
+  string owner_id = 4;
+}
+
+message PaymentSessionStatusRequest {
+  string operation_id = 1;
+  string owner_id = 2;
 }
 
 enum EscrowStatusType {
@@ -51,34 +186,40 @@ message TransferResponse {
   string transfer_id = 1;
 }
 
-message CommissionQuoteResponse {
+message CommissionCalculationResponse {
   string commission_configuration_id = 1;
-  string configuration_version = 2;
-  int32 rate_basis_points = 3;
-  Currency currency = 4;
-  int64 gross_minor = 5;
-  int64 commission_minor = 6;
-  int64 payer_total_minor = 7;
+  reserved 2;
+  reserved "configuration_version";
+  string rate_percentage = 3;
+  reserved 4;
+  reserved "currency";
+  Money gross = 5;
+  Money commission = 6;
+  Money payer_total = 7;
 }
 
 message CommissionBindingResponse {
   string binding_id = 1;
   string commission_configuration_id = 2;
-  string configuration_version = 3;
-  int32 rate_basis_points = 4;
+  reserved 3;
+  reserved "configuration_version";
+  string rate_percentage = 4;
   Currency currency = 5;
-  CommissionQuoteResponse quote = 6;
+  reserved 6;
+  reserved "calculation";
 }
 
 service CommissionPricing {
-  rpc PreviewCommission(PreviewCommissionRequest) returns (CommissionQuoteResponse);
+  rpc PreviewCommission(PreviewCommissionRequest) returns (CommissionCalculationResponse);
   rpc CreateOrBindCommission(CreateOrBindCommissionRequest) returns (CommissionBindingResponse);
-  rpc CalculateBoundCommission(CalculateBoundCommissionRequest) returns (CommissionQuoteResponse);
+  rpc ConfirmReviewedGross(ConfirmReviewedGrossRequest) returns (CommissionCalculationResponse);
+  rpc CalculateBoundCommission(CalculateBoundCommissionRequest) returns (CommissionCalculationResponse);
 }
 
 message PreviewCommissionRequest {
-  int64 gross_minor = 1;
-  Currency currency = 2;
+  Money gross = 1;
+  reserved 2;
+  reserved "currency";
 }
 
 message CreateOrBindCommissionRequest {
@@ -88,19 +229,24 @@ message CreateOrBindCommissionRequest {
   string reviewed_commission_configuration_id = 4;
   string stripe_payment_intent_id = 5;
   string stripe_setup_intent_id = 6;
-  optional int64 gross_minor = 7;
-  optional int64 expected_commission_minor = 8;
-  optional int64 expected_payer_total_minor = 9;
+  reserved 7, 8, 9;
+  reserved "gross_minor", "expected_commission_minor", "expected_payer_total_minor";
+}
+
+message ConfirmReviewedGrossRequest {
+  string binding_id = 1;
+  string external_reference = 2;
+  string payer_reference = 3;
+  Money reviewed_gross = 4;
 }
 
 message CalculateBoundCommissionRequest {
   string binding_id = 1;
   string external_reference = 2;
   string payer_reference = 3;
-  Currency currency = 4;
-  int64 gross_minor = 5;
-  int64 expected_commission_minor = 6;
-  int64 expected_payer_total_minor = 7;
+  Money gross = 4;
+  reserved 5, 6, 7;
+  reserved "gross_minor", "expected_commission_minor", "expected_payer_total_minor";
   string stripe_payment_intent_id = 8;
   string stripe_setup_intent_id = 9;
 }
@@ -113,6 +259,46 @@ service ManagerPayment {
   rpc CreateHoldSession(CreateHoldSessionRequest) returns (CheckoutSessionResponse);
   rpc CreateBoundCommissionHoldSession(CreateBoundCommissionHoldSessionRequest) returns (CheckoutSessionResponse);
   rpc FindHeldIntent(FindHeldIntentRequest) returns (FindHeldIntentResponse);
+  rpc GetTicketRevenue(PaymentPeriodRequest) returns (Money);
+  rpc GetSettlementPayouts(PaymentPeriodRequest) returns (Money);
+  rpc GetTicketRevenueByMonth(PaymentPeriodRequest) returns (MonthlyPaymentSeriesResponse);
+  rpc GetSettlementPayoutsByMonth(PaymentPeriodRequest) returns (MonthlyPaymentSeriesResponse);
+  rpc GetRecentSettlements(RecentSettlementsRequest) returns (SettlementReportResponse);
+}
+
+message PaymentPeriodRequest {
+  string payee_id = 1;
+  google.protobuf.Timestamp period_start = 2;
+  google.protobuf.Timestamp period_end = 3;
+}
+
+message MonthlyPaymentPointResponse {
+  google.protobuf.Timestamp month = 1;
+  Money gross = 2;
+  Money net = 3;
+  int32 count = 4;
+}
+
+message MonthlyPaymentSeriesResponse {
+  repeated MonthlyPaymentPointResponse points = 1;
+}
+
+message RecentSettlementsRequest {
+  string owner_id = 1;
+  int32 take = 2;
+}
+
+message SettlementReportItemResponse {
+  int32 id = 1;
+  int32 booking_id = 2;
+  string payer_id = 3;
+  string payee_id = 4;
+  Money amount = 5;
+  google.protobuf.Timestamp at = 6;
+}
+
+message SettlementReportResponse {
+  repeated SettlementReportItemResponse items = 1;
 }
 
 message ManagerPayRequest {
@@ -127,15 +313,16 @@ message ManagerPayRequest {
 message BoundCommissionManagerPayRequest {
   string payer_id = 1;
   string payee_id = 2;
-  int64 gross_minor = 3;
-  Currency currency = 4;
+  Money gross = 3;
+  reserved 4;
+  reserved "currency";
   string payment_method_id = 5;
   PaymentSessionType session = 6;
   int32 booking_id = 7;
   string commission_binding_id = 8;
   string external_reference = 9;
-  int64 expected_commission_minor = 10;
-  int64 expected_payer_total_minor = 11;
+  reserved 10, 11;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
   string stripe_setup_intent_id = 12;
 }
 
@@ -157,13 +344,14 @@ message CreateHoldSessionRequest {
 
 message CreateBoundCommissionHoldSessionRequest {
   string payer_id = 1;
-  int64 gross_minor = 2;
-  Currency currency = 3;
+  Money gross = 2;
+  reserved 3;
+  reserved "currency";
   map<string, string> metadata = 4;
   string commission_binding_id = 5;
   string external_reference = 6;
-  int64 expected_commission_minor = 7;
-  int64 expected_payer_total_minor = 8;
+  reserved 7, 8;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
   string stripe_setup_intent_id = 9;
 }
 
@@ -260,15 +448,16 @@ message DepositRequest {
 message BoundCommissionDepositRequest {
   string payer_id = 1;
   string payee_id = 2;
-  int64 gross_minor = 3;
-  Currency currency = 4;
+  Money gross = 3;
+  reserved 4;
+  reserved "currency";
   string payment_method_id = 5;
   PaymentSessionType session = 6;
   int32 booking_id = 7;
   string commission_binding_id = 8;
   string external_reference = 9;
-  int64 expected_commission_minor = 10;
-  int64 expected_payer_total_minor = 11;
+  reserved 10, 11;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
   string stripe_setup_intent_id = 12;
 }
 
@@ -283,14 +472,15 @@ message CaptureRequest {
 message BoundCommissionCaptureRequest {
   string payer_id = 1;
   string payee_id = 2;
-  int64 gross_minor = 3;
-  Currency currency = 4;
+  Money gross = 3;
+  reserved 4;
+  reserved "currency";
   string payment_intent_id = 5;
   int32 booking_id = 6;
   string commission_binding_id = 7;
   string external_reference = 8;
-  int64 expected_commission_minor = 9;
-  int64 expected_payer_total_minor = 10;
+  reserved 9, 10;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
 }
 
 message ReleaseByBookingIdRequest {
@@ -311,8 +501,9 @@ message RefundByBookingIdRequest {
 
 message BoundCommissionRefundByBookingIdRequest {
   int32 booking_id = 1;
-  int64 gross_minor = 2;
-  Currency currency = 3;
+  Money gross = 2;
+  reserved 3;
+  reserved "currency";
 }
 
 message RefundByBookingIdResponse {

@@ -52,6 +52,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PLATFORM_SYNC_TOKEN }}
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Cascade guard — skip if this publish came from a pin-bump merge
         id: guard
         # A sync PR merge is itself an api/** change, so it re-triggers 'Publish packages'. Without this,
@@ -135,13 +139,22 @@ jobs:
         run: |
           set -euo pipefail
           keep="chore/platform-sync-${VERSION}"
-          # This PR pins the latest feed version, so every OTHER open platform-sync PR is by definition an older,
-          # now-superseded bump. Close it and delete its branch so stale, conflicting sync PRs can never accumulate
-          # (delete_branch_on_merge only cleans up branches that MERGE — a superseded one never does).
+          # Every other open sync PR is an older, now-superseded bump - close it so stale/conflicting ones
+          # never accumulate. Preserve only a CLEAN PR whose auto-merge request is actually armed: that is
+          # the validated in-flight state which must be allowed to reach the merge queue. CLEAN alone only
+          # means mergeable and can also describe a stranded PR whose auto-merge request failed. The older
+          # PR's own merge won't re-trigger a sync (the cascade guard above), so nothing is lost by letting
+          # a genuinely in-flight one land instead.
           gh pr list --state open --json number,headRefName \
             --jq '.[] | select(.headRefName | startswith("chore/platform-sync-")) | select(.headRefName != "'"$keep"'") | .number' \
           | while read -r n; do
               [ -n "$n" ] || continue
+              action="$(gh pr view "$n" --json mergeStateStatus,autoMergeRequest \
+                | node .github/scripts/platform-sync-pr-action.mjs)"
+              if [ "$action" = "keep" ]; then
+                echo "PR #$n is clean with auto-merge armed — leaving it to land."
+                continue
+              fi
               echo "Closing superseded sync PR #$n"
               gh pr close "$n" --delete-branch \
                 --comment "Superseded by the sync to \`${VERSION}\`. Only one platform-sync PR is ever live."
@@ -159,4 +172,19 @@ jobs:
           # auto-merge is then never enabled, and the PR sits green-but-unmerged forever (this is why syncs stalled
           # and piled up). A pin bump is package-only, so the queue's E2E gate no-ops and it lands in minutes with no
           # review; a red (breaking) bump just sits for the in-PR migration above.
-          gh pr merge --auto "$branch"
+          #
+          # Retry with backoff: a transient GitHub API error here (observed live: a 503 "upstream connect
+          # error") previously left an otherwise-green sync PR permanently unmerged with nothing to notice or
+          # retry it — the PR just sat there until a human happened to look. Five attempts with growing
+          # backoff absorbs a blip; if it's still failing after that, fail the job loudly instead of silently
+          # stranding the PR, so the platform-sync-alert.yml / job-failure notification actually fires.
+          for attempt in 1 2 3 4 5; do
+            if gh pr merge --auto "$branch"; then
+              echo "Auto-merge enabled on attempt $attempt."
+              exit 0
+            fi
+            echo "Attempt $attempt to enable auto-merge failed (possibly a transient GitHub API error) — retrying in $((attempt * 10))s..."
+            sleep $((attempt * 10))
+          done
+          echo "::error::Failed to enable auto-merge on $branch after 5 attempts. Run 'gh pr merge --auto $branch' by hand."
+          exit 1

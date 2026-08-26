@@ -1,6 +1,7 @@
+using Concertable.Kernel.ValueObjects;
 using Stripe;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Payment.E2ETests.Helpers;
 
 public sealed class StripeFixture
 {
@@ -13,7 +14,7 @@ public sealed class StripeFixture
 
     public void Reset() => LastReset = DateTime.UtcNow;
 
-    public StripeFixture(StripeClient client)
+    public StripeFixture(IStripeClient client)
     {
         paymentIntents = new PaymentIntentService(client);
         transfers = new TransferService(client);
@@ -24,14 +25,32 @@ public sealed class StripeFixture
     public Task<Refund> GetRefundAsync(string refundId, CancellationToken ct = default) =>
         refunds.GetAsync(refundId, cancellationToken: ct);
 
-    public async Task DetachAllCardsAsync(string customerId, CancellationToken ct = default)
+    public async Task EnsureNoCardsAttachedAsync(string customerId, CancellationToken ct = default)
     {
         var list = await paymentMethods.ListAsync(
             new PaymentMethodListOptions { Customer = customerId, Type = "card", Limit = 100 },
             cancellationToken: ct);
 
-        foreach (var pm in list.Data.Where(pm => pm.CustomerId == customerId))
-            await paymentMethods.DetachAsync(pm.Id, cancellationToken: ct);
+        foreach (var paymentMethod in list.Data.Where(pm => pm.CustomerId == customerId))
+            await EnsureDetachedFromCustomerAsync(paymentMethod.Id, customerId, ct);
+    }
+
+    private async Task EnsureDetachedFromCustomerAsync(
+        string paymentMethodId,
+        string customerId,
+        CancellationToken ct)
+    {
+        try
+        {
+            await paymentMethods.DetachAsync(paymentMethodId, cancellationToken: ct);
+        }
+        catch (StripeException)
+        {
+            var current = await paymentMethods.GetAsync(paymentMethodId, cancellationToken: ct);
+
+            if (current.CustomerId == customerId)
+                throw;
+        }
     }
 
     public Task AttachTestCardAsync(string customerId, CancellationToken ct = default) =>
@@ -46,15 +65,17 @@ public sealed class StripeFixture
             new PaymentIntentConfirmOptions { PaymentMethod = paymentMethodId },
             cancellationToken: ct);
 
-    public async Task<PaymentIntent?> FindCapturedHoldAsync(string stripeCustomerId, decimal amount)
+    public async Task<PaymentIntent?> GetCapturedHoldAsync(
+        string paymentIntentId,
+        decimal amount,
+        CancellationToken ct = default)
     {
-        var results = await paymentIntents.ListAsync(new PaymentIntentListOptions
-        {
-            Customer = stripeCustomerId,
-            Created = new DateRangeOptions { GreaterThanOrEqual = LastReset }
-        });
-        return results.Data.SingleOrDefault(p =>
-            p.Amount == (long)(amount * 100) && p.Status == "succeeded");
+        var paymentIntent = await paymentIntents.GetAsync(paymentIntentId, cancellationToken: ct);
+
+        return paymentIntent.Amount == Money.Gbp(amount).ToMinorUnits()
+            && paymentIntent.Status == "succeeded"
+                ? paymentIntent
+                : null;
     }
 
     public async Task<Transfer?> FindTransferAsync(string stripeAccountId, decimal amount)
@@ -64,7 +85,7 @@ public sealed class StripeFixture
             Destination = stripeAccountId,
             Created = new DateRangeOptions { GreaterThanOrEqual = LastReset }
         });
-        return results.Data.SingleOrDefault(t => t.Amount == (long)(amount * 100));
+        return results.Data.SingleOrDefault(t => t.Amount == Money.Gbp(amount).ToMinorUnits());
     }
 
 }

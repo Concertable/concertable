@@ -13,13 +13,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentResults" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.Net.ClientFactory" />
     <PackageReference Include="Grpc.Tools">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Reunion" />
+    <PackageReference Include="Reunion.Errors" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +33,7 @@
 
   <!-- Never a ProjectReference: would break Payment's standalone carve. -->
   <ItemGroup>
+    <PackageReference Include="Concertable.Grpc" />
     <PackageReference Include="Concertable.Kernel" />
   </ItemGroup>
 

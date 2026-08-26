@@ -2,7 +2,7 @@ using System.Data;
 using Concertable.Payment.Domain.Enums;
 using Dapper;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Payment.E2ETests.Helpers;
 
 public sealed class PaymentDb
 {
@@ -28,6 +28,11 @@ public sealed class PaymentDb
     public Task<Guid?> GetEscrowPayeeIdAsync(int bookingId) =>
         connection.QuerySingleOrDefaultAsync<Guid?>(
             "SELECT ToOwnerId FROM payment.Escrows WHERE BookingId = @bookingId",
+            new { bookingId });
+
+    public Task<string> GetEscrowPaymentIntentIdAsync(int bookingId) =>
+        connection.QuerySingleAsync<string>(
+            "SELECT ChargeId FROM payment.Escrows WHERE BookingId = @bookingId",
             new { bookingId });
 
     public Task<int?> GetEscrowStatusAsync(int bookingId) =>

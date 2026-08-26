@@ -1,6 +1,6 @@
 import { DetailsLayout } from "@/components/details/DetailsLayout";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
-import { useArtistQuery } from "../hooks/useArtistQuery";
+import { useArtistByIdQuery } from "../hooks/useArtistQuery";
 import { ArtistHero } from "../components/ArtistHero";
 import { artistSections } from "../artistSections";
 
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function ArtistDetailsPage({ id }: Readonly<Props>) {
-  const { data: artist, isLoading, isError } = useArtistQuery(id);
+  const { data: artist, isLoading, isError } = useArtistByIdQuery(id);
 
   if (isLoading) return <DetailsPageSkeleton sections={4} />;
   if (isError || !artist)

@@ -4,60 +4,108 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.DataAccess.Infrastructure;
 
-public abstract class BaseRepository<TEntity, TContext>(TContext context)
-    : IBaseRepository<TEntity>
+public abstract class WriteRepository<TEntity> : IWriteRepository<TEntity>
     where TEntity : class
-    where TContext : DbContextBase
 {
-    protected readonly TContext context = context;
+    protected IWriteDbContext Context { get; }
 
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct = default) =>
-        await context.Set<TEntity>().ToListAsync(ct);
+    protected WriteRepository(IWriteDbContext context)
+    {
+        this.Context = context;
+    }
 
     public async Task<TEntity> AddAsync(TEntity entity, CancellationToken ct = default)
     {
-        await context.Set<TEntity>().AddAsync(entity, ct);
+        await Context.AddAsync(entity, ct);
         return entity;
     }
 
-    public async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken ct = default)
+    public async Task<IEnumerable<TEntity>> AddRangeAsync(
+        IEnumerable<TEntity> entities,
+        CancellationToken ct = default)
     {
-        await context.Set<TEntity>().AddRangeAsync(entities, ct);
+        await Context.AddRangeAsync(entities, ct);
         return entities;
     }
 
-    public void Update(TEntity entity) => context.Set<TEntity>().Update(entity);
+    public async Task<TEntity> InsertAsync(TEntity entity, CancellationToken ct = default)
+    {
+        await Context.AddAsync(entity, ct);
+        await Context.SaveChangesAsync(ct);
+        return entity;
+    }
 
-    public void Remove(TEntity entity) => context.Set<TEntity>().Remove(entity);
+    public void Update(TEntity entity) => Context.Update(entity);
 
-    public Task SaveChangesAsync(CancellationToken ct = default) => context.SaveChangesAsync(ct);
+    public void Remove(TEntity entity) => Context.Remove(entity);
+
+    public async Task SaveChangesAsync(CancellationToken ct = default) =>
+        await Context.SaveChangesAsync(ct);
 }
 
-public abstract class ReadRepository<TEntity, TContext, TKey>(TContext context)
-    : IReadRepository<TEntity, TKey>
+public abstract class Repository<TEntity, TKey> : IRepository<TEntity, TKey>
     where TEntity : class, IEntity<TKey>
-    where TContext : DbContextBase
 {
-    protected readonly TContext context = context;
+    protected IDbContext Context { get; }
+
+    protected Repository(IDbContext context)
+    {
+        this.Context = context;
+    }
 
     public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct = default) =>
-        await context.Set<TEntity>().ToListAsync(ct);
+        await Context.Query<TEntity>().ToListAsync(ct);
 
     public virtual Task<TEntity?> GetByIdAsync(TKey id, CancellationToken ct = default) =>
-        context.Set<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(id), ct);
+        Context.Query<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(id), ct);
 
-    public bool Exists(TKey id) =>
-        context.Set<TEntity>().Any(e => e.Id!.Equals(id));
+    public bool Exists(TKey id) => Context.Query<TEntity>().Any(e => e.Id!.Equals(id));
+
+    public async Task<TEntity> AddAsync(TEntity entity, CancellationToken ct = default)
+    {
+        await Context.AddAsync(entity, ct);
+        return entity;
+    }
+
+    public async Task<IEnumerable<TEntity>> AddRangeAsync(
+        IEnumerable<TEntity> entities,
+        CancellationToken ct = default)
+    {
+        await Context.AddRangeAsync(entities, ct);
+        return entities;
+    }
+
+    public async Task<TEntity> InsertAsync(TEntity entity, CancellationToken ct = default)
+    {
+        await Context.AddAsync(entity, ct);
+        await Context.SaveChangesAsync(ct);
+        return entity;
+    }
+
+    public void Update(TEntity entity) => Context.Update(entity);
+
+    public void Remove(TEntity entity) => Context.Remove(entity);
+
+    public async Task SaveChangesAsync(CancellationToken ct = default) =>
+        await Context.SaveChangesAsync(ct);
 }
 
-public abstract class Repository<TEntity, TContext, TKey>(TContext context)
-    : BaseRepository<TEntity, TContext>(context), IRepository<TEntity, TKey>
+public abstract class ReadRepository<TEntity, TKey> : IReadRepository<TEntity, TKey>
     where TEntity : class, IEntity<TKey>
-    where TContext : DbContextBase
 {
+    protected IReadDbContext Context { get; }
+
+    public ReadRepository(IReadDbContext context)
+    {
+        this.Context = context;
+    }
+
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct = default) =>
+        await Context.Query<TEntity>().ToListAsync(ct);
+
     public virtual Task<TEntity?> GetByIdAsync(TKey id, CancellationToken ct = default) =>
-        context.Set<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(id), ct);
+        Context.Query<TEntity>().FirstOrDefaultAsync(e => e.Id!.Equals(id), ct);
 
     public bool Exists(TKey id) =>
-        context.Set<TEntity>().Any(e => e.Id!.Equals(id));
+        Context.Query<TEntity>().Any(e => e.Id!.Equals(id));
 }

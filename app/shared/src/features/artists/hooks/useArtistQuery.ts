@@ -14,6 +14,13 @@ export function useArtistQuery(id: number) {
   });
 }
 
+export function useArtistByIdQuery(id: number) {
+  return useQuery({
+    queryKey: artistKeys.byId(id),
+    queryFn: () => artistApi.getArtistById(id),
+  });
+}
+
 export function useMyArtistQuery() {
   return useQuery({
     queryKey: artistKeys.my(),

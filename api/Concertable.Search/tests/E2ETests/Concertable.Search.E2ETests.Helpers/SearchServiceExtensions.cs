@@ -2,7 +2,9 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.Testing;
+using Concertable.Auth.Hosting;
 using Concertable.Messaging.AzureServiceBus.Options;
+using Concertable.Search.Hosting;
 
 namespace Concertable.Search.E2ETests.Helpers;
 
@@ -21,14 +23,17 @@ public static class SearchServiceExtensions
         var sql = builder.Resources.OfType<SqlServerServerResource>().Single();
         var asb = builder.Resources.OfType<AzureServiceBusResource>().Single();
         var auth = builder.Resources.OfType<ProjectResource>()
-            .Single(r => r.Name == AppHostConstants.ResourceNames.Auth);
+            .Single(r => r.Name == AuthConstants.Resource);
 
-        var searchDb = builder.CreateResourceBuilder(sql).AddDatabase(AppHostConstants.Databases.Search);
+        var searchDb = builder.CreateResourceBuilder(sql).AddDatabase(SearchConstants.Database);
         var authBuilder = builder.CreateResourceBuilder(auth);
         var asbBuilder = builder.CreateResourceBuilder(asb);
+        var searchApiUri = new Uri(searchApiBaseUrl);
 
-        builder.AddResource(new ProjectResource(AppHostConstants.ResourceNames.SearchWeb))
+        var searchWeb = builder.AddResource(new ProjectResource(SearchConstants.WebResource))
             .WithAnnotation(new SearchWebProject(builder.AppHostDirectory))
+            .WithHttpsEndpoint(port: searchApiUri.Port, isProxied: false)
+            .WithHttpHealthCheck("/health", endpointName: "https")
             .WithReference(searchDb)
             .WaitFor(searchDb)
             .WaitFor(authBuilder)
@@ -36,13 +41,14 @@ public static class SearchServiceExtensions
             .WithEnvironment("ASPNETCORE_URLS", searchApiBaseUrl)
             .WithEnvironment("Auth__Authority", authBaseUrl);
 
-        builder.AddResource(new ProjectResource(AppHostConstants.ResourceNames.SearchWorkers))
+        builder.AddResource(new ProjectResource(SearchConstants.WorkersResource))
             .WithAnnotation(new SearchWorkersProject(builder.AppHostDirectory))
             .WithReference(searchDb)
             .WaitFor(searchDb)
             .WithReference(asbBuilder)
             .WaitFor(asbBuilder)
-            .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, AppHostConstants.ServiceNames.Search)
+            .WaitFor(searchWeb)
+            .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, SearchConstants.ServiceName)
             .WithEnvironment("DOTNET_ENVIRONMENT", "E2E");
 
         return builder;

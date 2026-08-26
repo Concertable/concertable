@@ -11,27 +11,33 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   changes:
-    # Classify the diff once so the rest of CI runs only what's relevant, via FOUR gate outputs:
+    # Classify the diff once so the rest of CI runs only what's relevant, via FIVE gate outputs:
     #   run_code   -> build + carve   (the COMPILE FLOOR: the slnx compiles AND every service builds standalone)
     #   run_tests  -> unit + integration
     #   run_e2e    -> e2e-api-tests
     #   run_e2e_ui -> e2e-ui-tests
+    #   run_fe     -> fe-boundaries + carve-fe (the FE COMPILE FLOOR: ownership holds and each surface builds from the feed)
     # Automatic classification, by the changed-file set:
     #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
     #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
     #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
-    #   - anything else                                                            -> all four true (full CI).
-    # OPT-OUT to turn E2E gates OFF (never unit/integration) for a change the diff over-covers. It is a git
-    # TRAILER on its own line — `Skip-E2E: true` or `Skip-E2E-UI: true` — parsed structurally by git (not
-    # substring-grepped), so prose that merely mentions a token can't trip it (the pr-227 bug). A PR label of
-    # the same name (skip-e2e / skip-e2e-ui) works too.
+    #   - anything else -> initially enables every job; this is conservative job plumbing, not E2E-tier policy.
+    # The `merge` skill's Step 4 is the single source of truth for the E2E tier: a positive trigger keeps
+    # full E2E on via `full-e2e`; no positive trigger selects `skip-e2e`. The hard floor remains build + carve +
+    # unit + integration, and every PR still merges through the queue on current main.
+    # The same E2E selections can also be supplied as git TRAILERS on their own line — `Skip-E2E: true` or
+    # `Skip-E2E-UI: true` — parsed structurally by git (not substring-grepped), so prose that merely mentions a
+    # token can't trip it (the pr-227 bug). A PR label of the same name (skip-e2e / skip-e2e-ui) works too.
     #   Skip-E2E-UI / skip-e2e-ui -> run_e2e_ui off       (build+carve, unit+integration, api E2E still run)
     #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
-    # Everything still merges through the queue on current main, so an opt-out can never merge something stale.
     # NOTE: `ci-complete` is the single required check. Jobs with no work are skipped before runner allocation;
     # `ci-complete` accepts skipped dependencies and reports the required success result.
     runs-on: ubuntu-latest
@@ -45,7 +51,9 @@ jobs:
       run_tests:  ${{ steps.detect.outputs.run_tests }}
       run_e2e:    ${{ steps.detect.outputs.run_e2e }}
       run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
+      run_fe:     ${{ steps.detect.outputs.run_fe }}
       unit_projects: ${{ steps.test-projects.outputs.unit_projects }}
+      architecture_projects: ${{ steps.test-projects.outputs.architecture_projects }}
       integration_projects: ${{ steps.test-projects.outputs.integration_projects }}
     steps:
       - uses: actions/checkout@v4
@@ -55,10 +63,13 @@ jobs:
         id: test-projects
         run: |
           unit_projects=$(find api -type f -name '*.UnitTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          architecture_projects=$(find api -type f -name '*.ArchitectureTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           integration_projects=$(find api -type f -name '*.IntegrationTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           [ "$unit_projects" != '[]' ] || { echo "No unit test projects found."; exit 1; }
+          [ "$architecture_projects" != '[]' ] || { echo "No architecture test projects found."; exit 1; }
           [ "$integration_projects" != '[]' ] || { echo "No integration test projects found."; exit 1; }
           echo "unit_projects=$unit_projects" >> "$GITHUB_OUTPUT"
+          echo "architecture_projects=$architecture_projects" >> "$GITHUB_OUTPUT"
           echo "integration_projects=$integration_projects" >> "$GITHUB_OUTPUT"
       - name: Classify changed files
         id: detect
@@ -80,6 +91,7 @@ jobs:
             echo "run_tests=true"  >> "$GITHUB_OUTPUT"
             echo "run_e2e=true"    >> "$GITHUB_OUTPUT"
             echo "run_e2e_ui=true" >> "$GITHUB_OUTPUT"
+            echo "run_fe=true"     >> "$GITHUB_OUTPUT"
             exit 0
           fi
           files=$(git diff --name-only "$base" "$head")
@@ -100,6 +112,14 @@ jobs:
           else
             echo "-> code change; full CI."
           fi
+          # run_fe: FE carve gate (the npm analogue of run_code's carve-* jobs). True iff a NON-INERT change
+          # touches app/, OR the carve mechanism itself changes (scripts/carve-fe.mjs or this workflow) so a
+          # change to the gate re-validates it on its own PR. A BE-only PR never triggers the slow feed-restore
+          # FE carves; a docs-only app/ change (app/**/*.md) is inert and also skips.
+          if printf '%s\n' "$files" | grep -vE "$INERT" | grep -qE '^app/'; then run_fe=true
+          elif printf '%s\n' "$files" | grep -qE '^app/scripts/carve-fe\.mjs$|^\.github/workflows/test\.yml$'; then run_fe=true
+          else run_fe=false; fi
+          echo "-> run_fe=$run_fe (FE feed-restore carves)."
           # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
           # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
           # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
@@ -140,10 +160,11 @@ jobs:
           echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
           echo "run_e2e_ui=$run_e2e_ui" >> "$GITHUB_OUTPUT"
+          echo "run_fe=$run_fe"         >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [changes, local-platform-pack]
     if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
@@ -175,9 +196,41 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Build solution
         if: needs.changes.outputs.run_code == 'true'
-        run: dotnet build api/Concertable.slnx --configuration Release
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release
+
+  local-platform-pack:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.run_tests == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      LOCAL_PLATFORM_VERSION: 0.1.0-local.${{ github.run_id }}.${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Pack the source platform
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+          if-no-files-found: error
 
   carve-auth:
     # Gate: Concertable.Auth must build standalone from its own package closure — a ProjectReference
@@ -216,6 +269,11 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Carve api/Concertable.Auth into a standalone tree
         if: needs.changes.outputs.run_code == 'true'
         run: |
@@ -227,7 +285,7 @@ jobs:
       - name: Restore + build the carved Auth from the feed (packages only)
         if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
-        run: dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release
+        run: pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/src/Concertable.Auth/Concertable.Auth.csproj" --configuration Release
 
   carve-payment:
     # Gate: Concertable.Payment's deployable closure must build standalone from its own package
@@ -235,7 +293,7 @@ jobs:
     # instead of silently at a repo split. Same `git archive` technique as carve-auth.
     # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost.Extensions and the
     # E2ETests.Helpers harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.E2ETests) that are absent from the carve and exempt by design (composition / E2E
+    # Concertable.Testing.E2E) that are absent from the carve and exempt by design (composition / E2E
     # harness layers). The solution lists every package-clean project so each is built directly.
     runs-on: ubuntu-latest
     needs: [build, changes]
@@ -269,6 +327,11 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Carve api/Concertable.Payment into a standalone tree
         if: needs.changes.outputs.run_code == 'true'
         run: |
@@ -293,9 +356,8 @@ jobs:
             src/Concertable.Payment.Application/Concertable.Payment.Application.csproj \
             src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj \
             src/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj \
-            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj \
-            src/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj
-          dotnet build CarvePayment.slnx --configuration Release -p:MinVerSkip=true
+            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj
+          pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarvePayment.slnx" --configuration Release -p:MinVerSkip=true
 
   carve-search:
     # Gate: Concertable.Search's deployable closure must build standalone from its own package
@@ -338,6 +400,11 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Carve api/Concertable.Search into a standalone tree
         if: needs.changes.outputs.run_code == 'true'
         run: |
@@ -361,7 +428,7 @@ jobs:
             src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
             src/Concertable.Search.Domain/Concertable.Search.Domain.csproj \
             src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
-          dotnet build CarveSearch.slnx --configuration Release
+          pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveSearch.slnx" --configuration Release
 
   carve-b2b:
     # Gate: Concertable.B2B's deployable closure must build standalone from its own package closure —
@@ -405,6 +472,11 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Carve api/Concertable.B2B into a standalone tree
         if: needs.changes.outputs.run_code == 'true'
         run: |
@@ -427,11 +499,11 @@ jobs:
             -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.B2B.AppHost.csproj' \
-            -not -name 'Concertable.B2B.AppHost.Extensions.csproj')
+            -not -name 'Concertable.B2B.Hosting.csproj')
           echo "Package-clean closure projects (${#PROJS[@]}):"
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveB2B.slnx add "${PROJS[@]}"
-          dotnet build CarveB2B.slnx --configuration Release -p:MinVerSkip=true
+          pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveB2B.slnx" --configuration Release -p:MinVerSkip=true
 
   carve-customer:
     # Gate: Concertable.Customer's deployable closure must build standalone from its own package closure —
@@ -475,6 +547,11 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Carve api/Concertable.Customer into a standalone tree
         if: needs.changes.outputs.run_code == 'true'
         run: |
@@ -497,15 +574,66 @@ jobs:
             -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.Customer.AppHost.csproj' \
-            -not -name 'Concertable.Customer.AppHost.Extensions.csproj')
+            -not -name 'Concertable.Customer.Hosting.csproj')
           echo "Package-clean closure projects (${#PROJS[@]}):"
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
-          dotnet build CarveCustomer.slnx --configuration Release -p:MinVerSkip=true
+          pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveCustomer.slnx" --configuration Release -p:MinVerSkip=true
+
+  fe-boundaries:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.run_fe == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend dependencies
+        working-directory: app
+        run: npm ci
+      - name: Test frontend tooling and enforce workspace boundaries
+        working-directory: app
+        run: npm run test:boundaries && npm run lint:boundaries
+
+  carve-fe:
+    # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers
+    # PURELY from the npm feed and build standalone. A surface importing a tier it doesn't declare
+    # (masked in-monorepo by workspace hoisting) fails at install; a build that only resolves via the
+    # monorepo-root workspace fails standalone. scripts/carve-fe.mjs archives the surface, repoints its
+    # intra-@concertable deps at the alpha feed tag, restores from the feed only, and builds it (web:
+    # vite build; mobile: tsc + expo export).
+    # Gated on run_fe so a BE-only PR never pays for the slow feed restores. Same git-archive technique
+    # as the backend carves; no fetch-depth needed (archives HEAD).
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.run_fe == 'true'
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        surface: [web/customer, web/admin, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Carve ${{ matrix.surface }} and build it standalone from the feed
+        working-directory: app
+        run: node scripts/carve-fe.mjs ${{ matrix.surface }}
 
   unit-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes]
+    needs: [build, changes, local-platform-pack]
     if: needs.changes.outputs.run_tests == 'true'
     permissions:
       contents: read
@@ -534,12 +662,50 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Run ${{ matrix.project }}
-        run: dotnet test ${{ matrix.project }} --configuration Release
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
+
+  architecture-tests:
+    runs-on: ubuntu-latest
+    needs: [build, changes, local-platform-pack]
+    if: needs.changes.outputs.run_tests == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.changes.outputs.architecture_projects) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Run ${{ matrix.project }}
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
 
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes]
+    needs: [build, changes, local-platform-pack, architecture-tests]
     if: needs.changes.outputs.run_tests == 'true'
     permissions:
       contents: read
@@ -548,6 +714,7 @@ jobs:
     env:
       # B2B/Customer integration tests restore Payment.Client/Contracts, now feed packages; 401 without this.
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     strategy:
       matrix:
@@ -568,12 +735,18 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Run ${{ matrix.project }}
-        run: dotnet test ${{ matrix.project }} --configuration Release
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes]
+    needs: [build, changes, architecture-tests]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
     # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
@@ -616,6 +789,12 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        if: needs.changes.outputs.run_e2e == 'true'
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Provision HTTPS dev certificate
         if: needs.changes.outputs.run_e2e == 'true'
         run: |
@@ -624,14 +803,7 @@ jobs:
 
       - name: Install Stripe CLI
         if: needs.changes.outputs.run_e2e == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
-          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
-          curl -fsSL "$url" -o /tmp/stripe.tar.gz
-          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
-          stripe version
+        uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
         if: needs.changes.outputs.run_e2e == 'true'
@@ -639,16 +811,18 @@ jobs:
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Run B2B API E2E tests
         if: needs.changes.outputs.run_e2e == 'true'
-        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Run Customer API E2E tests
         if: needs.changes.outputs.run_e2e == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
         if: always() && needs.changes.outputs.run_e2e == 'true'
@@ -703,6 +877,12 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        if: needs.changes.outputs.run_e2e_ui == 'true'
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Provision HTTPS dev certificate
         if: needs.changes.outputs.run_e2e_ui == 'true'
         run: |
@@ -711,21 +891,14 @@ jobs:
 
       - name: Install Stripe CLI
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
-          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
-          curl -fsSL "$url" -o /tmp/stripe.tar.gz
-          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
-          stripe version
+        uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
         if: needs.changes.outputs.run_e2e_ui == 'true'
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
@@ -744,16 +917,22 @@ jobs:
 
       - name: Build frontend package dependencies
         if: needs.changes.outputs.run_e2e_ui == 'true'
+        # The SPAs consume the shared FE tiers from their built dist (@concertable/web, /b2b,
+        # /customer), so all of them must be built before the Vite dev servers start — not just
+        # @concertable/shared, or the dev server can't resolve the tier imports and every scenario
+        # times out at warm-up.
         working-directory: app
-        run: npm run build --workspace @concertable/shared
+        run: npm run build:web-packages
 
       - name: Build B2B UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
 
       - name: Build Customer UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
 
       - name: Install Playwright browsers
         if: needs.changes.outputs.run_e2e_ui == 'true'
@@ -827,6 +1006,12 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - uses: actions/download-artifact@v4
+        if: env.RUN == 'true'
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+
       - name: Provision HTTPS dev certificate
         if: env.RUN == 'true'
         run: |
@@ -835,19 +1020,12 @@ jobs:
 
       - name: Install Stripe CLI
         if: env.RUN == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
-          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
-          curl -fsSL "$url" -o /tmp/stripe.tar.gz
-          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
-          stripe version
+        uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
         if: env.RUN == 'true'
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
@@ -864,11 +1042,12 @@ jobs:
       - name: Build frontend package dependencies
         if: env.RUN == 'true'
         working-directory: app
-        run: npm run build --workspace @concertable/shared
+        run: npm run build:web-packages
 
       - name: Build Customer UI E2E tests
         if: env.RUN == 'true'
-        run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
 
       - name: Install Playwright browsers
         if: env.RUN == 'true'
@@ -889,24 +1068,57 @@ jobs:
             **/playwright-failures/**
           if-no-files-found: ignore
 
+  hook-tests:
+    # The vendored hooks are generated copies of Concertable/agent-standards, and this is the only
+    # thing that catches one edited in place or a harness wiring dropped. It never skips: a change
+    # anywhere can break it, and the hook set is what enforces the standards on every other change.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Vendored hooks match upstream and this repo's tables give the expected verdicts
+        run: python -m unittest discover -s .agents/hooks/tests -t .agents/hooks/tests -v
+
+  workflow-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test repository workflow policy helpers
+        run: node --test .github/scripts/*.test.mjs
+
   ci-complete:
     # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
     # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
     # event, and it passes iff nothing it needs failed or was cancelled. Inert jobs skip before allocating
     # runners; this aggregator turns those skipped dependencies into the required success result. needs EVERY gating job directly
-    # (build + all carves + unit + integration + both e2e) so it reflects the full pipeline.
+    # (build + all carves + unit + integration + both e2e + hook tests) so it reflects the full pipeline.
     runs-on: ubuntu-latest
     needs:
       - build
+      - local-platform-pack
       - carve-auth
       - carve-payment
       - carve-search
       - carve-b2b
       - carve-customer
+      - fe-boundaries
+      - carve-fe
       - unit-tests
+      - architecture-tests
       - integration-tests
       - e2e-api-tests
       - e2e-ui-tests
+      - hook-tests
+      - workflow-tests
     if: always()
     steps:
       - name: Fail if any CI job failed or was cancelled

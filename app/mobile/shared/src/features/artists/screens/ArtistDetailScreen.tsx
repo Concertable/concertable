@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useArtist } from "@concertable/shared/features/artists";
+import { useArtistById } from "@concertable/shared/features/artists";
 import { EditableProvider } from "@concertable/shared/providers";
 import { Screen } from "@/components/ui/Screen";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ type Props = NativeStackScreenProps<ConcertNavParamList, "ArtistDetail">;
 
 export function ArtistDetailScreen({ route }: Props) {
   const { artistId } = route.params;
-  const { artist, isLoading, isError } = useArtist(artistId);
+  const { artist, isLoading, isError } = useArtistById(artistId);
 
   if (isLoading) {
     return (

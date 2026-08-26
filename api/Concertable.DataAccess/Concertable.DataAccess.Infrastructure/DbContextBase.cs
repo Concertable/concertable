@@ -1,3 +1,4 @@
+using Concertable.DataAccess.Application;
 using Concertable.Messaging.Contracts;
 using Concertable.Messaging.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -5,8 +6,22 @@ using MessagingSchema = Concertable.Messaging.Infrastructure.Schema;
 
 namespace Concertable.DataAccess.Infrastructure;
 
-public abstract class DbContextBase(DbContextOptions options) : DbContext(options)
+public abstract class DbContextBase(DbContextOptions options) : DbContext(options), IDbContext
 {
+    public IQueryable<TEntity> Query<TEntity>() where TEntity : class => Set<TEntity>();
+
+    async Task IWriteDbContext.AddAsync<TEntity>(TEntity entity, CancellationToken ct) =>
+        await Set<TEntity>().AddAsync(entity, ct);
+
+    Task IWriteDbContext.AddRangeAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken ct) =>
+        Set<TEntity>().AddRangeAsync(entities, ct);
+
+    void IWriteDbContext.Update<TEntity>(TEntity entity) => Set<TEntity>().Update(entity);
+
+    void IWriteDbContext.Remove<TEntity>(TEntity entity) => Set<TEntity>().Remove(entity);
+
+    Task<int> IWriteDbContext.SaveChangesAsync(CancellationToken ct) => SaveChangesAsync(ct);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

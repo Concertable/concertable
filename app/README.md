@@ -1,73 +1,48 @@
-# React + TypeScript + Vite
+# app — Concertable's frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript in one npm workspace: Vite for the four web SPAs, Expo for the two mobile apps. Two
+products — a customer marketplace and a b2b manager platform — sharing code through nested tiers.
 
-Currently, two official plugins are available:
+**Working here? Read [`AGENTS.md`](./AGENTS.md)** — it holds the tier map, the standards skills each tier
+obeys, and the boundary gate. This file is only the workspace inventory and the commands.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## The 12 workspaces
 
-## React Compiler
+| Workspace | Package | Compiles into |
+|---|---|---|
+| `shared` | `@concertable/shared` | every surface — customer and b2b, web and mobile |
+| `customer/shared` | `@concertable/customer` | customer web + mobile |
+| `b2b/shared` | `@concertable/b2b` | b2b web + mobile |
+| `web/shared` | `@concertable/web` | all four web SPAs |
+| `web/b2b/shared` | `@concertable/web-b2b` | the venue, artist and business SPAs |
+| `mobile/shared` | `@concertable/mobile` | both Expo apps |
+| `web/customer` | `@concertable/web-customer` | — the customer SPA |
+| `web/b2b/venue` | `@concertable/web-venue` | — the venue SPA |
+| `web/b2b/artist` | `@concertable/web-artist` | — the artist SPA |
+| `web/b2b/business` | `@concertable/web-business` | — the business SPA |
+| `mobile/customer` | `@concertable/mobile-customer` | — the customer app |
+| `mobile/b2b` | `@concertable/mobile-b2b` | — the b2b app |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The shared packages publish to GitHub Packages; the six app workspaces are private.
 
-## Expanding the ESLint configuration
+## Commands
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Run from `app/`:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+npm run dev:customer          # or dev:venue / dev:artist / dev:business
+npm run dev:mobile:customer   # or dev:mobile:b2b
+npm run build:packages        # every shared package, in dependency order
+npm run build:customer        # or build:venue / build:artist / build:business
+npm run lint:boundaries       # dependency-cruiser over all 12
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Every app typechecks the shared trees against its own tree, so a tier leak fails a *different* app's
+build — all four web builds and both mobile builds green is the boundary gate. `lint:boundaries` catches
+what a typecheck cannot, through two `error`-severity rules in `.dependency-cruiser.cjs`:
+`not-to-foreign-workspace` (no reaching into a sibling workspace's files) and
+`cross-platform-b2b-has-no-platform-dependencies` (`b2b/shared` may not touch `web/`, `mobile/`, or any
+platform-only library). It runs in the `fe-boundaries` CI job as well as by hand.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Per-app detail, including the `routeTree.gen.ts` regeneration step:
+[`web/AGENTS.md`](./web/AGENTS.md), [`mobile/AGENTS.md`](./mobile/AGENTS.md).

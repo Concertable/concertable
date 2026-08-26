@@ -13,7 +13,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # All mirrors live under the Concertable org (resolved in POLYREPO_COMPLETION.md Phase 0).
           # Service mirrors:
           - prefix: api/Concertable.B2B
             repo: Concertable/b2b

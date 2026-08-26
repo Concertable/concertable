@@ -40,18 +40,23 @@ jobs:
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          title="🔴 platform-sync is RED — $BRANCH"
+          title="🔴 platform-sync is RED"
           pr="$(gh pr list --repo "$repo" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+
+          # A superseded/merged sync branch can still report a late CI failure -- its PR is gone, so there
+          # is nothing to fix and nothing stranded. Never (re)open an alert for a branch with no open PR.
+          if [ -z "$pr" ]; then
+            echo "No open sync PR for $BRANCH -- superseded or merged; ignoring late CI result."
+            exit 0
+          fi
 
           # Idempotent label; flag the PR so it's obvious in the PR list too.
           gh label create "$LABEL" --repo "$repo" --color B60205 \
             --description "platform-sync PR is failing CI" 2>/dev/null || true
-          if [ -n "$pr" ]; then
-            gh pr edit "$pr" --repo "$repo" --add-label "$LABEL" || true
-          fi
+          gh pr edit "$pr" --repo "$repo" --add-label "$LABEL" || true
 
           body="$(cat <<EOF
-          The automated platform-sync PR on \`$BRANCH\` failed CI${pr:+ (#$pr)}.
+          The automated platform-sync PR on \`$BRANCH\` failed CI (#$pr).
 
           A red platform-sync PR means a **published contract changed shape** and a consumer no longer
           compiles against the new pin. Auto-merge is holding it, but **every service is stranded on a
@@ -66,11 +71,13 @@ jobs:
           EOF
           )"
 
-          # One tracking issue per branch, matched by title (no search API quirks) — refresh, don't duplicate.
+          # ONE singleton tracking issue (fixed title), not one-per-branch: a red sync is almost always
+          # SUPERSEDED (PR closed, new version branch opened) rather than fixed in place, so a per-branch
+          # issue keyed to the dead branch never sees a matching green run and orphans forever. Refresh it.
           num="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
-            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | select(.title | contains("'"$BRANCH"'")) | .number' | head -1)"
+            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | .number' | head -1)"
           if [ -n "$num" ]; then
-            gh issue comment "$num" --repo "$repo" --body "Still red as of the latest run: $RUN_URL"
+            gh issue comment "$num" --repo "$repo" --body "Still red — current offender \`$BRANCH\` (#$pr): $RUN_URL"
           else
             gh issue create --repo "$repo" --title "$title" --body "$body" --label "$LABEL" 2>/dev/null \
               || gh issue create --repo "$repo" --title "$title" --body "$body"
@@ -84,14 +91,18 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Close the tracking issue once the sync is green again
+      - name: Close the tracking issue once any sync is green again
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          num="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
-            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | select(.title | contains("'"$BRANCH"'")) | .number' | head -1)"
-          if [ -n "$num" ]; then
-            gh issue close "$num" --repo "$repo" --comment "platform-sync is green again ✅ — closing."
-          else
-            echo "No open tracking issue for $BRANCH — nothing to close."
+          # A green sync run proves consumers compile against the current pin -> the platform is healthy.
+          # Clear every open tracking issue (there should be at most one), whatever branch it named.
+          nums="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
+            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | .number')"
+          if [ -z "$nums" ]; then
+            echo "No open tracking issue — nothing to close."
+            exit 0
           fi
+          for num in $nums; do
+            gh issue close "$num" --repo "$repo" --comment "platform-sync is green again ✅ ($BRANCH) — closing."
+          done

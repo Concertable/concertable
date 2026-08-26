@@ -118,8 +118,8 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("RateBasisPoints")
-                        .HasColumnType("int");
+                    b.Property<long?>("ReviewedGrossMinor")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("StripePaymentIntentId")
                         .HasMaxLength(100)
@@ -129,15 +129,9 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("VatRateBasisPoints")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CommissionConfigurationId");
 
                     b.HasIndex("StripePaymentIntentId")
                         .IsUnique()
@@ -150,13 +144,27 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasIndex("ExternalReference", "PayerReference")
                         .IsUnique();
 
-                    b.ToTable("CommissionBindings", "payment", t =>
+                    b.ToTable("CommissionBindings", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.CommissionConfigurationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("decimal(7,4)")
+                        .HasColumnName("RatePercentage");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CommissionConfigurations", "payment", t =>
                         {
-                            t.HasCheckConstraint("CK_CommissionBindings_Currency", "[Currency] = 'Gbp'");
-
-                            t.HasCheckConstraint("CK_CommissionBindings_RateBasisPoints", "[RateBasisPoints] >= 1 AND [RateBasisPoints] <= 10000");
-
-                            t.HasCheckConstraint("CK_CommissionBindings_VatRateBasisPoints", "[VatRateBasisPoints] >= 0 AND [VatRateBasisPoints] <= 10000");
+                            t.HasCheckConstraint("CK_CommissionConfigurations_RatePercentage", "[RatePercentage] > 0 AND [RatePercentage] <= 100");
                         });
                 });
 
@@ -187,11 +195,13 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<long>("CommissionVatMinor")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("CommissionVatRateBasisPoints")
-                        .HasColumnType("int");
+                    b.Property<decimal>("CommissionVatRate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("decimal(7,4)")
+                        .HasColumnName("CommissionVatRatePercentage");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -205,8 +215,8 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<Guid>("FromOwnerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("LastModifiedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -247,6 +257,54 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("Escrows", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.FinancialOperationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset>("LastAttemptedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ReferenceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("FinancialOperations", "payment");
                 });
 
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerAccountEntity", b =>
@@ -368,6 +426,9 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<long>("GrossRefundedMinor")
                         .HasColumnType("bigint");
 
+                    b.Property<Guid?>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long>("PayerTotalRefundedMinor")
                         .HasColumnType("bigint");
 
@@ -385,6 +446,10 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
 
                     b.HasIndex("EscrowId");
 
+                    b.HasIndex("OperationId")
+                        .IsUnique()
+                        .HasFilter("[OperationId] IS NOT NULL");
+
                     b.HasIndex("SettlementTransactionId");
 
                     b.HasIndex("StripeRefundId")
@@ -394,6 +459,217 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.ToTable("PaymentRefunds", "payment", t =>
                         {
                             t.HasCheckConstraint("CK_PaymentRefunds_Owner", "([EscrowId] IS NULL AND [SettlementTransactionId] IS NOT NULL) OR ([EscrowId] IS NOT NULL AND [SettlementTransactionId] IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.PaymentSessionAttemptEntity", b =>
+                {
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CaptureBefore")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTimeOffset>("LastAttemptedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("LastObservedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("LastProviderEventCreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastProviderEventId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LastProviderStatus")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset?>("NextReconcileAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PredecessorAttemptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProviderDiagnosticCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ProviderDiagnosticMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ProviderObjectId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ProviderObjectKind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ProviderRequestId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTimeOffset?>("TerminalAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("AttemptId");
+
+                    b.HasIndex("NextReconcileAt");
+
+                    b.HasIndex("State");
+
+                    b.HasIndex("OperationId", "PredecessorAttemptId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PaymentSessionAttempts_OperationId_PredecessorAttemptId")
+                        .HasFilter("[PredecessorAttemptId] IS NOT NULL");
+
+                    b.HasIndex("OperationId", "Revision")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PaymentSessionAttempts_OperationId_Revision");
+
+                    b.HasIndex("ProviderObjectKind", "ProviderObjectId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PaymentSessionAttempts_ProviderObjectKind_ProviderObjectId")
+                        .HasFilter("[ProviderObjectId] IS NOT NULL");
+
+                    b.ToTable("PaymentSessionAttempts", "payment", t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentSessionAttempts_ProviderBinding", "[ProviderObjectId] IS NOT NULL OR [State] = 'Creating'");
+
+                            t.HasCheckConstraint("CK_PaymentSessionAttempts_Revision", "[Revision] >= 1");
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.PaymentSessionOperationEntity", b =>
+                {
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long?>("AmountMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset?>("CanceledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ConsumerCorrelation")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Currency")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<long>("CurrentRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("FingerprintVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FundsRouting")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("OperationType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PayeeOwnerKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PayerOwnerKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PaymentMethodId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ProviderConnectedAccountId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ProviderCustomerId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nchar(64)")
+                        .IsFixedLength();
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Session")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SessionKind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("OperationId");
+
+                    b.HasIndex("PayeeOwnerKey");
+
+                    b.HasIndex("PayerOwnerKey");
+
+                    b.HasIndex("OperationType", "ConsumerCorrelation");
+
+                    b.ToTable("PaymentSessionOperations", "payment", t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentSessionOperations_CurrentRevision", "[CurrentRevision] >= 1");
+
+                            t.HasCheckConstraint("CK_PaymentSessionOperations_FingerprintVersion", "[FingerprintVersion] >= 1");
+
+                            t.HasCheckConstraint("CK_PaymentSessionOperations_RequestFingerprint", "LEN([RequestFingerprint]) = 64");
                         });
                 });
 
@@ -457,8 +733,11 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<long>("Amount")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -469,8 +748,8 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .HasMaxLength(34)
                         .HasColumnType("nvarchar(34)");
 
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("LastModifiedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -525,8 +804,10 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<long>("CommissionVatMinor")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("CommissionVatRateBasisPoints")
-                        .HasColumnType("int");
+                    b.Property<decimal>("CommissionVatRate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("decimal(7,4)")
+                        .HasColumnName("CommissionVatRatePercentage");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -573,6 +854,17 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasDiscriminator().HasValue("VerifyTransactionEntity");
                 });
 
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.CommissionBindingEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.CommissionConfigurationEntity", "CommissionConfiguration")
+                        .WithMany()
+                        .HasForeignKey("CommissionConfigurationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CommissionConfiguration");
+                });
+
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.EscrowEntity", b =>
                 {
                     b.HasOne("Concertable.Payment.Domain.Entities.CommissionBindingEntity", "CommissionBinding")
@@ -617,6 +909,15 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Navigation("SettlementTransaction");
                 });
 
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.PaymentSessionAttemptEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.PaymentSessionOperationEntity", null)
+                        .WithMany("Attempts")
+                        .HasForeignKey("OperationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.SettlementTransactionEntity", b =>
                 {
                     b.HasOne("Concertable.Payment.Domain.Entities.CommissionBindingEntity", "CommissionBinding")
@@ -635,6 +936,11 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerTransactionEntity", b =>
                 {
                     b.Navigation("Entries");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.PaymentSessionOperationEntity", b =>
+                {
+                    b.Navigation("Attempts");
                 });
 
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.SettlementTransactionEntity", b =>

@@ -8,6 +8,8 @@ param(
 $repoRoot = Split-Path $PSScriptRoot -Parent
 Set-Location $repoRoot
 [Environment]::CurrentDirectory = $repoRoot
+$localPlatform = Join-Path $PSScriptRoot 'local-platform.ps1'
+$powerShell = (Get-Process -Id $PID).Path
 
 $trxNs = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
 
@@ -46,12 +48,12 @@ function Invoke-Project([string]$csproj) {
 
     Write-Host ("  {0,-54}" -f $name) -NoNewline
 
-    $testArgs = @(
-        'test', $csproj, '--nologo', '--verbosity', 'quiet',
-        '--results-directory', $resultsDir,
-        '--logger', 'trx;LogFileName=run.trx'
-    )
-    $proc = Start-Process -FilePath 'dotnet' -ArgumentList $testArgs -NoNewWindow -Wait -PassThru `
+    $escapedLocalPlatform = $localPlatform.Replace("'", "''")
+    $escapedProject = $csproj.Replace("'", "''")
+    $escapedResultsDir = $resultsDir.Replace("'", "''")
+    $command = "& '$escapedLocalPlatform' test '$escapedProject' --nologo --verbosity quiet --results-directory '$escapedResultsDir' --logger 'trx;LogFileName=run.trx'"
+    $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
+    $proc = Start-Process -FilePath $powerShell -ArgumentList '-NoProfile', '-EncodedCommand', $encodedCommand -NoNewWindow -Wait -PassThru `
         -RedirectStandardOutput $log -RedirectStandardError $errLog
     if ((Test-Path $errLog) -and (Get-Item $errLog).Length -gt 0) { Get-Content $errLog | Add-Content $log }
     Remove-Item $errLog -ErrorAction SilentlyContinue
@@ -130,8 +132,9 @@ function Show-Usage {
     Write-Host "  Usage: ./scripts/test.ps1 <command> [filter]" -ForegroundColor White
     Write-Host ""
     Write-Host "  Commands:" -ForegroundColor DarkGray
-    Write-Host "    all           Run unit + integration + e2e, then a combined PASS/FAIL summary"
+    Write-Host "    all           Run unit + architecture + integration + e2e, then a combined PASS/FAIL summary"
     Write-Host "    unit [name]   Run unit tests        (optionally filter projects by name, e.g. b2b, concert)"
+    Write-Host "    architecture  Run architecture tests (host-graph + ArchUnit) (optionally filter projects by name)"
     Write-Host "    integration   Run integration tests (optionally filter projects by name)"
     Write-Host "    e2e [name]    Run E2E tests (API+UI) (headless; full logs to test.last.log)"
     Write-Host "    list          Show this help"
@@ -143,13 +146,16 @@ function Show-Usage {
 
 switch ($cmd) {
     "all" {
+        & $localPlatform prepare
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $unit = Run-Suite 'Unit'        '\.UnitTests$'        $null
+        $architecture = Run-Suite 'Architecture' '\.ArchitectureTests$' $null
         $intg = Run-Suite 'Integration' '\.IntegrationTests$' $null
         $env:HEADLESS = 'true'
         $e2e = Run-Suite 'E2E' '\.E2ETests(\.Ui)?$' $null
         Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
-        Show-Summary @($unit, $intg, $e2e)
-        if (-not ($unit.Ok -and $intg.Ok -and $e2e.Ok)) {
+        Show-Summary @($unit, $architecture, $intg, $e2e)
+        if (-not ($unit.Ok -and $architecture.Ok -and $intg.Ok -and $e2e.Ok)) {
             Write-Host "  TESTS FAILED -- at least one suite did not pass." -ForegroundColor Red
             exit 1
         }
@@ -157,16 +163,29 @@ switch ($cmd) {
         exit 0
     }
     "unit" {
+        & $localPlatform prepare
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $r = Run-Suite 'Unit' '\.UnitTests$' ($rest | Select-Object -First 1)
         Show-Summary @($r)
         exit $(if ($r.Ok) { 0 } else { 1 })
     }
+    "architecture" {
+        & $localPlatform prepare
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $r = Run-Suite 'Architecture' '\.ArchitectureTests$' ($rest | Select-Object -First 1)
+        Show-Summary @($r)
+        exit $(if ($r.Ok) { 0 } else { 1 })
+    }
     "integration" {
+        & $localPlatform prepare
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $r = Run-Suite 'Integration' '\.IntegrationTests$' ($rest | Select-Object -First 1)
         Show-Summary @($r)
         exit $(if ($r.Ok) { 0 } else { 1 })
     }
     "e2e" {
+        & $localPlatform prepare
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $env:HEADLESS = 'true'
         $r = Run-Suite 'E2E' '\.E2ETests(\.Ui)?$' ($rest | Select-Object -First 1)
         Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue

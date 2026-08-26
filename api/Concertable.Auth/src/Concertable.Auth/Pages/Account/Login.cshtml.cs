@@ -4,9 +4,11 @@ using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Concertable.Auth.Pages.Account;
 
+[EnableRateLimiting(RateLimitPolicies.Credential)]
 public sealed class LoginModel : PageModel
 {
     private readonly IAuthService authService;
@@ -29,13 +31,13 @@ public sealed class LoginModel : PageModel
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
         var principal = await authService.LoginAsync(Email, Password, ct);
-        if (principal is null)
+        if (!principal.TryGetValue(out var authenticatedPrincipal))
         {
             ErrorMessage = "Invalid email or password.";
             return Page();
         }
 
-        await HttpContext.SignInAsync(IdentityServerConstants.DefaultCookieAuthenticationScheme, principal);
+        await HttpContext.SignInAsync(IdentityServerConstants.DefaultCookieAuthenticationScheme, authenticatedPrincipal);
 
         if (interaction.IsValidReturnUrl(ReturnUrl) || Url.IsLocalUrl(ReturnUrl))
             return Redirect(ReturnUrl!);

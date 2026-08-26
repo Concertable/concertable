@@ -5,25 +5,53 @@ namespace Concertable.Messaging.AzureServiceBus.UnitTests;
 
 public sealed class AzureServiceBusTransportTests
 {
-    private readonly AzureServiceBusOptions options = new()
-    {
-        ConnectionString = "Endpoint=sb://example.servicebus.windows.net/;SharedAccessKeyName=x;SharedAccessKey=y",
-        ServiceName = "b2b",
-    };
-    private readonly MessageSerializer serializer = new();
+    private readonly AzureServiceBusOptions options;
+    private readonly MessageSerializer serializer;
+    private readonly AzureServiceBusTransport transport;
+    private readonly AzureServiceBusTransport transportWithoutDestination;
 
-    private AzureServiceBusTransport CreateSut()
+    public AzureServiceBusTransportTests()
     {
-        // ServiceBusClient ctor accepts a fake connection string without opening a network connection.
-        var client = new ServiceBusClient(options.ConnectionString);
-        return new AzureServiceBusTransport(client, Microsoft.Extensions.Options.Options.Create(options), serializer);
+        this.options = new AzureServiceBusOptions
+        {
+            ConnectionString = "Endpoint=sb://example.servicebus.windows.net/;SharedAccessKeyName=x;SharedAccessKey=y",
+            ServiceName = "b2b",
+        };
+        this.serializer = new MessageSerializer();
+        var registry = new MessageTypeRegistry();
+        registry.RegisterCommandSender<FakeIntegrationCommand>("payment");
+        var client = new ServiceBusClient(this.options.ConnectionString);
+        this.transport = new AzureServiceBusTransport(
+            client,
+            Microsoft.Extensions.Options.Options.Create(this.options),
+            this.serializer,
+            registry);
+        this.transportWithoutDestination = new AzureServiceBusTransport(
+            client,
+            Microsoft.Extensions.Options.Options.Create(this.options),
+            this.serializer,
+            new MessageTypeRegistry());
+    }
+
+    [Fact]
+    public void QueueNameForCommand_RegisteredDestination_UsesDestinationService()
+    {
+        var queue = this.transport.QueueNameForCommand(typeof(FakeIntegrationCommand));
+
+        Assert.Equal("command-payment-fakeintegrationcommand", queue);
+    }
+
+    [Fact]
+    public void QueueNameForCommand_NoRegisteredDestination_UsesCurrentService()
+    {
+        var queue = this.transportWithoutDestination.QueueNameForCommand(typeof(FakeIntegrationCommand));
+
+        Assert.Equal("command-b2b-fakeintegrationcommand", queue);
     }
 
     [Fact]
     public void BuildMessage_PopulatesMessageIdContentTypeAndApplicationProperties()
     {
-        // Arrange
-        var sut = CreateSut();
         var payload = new FakeIntegrationEvent(Guid.NewGuid(), "concert", 1);
         var envelope = new MessageEnvelope(
             MessageId: Guid.NewGuid(),
@@ -31,10 +59,8 @@ public sealed class AzureServiceBusTransportTests
             OccurredAtUtc: new DateTimeOffset(2026, 5, 19, 12, 0, 0, TimeSpan.Zero),
             CorrelationId: "corr-123");
 
-        // Act
-        var message = sut.BuildMessage(payload, envelope);
+        var message = this.transport.BuildMessage(payload, envelope);
 
-        // Assert
         Assert.Equal(envelope.MessageId.ToString(), message.MessageId);
         Assert.Equal("application/json", message.ContentType);
         Assert.Equal(envelope.MessageType, message.ApplicationProperties["MessageType"]);
@@ -45,8 +71,6 @@ public sealed class AzureServiceBusTransportTests
     [Fact]
     public void BuildMessage_WhenCorrelationIdIsNull_DoesNotSetCorrelationIdOnServiceBusMessage()
     {
-        // Arrange
-        var sut = CreateSut();
         var payload = new FakeIntegrationEvent(Guid.NewGuid(), "concert", 1);
         var envelope = new MessageEnvelope(
             MessageId: Guid.NewGuid(),
@@ -54,29 +78,25 @@ public sealed class AzureServiceBusTransportTests
             OccurredAtUtc: DateTimeOffset.UtcNow,
             CorrelationId: null);
 
-        // Act
-        var message = sut.BuildMessage(payload, envelope);
+        var message = this.transport.BuildMessage(payload, envelope);
 
-        // Assert
         Assert.Null(message.CorrelationId);
     }
 
     [Fact]
     public void BuildMessage_BodyIsJsonRoundTrippableToOriginalPayload()
     {
-        // Arrange
-        var sut = CreateSut();
         var payload = new FakeIntegrationEvent(Guid.NewGuid(), "concert", 7);
         var envelope = new MessageEnvelope(
             MessageId: Guid.NewGuid(),
             MessageType: typeof(FakeIntegrationEvent).FullName!,
             OccurredAtUtc: DateTimeOffset.UtcNow);
 
-        // Act
-        var message = sut.BuildMessage(payload, envelope);
-        var roundTripped = (FakeIntegrationEvent)serializer.Deserialize(message.Body, typeof(FakeIntegrationEvent));
+        var message = this.transport.BuildMessage(payload, envelope);
+        var roundTripped = (FakeIntegrationEvent)this.serializer.Deserialize(
+            message.Body,
+            typeof(FakeIntegrationEvent));
 
-        // Assert
         Assert.Equal(payload, roundTripped);
     }
 

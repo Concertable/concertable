@@ -1,5 +1,6 @@
 using Concertable.Contracts;
 using Concertable.DataAccess.Application;
+using Concertable.Kernel.ValueObjects;
 
 namespace Concertable.Payment.Application.Interfaces;
 
@@ -12,6 +13,20 @@ internal interface ITransactionRepository : IRepository<TransactionEntity>
         CancellationToken ct = default);
     Task<SettlementTransactionEntity?> GetSettlementWithRefundsByBookingIdAsync(
         int bookingId,
+        CancellationToken ct = default);
+    Task<long> GetCompletedTicketRevenueAsync(Guid payeeId, DateRange period, CancellationToken ct = default);
+    Task<long> GetCompletedSettlementPayoutsAsync(Guid payeeId, DateRange period, CancellationToken ct = default);
+    Task<IReadOnlyList<MonthlyPaymentTotal>> GetCompletedTicketRevenueByMonthAsync(
+        Guid payeeId,
+        DateRange period,
+        CancellationToken ct = default);
+    Task<IReadOnlyList<MonthlyPaymentTotal>> GetCompletedSettlementPayoutsByMonthAsync(
+        Guid payeeId,
+        DateRange period,
+        CancellationToken ct = default);
+    Task<IReadOnlyList<SettlementSummary>> GetRecentCompletedSettlementsAsync(
+        Guid ownerId,
+        int take,
         CancellationToken ct = default);
     Task CreateAsync(TransactionEntity entity);
 

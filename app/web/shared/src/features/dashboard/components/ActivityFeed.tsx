@@ -11,16 +11,21 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import dayjs from "dayjs";
-import type { ActivityItem, ActivityType } from "@concertable/shared/features/dashboard";
+import type {
+  ActivityItem,
+  ActivityType,
+} from "@concertable/shared/features/dashboard";
 
-const iconMap: Record<ActivityType, LucideIcon> = {
-  ApplicationReceived: UserPlus,
-  ApplicationAccepted: CheckCircle2,
-  ApplicationDeclined: XCircle,
-  ConcertSettled: CircleDollarSign,
-  ReviewReceived: Star,
-  TicketSold: Ticket,
-  MessageReceived: MessageSquare,
+  const iconMap: Record<ActivityType, LucideIcon> = {
+  applicationReceived: UserPlus,
+  applicationAccepted: CheckCircle2,
+  applicationDeclined: XCircle,
+  applicationWithdrawn: XCircle,
+  applicationCancelled: XCircle,
+  concertSettled: CircleDollarSign,
+  reviewReceived: Star,
+  ticketSold: Ticket,
+  messageReceived: MessageSquare,
 };
 
 function timestampLabel(iso: string) {

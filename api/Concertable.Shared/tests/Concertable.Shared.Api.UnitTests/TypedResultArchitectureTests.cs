@@ -14,12 +14,26 @@ public sealed partial class TypedResultArchitectureTests
         var violations = Directory
             .EnumerateFiles(FindApiRoot(), "*.cs", SearchOption.AllDirectories)
             .Where(IsProductionSource)
+            .Where(path => !IsTransitionalTypedResultSlice(path))
             .Select(path => new { Path = path, Source = File.ReadAllText(path) })
             .Where(file => IsTypedResultHttpExceptionViolation(file.Source))
             .Select(file => file.Path)
             .ToArray();
 
         Assert.Empty(violations);
+    }
+
+    [Theory]
+    [MemberData(nameof(TransitionalTypedResultSlices))]
+    public void TransitionalTypedResultSlice_StillMixesHttpException_UntilMigrated(string relativePath)
+    {
+        var source = File.ReadAllText(Directory
+            .EnumerateFiles(FindApiRoot(), "*.cs", SearchOption.AllDirectories)
+            .Single(path => path.Replace('\\', '/').EndsWith(relativePath, StringComparison.Ordinal)));
+
+        Assert.True(
+            IsTypedResultHttpExceptionViolation(source),
+            $"{relativePath} no longer mixes HTTP exceptions with typed results — remove it from the transitional allowlist.");
     }
 
     [Theory]
@@ -160,23 +174,31 @@ public sealed partial class TypedResultArchitectureTests
     {
         var violations = Directory
             .EnumerateFiles(FindApiRoot(), "Program.cs", SearchOption.AllDirectories)
+            .Where(IsProductionSource)
             .Where(path => Path.GetDirectoryName(path)?
                 .EndsWith(".Web", StringComparison.Ordinal) == true)
             .Select(path => new
             {
                 Path = path,
-                Source = File.ReadAllText(path)
+                Sources = ReadHostCompositionSources(path)
             })
             .Select(host => new
             {
                 host.Path,
-                ProblemDetails = ProblemDetailsRegistrationPattern().Match(host.Source),
-                Mvc = MvcRegistrationPattern().Match(host.Source)
+                Registrations = host.Sources
+                    .Select(source => new
+                    {
+                        ProblemDetails = ProblemDetailsRegistrationPattern().Match(source),
+                        Mvc = MvcRegistrationPattern().Match(source)
+                    })
+                    .Where(registration => registration.Mvc.Success)
+                    .ToArray()
             })
             .Where(host =>
-                !host.ProblemDetails.Success
-                || !host.Mvc.Success
-                || host.ProblemDetails.Index > host.Mvc.Index)
+                host.Registrations.Length == 0
+                || host.Registrations.Any(registration =>
+                    !registration.ProblemDetails.Success
+                    || registration.ProblemDetails.Index > registration.Mvc.Index))
             .Select(host => host.Path)
             .ToArray();
 
@@ -197,13 +219,13 @@ public sealed partial class TypedResultArchitectureTests
     }
 
     [Fact]
-    public void DunetUnionDefinitions_UseGeneratedMatch()
+    public void DunetUnionDefinitions_UseSupportedDefinitionShape()
     {
         var violations = EnumerateSourceFiles()
             .Select(path => new { Path = path, Source = File.ReadAllText(path) })
             .Where(file => UnionAttributePattern().IsMatch(file.Source))
             .Where(file => ErrorUnionPattern().IsMatch(file.Source))
-            .Where(file => !DefinitionMatchPattern().IsMatch(file.Source))
+            .Where(file => !UsesSupportedDefinitionShape(file.Source))
             .Select(file => file.Path)
             .ToArray();
 
@@ -211,15 +233,60 @@ public sealed partial class TypedResultArchitectureTests
     }
 
     [Fact]
-    public void OperationErrorCases_AreConstructedThroughFactories()
+    public void DunetUnionDefinition_ExistingSupportedShapes_AreAccepted()
     {
-        var violations = EnumerateSourceFiles()
-            .Select(path => new { Path = path, Source = File.ReadAllText(path) })
-            .Where(file => DirectErrorCaseConstructionPattern().IsMatch(file.Source))
-            .Select(file => file.Path)
-            .ToArray();
+        string[] sources =
+        [
+            "public ErrorDefinition Definition => Match<ErrorDefinition>();",
+            "public abstract ErrorDefinition Definition { get; }",
+            """
+            public ErrorDefinition Definition => this switch
+            {
+                Missing => ErrorDefinition.NotFound<Missing>()
+            };
+            """
+        ];
 
-        Assert.Empty(violations);
+        Assert.All(sources, source => Assert.True(UsesSupportedDefinitionShape(source)));
+    }
+
+    [Theory]
+    [InlineData("_")]
+    [InlineData("default")]
+    [InlineData("var _")]
+    [InlineData("var ignored")]
+    public void DunetUnionDefinition_CatchAllSwitchArm_IsRejected(string pattern)
+    {
+        var source = $$"""
+            public ErrorDefinition Definition => this switch
+            {
+                Missing => ErrorDefinition.NotFound<Missing>(),
+                {{pattern}} => ErrorDefinition.Invalid<Fallback>()
+            };
+            """;
+
+        Assert.False(UsesSupportedDefinitionShape(source));
+    }
+
+    [Theory]
+    [InlineData("_")]
+    [InlineData("var _")]
+    [InlineData("var ignored")]
+    public void DunetUnionDefinition_UnrelatedCatchAllSwitchArm_IsAccepted(string pattern)
+    {
+        var source = $$"""
+            public ErrorDefinition Definition => this switch
+            {
+                Missing => ErrorDefinition.NotFound<Missing>()
+            };
+
+            public string Code => value switch
+            {
+                {{pattern}} => "fallback"
+            };
+            """;
+
+        Assert.True(UsesSupportedDefinitionShape(source));
     }
 
     [Fact]
@@ -252,9 +319,42 @@ public sealed partial class TypedResultArchitectureTests
             && !path.Contains($"{separator}obj{separator}", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static string[] ReadHostCompositionSources(string programPath)
+    {
+        var directory = Path.GetDirectoryName(programPath)!;
+        return
+        [
+            File.ReadAllText(programPath),
+            .. Directory
+                .EnumerateFiles(directory, "*HostExtensions.cs", SearchOption.TopDirectoryOnly)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .Select(File.ReadAllText)
+        ];
+    }
+
+    public static TheoryData<string> TransitionalTypedResultSlices { get; } = new()
+    {
+        "Concertable.Payment.Infrastructure/CustomerPaymentService.cs",
+        "Concertable.Payment.Infrastructure/ManagerPaymentService.cs"
+    };
+
+    private static bool IsTransitionalTypedResultSlice(string path)
+    {
+        var normalized = path.Replace('\\', '/');
+        return TransitionalTypedResultSlices
+            .Cast<object[]>()
+            .Any(row => normalized.EndsWith((string)row[0], StringComparison.Ordinal));
+    }
+
     private static bool IsTypedResultHttpExceptionViolation(string source) =>
         HttpExceptionPattern().IsMatch(source)
         && TypedErrorResultPattern().IsMatch(source);
+
+    private static bool UsesSupportedDefinitionShape(string source) =>
+        !DefinitionSwitchCatchAllArmPattern().IsMatch(source)
+        && (DefinitionMatchPattern().IsMatch(source)
+            || AbstractDefinitionPattern().IsMatch(source)
+            || SwitchDefinitionPattern().IsMatch(source));
 
     private static IEnumerable<string> EnumerateSourceFiles() =>
         Directory
@@ -304,8 +404,16 @@ public sealed partial class TypedResultArchitectureTests
     [GeneratedRegex(@"\bDefinition\s*=>\s*Match\s*<\s*ErrorDefinition\s*>")]
     private static partial Regex DefinitionMatchPattern();
 
-    [GeneratedRegex(@"\bnew\s+[A-Za-z_][A-Za-z0-9_]*Error\.[A-Za-z_][A-Za-z0-9_]*\s*\(")]
-    private static partial Regex DirectErrorCaseConstructionPattern();
+    [GeneratedRegex(@"\babstract\s+ErrorDefinition\s+Definition\s*\{")]
+    private static partial Regex AbstractDefinitionPattern();
+
+    [GeneratedRegex(@"\bErrorDefinition\s+Definition\s*=>\s*this\s+switch\b")]
+    private static partial Regex SwitchDefinitionPattern();
+
+    [GeneratedRegex(
+        @"\bErrorDefinition\s+Definition\s*=>\s*this\s+switch\s*\{(?:(?!^[ \t]*\};).)*?(?:(?<=\{)|(?<=,))\s*(?:var\s+(?:_|@?[A-Za-z_]\w*)|_|default)\b\s*(?:when\b(?:(?!=>).)*)?=>",
+        RegexOptions.Multiline | RegexOptions.Singleline)]
+    private static partial Regex DefinitionSwitchCatchAllArmPattern();
 
     [GeneratedRegex(@"\.AddProblemDetails\s*\(")]
     private static partial Regex ProblemDetailsRegistrationPattern();

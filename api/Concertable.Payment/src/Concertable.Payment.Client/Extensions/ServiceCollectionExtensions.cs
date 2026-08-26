@@ -13,47 +13,35 @@ public static class ServiceCollectionExtensions
         var address = configuration["services:payment-web:https:0"]
             ?? throw new InvalidOperationException("Payment service address (services:payment-web:https:0) is not configured.");
 
-        services.AddGrpcClient<Proto.ManagerPayment.ManagerPaymentClient>(o => o.Address = new Uri(address))
-            .AddCallCredentials(async (_, metadata, sp) =>
-            {
-                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
-                metadata.Add("Authorization", $"Bearer {token}");
-            });
+        AddPaymentGrpcClient<Proto.ManagerPayment.ManagerPaymentClient>(services, address);
+        AddPaymentGrpcClient<Proto.CustomerPayment.CustomerPaymentClient>(services, address);
+        AddPaymentGrpcClient<Proto.Escrow.EscrowClient>(services, address);
+        AddPaymentGrpcClient<Proto.PayoutAccount.PayoutAccountClient>(services, address);
+        AddPaymentGrpcClient<Proto.CommissionPricing.CommissionPricingClient>(services, address);
+        AddPaymentGrpcClient<Proto.PaymentSessionOperations.PaymentSessionOperationsClient>(services, address);
 
-        services.AddGrpcClient<Proto.CustomerPayment.CustomerPaymentClient>(o => o.Address = new Uri(address))
-            .AddCallCredentials(async (_, metadata, sp) =>
-            {
-                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
-                metadata.Add("Authorization", $"Bearer {token}");
-            });
-
-        services.AddGrpcClient<Proto.Escrow.EscrowClient>(o => o.Address = new Uri(address))
-            .AddCallCredentials(async (_, metadata, sp) =>
-            {
-                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
-                metadata.Add("Authorization", $"Bearer {token}");
-            });
-
-        services.AddGrpcClient<Proto.PayoutAccount.PayoutAccountClient>(o => o.Address = new Uri(address))
-            .AddCallCredentials(async (_, metadata, sp) =>
-            {
-                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
-                metadata.Add("Authorization", $"Bearer {token}");
-            });
-
-        services.AddGrpcClient<Proto.CommissionPricing.CommissionPricingClient>(o => o.Address = new Uri(address))
-            .AddCallCredentials(async (_, metadata, sp) =>
-            {
-                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
-                metadata.Add("Authorization", $"Bearer {token}");
-            });
-
-        services.AddScoped<IManagerPaymentClient, ManagerPaymentClient>();
-        services.AddScoped<ICustomerPaymentClient, CustomerPaymentClient>();
-        services.AddScoped<IEscrowClient, EscrowClient>();
-        services.AddScoped<IPayoutAccountClient, PayoutAccountClient>();
-        services.AddScoped<ICommissionClient, CommissionClient>();
+        services.AddScoped<ManagerPaymentClient>();
+        services.AddScoped<IManagerPaymentOperationsClient>(sp => sp.GetRequiredService<ManagerPaymentClient>());
+        services.AddScoped<IManagerPaymentReportingClient>(sp => sp.GetRequiredService<ManagerPaymentClient>());
+        services.AddScoped<CustomerPaymentClient>();
+        services.AddScoped<ICustomerPaymentOperationsClient>(sp => sp.GetRequiredService<CustomerPaymentClient>());
+        services.AddScoped<EscrowClient>();
+        services.AddScoped<IEscrowOperationsClient>(sp => sp.GetRequiredService<EscrowClient>());
+        services.AddScoped<PayoutAccountClient>();
+        services.AddScoped<IPayoutAccountOperationsClient>(sp => sp.GetRequiredService<PayoutAccountClient>());
+        services.AddScoped<CommissionClient>();
+        services.AddScoped<ICommissionPricingClient>(sp => sp.GetRequiredService<CommissionClient>());
+        services.AddScoped<IPaymentSessionOperationsClient, PaymentSessionOperationsClient>();
 
         return services;
     }
+
+    private static void AddPaymentGrpcClient<TClient>(IServiceCollection services, string address)
+        where TClient : class =>
+        services.AddGrpcClient<TClient>(o => o.Address = new Uri(address))
+            .AddCallCredentials(async (_, metadata, sp) =>
+            {
+                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
+                metadata.Add("Authorization", $"Bearer {token}");
+            });
 }

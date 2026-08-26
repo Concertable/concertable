@@ -1,9 +1,11 @@
 using Concertable.Auth.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Concertable.Auth.Pages.Account;
 
+[EnableRateLimiting(RateLimitPolicies.Credential)]
 public sealed class ResetPasswordModel : PageModel
 {
     private readonly IAuthService authService;
@@ -29,9 +31,10 @@ public sealed class ResetPasswordModel : PageModel
             return Page();
         }
 
-        Success = await authService.ResetPasswordAsync(Token, NewPassword, ct);
-        if (!Success)
-            ErrorMessage = "Invalid or expired reset link.";
+        var result = await authService.ResetPasswordAsync(Token, NewPassword, ct);
+        Success = result.IsSuccess;
+        if (result.TryGetError(out var error))
+            ErrorMessage = error.Definition.Message;
 
         return Page();
     }

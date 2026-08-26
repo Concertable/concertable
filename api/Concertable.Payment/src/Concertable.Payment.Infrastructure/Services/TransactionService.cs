@@ -10,19 +10,22 @@ internal sealed class TransactionService : ITransactionService
     private readonly ITransactionMapper transactionMapper;
     private readonly ILedgerService ledger;
     private readonly IUnitOfWork unitOfWork;
+    private readonly TimeProvider timeProvider;
 
     public TransactionService(
         ICurrentUser currentUser,
         ITransactionRepository purchaseRepository,
         ITransactionMapper transactionMapper,
         ILedgerService ledger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        TimeProvider timeProvider)
     {
         this.currentUser = currentUser;
         this.purchaseRepository = purchaseRepository;
         this.transactionMapper = transactionMapper;
         this.ledger = ledger;
         this.unitOfWork = unitOfWork;
+        this.timeProvider = timeProvider;
     }
 
     public async Task LogAsync(ITransaction dto)
@@ -35,7 +38,10 @@ internal sealed class TransactionService : ITransactionService
     {
         var entity = await purchaseRepository.GetByPaymentIntentIdAsync(paymentIntentId);
 
-        if (entity is null || !entity.Complete())
+        if (entity is null)
+            return;
+
+        if (entity.Complete(timeProvider.GetUtcNow().UtcDateTime).IsFailure)
             return;
 
         if (entity is SettlementTransactionEntity settlement)
@@ -52,7 +58,6 @@ internal sealed class TransactionService : ITransactionService
     {
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
-        var dtos = transactionMapper.ToDtos(result.Data);
-        return new Pagination<ITransaction>(dtos.ToList(), result.TotalCount, result.PageNumber, result.PageSize);
+        return result.Map(transactionMapper.ToDto);
     }
 }
