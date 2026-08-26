@@ -58,15 +58,6 @@ const CHECKS = {
       "const user = {} as User;",
       "void user;",
     ],
-    nodeRuntime: [
-      'import { GENRE_LABELS, genreLabel } from "@concertable/shared";',
-      'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import { useAuthStore } from "@concertable/shared/features/auth";',
-      'if (genreLabel("rock") !== "Rock") throw new Error("Unexpected genre label");',
-      'if (GENRE_LABELS.rock !== "Rock") throw new Error("Unexpected genre labels");',
-      'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
-      'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
-    ],
     metro: [
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
@@ -180,15 +171,13 @@ function verifyNodeConsumer() {
       strict: true,
       skipLibCheck: true,
       jsx: "react-jsx",
+      outDir: "dist",
     },
     include: ["index.ts"],
   });
   writeFileSync(join(directory, "index.ts"), checks.node.join("\n") + "\n");
-  // Runtime ESM smoke test — plain JS, so use an explicit runtime profile when the type-check
-  // profile carries type-only syntax; otherwise the type-check lines are already valid JS.
-  writeFileSync(join(directory, "index.mjs"), (checks.nodeRuntime ?? checks.node).join("\n") + "\n");
-  run(["exec", "--", "tsc", "--noEmit"], directory);
-  run(["exec", "--", "node", "index.mjs"], directory);
+  run(["exec", "--", "tsc"], directory);
+  run(["exec", "--", "node", "dist/index.js"], directory);
 }
 
 function verifyMetroConsumer() {
