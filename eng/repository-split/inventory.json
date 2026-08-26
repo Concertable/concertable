@@ -878,6 +878,7 @@
       "unit-test": 4
     },
     "packableProjects": [
+      "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj",
       "api/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Contracts/Concertable.B2B.Admin.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Contracts/Concertable.B2B.Artist.Contracts.csproj",
@@ -928,7 +929,7 @@
         "area": "Concertable.AppHost.Shared",
         "kind": "apphost-support",
         "name": "Concertable.AppHost.Shared",
-        "packable": false,
+        "packable": true,
         "target": "platform-dotnet"
       },
       "api/Concertable.AppHost/Concertable.AppHost.csproj": {
