@@ -148,7 +148,8 @@
     "use-places-autocomplete": "^4"
   },
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",

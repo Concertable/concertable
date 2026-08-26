@@ -58,15 +58,6 @@ const CHECKS = {
       "const user = {} as User;",
       "void user;",
     ],
-    nodeRuntime: [
-      'import { GENRE_LABELS, genreLabel } from "@concertable/shared";',
-      'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import { useAuthStore } from "@concertable/shared/features/auth";',
-      'if (genreLabel("rock") !== "Rock") throw new Error("Unexpected genre label");',
-      'if (GENRE_LABELS.rock !== "Rock") throw new Error("Unexpected genre labels");',
-      'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
-      'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
-    ],
     metro: [
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
@@ -95,6 +86,10 @@ const CHECKS = {
       'void user;',
       'if (b2bReviewBasePath("artist", 12) !== "/artist/12/review") throw new Error("Unexpected B2B review route");',
       'if (customerReviewBasePath("artist", 12) !== "/artists/12/reviews") throw new Error("Unexpected customer review route");',
+    ],
+    nodeRuntime: [
+      'import { cn } from "@concertable/web/lib/utils";',
+      'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
     ],
   },
   "@concertable/customer": {
@@ -167,6 +162,7 @@ function verifyNodeConsumer() {
       "--save-exact",
       installTarget,
       "react@19.1.0",
+      "react-dom@19.1.0",
       "typescript@5.9",
       "@types/react@19",
     ],
@@ -180,15 +176,21 @@ function verifyNodeConsumer() {
       strict: true,
       skipLibCheck: true,
       jsx: "react-jsx",
+      outDir: "dist",
     },
-    include: ["index.ts"],
+    include: ["*.ts"],
   });
   writeFileSync(join(directory, "index.ts"), checks.node.join("\n") + "\n");
-  // Runtime ESM smoke test — plain JS, so use an explicit runtime profile when the type-check
-  // profile carries type-only syntax; otherwise the type-check lines are already valid JS.
-  writeFileSync(join(directory, "index.mjs"), (checks.nodeRuntime ?? checks.node).join("\n") + "\n");
-  run(["exec", "--", "tsc", "--noEmit"], directory);
-  run(["exec", "--", "node", "index.mjs"], directory);
+  if (checks.nodeRuntime) {
+    writeFileSync(join(directory, "runtime.ts"), checks.nodeRuntime.join("\n") + "\n");
+  }
+  run(["exec", "--", "tsc"], directory);
+  run([
+    "exec",
+    "--",
+    "node",
+    checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js",
+  ], directory);
 }
 
 function verifyMetroConsumer() {
