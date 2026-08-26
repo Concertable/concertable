@@ -1,5 +1,6 @@
 import { Hero } from "@/components/Hero";
 import type { ImageFile } from "@concertable/shared";
+import { useArtistStore } from "../store/useArtistStore";
 import type { Artist } from "../types";
 
 interface Props {
@@ -15,6 +16,9 @@ export function ArtistHero({
   onBannerChange,
   onAvatarChange,
 }: Readonly<Props>) {
+  const setBanner = useArtistStore((s) => s.setBanner);
+  const setAvatar = useArtistStore((s) => s.setAvatar);
+
   return (
     <Hero
       bannerUrl={artist.bannerUrl}
@@ -24,8 +28,8 @@ export function ArtistHero({
       county={artist.county}
       namePlaceholder="Artist name"
       onNameChange={onNameChange}
-      onBannerChange={onBannerChange}
-      onAvatarChange={onAvatarChange}
+      onBannerChange={onBannerChange ?? setBanner}
+      onAvatarChange={onAvatarChange ?? setAvatar}
     />
   );
 }

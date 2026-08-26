@@ -1,5 +1,6 @@
 import { Hero } from "@/components/Hero";
 import type { ImageFile } from "@concertable/shared";
+import { useVenueStore } from "../store/useVenueStore";
 import type { Venue } from "../types";
 
 interface Props {
@@ -15,6 +16,9 @@ export function VenueHero({
   onBannerChange,
   onAvatarChange,
 }: Readonly<Props>) {
+  const setBanner = useVenueStore((s) => s.setBanner);
+  const setAvatar = useVenueStore((s) => s.setAvatar);
+
   return (
     <Hero
       bannerUrl={venue.bannerUrl}
@@ -24,8 +28,8 @@ export function VenueHero({
       county={venue.county}
       namePlaceholder="Venue name"
       onNameChange={onNameChange}
-      onBannerChange={onBannerChange}
-      onAvatarChange={onAvatarChange}
+      onBannerChange={onBannerChange ?? setBanner}
+      onAvatarChange={onAvatarChange ?? setAvatar}
     />
   );
 }
