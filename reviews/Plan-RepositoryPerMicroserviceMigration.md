@@ -6,7 +6,7 @@
 - Branch: `Plan/RepositoryPerMicroserviceMigration`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration`
 - Effort: high
-- Reviewed up to commit: `<pending — restamped at the remediation head below>`
+- **Reviewed up to commit:** `0c7b3514e`
 
 ## Candidate
 
