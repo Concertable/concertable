@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: ready #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: PR #597 and platform sync #645 supplied the implementation baseline; this producer's publication and generated platform-sync remain pending
-- Last reconciled: `2026-08-26` against `origin/main` `421acb5b604e2c433a58d327beb634462e7739e1`, executable head `e133a066ff27f6a9afd8d902493c48a539ef27c8`, Payment platform `0.1.0-alpha.0.1189`, and clean native/security review through that executable head
+- Last reconciled: `2026-08-26` against `origin/main` `e1f4ff562fabc4cbc420cbb8952b9ab5e8c0b2b8`, branch integration head `944eba8dcb9d355f8c36329450d88b9012abff09`, executable head `e133a066ff27f6a9afd8d902493c48a539ef27c8`, Payment platform `0.1.0-alpha.0.1189`, and clean incremental review through the branch integration head
 
 ## Current state
 
@@ -21,7 +21,7 @@ internal `PaymentSessionIdempotencyKey` value object, carries it through `IStrip
 it to provider text only inside the real and fake Stripe adapters. No reverse parser is added because no
 string ingress exists.
 
-PR #721 is ready for its reviewed candidate to be pushed. Current `origin/main` is already an ancestor.
+PR #721 is current with `origin/main` through the conflict-free docs-only merge `944eba8dc`.
 The Payment migration was re-scaffolded
 from the combined model so the session operation/attempt schema and main's `DateTimeOffset` audit model both
 remain present. The protobuf compatibility tests retain the session contract assertions while main's assembly
@@ -32,8 +32,10 @@ platform-sync PR is green and merged. The roadmap item remains unchecked until t
 
 ## Next Steps
 
-Commit and push the review/ledger tail, verify the remote and PR head exactly match, then require exact-head
-CI green before entering `/merge`.
+Commit and push the current-main review/ledger checkpoint, verify the remote and PR head exactly match, then
+require exact-head CI green before re-entering `/merge`. The first merge group was built on top of adjacent
+queue entry #786's synthetic head and inherited #786's independently reproduced B2B UI E2E failure; do not
+change Payment for that unrelated frontend failure.
 
 ## Completed work
 
@@ -76,3 +78,7 @@ review is clean through `e133a066ff27f6a9afd8d902493c48a539ef27c8`; NAT1–NAT3 
 - A changed immutable request requires a new caller-owned operation ID; only an eligible explicit retry
   creates a Payment-owned revision.
 - Consumer adoption cannot land before this producer's published package version and generated platform sync.
+- Merge-group run `32960960691` failed only in B2B UI E2E after GitHub placed #721 on #786's already-red
+  synthetic queue head `6687f83c4`. #786 independently failed runs `32957620097` and `32960630720`;
+  #721's build, carve, architecture, unit, integration, and Payment gates were green. Re-enqueue only from a
+  current exact head after #786 is no longer ahead of it in the queue.

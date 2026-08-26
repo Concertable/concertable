@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e133a066ff27f6a9afd8d902493c48a539ef27c8`  _(2026-08-26)_
+**Reviewed up to commit:** `944eba8dcb9d355f8c36329450d88b9012abff09`  _(2026-08-26)_
 **Security-reviewed up to commit:** `e133a066ff27f6a9afd8d902493c48a539ef27c8`  _(2026-08-26)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
@@ -148,3 +148,12 @@ existing published contract, is always paired with Payment's resolved Stripe Cus
 methods attached to a different Customer. Incremental native and required Payment security re-review are
 clean through `e133a066f`. Unit, focused integration, architecture, migration, protobuf compatibility,
 authorization, secret-handling, persistence, and exception/cancellation paths are green.
+
+## Incremental review — 2026-08-26 (post-queue current-main reconciliation)
+
+> Range reviewed: `e133a066..944eba8d` (5 commits).
+
+No new findings. Commit `f6366ec0f` contains only the prior review and plan checkpoint. Merge
+`944eba8dc` is conflict-free and imports docs-only PR #793 without changing Payment, runtime code, package
+pins, migrations, tests, authorization, secret handling, provider execution, or public contracts. Native,
+security, docs ownership, and plan/review lifecycle review are clean through `944eba8dc`.
