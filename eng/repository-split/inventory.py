@@ -172,11 +172,9 @@ def build_dotnet(files: list[str]) -> dict:
     for e in cross_target:
         cross_target_by_kind[e["fromKind"]] += 1
 
-    # The test tier is exempt from EnforceServiceBoundary, so nothing at build time catches a
-    # cross-repository ProjectReference there — invisible in the monorepo, fatal on extraction.
-    # Platform test libraries are declared as PackageReferences and swapped back to source by
-    # api/PlatformSourcePackages.targets, so a declared edge here is a regression. Edges to a
-    # *.Hosting project wait on Checkpoint 2's packable-Hosting item, full-stack E2E on Checkpoint 4.
+    # EnforceServiceBoundary exempts the test tier, so this is the only check that sees such an edge.
+    # A *.Hosting target waits on the packable-Hosting stage and E2E on the E2E-to-fleet stage, so
+    # neither counts yet.
     blocking_test = sorted(
         (
             e

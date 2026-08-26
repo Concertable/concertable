@@ -1,17 +1,12 @@
 <Project>
 
-  <!-- Test-tier platform references: declared as the published PackageReference the split requires,
-       swapped back to the in-repo ProjectReference while the platform source is on disk.
+  <!-- Swaps a test project's platform PackageReference for the in-repo project while this file and the
+       platform source are on disk. Rule + rationale: the `packages` skill.
 
-       The test tier is the one tier still allowed to reach platform code across a service folder
-       (EnforceServiceBoundary is off under Tests/), so it is the one tier that needs a swap at all:
-       its cross-folder ProjectReferences were invisible in the monorepo and fatal on extraction. A
-       carved service repo has neither this file nor the platform source, so the PackageReference
-       stands and restore comes off the feed. Force package mode in place — the same shape a carve
-       sees, without carving — with -p:UseLocalPlatformPackages=true (scripts/local-platform.ps1).
-
-       Import this AFTER a folder's UseLocalCore swap: that swap removes the same PackageReference ids
-       when it is on, which is what stops both mechanisms firing on Messaging.* in one build. -->
+       Two invariants a caller can break:
+       - Import this AFTER a folder's UseLocalCore swap. That swap removes the same PackageReference ids
+         when it is on, which is what stops both mechanisms firing on Messaging.* in one build.
+       - A carve must NOT copy this file. Its absence is the cut-over to feed packages. -->
 
   <PropertyGroup>
     <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]'))">true</_SwapPlatformSourcePackages>
