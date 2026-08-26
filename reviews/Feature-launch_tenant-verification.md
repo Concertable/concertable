@@ -1,0 +1,28 @@
+# Code review — Feature/launch_tenant-verification
+
+> **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
+> findings directly and report what changed — don't re-present them as options or ask which to do.
+> Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
+> in one line, take the safe path, keep going.
+
+**Reviewed up to commit:** `4928e164752eeba8370d8881367a3edbc0e7794c`  _(2026-08-26)_
+**Security-reviewed up to commit:** `4928e164752eeba8370d8881367a3edbc0e7794c`  _(2026-08-26)_
+
+> Range reviewed: `7d4dd12fb..4928e1647` (2 commits) — Phase 4 of tenant verification (admin review surface).
+> Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
+
+## Findings
+
+- [x] **NAT1 — HIGH — Correctness** — `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure/Services/VerificationAdminService.cs:41` (original commit `30446a4e3`)
+  `GetPendingAsync` enriched each pending row concurrently via `Task.WhenAll(pending.Data.Select(p => ToDtoAsync(p, ct)))`. `ToDtoAsync` calls `IVenueModule`/`IArtistModule.GetContactByTenantIdAsync`, backed by request-scoped `VenueReadDbContext`/`ArtistReadDbContext` (`AddDbContext`, default scoped lifetime). Two or more pending rows sharing a `TenantType` on one page ran concurrent EF Core operations against the *same* scoped `DbContext` instance, which EF Core rejects with `InvalidOperationException: a second operation was started on this context before a previous operation completed` — a guaranteed 500 on `GET /api/tenant/verification/pending` for any page with 2+ same-type pending rows. Independently confirmed by both the native review pass and my own re-inspection. Fixed by awaiting sequentially (`foreach` + `await`) in commit `4928e1647`. Regression test added: `TenantVerificationAdminApiTests.GetPending_ShouldReturn200_WhenTwoPendingRowsShareTenantType`. Follow-up (batch instead of per-row) logged as tech debt in `api/Concertable.B2B/TECH_DEBT.md` — "Admin verification queue enriches contact per row, not per page".
+
+- [x] **BUG1 — MEDIUM — Correctness** — `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure/Services/VerificationAdminService.cs` (original commit `30446a4e3`, `ReviewAsync`)
+  The approve/reject `notify(...)` call ran with no try/catch after `repository.SaveChangesAsync(ct)` already committed the domain transition. A transient email-transport failure would 500 an admin whose approve/reject had already durably succeeded, and a retry would then hit `VerificationReviewError.NotPending` against the decision that already landed. This codebase has an established, deliberate fix for exactly this shape: `ContentReportService` wraps its notifier call in try/catch with a dedicated `ContentReportNotificationFailed` log entry, specifically because "a transport failure must not fail a request whose write already committed, or the retry just files a duplicate." Fixed in commit `4928e1647` by mirroring that shape exactly (`VerificationReviewNotificationFailed` in `Log.cs`).
+
+## Security review (Lens: auth gating, IDOR, data exposure)
+
+No findings. `[Admin]` gating on `TenantVerificationAdminController` matches the established `VenueController`/`ModerationController` shape exactly, resolves through the real DB-backed admin-profile check (unmodified by this diff), and every action's tests assert 401/403 against real auth middleware. `tenantId` taken directly from the route is correct for an admin actor (no tenant-owner check needed — mirrors `VenueController.Approve(venueId)`). `GetContactByTenantIdAsync` is keyed by the row's own server-resolved `TenantId`, so no cross-tenant data mixing is possible, and the whole surface is reachable only through the `[Admin]` gate.
+
+## Test coverage (Lens F)
+
+Covered by `TenantVerificationAdminApiTests.cs`: auth gates (401/403) on all three actions, 404/409 error paths, both `TenantType` branches of contact enrichment (venue and artist), notification-email capture on approve/reject, and the same-`TenantType` concurrency regression.
