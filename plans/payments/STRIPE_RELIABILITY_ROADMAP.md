@@ -57,7 +57,7 @@ actual `origin/main` baseline. It must not infer current delivery state from thi
 | Status | Key | Item | Depends on |
 |---|---|---|---|
 | [x] | `payments/provider-contract-baseline` | Lock Stripe product choices, operation vocabulary, transition tables, package contracts, and executable architecture tests | PR #597 merged; platform `0.1.0-alpha.0.1061`; sync PR #645 merged |
-| [ ] | `payments/payment-session-state` | Persist and idempotently create/reuse PaymentIntent and SetupIntent sessions; publish an agnostic status-read contract | provider contract baseline |
+| [x] | `payments/payment-session-state` | Persist and idempotently create/reuse PaymentIntent and SetupIntent sessions; publish an agnostic status-read contract | PR #721 merged; Payment `0.1.0-alpha.0.1195`; sync PR #794 merged |
 | [ ] | `payments/provider-reconciliation` | Complete webhook coverage and reconcile stale PaymentIntent, SetupIntent, and Refund state | payment session state; PR #544 foundation |
 | [ ] | `payments/customer-ticket-attempt` | Add the Customer-owned durable ticket-purchase attempt and fulfillment status API | published/synced Payment session contracts |
 | [ ] | `payments/frontend-orchestration-core` | Add reusable headless TanStack Query payment orchestration and optional invalidation adapters | provider contract baseline; consumer status shape locked |
