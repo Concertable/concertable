@@ -121,28 +121,38 @@ only in a fresh clone).
 
 ## Next Steps
 
-### Revised sequencing — relief first, long pole in parallel
+### The nine stages, evidence-backed
 
-The plan's strict order puts every service behind checkpoint 4 (E2E decoupling), which is the largest
-remaining piece. Auth and Payment do not need it: Auth needs only checkpoint 1, and Payment is the
-smallest service at 20 projects with no frontend. Front-loading them delivers a real standalone repo
-early instead of after the longest task.
+The original 17 checkpoints assumed work that is already done. The carve CI already proves every
+service restores from the package feed, the platform packages are already published, and the Payment
+extraction above built its whole runtime clean. What actually remains is nine stages. **The monorepo
+survives as the fallback for local development and cross-service E2E until stage 9**, so a service can
+be extracted before its AppHost and E2E story is perfect.
 
-1. **Per-service CI scoping (own PR, no checkpoint).** `test.yml` classifies every diff into docs /
-   packages-only / everything-else, and the unit, architecture and integration jobs fan out over every
-   matching `.csproj` via `find api`. A one-line Search change therefore runs Auth, Payment, B2B,
-   Customer and Shared suites plus all five carve builds. Scope test selection to the changed service.
-   This is the single highest-relief change available and it lands in days, not months.
-2. **Finish checkpoint 0.** Give the 66 unclaimed root-level paths (agent hooks, build targets,
-   `initial-migrations.ps1`, dependency-cruiser config) an explicit replicate / dissolve / own
-   disposition; record the package version high-water marks; run the `git-filter-repo` dry runs.
-3. **Checkpoint 1 — DB ownership.** Move Duende persisted grants to `AuthDb`, drop foreign DB
-   provisioning from the standalone AppHosts, remove startup `MigrateAsync`. Unblocks Auth.
-4. **Checkpoint 2 — the container seam.** Packable `*.Hosting`, Dockerfiles, image publication, the
-   source-vs-image switch, the boundary test. The prerequisite for every extraction.
-5. **Front-load Payment.** With 1 and 2 done, extract Payment ahead of the plan's order.
-6. **Checkpoint 4 — E2E decoupling** proceeds in parallel from step 3 onward; it gates `fleet`,
-   customer and b2b, not auth or payment.
+1. **Swap the 41 test-tier `ProjectReference`s to `PackageReference`.** Mechanical; every target is
+   already on the feed. Verified by re-running the Payment extraction to a fully green build.
+2. **Make the four `*.Hosting` projects packable and publish them**, then swap the last 4 of the 45.
+3. **AppHost image mode** — foreign services composed via `AddContainer` on a pinned image instead of
+   `AddProject` against sibling source. .NET 10 SDK container publishing means no Dockerfile per host.
+   This is what lets a service leave without breaking every other service's local development.
+4. **Move cross-service E2E to `fleet`** — 21 E2E cross-repository edges, and no TestKit exists yet.
+   The largest single stage; it gates `fleet`, customer and b2b, but not auth or payment.
+5. **Extract `payment`** — mechanism already proven end to end.
+6. **Extract `auth`** — needs Duende persisted grants moved from `B2BDb` to `AuthDb` first.
+7. **Extract `search`, then `customer`, then `b2b`** — b2b last, widest contract and seed fan-out.
+8. **Extract `platform-dotnet`, `platform-web`, `fleet`.**
+9. **Archive the monorepo** and rename the six stale mirrors to `<name>-mirror-archive-<date>`.
+
+Stages 1 and 2 are days. The mirror renames happen at stage 9, not before: the canonical names are
+needed only when the real repositories claim them, and renaming earlier leaves public repositories
+with odd names for months.
+
+### Immediate next action
+
+**Stage 1.** Swap the 41 test-tier references, then re-run the proven extraction
+(`git clone --single-branch --branch main` + `core.longpaths=true`, filter to
+`api/Concertable.Payment/`) and require `dotnet build Concertable.Payment.slnx` to be fully green
+including `Concertable.Payment.IntegrationTests`. That green build is stage 1's gate.
 
 ### Interaction with the two open PRs
 
