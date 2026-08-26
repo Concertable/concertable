@@ -6,12 +6,15 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration`
 - Branch: `Plan/RepositoryPerMicroserviceMigration`
 - PR: not opened (`gh pr list --head Plan/RepositoryPerMicroserviceMigration --state all` → empty)
-- Dependency/package gates: none active. No stage has been implemented, so nothing is published, pinned, or platform-synced against this plan.
-- Last reconciled: **2026-08-26** — approved, rescoped against current `main`, Payment extraction proven; branch pushed.
+- Dependency/package gates: none active. Stage 1 consumes only packages **already published** at the
+  pinned `0.1.0-alpha.0.1195`; it publishes nothing and needs no platform-sync.
+- Last reconciled: **2026-08-26** — approved, rescoped against current `main`, Payment extraction
+  proven, **stage 1 delivered**; branch pushed.
 
 ## Current state
 
-**Approved by Tommy 2026-08-26 and in execution. Checkpoint 0 is largely delivered.** The epic is
+**Approved by Tommy 2026-08-26 and in execution. Checkpoint 0 is largely delivered; stage 1 is
+delivered (see `## Stage 1`).** The epic is
 explicitly decoupled from the launch roadmap: `POLYREPO_ROADMAP` §6 gated the cut on the whole launch
 plan shipping, and that gate is withdrawn. The monorepo taxes every launch PR (full E2E, full checkout,
 full migration, blast radius over untouched services), so cutting accelerates launch rather than
@@ -110,6 +113,68 @@ Windows `MAX_PATH` on `Concertable.Payment.E2ETests.Helpers.UnitTests`; `core.lo
 mandatory on any clone used for extraction (the monorepo itself already sets it, so the failure appears
 only in a fresh clone).
 
+## Stage 1 — test-tier package boundary (delivered 2026-08-26)
+
+All **41** non-`*.Hosting` test-tier cross-repository `ProjectReference`s across **31** projects now
+declare the published package instead. Cross-target edges fell **135 → 94**; test-tier edges **45 → 4**,
+and the 4 remaining are the `AppHost.Shared.UnitTests → *.Hosting` refs that are stage 2's.
+
+**The mechanism is one file, not 41 conditional pairs.** A literal one-line swap to `PackageReference`
+would have forced a publish/restore round-trip on every `Concertable.Testing` change for as long as the
+monorepo survives (through stage 9). Instead `api/PlatformSourcePackages.targets` holds one table
+mapping each platform package to its in-repo source, and each test csproj carries a single
+`<PackageReference>`:
+
+- **In the monorepo** the targets file swaps that reference back to a `ProjectReference`, so the build
+  graph and the inner loop are byte-identical to before — verified by `dotnet msbuild -getItem`.
+- **In a carved repo** neither the targets file nor the platform source is present (both live above the
+  service folder), so the declaration stands and restore comes off the feed. **The extracted repo needs
+  no edit** — the import's own `Exists()` guard is the cut-over.
+- `-p:UseLocalPlatformPackages=true` forces package mode in place, which is what
+  `scripts/local-platform.ps1` already passes.
+- Gated to the test tier only (the same `[\\/][Tt]ests[\\/]` test used by `EnforceServiceBoundary`), so
+  no runtime project's package closure moves. Imported *after* each folder's `UseLocalCore` swap, which
+  removes the same ids first — that ordering is what stops both mechanisms firing on `Messaging.*`.
+
+This supersedes the earlier per-csproj dual-conditional pattern; its 8 instances collapsed to one line
+each.
+
+**Verified — the gate is met.** `git archive` carve of `api/Concertable.Payment` (the cheap equivalent
+of the proven `git-filter-repo` extraction, and what CI already uses), built `--configuration Release`
+against the real feed:
+
+| Carve | Result |
+|---|---|
+| payment — closure + `UnitTests` + `IntegrationTests` + `PublishedContractFixture` | **0 errors** |
+| auth — `Concertable.Auth` + `UnitTests` + `IntegrationTests.Fixtures` + `IntegrationTests` | **0 errors** |
+| search — closure + `UnitTests` + `IntegrationTests.Fixtures` + `IntegrationTests` | **0 errors** |
+
+The 31 `Concertable.Testing` / `SqlFixture` errors that blocked the extraction are gone. All seven
+target packages were confirmed present on the feed at `0.1.0-alpha.0.1195` before any edit.
+
+**It cannot silently regress.** Two new gates, both wired into `ci-complete`:
+
+- **`split-inventory` job** — `inventory.py --check` now fails on any test-tier cross-repository
+  `ProjectReference` (new `blockingTestEdges`), repo-wide, in seconds, with no build and no feed. This
+  is the durable enforcement `EnforceServiceBoundary` structurally cannot provide, since it exempts the
+  test tier by design.
+- **The five carve jobs now build their non-E2E test tier**, not just the deployable closure. B2B and
+  Customer discover it by path, so a new unit/integration/fixture project is covered automatically.
+
+**Discovered, and it is stage 2's work list.** `*.ArchitectureTests` cannot join the carve yet: it
+references the service `AppHost`, which references `*.Hosting`. Carving Payment with ArchitectureTests
+in produces exactly **7 errors, all in `src/Concertable.Payment.Hosting`** — missing
+`Concertable.Messaging.AzureServiceBus`, `Concertable.AppHost.Shared` (`AsbTopology`,
+`SqlServerDatabaseResource`) and the sibling `Concertable.{Auth,B2B}` topologies. That is the precise
+scope of stages 2–3, measured rather than estimated.
+
+**Two further findings for later stages:**
+
+- **`Concertable.Testing.E2E` is not published at all** (0 versions on the feed), unlike the other four
+  testing libraries. Stage 4 must publish it, or the E2E harness cannot leave.
+- **A carved service folder loses `api/TestConventions.targets`**, so the test-tier naming gate does not
+  travel with it. Whoever extracts `platform-dotnet` owes that file a home the services can consume.
+
 ## Next Steps
 
 ### The nine stages, evidence-backed
@@ -120,9 +185,10 @@ extraction above built its whole runtime clean. What actually remains is nine st
 survives as the fallback for local development and cross-service E2E until stage 9**, so a service can
 be extracted before its AppHost and E2E story is perfect.
 
-1. **Swap the 41 test-tier `ProjectReference`s to `PackageReference`.** Mechanical; every target is
-   already on the feed. Verified by re-running the Payment extraction to a fully green build.
+1. ~~**Swap the 41 test-tier `ProjectReference`s to `PackageReference`.**~~ **Done — see `## Stage 1`.**
 2. **Make the four `*.Hosting` projects packable and publish them**, then swap the last 4 of the 45.
+   The carve build has already named the missing symbols; adding `*.ArchitectureTests` to the five carve
+   jobs is this stage's gate.
 3. **AppHost image mode** — foreign services composed via `AddContainer` on a pinned image instead of
    `AddProject` against sibling source. .NET 10 SDK container publishing means no Dockerfile per host.
    This is what lets a service leave without breaking every other service's local development.
@@ -140,10 +206,14 @@ with odd names for months.
 
 ### Immediate next action
 
-**Stage 1.** Swap the 41 test-tier references, then re-run the proven extraction
-(`git clone --single-branch --branch main` + `core.longpaths=true`, filter to
-`api/Concertable.Payment/`) and require `dotnet build Concertable.Payment.slnx` to be fully green
-including `Concertable.Payment.IntegrationTests`. That green build is stage 1's gate.
+**Stage 2.** Make `Concertable.{Auth,B2B,Customer,Payment}.Hosting` packable and publish them, then swap
+the last 4 test-tier refs in `Concertable.AppHost.Shared.UnitTests`. The work list is already measured —
+see the 7 named symbols in `## Stage 1`. Its gate: add `*.ArchitectureTests` to the five carve jobs and
+require them green, which is only possible once `*.Hosting` resolves from the feed.
+
+**Use the `git archive` carve, not a `git-filter-repo` clone, to verify.** It is the same gate at a
+fraction of the cost, it needs no fresh clone (so no `core.longpaths` trap), and CI already runs it.
+Reach for `git-filter-repo` only at stage 5+, when history actually has to move.
 
 ### Interaction with the two open PRs
 
@@ -159,13 +229,25 @@ rebasing regardless of this epic's timing.
 |---|---|
 | Plan authored | commit `91e92c445` (docs-only; adds `plans/REPOSITORY_PER_MICROSERVICE_MIGRATION.md`, removes `POLYREPO.md` + `SPLIT_TIME_E2E_STRATEGY.md`) |
 | Design-review blockers resolved | commit `3f8cb3494` (plan +55/-33, `plans/DEPLOYMENT.md` updated) |
+| Checkpoint 0 — inventory generator, ownership map, extraction map + coverage validator | commits `f38825fba`, `fddd3d8ef`, `4fa96f8ed` |
+| Per-service CI test scoping | commit `b0bbbdb06` |
+| **Stage 1 — test-tier package boundary** | this branch; see `## Stage 1` |
 
-No implementation checkpoint (0–16) is complete.
+Checkpoints 1–16 of the superseded numbering are not complete; the live plan is the nine stages, of
+which stage 1 is done.
 
 ## Verification
 
-No build/test verification applies — the branch is docs-only. No `dotnet build`, unit, integration,
-or E2E run is associated with this branch, and none is required for a design document.
+**Stage 1.** Three `git archive` service carves built `--configuration Release` against the live feed —
+payment, auth and search, each including its non-E2E test tier — **0 errors** each. Item-graph
+equivalence in the monorepo confirmed with `dotnet msbuild -getItem:ProjectReference -getItem:PackageReference`
+in both default and `UseLocalPlatformPackages=true` modes, including a runtime project to prove no
+deployable closure moved. `python eng/repository-split/inventory.py --check` passes with
+`blockingTestEdges: 0`. `.github/workflows/test.yml` parses (20 jobs).
+
+**Not run locally:** the full `dotnet build api/Concertable.slnx` and the unit/integration suites — the
+dev machine's C: drive is at 0 bytes free (see the event log). CI's `build` job and the scoped
+unit/integration matrices cover both on the PR.
 
 ## Reviews
 
@@ -198,9 +280,16 @@ No code review applies — there is no implementation to review yet.
 - **Discovery — target repos do not exist yet:** no `Concertable/config`, `/system`,
   `/platform-dotnet`, or `/platform-web`; the planning credential lacks `read:packages`, so package
   ACL verification is an explicit Checkpoint 0 preflight, not an assumption.
-- **Blocker/gate — plan is awaiting Tommy's review;** no checkpoint is authorized until he names one.
-- **Deviation from staleness:** branch is 138 commits behind `origin/main`; plan inventory reflects
-  baseline `d3c399ec8` and may have drifted.
+- **Decision — the test tier declares packages and swaps back to source, rather than swapping outright.**
+  See `## Stage 1`. This is the one deliberate deviation from the plan's stage-1 wording.
+- **Discovery — `*.ArchitectureTests` reaches the AppHost composition layer**, so it cannot carve until
+  stages 2–3; the other three test tiers can and now do.
+- **Discovery — `Concertable.Testing.E2E` has never been published** (0 feed versions), unlike its four
+  sibling testing libraries. A stage 4 prerequisite.
+- **Discovery — `api/TestConventions.targets` does not survive a carve**, so an extracted service loses
+  the test-tier naming gate until `platform-dotnet` gives it a consumable home.
+- ~~Blocker/gate — awaiting Tommy's review~~ — approved 2026-08-26; the branch is re-baselined onto
+  current `main`.
 
 ## Event log
 
@@ -218,6 +307,28 @@ No code review applies — there is no implementation to review yet.
 - Follow-up: Await Tommy's approval to begin Checkpoint 0; sync the branch with `origin/main` before
   any Checkpoint 0 implementation.
 
+### 2026-08-26 — Stage 1 delivered
+
+- Action: Declared all 41 non-`*.Hosting` test-tier cross-repository references as published packages,
+  behind one source-swap mechanism (`api/PlatformSourcePackages.targets`); added the missing
+  `PackageVersion` pins in six folders; added `blockingTestEdges` + the `split-inventory` CI job; extended
+  the five carve gates to the non-E2E test tier.
+- Evidence: 41 refs / 31 projects; cross-target edges 135 → 94, test-tier 45 → 4; three carves green at
+  0 errors; `--check` green with `blockingTestEdges: 0`.
+- Deviation: the plan said "swap to `PackageReference`". A literal swap would force a publish round-trip
+  on every shared-test-library change until stage 9, so the reference is *declared* as a package and
+  swapped back to source while the platform source is on disk. Same end state after the cut, no inner-loop
+  regression before it.
+- Environment: the dev machine's C: drive hit **0 bytes free** mid-stage, which killed the full-solution
+  build. `dotnet nuget locals http-cache/temp --clear` freed only 68 MB. The largest reclaim found is
+  ~25 GB of Sep-2025 ETW captures (`sc.*.etl`) in 52 GUID folders under `%LOCALAPPDATA%\Temp`, but they
+  are ACL-locked to SYSTEM — all 49 deletes returned access-denied, so they need an elevated shell.
+  Other candidates, unmeasured by any agent-runnable scan: `C:\tmp` (26 GB), `C:\Users` (151 GB), and
+  ~174 GB not visible to a file scan at all (WSL/Docker VHDX, pagefile). `C:\ce-extract` (250 MB) is a
+  leftover from the earlier `git-filter-repo` verification and is disposable.
+- Follow-up: stage 2, and the two later-stage findings recorded in `## Stage 1`
+  (`Concertable.Testing.E2E` unpublished; `TestConventions.targets` does not survive a carve).
+
 ## Resume prompt
 
 ```
@@ -230,22 +341,33 @@ inventory is a stale 2026-08-02 snapshot; this ledger overrides it. Nine stages 
 the ledger's `## Next Steps`. Payment extraction is already PROVEN end to end — see the ledger's
 `## Verification`. Do not re-litigate whether to split, and do not re-audit what is already recorded.
 
-Do stage 1 now: swap the 41 test-tier cross-repository ProjectReferences to PackageReference. Every
-target is already published on the feed. Find them by running
-`python eng/repository-split/inventory.py` and reading `crossTargetEdges` in the generated
-inventory.json where `fromKind` is a test kind. Leave the four *.Hosting references alone — those
-are stage 2, and they need the producer published first.
+Stage 1 is DONE — see the ledger's `## Stage 1`. Do not re-swap references and do not re-verify it;
+`python eng/repository-split/inventory.py --check` proves it in seconds (blockingTestEdges must be 0).
 
-Gate — re-run the proven extraction and require a fully green build INCLUDING the integration tests:
-  git -c core.longpaths=true clone --no-local --single-branch --branch main <monorepo> C:/ce-extract
-  python "C:/Users/TommySeery/AppData/Roaming/Python/Python313/site-packages/git_filter_repo.py" \
-    --path api/Concertable.Payment/ --path-rename api/Concertable.Payment/: --force
-  dotnet build Concertable.Payment.slnx --configuration Release
+Do stage 2 now: make Concertable.{Auth,B2B,Customer,Payment}.Hosting packable (<IsPackable>true</IsPackable>
+— that one line is the whole publish opt-in, see .github/workflows/publish-packages.yml), publish them,
+then swap the last 4 test-tier refs in api/Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests.
+The work list is already measured: a Payment carve including ArchitectureTests fails with exactly 7
+errors in src/Concertable.Payment.Hosting — missing Concertable.Messaging.AzureServiceBus,
+Concertable.AppHost.Shared (AsbTopology, SqlServerDatabaseResource) and the sibling Concertable.{Auth,B2B}
+topologies. Note *.Hosting referencing SIBLING SERVICES' Hosting projects is the part stage 3 (AppHost
+image mode) owns; do not try to package your way out of it.
 
-Two environment constraints that otherwise cost a session to rediscover: core.longpaths=true is
-mandatory on any fresh clone (MAX_PATH breaks the E2E helper paths), and git-filter-repo is NOT
-installed as a git subcommand here — invoke its module script directly.
+Gate — add *.ArchitectureTests to the five carve jobs in .github/workflows/test.yml and require green.
+Verify locally with the cheap carve, NOT a git-filter-repo clone:
+  SHA=$(git stash create); git archive "${SHA:-HEAD}":api/Concertable.Payment | tar -x -C <tmp>
+  cd <tmp> && dotnet new sln --name Carve --format slnx && dotnet sln Carve.slnx add <projects>
+  dotnet build Carve.slnx --configuration Release -p:MinVerSkip=true
+GITHUB_PACKAGES_TOKEN must be in the environment (it is). Publishing is a two-step release: the pin can
+only move to a version already on the feed, so publish first, then bump ConcertablePlatformVersion.
+
+Because *.Hosting becomes packable, it also becomes a published contract — check whether it exposes any
+Reunion carrier before publishing (the `packages` skill's PrivateAssets rule).
 
 This branch is pushed and has no PR yet. It touches .github/workflows/test.yml, so when opened it
 requires full merge-queue E2E and must never take skip-e2e.
+
+Machine caveat: C: was at 0 bytes free at the end of stage 1 and the full `dotnet build
+api/Concertable.slnx` could not run locally. Check `df -h /c` first; if it is still full, the reclaim
+options and their permission traps are in the 2026-08-26 event-log entry.
 ```

@@ -78,6 +78,9 @@ def area_of(rel_path: str) -> str | None:
     return parts[1]
 
 
+TEST_KINDS = {"unit-test", "integration-test", "architecture-test", "fixture", "composition-test"}
+
+
 def classify(rel_path: str) -> str:
     name = Path(rel_path).stem
     if ".E2ETests" in name:
@@ -169,6 +172,20 @@ def build_dotnet(files: list[str]) -> dict:
     for e in cross_target:
         cross_target_by_kind[e["fromKind"]] += 1
 
+    # The test tier is exempt from EnforceServiceBoundary, so nothing at build time catches a
+    # cross-repository ProjectReference there — invisible in the monorepo, fatal on extraction.
+    # Platform test libraries are declared as PackageReferences and swapped back to source by
+    # api/PlatformSourcePackages.targets, so a declared edge here is a regression. Edges to a
+    # *.Hosting project wait on Checkpoint 2's packable-Hosting item, full-stack E2E on Checkpoint 4.
+    blocking_test = sorted(
+        (
+            e
+            for e in cross_target
+            if e["fromKind"] in TEST_KINDS and not Path(e["to"]).stem.endswith(".Hosting")
+        ),
+        key=lambda e: (e["from"], e["to"]),
+    )
+
     return {
         "projectCount": len(projects),
         "projects": projects,
@@ -178,6 +195,7 @@ def build_dotnet(files: list[str]) -> dict:
         "crossTargetEdgesByKind": dict(sorted(cross_target_by_kind.items())),
         "crossTargetEdges": sorted(cross_target, key=lambda e: (e["from"], e["to"])),
         "blockingRuntimeEdges": blocking,
+        "blockingTestEdges": blocking_test,
         "packableProjects": sorted(p for p, v in projects.items() if v["packable"]),
     }
 
@@ -254,7 +272,8 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="fail if the committed inventory is stale")
     args = parser.parse_args()
 
-    current = json.dumps(generate(), indent=2, sort_keys=True) + "\n"
+    inventory = generate()
+    current = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
 
     if args.check:
         if not OUTPUT.exists():
@@ -267,7 +286,17 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
-        print("inventory.json is current")
+        regressed = inventory["dotnet"]["blockingTestEdges"]
+        if regressed:
+            print(
+                "TEST-TIER CROSS-REPOSITORY ProjectReference(s) — consume the platform library as a "
+                "PackageReference; api/PlatformSourcePackages.targets swaps it back to source in-repo:",
+                file=sys.stderr,
+            )
+            for e in regressed:
+                print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
+            return 1
+        print("inventory.json is current; no test-tier cross-repository ProjectReference")
         return 0
 
     OUTPUT.write_text(current, encoding="utf-8")

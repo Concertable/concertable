@@ -1,0 +1,41 @@
+<Project>
+
+  <!-- Test-tier platform references: declared as the published PackageReference the split requires,
+       swapped back to the in-repo ProjectReference while the platform source is on disk.
+
+       The test tier is the one tier still allowed to reach platform code across a service folder
+       (EnforceServiceBoundary is off under Tests/), so it is the one tier that needs a swap at all:
+       its cross-folder ProjectReferences were invisible in the monorepo and fatal on extraction. A
+       carved service repo has neither this file nor the platform source, so the PackageReference
+       stands and restore comes off the feed. Force package mode in place — the same shape a carve
+       sees, without carving — with -p:UseLocalPlatformPackages=true (scripts/local-platform.ps1).
+
+       Import this AFTER a folder's UseLocalCore swap: that swap removes the same PackageReference ids
+       when it is on, which is what stops both mechanisms firing on Messaging.* in one build. -->
+
+  <PropertyGroup>
+    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]'))">true</_SwapPlatformSourcePackages>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+    <PlatformSourcePackage Include="Concertable.Testing"                  Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing\Concertable.Testing.csproj" />
+    <PlatformSourcePackage Include="Concertable.Testing.Architecture"     Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing.Architecture\Concertable.Testing.Architecture.csproj" />
+    <PlatformSourcePackage Include="Concertable.Testing.Integration"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing.Integration\Concertable.Testing.Integration.csproj" />
+    <PlatformSourcePackage Include="Concertable.Seed.Shared"              Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Shared\Concertable.Seed.Shared.csproj" />
+    <PlatformSourcePackage Include="Concertable.Seed.Infrastructure"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Infrastructure\Concertable.Seed.Infrastructure.csproj" />
+    <PlatformSourcePackage Include="Concertable.Messaging.Domain"         Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
+    <PlatformSourcePackage Include="Concertable.Messaging.Infrastructure" Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+    <PackageReference Update="@(PlatformSourcePackage)" PlatformSourceProject="%(PlatformSourcePackage.Project)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+    <!-- The transform emits a ProjectReference only for the ids this project actually references
+         (the rest transform to an empty Include and are skipped); the Remove drops the same ids. -->
+    <ProjectReference Include="@(PackageReference->'%(PlatformSourceProject)')" />
+    <PackageReference Remove="@(PlatformSourcePackage)" />
+  </ItemGroup>
+
+</Project>
