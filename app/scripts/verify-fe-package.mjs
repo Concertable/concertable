@@ -87,6 +87,10 @@ const CHECKS = {
       'if (b2bReviewBasePath("artist", 12) !== "/artist/12/review") throw new Error("Unexpected B2B review route");',
       'if (customerReviewBasePath("artist", 12) !== "/artists/12/reviews") throw new Error("Unexpected customer review route");',
     ],
+    nodeRuntime: [
+      'import { cn } from "@concertable/web/lib/utils";',
+      'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
+    ],
   },
   "@concertable/customer": {
     node: [
@@ -158,6 +162,7 @@ function verifyNodeConsumer() {
       "--save-exact",
       installTarget,
       "react@19.1.0",
+      "react-dom@19.1.0",
       "typescript@5.9",
       "@types/react@19",
     ],
@@ -173,11 +178,19 @@ function verifyNodeConsumer() {
       jsx: "react-jsx",
       outDir: "dist",
     },
-    include: ["index.ts"],
+    include: ["*.ts"],
   });
   writeFileSync(join(directory, "index.ts"), checks.node.join("\n") + "\n");
+  if (checks.nodeRuntime) {
+    writeFileSync(join(directory, "runtime.ts"), checks.nodeRuntime.join("\n") + "\n");
+  }
   run(["exec", "--", "tsc"], directory);
-  run(["exec", "--", "node", "dist/index.js"], directory);
+  run([
+    "exec",
+    "--",
+    "node",
+    checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js",
+  ], directory);
 }
 
 function verifyMetroConsumer() {
