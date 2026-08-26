@@ -4,7 +4,7 @@
 
 **Judgment:** `approved`
 
-**Reviewed up to commit:** `0c7b3514e`
+**Reviewed up to commit:** `94880e782`
 
 - PR: [#798](https://github.com/Concertable/concertable/pull/798)
 - Branch: `Plan/RepositoryPerMicroserviceMigration`
@@ -111,6 +111,22 @@ copy this file" — with the rationale left to `packages` and the commit.
   feed credential, and B2B/Customer discover the new test projects by path rather than a hand list.
 - **Stale comments.** The five carve-job comments claiming the test harness is excluded were rewritten; no
   `*/Tests/*` exclusion remains.
+
+## Incremental pass — `0c7b3514e..94880e782`
+
+- Pass judgment: `approved`, no findings.
+- Reviewable delta: 2 lines in `.agents/skill-routes.json`; the other two commits are `reviews/`-only.
+
+F2's first fix used `^api/[A-Za-z.]+\.targets$`. `agent-standards`'
+`CarvedTreeReplay.test_no_row_names_a_path_outside_the_repo` rejected it, correctly: a row keyed on a
+monorepo top-level directory cannot port to a carved repo, where the same file sits at the root — which is
+the portability convention this very table documents in its own `_comment`. Re-keyed on
+`(TestConventions|PlatformSourcePackages)\.targets$`, which matches in both shapes.
+
+Checked: regex compiles and fires for both files; row count unchanged at 40; edited in the generator and
+regenerated rather than hand-edited; the generator's own 12 tests pass locally, including
+`test_every_tracked_path_is_covered`. Unanchored-suffix matching is the same style as the sibling
+`Directory\.(Build|Packages)\.(props|targets)$` row.
 
 ## Not verified here (owned by CI)
 
