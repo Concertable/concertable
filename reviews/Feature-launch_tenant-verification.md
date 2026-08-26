@@ -5,10 +5,10 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `392a5d78274d4f8d6f29242ad4b8c272b038c3a2`  _(2026-08-26)_
-**Security-reviewed up to commit:** `392a5d78274d4f8d6f29242ad4b8c272b038c3a2`  _(2026-08-26)_
+**Reviewed up to commit:** `a7bbbc47ad2f878bd9dffe2283dbeaeb57cea2c7`  _(2026-08-26)_
+**Security-reviewed up to commit:** `a7bbbc47ad2f878bd9dffe2283dbeaeb57cea2c7`  _(2026-08-26)_
 
-> Range reviewed: `7d4dd12fb..392a5d782` (3 commits) — Phase 4 of tenant verification (admin review surface).
+> Range reviewed: `7d4dd12fb..a7bbbc47a` (4 commits) — Phase 4 of tenant verification (admin review surface).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -39,3 +39,7 @@ Range: uncommitted redesign on top of `7fce9d54b`, driven by live design discuss
 No new findings beyond what's already fixed inline above (the `ToOption()` compile fix and the region rename) — this section is a record of a design change, not a defect list.
 
 **Incremental security check (`4928e1647..392a5d782`)**: no findings. Confirmed every formerly-`[Admin]` action retains `[Admin]` directly on its method in the merged controller, `Get`/`SubmitDocuments` retain `[Authorize]`/`[HasPermission(TenantSettingsEdit)]`, no route collision or broadening, and the `TenantContact` struct change never lets a `default`/uninitialized value pass as present (`.ToOption()` maps absence to `None` exactly as before). Note: admin routes moved from `api/tenant/verification/*` to `api/verification/*` — a path change, not an authorization change; tests exercise the new paths.
+
+## Incremental review — 2026-08-26 (merge-base)
+
+Range `392a5d782..a7bbbc47a`: merged current `origin/main` in for base currency before enqueueing. Diff is `plans/launch/TENANT_VERIFICATION_PLAN.md`, `plans/launch/TENANT_VERIFICATION_PROGRESS.md`, `reviews/Docs-tv-p4-checkpoint.md`, `reviews/Feature-launch_tenant-verification.md` only — no code path touched. No findings; no security-sensitive path in range.
