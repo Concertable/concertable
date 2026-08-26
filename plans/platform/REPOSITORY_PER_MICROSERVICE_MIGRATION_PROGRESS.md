@@ -430,6 +430,12 @@ findings are recorded only as resolved via that commit; treat the specific findi
   into stage 2: that gate restores `*.Hosting` from the feed, which is impossible until this round-trip
   publishes them, so it is necessarily a later PR (round-trip 3). The split is forced by publish-before-consume,
   not a shortcut.
+- Review (2 lenses, one finding, fixed): the package-topology lens caught that `Auth.Hosting` kept
+  `Auth.Contracts` as a `ProjectReference`, but `Auth.Contracts` lives at `api/Concertable.Auth.Contracts/` —
+  *outside* the Auth carve root (unlike the other three Hosting, whose kept Contracts refs are intra-carve-root).
+  The handoff mislabelled it "intra-service" by ownership; physically it escapes. Swapped to
+  `PackageReference` (pin already present), matching the Auth deployable's documented "never a
+  ProjectReference, so Auth carves standalone" rule. `Auth.Hosting` now has zero `ProjectReference`s.
 - Follow-up: merge (skip-e2e) → publish lands the 4 `*.Hosting` + `Ticket.Contracts` on the feed → sync PR
   bumps pins (superseding #808) → round-trip 3 (last 4 `AppHost.Shared.UnitTests` refs + add
   `*.ArchitectureTests` to the five carve jobs in `test.yml`, which forces full-e2e + security review +
