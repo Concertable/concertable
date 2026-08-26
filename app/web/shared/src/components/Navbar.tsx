@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Mailbox } from "@/features/messaging";
 import { NavbarSearch } from "@/features/search";
-import { useMeQuery } from "@/features/user";
+import { useAuthStore } from "@/features/auth";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 
 export interface NavLink {
@@ -65,7 +65,7 @@ export function Navbar({
   showMailbox = true,
   onHeightChange,
 }: Readonly<Props>) {
-  const { data: user } = useMeQuery();
+  const user = useAuthStore((state) => state.user);
   const ref = useRef<HTMLElement>(null);
 
   useMountLayoutEffect(() => {
