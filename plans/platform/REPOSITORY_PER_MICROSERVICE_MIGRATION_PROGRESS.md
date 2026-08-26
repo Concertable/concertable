@@ -3,13 +3,20 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration`
-- Branch: `Plan/RepositoryPerMicroserviceMigration`
-- PR: not opened (`gh pr list --head Plan/RepositoryPerMicroserviceMigration --state all` → empty)
-- Dependency/package gates: none active. Stage 1 consumes only packages **already published** at the
-  pinned `0.1.0-alpha.0.1195`; it publishes nothing and needs no platform-sync.
-- Last reconciled: **2026-08-26** — approved, rescoped against current `main`, Payment extraction
-  proven, **stage 1 delivered**; branch pushed.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepoSplit-Stage2-AppHostShared`
+- Branch: `Plan/RepoSplit-Stage2-AppHostShared` (stage 2, round-trip 1). Stage 1 shipped on
+  `Plan/RepositoryPerMicroserviceMigration` (PR #798, merged 2026-08-26; worktree closed).
+- PR: stage 2 is two ordered publish round-trips, so multiple PRs; this branch is round-trip 1
+  (`IsPackable` on `Concertable.AppHost.Shared`).
+- Dependency/package gates: none active. Stage 1 changed no *published contract* — it consumes only
+  packages already on the feed at the pinned `0.1.0-alpha.0.1195`. But "publishes nothing" was wrong
+  about the *pipeline*: every push to `main` reruns `publish-packages.yml`, which republishes all
+  `Concertable.*` at a fresh MinVer version, and `platform-sync.yml` then auto-opens a self-landing
+  pin-bump PR. Stage 1's merge (#798) duly triggered publish `0.1.0-alpha.0.1202` and sync PR #803
+  (auto-merge armed, superseded #801); both self-managed with no action needed. Stage 2's own
+  `IsPackable` publishes ride exactly this machinery.
+- Last reconciled: **2026-08-26** — **stage 1 merged (PR #798)**; stage 2 in flight, round-trip 1
+  (`IsPackable` on `Concertable.AppHost.Shared`) committed and packing clean locally.
 
 ## Current state
 
@@ -204,6 +211,12 @@ Stages 1 and 2 are days. The mirror renames happen at stage 9, not before: the c
 needed only when the real repositories claim them, and renaming earlier leaves public repositories
 with odd names for months.
 
+**Sequencing correction — these stages are NOT a strict chain.** `blockingRuntimeEdges` is **1** for the
+whole repo (`Auth.Contracts → Messaging.Contracts`, a one-line swap on Auth extraction) and all five
+carve gates are green, so **nothing blocks extracting a service today**. Stages 3 (AppHost image mode)
+and 4 (E2E → `fleet`) run in `fleet` **in parallel with** the extractions (stages 5–7), not in front of
+them. Do not re-estimate archival on paper again — report the measured rate after one real extraction.
+
 ### Immediate next action
 
 **Stage 2.** Make `Concertable.{Auth,B2B,Customer,Payment}.Hosting` packable and publish them, then swap
@@ -249,6 +262,11 @@ deployable closure moved. `python eng/repository-split/inventory.py --check` pas
 dev machine's C: drive is at 0 bytes free (see the event log). CI's `build` job and the scoped
 unit/integration matrices cover both on the PR.
 
+**Stage 1 CI outcome (PR #798, merged 2026-08-26).** 77/77 checks green, 0 failures, on the PR head and
+again through the merge queue. `build` runs via `local-platform.ps1`, so the whole test tier compiled in
+**package** mode; `carve-b2b` / `carve-customer` were green **including their newly-added test tier** —
+neither of which fits on the dev machine.
+
 ## Reviews
 
 A design review of the plan occurred (commit `3f8cb3494 docs(plan): resolve migration review
@@ -256,7 +274,16 @@ blockers` records the resolution). No review artifact for this plan exists under
 findings are recorded only as resolved via that commit; treat the specific findings as unknown beyond
 "blockers resolved in the plan text."
 
-No code review applies — there is no implementation to review yet.
+**Stage 1 code review — work order complete/approved, four findings all fixed:**
+
+- **F1 (high)** — the epic introduced exactly the silent breakage it exists to remove:
+  `api/tests/Directory.Build.targets` shadowed `api/Directory.Build.targets` (MSBuild imports only the
+  nearest), so `Concertable.AppHost.ArchitectureTests` lost `ValidateTestConventions` and its
+  `ConcertableTestTier` went `Architecture` → empty. Fixed.
+- **F2** — route-table gap. Fixed; an incremental pass then caught the first fix keyed on `^api/`, which
+  `CarvedTreeReplay.test_no_row_names_a_path_outside_the_repo` correctly rejects — re-fixed.
+- **F3** — `PACKAGES.md` contradiction. Fixed.
+- **F4** — comments. Fixed.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -285,9 +312,19 @@ No code review applies — there is no implementation to review yet.
 - **Discovery — `*.ArchitectureTests` reaches the AppHost composition layer**, so it cannot carve until
   stages 2–3; the other three test tiers can and now do.
 - **Discovery — `Concertable.Testing.E2E` has never been published** (0 feed versions), unlike its four
-  sibling testing libraries. A stage 4 prerequisite.
+  sibling testing libraries — because it has a **dependency cycle across future repo boundaries**: it
+  references *back into* `Concertable.Payment.E2ETests.{Web,Workers}`. That direction must be inverted
+  before E2E can move to `fleet`; it is why this one testing library alone cannot publish. A stage 4
+  prerequisite.
 - **Discovery — `api/TestConventions.targets` does not survive a carve**, so an extracted service loses
-  the test-tier naming gate until `platform-dotnet` gives it a consumable home.
+  the test-tier naming gate. It **must ship from `platform-dotnet` as a `buildTransitive` targets
+  package** or every extracted service loses that gate.
+- **Decision — the carve/inventory scaffolding is disposable, not portable.** `carve-*`,
+  `split-inventory` and `PlatformSourcePackages.targets` only *simulate* the end state; once a service is
+  its own repo its ordinary CI answers the same question. They are deleted at stage 9, not migrated
+  (`PlatformSourcePackages.targets` self-disables via its `Exists()` guard). Only two things need a new
+  home on extraction: `TestConventions.targets` (above), and `local-platform.ps1`, which needs a
+  per-repo redesign.
 - ~~Blocker/gate — awaiting Tommy's review~~ — approved 2026-08-26; the branch is re-baselined onto
   current `main`.
 
@@ -328,6 +365,23 @@ No code review applies — there is no implementation to review yet.
   leftover from the earlier `git-filter-repo` verification and is disposable.
 - Follow-up: stage 2, and the two later-stage findings recorded in `## Stage 1`
   (`Concertable.Testing.E2E` unpublished; `TestConventions.targets` does not survive a carve).
+
+### 2026-08-26 — Stage 1 merged; stage 2 begun (round-trip 1)
+
+- Action: Confirmed PR #798 merged through the queue (merge-group run green, e2e-ui the last job).
+  Closed the stage-1 worktree. Opened `Plan/RepoSplit-Stage2-AppHostShared`. Set
+  `<IsPackable>true</IsPackable>` on `Concertable.AppHost.Shared` (round-trip 1's whole opt-in).
+- Evidence: #798 `mergedAt` 2026-08-26T19:48:33Z; publish run `33007120356` green (all `Concertable.*`
+  at `0.1.0-alpha.0.1202`); sync PR #803 auto-merge armed, #801 auto-closed as superseded.
+  BUILD1 holds — AppHost.Shared's only `ProjectReference` (`Messaging.AzureServiceBus`) is already
+  packable; no Reunion carrier so no `PrivateAssets`. `dotnet pack` of AppHost.Shared: 0 errors.
+- Correction: the handoff's "stage 1 publishes nothing — verify" and this ledger's earlier "it
+  publishes nothing and needs no platform-sync" were both wrong about the *pipeline*: every `main` push
+  republishes everything and auto-opens a self-landing sync PR. Nothing broke; the sync PRs self-manage.
+- Follow-up: merge round-trip 1 → let publish + sync land → round-trip 2 (swap 15 Contracts refs + the
+  5 AppHost.Shared refs in `*.Hosting` to `PackageReference`, `IsPackable` on the four `*.Hosting`) →
+  round-trip 3 (last 4 refs in `AppHost.Shared.UnitTests`; delete `mirror.yml` + `mirror-parity.yml`).
+  Gate: add `*.ArchitectureTests` to the five carve jobs once `*.Hosting` resolves from the feed.
 
 ## Resume prompt
 
