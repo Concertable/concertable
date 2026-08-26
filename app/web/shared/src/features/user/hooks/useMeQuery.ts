@@ -1,10 +1,10 @@
 import { useAuth } from "react-oidc-context";
 import {
   queryOptions,
+  skipToken,
   useQuery,
   type UseQueryResult,
 } from "@tanstack/react-query";
-import userApi from "../api/userApi";
 import type { User } from "@/features/auth/types";
 
 export const meQueryKey = ["auth", "me"] as const;
@@ -24,12 +24,14 @@ export function useMeQuery<TUser extends User>(
   getMe: () => Promise<TUser>,
 ): UseQueryResult<TUser>;
 export function useMeQuery<TUser extends User>(
-  getMe: () => Promise<TUser> = userApi.getMe as () => Promise<TUser>,
+  getMe?: () => Promise<TUser>,
 ): UseQueryResult<TUser> {
   const { isAuthenticated, isLoading } = useAuth();
 
-  return useQuery({
-    ...meQueryOptions(getMe),
-    enabled: !isLoading && isAuthenticated,
+  return useQuery<TUser>({
+    queryKey: meQueryKey,
+    queryFn: getMe ?? skipToken,
+    meta: { expectedErrors: [404] },
+    enabled: getMe !== undefined && !isLoading && isAuthenticated,
   });
 }

@@ -179,59 +179,67 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Build `api/Concertable.slnx`; run Tenant module unit tests.
 - [x] Update this plan (check off) and the ledger in the implementation commit.
 
-### Phase 2 — Tenant-facing submission API
+### Phase 2 — Tenant-facing submission API ✅ merged (PR #784, `1867f0a72`)
 
-- [ ] `IVerificationService`/`VerificationService` in `Concertable.B2B.Tenant.Application`/
-  `Infrastructure`: `GetOwnAsync` (current tenant's status/reason/documents), `SubmitAsync(files,
+- [x] `IVerificationService`/`VerificationService` in `Concertable.B2B.Tenant.Application`/
+  `Infrastructure`: `GetStatusAsync` (current tenant's status/reason/documents), `SubmitAsync(files,
   documentTypes)` (creates or resubmits, uploads each file to `verification-evidence/` via
   `IBlobStorageService`, transitions to `Pending`).
-- [ ] `VerificationController` (`api/organization/verification`), `[Authorize]`,
+- [x] `VerificationController` (`api/organization/verification`), `[Authorize]`,
   `[HasPermission(SharedPermissions.TenantSettingsEdit)]` on the mutating endpoint,
   `[EnableRateLimiting(RateLimitPolicies.Upload)]` on the upload endpoint. `GET` (status) needs no
   special permission beyond `[Authorize]`, matching `OrganizationController.Get`.
-- [ ] Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path.
-- [ ] Unit tests for the service; integration tests for the controller (round-trip submit → read status).
-- [ ] Build + focused tests; commit.
+- [x] Content-type allowlist (PDF/JPEG/PNG) and per-file size cap on the upload path, plus a magic-byte
+  check against the declared type (added during review — the header alone is attacker-controlled).
+- [x] Unit tests for the service; integration tests for the controller (round-trip submit → read status).
+- [x] Build + focused tests; commit.
 
-### Phase 3 — Cross-module gate + enforcement at publication and settlement
+### Phase 3 — Cross-module gate + enforcement at publication and settlement ✅ merged (`564649a26`, PR #792)
 
-- [ ] Extend `ITenantModule` (Tenant.Contracts) with `Task<bool> IsVerifiedAsync(Guid tenantId,
+- [x] Extend `ITenantModule` (Tenant.Contracts) with `Task<bool> IsVerifiedAsync(Guid tenantId,
   CancellationToken ct = default)`; implement in `TenantModule`/`TenantService` as
   `verification?.Status == Approved`, `false` when no row exists — fail-closed, same posture as
   `IsTaxComplianceCompleteAsync`.
-- [ ] **Opportunity publication gate**: inject `ITenantModule` into `OpportunityService`; in
+- [x] **Opportunity publication gate**: inject `ITenantModule` into `OpportunityService`; in
   `CreateAsync` and `CreateMultipleAsync`, after resolving the active tenant's venue, check
   `IsVerifiedAsync(tenantContext.GetTenantId())` before creating the `OpportunityEntity`. Add
   `OpportunityMutationError.VenueNotVerified` to the `[Union]` (Dunet) with
   `ErrorDefinition.Forbidden<VenueNotVerified>("This venue is not yet verified.")` and error code
   `opportunity.venue_not_verified`, following `VenueNotFound`'s shape exactly.
-- [ ] **Settlement gate**: in `FinishExecutor.FinishAsync`, immediately after the existing
+- [x] **Settlement gate**: in `FinishExecutor.FinishAsync`, immediately after the existing
   tax-compliance pair check, add the same pattern for verification —
   `tenantModule.IsVerifiedAsync(supplierTenantId)` and `IsVerifiedAsync(customerTenantId)` — returning
   a new `SettlementOutcome.DeferredPendingVerification` case on failure, with a matching
   `logger.SettlementDeferredPendingVerification(...)` `LoggerMessage`. No sweep changes needed:
   `ConcertCompletionRunner` already retries every non-`Settled` outcome hourly.
-- [ ] Integration tests: `TenantVerificationGateApiTests` (settlement defers/settles) mirroring
+- [x] Integration tests: `TenantVerificationGateApiTests` (settlement defers/settles) mirroring
   `SelfBillingAgreementGateApiTests`/`ConcertPayoutComplianceGateApiTests`, and an opportunity-creation
   test proving an unverified tenant's `POST` is rejected.
-- [ ] Build + focused tests; commit.
+- [x] Build + focused tests; commit.
 
-### Phase 4 — Admin review + cross-module contact + notification
+### Phase 4 — Admin review + cross-module contact + notification ✅ implemented, PR #799 (open draft, `7fce9d54b`)
 
-- [ ] Admin-listing query: `GetPendingAsync(pageParams)` over `TenantVerificationEntity` where
-  `Status == Pending`, ordered by `SubmittedAt`.
-- [ ] Add `GetContactByTenantIdAsync(Guid tenantId, CancellationToken ct = default)` to `IVenueModule`
-  and `IArtistModule` (returning `Option<TenantContact(Name, Email)>` — decide the shared-type home in
-  this phase). Admin service composes the pending list with the correct module's contact by
-  `TenantType`.
-- [ ] `TenantVerificationAdminController` (`[Admin]`, Tenant.Api):
+- [x] Admin-listing query: `GetPendingAsync(pageParams)` over `TenantVerificationEntity` where
+  `Status == Pending`, ordered by `SubmittedAt`. Named `PendingVerificationProjection` in code (the
+  ephemeral repository-side shape); the enriched API-facing DTO is `PendingVerificationDto`.
+- [x] Add `GetContactByTenantIdAsync(Guid tenantId, CancellationToken ct = default)` to `IVenueModule`
+  and `IArtistModule` (returning `Option<TenantContact(Name, Email)>`). `TenantContact` declared once
+  per module's own Contracts project (Venue, Artist) — matches the existing `DisplayNames` precedent for
+  small per-module value shapes; not `Concertable.Kernel`, which would add a shared-package dependency
+  neither module otherwise needs. Admin service composes the pending list with the correct module's
+  contact by `TenantType`.
+- [x] `TenantVerificationAdminController` (`[Admin]`, Tenant.Api):
   `GET pending`, `POST {tenantId}/approve`, `POST {tenantId}/reject`.
-- [ ] `IVerificationNotifier` (Tenant.Infrastructure), using `IEmailTransport`, called from the admin
+- [x] `IVerificationNotifier` (Tenant.Infrastructure), using `IEmailTransport`, called from the admin
   approve/reject service methods — mirrors `ContentReportNotifier`'s direct-call shape, resolving the
   target email via the new `GetContactByTenantIdAsync`.
-- [ ] Unit tests for the admin service and notifier; integration tests for the admin endpoints
-  mirroring the venue-approval integration coverage from admin-console Phase 4.
-- [ ] Build + focused tests; commit.
+- [x] Integration tests for the admin endpoints (`TenantVerificationAdminApiTests.cs`), mirroring the
+  venue-approval integration coverage from admin-console Phase 4 — **no dedicated unit tests for the
+  admin service/notifier**: per the `unit-testing` standard, orchestration over several collaborators
+  defaults to the integration tier, not mocked unit tests. This caught a real bug a mock would have
+  hidden (see ledger Reviews).
+- [x] Build + focused tests; commit; reviewed (2 findings, both fixed on branch — see ledger); pushed to
+  PR #799.
 
 ### Phase 5 — Admin SPA + tenant-facing UI
 
