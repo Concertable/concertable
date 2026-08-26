@@ -72,3 +72,21 @@ depends on `IEnumerable<IDevSeeder>`, eagerly constructing every registered seed
 environment race. Fixed by adding `services.AddSharedImaging()` to the seed host alongside the other
 shared registrations it already carries (build verified locally). A structural note for the underlying
 duplication-drift risk is logged in `api/Concertable.B2B/TECH_DEBT.md` (MED). No other findings in range.
+
+## Incremental review — 2026-08-27 (two more gaps in the same seed host, found before pushing)
+
+The first CI retry with the `IImageService` fix got further, then failed on the same mechanism reaching
+`IGeocodingClient` (`VenueService`/`ArtistService`'s other shared dependency). Rather than fix-and-push one
+gap at a time, traced the rest of `VerificationService`'s full dependency graph statically:
+`VerificationNotifier` (constructed via `IVerificationNotifier`) needs `IEmailTransport`, which the seed
+host also never registered. Added `services.AddSharedGeocoding()` (with `GoogleApiKey` threaded into
+`b2bSeedConfig` from the same `builder.Configuration` source the real app resource already reads it from —
+`DistributedApplicationBuilderExtensions.cs:74`) and `services.AddSharedEmail(b2bSeedConfig)` (defaults to
+`FakeEmailTransport` with no config present, same as the real host would with `UseRealEmail` unset — no
+external calls). Cross-checked every other registered `IDevSeeder`'s constructor (`ConcertDevSeeder`'s
+extra `IDealModule`/`IDealTermsRenderer`/`ITermsFingerprintCalculator` deps are Deal/Concert-module-owned
+and already registered via `AddDealModule`/`AddConcertModule`) — no further gaps found. Local full-suite
+validation is blocked by an unrelated, pre-existing local build issue in
+`Concertable.Shared.Notification.Infrastructure` (reproduces standalone and single-threaded, untouched by
+this PR); build of the E2E test project itself succeeds. Pushing for CI to validate as the authoritative
+gate per the `remote-validation` standard.
