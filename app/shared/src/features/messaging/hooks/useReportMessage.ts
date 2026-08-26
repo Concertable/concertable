@@ -1,5 +1,5 @@
 import { reportMessageRequestSchema } from "../schemas/reportMessageRequestSchema";
-import type { ReportCategory } from "../schemas/reportMessageRequestSchema";
+import type { ReportCategory, ReportMessageRequest } from "../types";
 import { useReportMessageMutation } from "./useMessageQuery";
 
 export interface ReportBuffer {
@@ -17,8 +17,8 @@ export function useReportMessage(messageId: number) {
       details: buffer.details?.trim() || undefined,
     });
 
-  const submit = (buffer: ReportBuffer) => {
-    const parsed = validate(buffer);
+  const submit = (request: ReportBuffer | ReportMessageRequest) => {
+    const parsed = validate(request);
     if (parsed.success) mutate(parsed.data);
     return parsed;
   };

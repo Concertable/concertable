@@ -1,8 +1,6 @@
 import { z } from "zod";
+import type { ReportMessageRequest } from "../types";
 
-// Bounds mirror the backend ReportMessageRequestValidator — keep them in sync. Details stay optional:
-// the category may say everything, and a reporting route must never be harder to complete than it has
-// to be.
 export const reportMessageRequestSchema = z.object({
   category: z.enum([
     "illegalContent",
@@ -13,9 +11,12 @@ export const reportMessageRequestSchema = z.object({
   ]),
   details: z
     .string()
+    .trim()
     .max(2000, "Details must be 2000 characters or fewer")
+    .transform((details) => details || undefined)
     .optional(),
-});
+}) satisfies z.ZodType<ReportMessageRequest>;
 
-export type ReportMessageRequest = z.infer<typeof reportMessageRequestSchema>;
-export type ReportCategory = ReportMessageRequest["category"];
+export type ReportMessageFormValues = z.input<
+  typeof reportMessageRequestSchema
+>;

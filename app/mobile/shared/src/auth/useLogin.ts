@@ -1,8 +1,8 @@
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "@concertable/shared/features/auth";
 import { userApi } from "@concertable/shared/features/user";
+import { mobileAuthSession } from "./mobileAuthSession";
 import { tokenStorage } from "./tokenStorage";
 import "../lib/apiClient";
 import "../lib/searchClient";
@@ -15,10 +15,9 @@ const REDIRECT_URI = AuthSession.makeRedirectUri();
 console.log("[auth] redirect URI:", REDIRECT_URI);
 
 export function useLogin() {
-  const setUser = useAuthStore((s) => s.setUser);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const processedCode = useRef<string | null>(null);
+  const [error, setError] = useState<string>();
+  const processedCode = useRef<string | undefined>(undefined);
 
   const discovery = AuthSession.useAutoDiscovery(Config.authAuthority);
 
@@ -43,7 +42,7 @@ export function useLogin() {
     processedCode.current = code;
 
     setLoading(true);
-    setError(null);
+    setError(undefined);
 
     AuthSession.exchangeCodeAsync(
       {
@@ -61,7 +60,7 @@ export function useLogin() {
           tokens.idToken ?? "",
         );
         const user = await userApi.getMe();
-        setUser(user);
+        mobileAuthSession.set(user);
       })
       .catch((e: Error) => {
         console.error("[auth] error:", e.message, e);
@@ -78,7 +77,7 @@ export function useLogin() {
 
   return {
     login: () => {
-      setError(null);
+      setError(undefined);
       loginPromptAsync();
     },
     signup: async (clientId: string = Config.authClientId) => {

@@ -9,7 +9,7 @@ export interface CheckoutSession {
 export interface CheckoutLabels {
   summaryTitle: string;
   submitLabel: string;
-  paymentHint: string | null;
+  paymentHint?: string;
 }
 
 export interface FlatPayment {
@@ -35,7 +35,7 @@ export type PaymentAmount =
 
 export interface PayeeSummary {
   name: string;
-  email: string | null;
+  email?: string;
 }
 
 export interface Checkout {
@@ -83,3 +83,8 @@ export interface Concert {
   artist: ConcertArtist;
   genres: Genre[];
 }
+
+export type UpdateConcertRequest = Pick<
+  Concert,
+  "name" | "about" | "price" | "totalTickets"
+>;

@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { MapPin } from "lucide-react-native";
-import type { Venue } from "@concertable/shared/features/venues";
+import type { Venue } from "@concertable/shared/features/venues/types";
 import type { ImageFile } from "@concertable/shared/types";
 import { Text } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";

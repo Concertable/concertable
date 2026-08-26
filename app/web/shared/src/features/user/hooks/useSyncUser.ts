@@ -9,7 +9,7 @@ export const meQueryKey = ["auth", "me"] as const;
 
 export function useSyncUser(getMe: () => Promise<User> = userApi.getMe) {
   const { isAuthenticated, isLoading } = useAuth();
-  const setUser = useAuthStore((s) => s.setUser);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const { data, isError } = useQuery({
     queryKey: meQueryKey,

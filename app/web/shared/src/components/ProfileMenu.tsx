@@ -28,7 +28,7 @@ interface Props {
 }
 
 export function ProfileMenu({ items }: Readonly<Props>) {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
   const auth = useAuth();
 
   async function handleLogout() {

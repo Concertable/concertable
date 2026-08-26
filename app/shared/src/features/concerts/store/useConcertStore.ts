@@ -6,10 +6,8 @@ interface ConcertStore {
   draft: Concert | undefined;
   editMode: boolean;
   isDirty: boolean;
-
   beginEdit: (concert: Concert) => void;
   endEdit: () => void;
-
   setName: (name: string) => void;
   setAbout: (about: string) => void;
   setPrice: (price: number) => void;
@@ -24,11 +22,9 @@ const notEditing = {
 
 export const useConcertStore = create<ConcertStore>((set) => ({
   ...notEditing,
-
-  beginEdit: (concert) => set({ ...notEditing, draft: { ...concert }, editMode: true }),
-
+  beginEdit: (concert) =>
+    set({ ...notEditing, draft: { ...concert }, editMode: true }),
   endEdit: () => set(notEditing),
-
   setName: (name) =>
     set(
       produce((state: ConcertStore) => {
@@ -37,7 +33,6 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         state.isDirty = true;
       }),
     ),
-
   setAbout: (about) =>
     set(
       produce((state: ConcertStore) => {
@@ -46,7 +41,6 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         state.isDirty = true;
       }),
     ),
-
   setPrice: (price) =>
     set(
       produce((state: ConcertStore) => {
@@ -55,7 +49,6 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         state.isDirty = true;
       }),
     ),
-
   setTotalTickets: (totalTickets) =>
     set(
       produce((state: ConcertStore) => {

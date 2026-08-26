@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import { attachAuth, configureClient } from "@concertable/shared/lib/client";
-import { useAuthStore } from "@concertable/shared/features/auth";
+import { mobileAuthSession } from "../auth/mobileAuthSession";
 import { tokenStorage } from "../auth/tokenStorage";
 
 export const configureMobileClient = (instance: AxiosInstance, baseURL: string) => {
@@ -10,7 +10,7 @@ export const configureMobileClient = (instance: AxiosInstance, baseURL: string) 
     () => tokenStorage.getAccessToken(),
     async () => {
       await tokenStorage.clear();
-      useAuthStore.getState().setUser(null);
+      mobileAuthSession.clear();
     },
   );
   return client;

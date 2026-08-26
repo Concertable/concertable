@@ -1,12 +1,10 @@
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import { useAuthStore } from "@concertable/shared/features/auth";
+import { mobileAuthSession } from "./mobileAuthSession";
 import { tokenStorage } from "./tokenStorage";
 import Config from "../lib/config";
 
 export function useLogout() {
-  const setUser = useAuthStore((s) => s.setUser);
-
   async function logout() {
     const [discovery, idToken] = await Promise.all([
       AuthSession.fetchDiscoveryAsync(Config.authAuthority),
@@ -14,7 +12,7 @@ export function useLogout() {
     ]);
 
     await tokenStorage.clear();
-    setUser(null);
+    mobileAuthSession.clear();
 
     if (discovery.endSessionEndpoint && idToken) {
       const logoutUri = `${Config.urlScheme}://logout`;

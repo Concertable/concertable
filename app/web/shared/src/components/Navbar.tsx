@@ -65,7 +65,7 @@ export function Navbar({
   showMailbox = true,
   onHeightChange,
 }: Readonly<Props>) {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
   const ref = useRef<HTMLElement>(null);
 
   useMountLayoutEffect(() => {

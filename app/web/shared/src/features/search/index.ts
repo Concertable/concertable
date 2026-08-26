@@ -21,8 +21,8 @@ export {
   useHeaderAmountQuery,
 } from "./hooks/useHeaderQuery";
 export { useSearchFilters } from "./hooks/useSearchFilters";
-export { useSearchState } from "./hooks/useSearchState";
 export { useSearchFiltersStore } from "./store/useSearchFiltersStore";
+export { useSearchState } from "./hooks/useSearchState";
 export { SearchSchema } from "./schemas/searchSchema";
 export type { SearchFilters } from "./schemas/searchSchema";
 export {
