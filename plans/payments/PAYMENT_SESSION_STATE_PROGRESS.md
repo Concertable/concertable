@@ -7,7 +7,7 @@
 - Branch: `Feature/payments_payment-session-state`
 - PR: ready #721 — https://github.com/Concertable/concertable/pull/721
 - Dependency/package gates: PR #597 and platform sync #645 supplied the implementation baseline; this producer's publication and generated platform-sync remain pending
-- Last reconciled: `2026-08-25` against `origin/main` `24145d1e826731f4510edb1cb1f69c7a1fa3f105`, merge head `305806eba2e1aeba20a46957ca466d2b575b1cb1`, Payment platform `0.1.0-alpha.0.1186`, and clean native/security review through that merge head
+- Last reconciled: `2026-08-26` against `origin/main` `421acb5b604e2c433a58d327beb634462e7739e1`, executable head `e133a066ff27f6a9afd8d902493c48a539ef27c8`, Payment platform `0.1.0-alpha.0.1189`, and clean native/security review through that executable head
 
 ## Current state
 
@@ -21,7 +21,8 @@ internal `PaymentSessionIdempotencyKey` value object, carries it through `IStrip
 it to provider text only inside the real and fake Stripe adapters. No reverse parser is added because no
 string ingress exists.
 
-PR #721 is ready. Current `origin/main` is merged in this commit. The Payment migration was re-scaffolded
+PR #721 is ready for its reviewed candidate to be pushed. Current `origin/main` is already an ancestor.
+The Payment migration was re-scaffolded
 from the combined model so the session operation/attempt schema and main's `DateTimeOffset` audit model both
 remain present. The protobuf compatibility tests retain the session contract assertions while main's assembly
 reference guards remain in the architecture tier. The latest conflict-free main merge leaves the Payment tree
@@ -31,8 +32,8 @@ platform-sync PR is green and merged. The roadmap item remains unchecked until t
 
 ## Next Steps
 
-Push the reviewed current-main candidate plus its review tail, verify the remote and PR head exactly match,
-then require exact-head CI green before entering `/merge`.
+Commit and push the review/ledger tail, verify the remote and PR head exactly match, then require exact-head
+CI green before entering `/merge`.
 
 ## Completed work
 
@@ -47,18 +48,23 @@ then require exact-head CI green before entering `/merge`.
 - Opened PR #721 and reconciled it with current `main`, most recently through this commit.
 - Replaced the string generator with an opaque idempotency-key value object at the Application/provider seam
   and added direct value-equality and canonical-format coverage in this commit.
+- Applied the interactive review: owned construction now lives on the request/fingerprint types; provider
+  shapes have precise files; on/off-session and selected payment method are caller-supplied, persisted and
+  fingerprinted; known Stripe failures use typed Results; embedded confirmation failures converge through
+  provider binding; and current presence no longer changes future-reuse policy.
 
 ## Verification
 
 - `api/initial-migrations.ps1`: succeeded; only the combined Payment model required a new scaffold.
-- Payment UnitTests build: succeeded with 0 warnings and 0 errors against platform `.1186`.
-- Focused session idempotency/provider/protobuf contract tests: 9 passed, 0 failed, 0 skipped.
-- Focused Payment contract/package architecture guards: 6 passed, 0 failed, 0 skipped.
+- Payment UnitTests: 525 passed, 0 failed, 0 skipped against platform `.1189`.
+- Focused Payment session IntegrationTests: 23 passed, 0 failed, 0 skipped.
+- Payment ArchitectureTests: 9 passed, 0 failed, 0 skipped.
+- Stripe SDK-level confirmation-decline and future-usage regression tests: 2 passed, 0 failed, 0 skipped.
 
 ## Reviews
 
 Review artifact: `reviews/Feature-payments_payment-session-state.md`. Full and incremental native/security
-review is clean through `305806eba2e1aeba20a46957ca466d2b575b1cb1`; NAT1 and SEC1–SEC3 are resolved.
+review is clean through `e133a066ff27f6a9afd8d902493c48a539ef27c8`; NAT1–NAT3 and SEC1–SEC3 are resolved.
 
 ## Decisions, discoveries, blockers, and deviations
 

@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `305806eba2e1aeba20a46957ca466d2b575b1cb1`  _(2026-08-25)_
-**Security-reviewed up to commit:** `305806eba2e1aeba20a46957ca466d2b575b1cb1`  _(2026-08-25)_
+**Reviewed up to commit:** `e133a066ff27f6a9afd8d902493c48a539ef27c8`  _(2026-08-26)_
+**Security-reviewed up to commit:** `e133a066ff27f6a9afd8d902493c48a539ef27c8`  _(2026-08-26)_
 
 > Range reviewed: `69df07b8..7e165607` (6 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -21,6 +21,13 @@
   Retry cancels the current Stripe object before the persisted attempt is evaluated for retry eligibility, so a retry of a nonterminal or authorized attempt can destroy the live payment or hold and only then return `OperationConflict`. Refresh and normalize provider truth, evaluate the explicit-retry policy, and cancel only after it approves a new attempt; test that retrying an authorized or nonterminal attempt does not call cancellation.
 - [x] **SEC3 — MEDIUM — security/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentSessionService.cs:138`
   Retry normalizes provider truth only while the persisted attempt is nonterminal. A stale persisted terminal failure can therefore cancel a provider object that has advanced to an active or unknown state. Normalize every retrieved observation before cancellation; for a protected terminal row, require known provider truth compatible with retry without rewriting history, and test persisted `Failed` plus provider `requires_capture` makes no cancellation and no successor.
+- [x] **NAT2 — HIGH — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/StripeSessionClient.cs:50`
+  Immediate off-session confirmation can return a Stripe error containing the created PaymentIntent. Preserve
+  that provider truth through the normal bind-and-transition path so an idempotent replay does not remain
+  indefinitely unbound in `Creating`.
+- [x] **NAT3 — MEDIUM — native/provider semantics** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/StripeSessionClient.cs:156`
+  Current customer presence and future payment-method reuse are distinct. Preserve Concertable's
+  `off_session` future-reuse policy independently of whether this payment is currently on-session.
 
 ## Incremental review — 2026-08-21
 
@@ -130,3 +137,14 @@ the architecture tier without reducing Contracts or Client assembly coverage. Im
 no branch-specific regression. The service-boundary, module-boundary, persistence, package,
 language/framework, changed-behaviour coverage, docs ownership, routed-skill, and plan/review lifecycle lenses
 were also clean.
+
+## Incremental review — 2026-08-26 (owner-model and Stripe remediation)
+
+> Range reviewed: `962dd420..e133a066` (2 commits).
+
+Native review retained NAT2 and NAT3; both are resolved in `e133a066f` with Stripe SDK-level regression
+coverage. The PaymentMethod ID concern was not retained after validation: the value follows Payment's
+existing published contract, is always paired with Payment's resolved Stripe Customer, and Stripe rejects
+methods attached to a different Customer. Incremental native and required Payment security re-review are
+clean through `e133a066f`. Unit, focused integration, architecture, migration, protobuf compatibility,
+authorization, secret-handling, persistence, and exception/cancellation paths are green.
