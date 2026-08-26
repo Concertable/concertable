@@ -3,6 +3,7 @@
 **Review status:** `complete`
 **Judgment:** `approved`
 **Reviewed up to commit:** `4356e872effb397c5f053ad528156d2765fb7379`
+**Security-reviewed up to commit:** `4356e872effb397c5f053ad528156d2765fb7379`
 
 Candidate: base `24d6f0693` → head `4356e872e`, branch `Plan/RepoSplit-Stage3-Hosting`, scope `all`.
 Repository-per-microservice migration — Stage 2 round-trip 2: make the four service `*.Hosting`
@@ -15,9 +16,13 @@ wire contracts from Application to Contracts; bump `ConcertablePlatformVersion` 
 - **Package topology + microservice/module boundaries** lens — one finding (F1), fixed.
 - Routed standards read: `packages`/`PACKAGES.md`, `module-structure`, `microservice-boundaries`,
   `csharp-style`/`csharp-naming`, `dependency-injection`, `persistence`, `integration-testing`.
-- **Security layer: not applicable** — no `.github/workflows/` path and no auth/secret/credential-vocabulary
-  path in the changed set (`Concertable.Auth` folder names do not match the `authoriz|authentic|credential`
-  patterns). No `Security-reviewed` marker required.
+- **Security layer: ran, clean.** The repo's `merge-gate.json` classifies `Concertable.Auth`,
+  `Concertable.Payment`, and `.Contracts` paths as security-sensitive; this diff touches all three, so a
+  security review ran over the sensitive changes. Verdict: security-neutral — the two moved records are
+  wire-identical (same `[MessageType]`, same fields), the Payment webhook handlers change only `using`
+  lines (no signature-verification/secret/authorization change), `Payment.Contracts` was already packable,
+  and the newly-packable `Ticket.Contracts`/`*.Hosting` expose only contract types and Aspire composition
+  (no secrets, no `InternalsVisibleTo`). Marker stamped.
 
 ## Findings
 
