@@ -273,13 +273,13 @@ commits is part of final closure and is not asserted here.
     validation and by wrapping Withdraw and Reject in the same serialized unit-of-work path. Deterministic
     Accept/Withdraw and Accept/Reject queue-order tests compile against the real HTTP operations.
 
-- [ ] **IR9 — HIGH — Concert financial concurrency/idempotency** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Executors/CompleteExecutor.cs:49`
+- [x] **IR9 — HIGH — Concert financial concurrency/idempotency** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Executors/CompleteExecutor.cs:49`
   Concert Cancel and Complete use unlocked reads, and settlement performs external money movement without a
   durable operation identity before saving local state. Serialize the lifecycle operations, persist a stable
   settlement identity before the provider call, use it as the provider idempotency key, and prove overlap and
   post-provider retry convergence.
 
-- [ ] **IR10 — MEDIUM — messaging subscription parity** — `api/Concertable.B2B/src/Concertable.B2B.Hosting/B2BTopology.cs:41`
+- [x] **IR10 — MEDIUM — messaging subscription parity** — `api/Concertable.B2B/src/Concertable.B2B.Hosting/B2BTopology.cs:41`
   B2B provisions a `RefundEscrowDeferredEvent` subscription but registers no runtime receiver or handler.
   Remove the orphan subscription when deferred refund is intentionally a no-op, or implement the convergence
   handler and enforce runtime/provisioning parity.
