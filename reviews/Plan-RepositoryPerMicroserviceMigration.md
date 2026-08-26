@@ -1,12 +1,15 @@
 # Review — Plan/RepositoryPerMicroserviceMigration
 
-- Review status: **complete**
-- Judgment: **approve**
+**Review status:** `complete`
+
+**Judgment:** `approved`
+
+**Reviewed up to commit:** `0c7b3514e`
+
 - PR: [#798](https://github.com/Concertable/concertable/pull/798)
 - Branch: `Plan/RepositoryPerMicroserviceMigration`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration`
 - Effort: high
-- **Reviewed up to commit:** `0c7b3514e`
 
 ## Candidate
 
