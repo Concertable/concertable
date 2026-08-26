@@ -5,10 +5,10 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `4928e164752eeba8370d8881367a3edbc0e7794c`  _(2026-08-26)_
-**Security-reviewed up to commit:** `4928e164752eeba8370d8881367a3edbc0e7794c`  _(2026-08-26)_
+**Reviewed up to commit:** `392a5d78274d4f8d6f29242ad4b8c272b038c3a2`  _(2026-08-26)_
+**Security-reviewed up to commit:** `392a5d78274d4f8d6f29242ad4b8c272b038c3a2`  _(2026-08-26)_
 
-> Range reviewed: `7d4dd12fb..4928e1647` (2 commits) — Phase 4 of tenant verification (admin review surface).
+> Range reviewed: `7d4dd12fb..392a5d782` (3 commits) — Phase 4 of tenant verification (admin review surface).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -37,3 +37,5 @@ Range: uncommitted redesign on top of `7fce9d54b`, driven by live design discuss
 - **`TECH_DEBT.md`**: the "enriches contact per row" entry's file reference updated post-merge; a new entry logs the `TenantType`-branch-in-`GetContactAsync` anti-pattern the `keyed-strategies` standard names directly, with a concrete design (`ITenantStrategy`/`ITenantStrategyFactory<TStrategy>` mirroring the existing `DealType`-keyed family, `ITenantContactResolver` as the first member) confirmed against the real `DealType` precedent rather than invented — and notes the `TenantContact`-per-module-duplication cleanup rides the same future PR, since the resolver needs a canonical return shape anyway.
 
 No new findings beyond what's already fixed inline above (the `ToOption()` compile fix and the region rename) — this section is a record of a design change, not a defect list.
+
+**Incremental security check (`4928e1647..392a5d782`)**: no findings. Confirmed every formerly-`[Admin]` action retains `[Admin]` directly on its method in the merged controller, `Get`/`SubmitDocuments` retain `[Authorize]`/`[HasPermission(TenantSettingsEdit)]`, no route collision or broadening, and the `TenantContact` struct change never lets a `default`/uninitialized value pass as present (`.ToOption()` maps absence to `None` exactly as before). Note: admin routes moved from `api/tenant/verification/*` to `api/verification/*` — a path change, not an authorization change; tests exercise the new paths.
