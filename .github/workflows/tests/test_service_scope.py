@@ -21,6 +21,11 @@ import yaml
 WORKFLOW = Path(__file__).resolve().parents[1] / "test.yml"
 
 ALL = "ALL"
+MATRIX_GUARDS = {
+    "unit-tests": "unit_projects",
+    "architecture-tests": "architecture_projects",
+    "integration-tests": "integration_projects",
+}
 
 CASES: list[tuple[str, list[str], str]] = [
     ("payment only", ["api/Concertable.Payment/src/X/Y.cs"], "Payment"),
@@ -92,6 +97,16 @@ def sh_quote(s: str) -> str:
     return "'" + s.replace("'", "'\\''") + "'"
 
 
+def matrix_guard_cases() -> list[tuple[str, bool, str]]:
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    cases = []
+    for job, output in MATRIX_GUARDS.items():
+        condition = spec["jobs"][job].get("if", "")
+        expected = f"needs.changes.outputs.{output} != '[]'"
+        cases.append((job, expected in condition, condition))
+    return cases
+
+
 def main() -> int:
     block = extract_block()
     failures = 0
@@ -102,7 +117,13 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} {name}: expected {expected!r}, got {actual!r}")
-    print(f"\n{len(CASES) - failures}/{len(CASES)} passed")
+    for name, ok, condition in matrix_guard_cases():
+        if not ok:
+            failures += 1
+        status = "ok  " if ok else "FAIL"
+        print(f"{status} {name} empty-matrix guard: {condition!r}")
+    total = len(CASES) + len(MATRIX_GUARDS)
+    print(f"\n{total - failures}/{total} passed")
     return 1 if failures else 0
 
 
