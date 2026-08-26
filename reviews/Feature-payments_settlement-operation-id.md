@@ -35,3 +35,21 @@
 
 - [x] **SEC1 — MEDIUM — secret handling** — `api/Concertable.Payment/src/Concertable.Payment.Domain/Entities/SettlementTransactionEntity.cs:46`
   Settlement replay persisted Stripe client secrets in plaintext. The entity and generated schema now persist only the safe PaymentIntent identity and state; an authorized matching replay retrieves any required secret directly from Stripe at the response boundary.
+
+## Review pass — 2026-08-26 — incremental
+
+**Candidate base:** `78900ee40185929538ad45ac367e9f07d7f9d260`
+**Candidate head:** `cf3caac66ac324510f4f365bba75348b6d30e8cb`
+**Candidate branch:** `Feature/payments_settlement-operation-id`
+**Candidate scope:** `incremental`
+**Candidate path-set:** `sha256:5f1ac0202d2acb3c4a7d7d7dba5174a3679d3d3dd5797a3efff1b993cc3a9421` `(30 paths)`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **NAT4 — MEDIUM — typed convergence** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Repositories/EscrowRepository.cs:48`
+  Reusing one release operation ID across two escrows now translates the duplicate reservation into the published `OperationConflict`. Covered at the service boundary and with two escrows in the real database.
+
+- [x] **NAT5 — MEDIUM — replay availability** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/ManagerPaymentService.cs:211`
+  A completed settlement that originally required 3DS now returns its locally persisted terminal outcome without calling Stripe. Added regression coverage proving replay succeeds without a provider call.
