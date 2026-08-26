@@ -50,3 +50,25 @@ Range `a7bbbc47a..4d1111157`: `api/Concertable.B2B/TECH_DEBT.md` only, logging t
 `IImageService`/`VenueService` startup flake investigated after two real merge_group failures (see PR
 history: run `33014869553` for this PR, run `33008827828` for the unrelated PR #802 hitting the byte-
 identical signature). No code path touched; no findings.
+
+**Correction, same day:** the entry above was wrong. Static tracing found the real, deterministic cause
+(below) and PR #802's identical failure was a merge-queue artifact (GitHub's merge queue tests stacked
+diffs of PRs ahead in the queue; #802's first attempt ran while this PR was still ahead of it and
+inherited its broken commit, then passed cleanly once this PR was dequeued) — not a second, coincidentally
+identical bug. The wrong entry has been removed rather than left to mislead a future retry.
+
+## Incremental review — 2026-08-26 (real root cause + fix)
+
+Range `4d1111157..HEAD`: this PR's own `VerificationService` change — adding `IVenueModule`/`IArtistModule`
+constructor dependencies for cross-module contact lookup — extends `ITenantModule`'s DI graph far enough
+to reach `IImageService` (`ITenantModule` → `IVerificationService`/`VerificationService` → new
+`IVenueModule`/`IArtistModule` → `VenueModule`/`ArtistModule` → `IVenueService`/`IArtistService` →
+`VenueService`/`ArtistService` → `IImageService`). `Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs`
+already depends on `ITenantModule`, and `Concertable.B2B.E2ETests/AppFixture.cs` builds its own standalone
+seed `Host` (~line 157) that never called `services.AddSharedImaging()` — unlike the real app host
+(`B2BWebHostExtensions.cs`) and the Workers host, both of which do. Resolving `IDbInitializer` (which
+depends on `IEnumerable<IDevSeeder>`, eagerly constructing every registered seeder including
+`ConcertDevSeeder`) therefore threw deterministically once this PR's dependency addition landed — not an
+environment race. Fixed by adding `services.AddSharedImaging()` to the seed host alongside the other
+shared registrations it already carries (build verified locally). A structural note for the underlying
+duplication-drift risk is logged in `api/Concertable.B2B/TECH_DEBT.md` (MED). No other findings in range.
