@@ -9,8 +9,54 @@
 
 ## Current state
 
-**Design-only. No implementation checkpoint has begun.** The plan document itself declares
-*"awaiting Tommy's review. No implementation checkpoint is authorized by this document alone."*
+**Approved by Tommy 2026-08-26 and in execution. Checkpoint 0 is largely delivered.** The epic is
+explicitly decoupled from the launch roadmap: `POLYREPO_ROADMAP` §6 gated the cut on the whole launch
+plan shipping, and that gate is withdrawn. The monorepo taxes every launch PR (full E2E, full checkout,
+full migration, blast radius over untouched services), so cutting accelerates launch rather than
+delaying it.
+
+### Verified rescope — 2026-08-26
+
+The plan's inventory was captured at `d3c399ec8` (2026-08-02) and had drifted 2873 commits. Four
+independent read-only audits re-verified every checkpoint against current `main`. Headline: the plan
+was **right about the hard parts and wrong about the easy ones**.
+
+| # | Checkpoint | Verified status |
+|---|---|---|
+| 0 | Baseline, permissions, inventory | **~70% done** — generator, ownership map, extraction map, coverage validator committed |
+| 1 | DB ownership + owner-local migrations | **0%** — Duende grants still on `B2BDb`; all 5 AppHosts still provision foreign DBs; 6 runtime programs still call `MigrateAsync` at startup |
+| 2 | Container-hosting seam | **~25%** — `*.Hosting` projects exist and are genuinely composition-only, but none is packable, no Dockerfile exists anywhere, no image mode, no boundary test |
+| 3 | Producer-owned seeding | **0%** — B2B has Contracts+Simulator; Customer and Search have neither |
+| 4 | Decouple full-stack E2E | **~0% — the long pole.** E2E references service `AppHost`, `Web` and every module `Infrastructure`; no TestKit exists |
+| 5 | Frontend platform boundaries | **~85% done** by the POLYREPO_FULLSTACK effort — six npm tiers published, cross-tree aliases gone; only `@concertable/build-config` remains |
+| 6–14 | Create repos; cut over platform, then auth → payment → search → customer → b2b | **0%** — target repos absent |
+| 15–16 | Prove deploy/rollback; archive monorepo | **0%** |
+
+**Corrections to the plan text, from evidence:**
+
+- **Checkpoint 5's constraint is superseded.** It says keep `@concertable/b2b` and `@customer/shared`
+  unpublished; both are already published tiers. Reality overtook the plan.
+- **Package naming drifted:** the plan says `@concertable/web-shared`; the published tier is
+  `@concertable/web`.
+- **Mirrors are a month stale** (last pushed 2026-07-27) and are bootstrap inputs only, never cutover
+  sources. Being pure `subtree split` output they hold no unique content, and the packages are linked
+  to `concertable` rather than to them, so they are renamed to `<name>-mirror-archive-<date>` to free
+  the canonical names — not deleted, which is irreversible and buys nothing.
+- **`Concertable/config` and `Concertable/infra` exist** (private, unused proof-of-concepts). Retained
+  untouched for production use; neither is a migration target.
+- **`Concertable/system` is renamed `Concertable/fleet`.** It composes and ships the fleet; "system"
+  read as core infrastructure and misdescribed it.
+- **Ownership gaps the plan never assigned, now settled:** `app/web/admin` → b2b (the admin console is
+  B2B-exclusive), `Concertable.Frontend.Hosting` → platform-dotnet, `app/mobile/shared` → platform-web.
+
+**Measured split shape** (`eng/repository-split/inventory.json`): b2b 71 projects / 7 workspaces;
+customer 57 / 3; platform-dotnet 45; payment 20; search 14; auth 8; fleet 2; platform-web 3 workspaces.
+A payment change would load a 20-project repo instead of a 217-project one.
+
+**Exactly one hard blocker exists in any production runtime closure:**
+`Concertable.Auth.Contracts -> Concertable.Messaging.Contracts`, which becomes a `PackageReference` on
+Auth extraction. All other 136 cross-repository edges live in AppHost, E2E, test or `*.Hosting`
+projects, each owned by its own checkpoint.
 
 The branch holds two docs-only commits on top of merge-base `d3c399ec8` (the plan's own stated
 planning baseline):
@@ -33,12 +79,36 @@ current truth, and re-verify at Checkpoint 0.
 
 ## Next Steps
 
-**Gated on Tommy's explicit approval of the plan design.** The plan is `awaiting Tommy's review`; its
-execution rules forbid starting any checkpoint until Tommy names it and says to execute it now. Once
-approved, the first executable step is **Checkpoint 0 — Baseline, permissions, and reproducible
-inventory** (`concertable`), which itself ends in a hard-stop review before any target repo is created.
-Prerequisite: this branch is 138 commits behind `origin/main` — sync before writing any Checkpoint 0
-code so the inventory is captured against current `main`, not the stale `d3c399ec8` baseline.
+### Revised sequencing — relief first, long pole in parallel
+
+The plan's strict order puts every service behind checkpoint 4 (E2E decoupling), which is the largest
+remaining piece. Auth and Payment do not need it: Auth needs only checkpoint 1, and Payment is the
+smallest service at 20 projects with no frontend. Front-loading them delivers a real standalone repo
+early instead of after the longest task.
+
+1. **Per-service CI scoping (own PR, no checkpoint).** `test.yml` classifies every diff into docs /
+   packages-only / everything-else, and the unit, architecture and integration jobs fan out over every
+   matching `.csproj` via `find api`. A one-line Search change therefore runs Auth, Payment, B2B,
+   Customer and Shared suites plus all five carve builds. Scope test selection to the changed service.
+   This is the single highest-relief change available and it lands in days, not months.
+2. **Finish checkpoint 0.** Give the 66 unclaimed root-level paths (agent hooks, build targets,
+   `initial-migrations.ps1`, dependency-cruiser config) an explicit replicate / dissolve / own
+   disposition; record the package version high-water marks; run the `git-filter-repo` dry runs.
+3. **Checkpoint 1 — DB ownership.** Move Duende persisted grants to `AuthDb`, drop foreign DB
+   provisioning from the standalone AppHosts, remove startup `MigrateAsync`. Unblocks Auth.
+4. **Checkpoint 2 — the container seam.** Packable `*.Hosting`, Dockerfiles, image publication, the
+   source-vs-image switch, the boundary test. The prerequisite for every extraction.
+5. **Front-load Payment.** With 1 and 2 done, extract Payment ahead of the plan's order.
+6. **Checkpoint 4 — E2E decoupling** proceeds in parallel from step 3 onward; it gates `fleet`,
+   customer and b2b, not auth or payment.
+
+### Interaction with the two open PRs
+
+Neither blocks this epic and this epic need not wait for them. #633 is B2B-only and the payment
+refactor is Payment-only, so each has exactly one destination repository and can be replayed there as
+an early PR rather than forced through the monorepo first. B2B is cut last, so #633 has the most
+runway of any open work. Checkpoints 1, 2 and 4 churn `main` repository-wide, so both branches need
+rebasing regardless of this epic's timing.
 
 ## Completed work
 

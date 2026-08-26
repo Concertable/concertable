@@ -1,8 +1,17 @@
 # Repository-per-microservice migration
 
-**Status:** awaiting Tommy's review. No implementation checkpoint is authorized by this document alone.
+**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state, the verified 2026-08-26
+rescope, and next steps live in `REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`; that ledger
+overrides any status or inventory figure in this document.
+
+**This document's inventory is a 2026-08-02 snapshot and has drifted.** Four audits re-verified every
+checkpoint against current `main` on 2026-08-26 — see the ledger's rescope table. Known corrections:
+checkpoint 5 is ~85% delivered and its "keep b2b/customer local" constraint is superseded; the
+`*.Hosting` projects of checkpoint 2 already exist; the `system` repository is renamed `fleet`.
 
 **Planning baseline:** `origin/main` at `d3c399ec8b4a4f4916b17764400ffbf73ba455a9` on 2026-08-02.
+**Re-verified against `origin/main` on 2026-08-26** (2873 commits later); machine-readable inventory
+and extraction map live in `eng/repository-split/`.
 
 This plan replaces the monorepo as the source of truth with independent repositories. Worktrees and
 sparse checkout are not part of the target architecture. They may be used only as disposable local
