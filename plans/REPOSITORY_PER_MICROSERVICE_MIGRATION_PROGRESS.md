@@ -77,6 +77,48 @@ this is expected and harmless while it stays design-only). The plan's inventory 
 against baseline `d3c399ec8` and may have drifted since — treat them as a baseline snapshot, not
 current truth, and re-verify at Checkpoint 0.
 
+## Verification — Payment extraction proven end to end (2026-08-26)
+
+A real `git-filter-repo` extraction was run, not a paper exercise. `git clone --single-branch --branch
+main` of the monorepo, then `--path api/Concertable.Payment/ --path-rename api/Concertable.Payment/:`.
+
+**Result: a coherent standalone repository.** 5078 commits filtered to **802**; 410 files; the root is
+already the target layout — `src/`, `tests/`, `tools/`, its own `Concertable.Payment.slnx`,
+`Directory.Build.props`, `Directory.Packages.props`, `nuget.config`, `AGENTS.md`, `ARCHITECTURE.md`,
+`README.md`, `TECH_DEBT.md`. No rename beyond stripping the prefix was needed.
+
+**`dotnet build Concertable.Payment.slnx --configuration Release` against the real GitHub Packages
+feed: the entire `src/` runtime compiled clean.** Every one of the 31 errors was in a single project,
+`Concertable.Payment.IntegrationTests`, and every one was `Concertable.Testing` / `SqlFixture`
+missing — the platform test library, referenced across the service boundary.
+
+**Root cause, and it is small.** `EnforceServiceBoundary` is deliberately off for test projects, so
+test projects reach platform test libraries by `ProjectReference` where runtime projects use
+`PackageReference`. That is invisible in the monorepo and fatal on extraction.
+
+**Measured blast radius — 45 non-E2E test-tier cross-repository `ProjectReference`s:**
+
+| Referenced project | Count | Already published? |
+|---|---:|---|
+| `Concertable.Testing` | 25 | yes |
+| `Concertable.Testing.Architecture` | 6 | yes |
+| `Concertable.Testing.Integration` | 5 | yes |
+| `Concertable.Seed.Shared` | 2 | yes |
+| `Concertable.Messaging.Domain` / `.Infrastructure` | 2 | yes |
+| `Concertable.Seed.Infrastructure` | 1 | yes |
+| `Concertable.{Auth,B2B,Customer,Payment}.Hosting` | 4 | **no — must be made packable** |
+
+**41 of 45 are one-line `ProjectReference` → `PackageReference` swaps against packages already on the
+feed.** Only the four `*.Hosting` references need a producer step first, which is checkpoint 2's
+packable-Hosting item. Affected test projects per target: b2b 11, customer 9, search 4, auth 3,
+payment 3, platform-dotnet 1, fleet 1.
+
+**Two environment findings that would have derailed the real run.** `git-filter-repo` is not installed
+as a git subcommand and must be invoked as its module script. And a fresh clone plus extraction exceeds
+Windows `MAX_PATH` on `Concertable.Payment.E2ETests.Helpers.UnitTests`; `core.longpaths=true` is
+mandatory on any clone used for extraction (the monorepo itself already sets it, so the failure appears
+only in a fresh clone).
+
 ## Next Steps
 
 ### Revised sequencing — relief first, long pole in parallel
