@@ -1,0 +1,175 @@
+# Source-to-target extraction map for the repository-per-microservice migration.
+#
+# Consumed by the git-filter-repo extraction runs. Every tracked path in the
+# monorepo must be claimed by exactly one target's `include`, be listed in
+# `dissolves`, or appear in `unclaimed` review output — silence is never
+# ownership. `eng/repository-split/inventory.py` proves project- and
+# workspace-level ownership is total; this file states it at path level.
+#
+# Path renames strip the monorepo's `api/Concertable.<Service>/` prefix, which
+# already leaves the `src/` + `tests/` layout the target repository contract
+# requires.
+
+version: 1
+
+filterRepo:
+  # Pinned in checkpoint 0; extraction is reproducible only against a fixed tool.
+  version: "2.47.0"
+  invocation: "git filter-repo --paths-from-file <target>.paths --force"
+
+targets:
+
+  auth:
+    repo: Concertable/auth
+    include:
+      - api/Concertable.Auth
+      - api/Concertable.Auth.Contracts
+    rename:
+      api/Concertable.Auth/: ""
+      api/Concertable.Auth.Contracts/: "src/Concertable.Auth.Contracts/"
+    notes:
+      - Duende persisted grants must move from B2BDb to AuthDb before extraction.
+      - Owns both Auth and Duende migration sets.
+
+  payment:
+    repo: Concertable/payment
+    include:
+      - api/Concertable.Payment
+    exclude:
+      - api/Concertable.Payment/tests/E2ETests
+    rename:
+      api/Concertable.Payment/: ""
+    notes:
+      - Cross-service E2E (Web, Workers, Stripe, Helpers) moves to fleet.
+
+  search:
+    repo: Concertable/search
+    include:
+      - api/Concertable.Search
+    exclude:
+      - api/Concertable.Search/tests/E2ETests
+    rename:
+      api/Concertable.Search/: ""
+    notes:
+      - Needs a Customer seed simulator before its standalone host can converge.
+
+  customer:
+    repo: Concertable/customer
+    include:
+      - api/Concertable.Customer
+      - app/web/customer
+      - app/mobile/customer
+      - app/customer/shared
+    exclude:
+      - api/Concertable.Customer/tests/E2ETests
+    rename:
+      api/Concertable.Customer/: ""
+      app/web/customer/: "app/web/"
+      app/mobile/customer/: "app/mobile/"
+      app/customer/shared/: "app/shared/"
+
+  b2b:
+    repo: Concertable/b2b
+    include:
+      - api/Concertable.B2B
+      - app/web/b2b
+      - app/web/admin
+      - app/mobile/b2b
+      - app/b2b/shared
+    exclude:
+      - api/Concertable.B2B/tests/E2ETests
+    rename:
+      api/Concertable.B2B/: ""
+      app/web/b2b/: "app/web/"
+      app/web/admin/: "app/web/admin/"
+      app/mobile/b2b/: "app/mobile/"
+      app/b2b/shared/: "app/shared/"
+    notes:
+      - The admin console is B2B-exclusive; customer and payment have no admin surface.
+      - Cut last: widest contract and seed fan-out.
+
+  platform-dotnet:
+    repo: Concertable/platform-dotnet
+    include:
+      - api/Concertable.Shared
+      - api/Concertable.Messaging
+      - api/Concertable.DataAccess
+      - api/Concertable.ServiceDefaults
+      - api/Concertable.AppHost.Shared
+      - api/Concertable.Frontend.Hosting
+    exclude:
+      # Cross-service test infrastructure belongs with the suites it serves.
+      - api/Concertable.Shared/tests/Concertable.Testing.E2E
+    rename:
+      api/: "src/"
+    notes:
+      - Owns Messaging Inbox/Outbox migrations.
+      - AppHost.Shared still mixes generic primitives with Auth-specific
+        composition; the Auth-specific half re-homes to auth before extraction.
+
+  platform-web:
+    repo: Concertable/platform-web
+    include:
+      - app/shared
+      - app/web/shared
+      - app/mobile/shared
+    rename:
+      app/shared/: "packages/shared/"
+      app/web/shared/: "packages/web/"
+      app/mobile/shared/: "packages/mobile/"
+
+  fleet:
+    repo: Concertable/fleet
+    include:
+      - api/Concertable.AppHost
+      - api/tests
+      - api/Concertable.Shared/tests/Concertable.Testing.E2E
+      - api/Concertable.B2B/tests/E2ETests
+      - api/Concertable.Customer/tests/E2ETests
+      - api/Concertable.Payment/tests/E2ETests
+      - api/Concertable.Search/tests/E2ETests
+      - scripts
+    rename:
+      api/Concertable.AppHost/: "apphost/"
+      api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
+      api/Concertable.B2B/tests/E2ETests/: "tests/b2b/"
+      api/Concertable.Customer/tests/E2ETests/: "tests/customer/"
+      api/Concertable.Payment/tests/E2ETests/: "tests/payment/"
+      api/Concertable.Search/tests/E2ETests/: "tests/search/"
+      api/tests/: "tests/shared/"
+    notes:
+      - "Composes and ships the fleet: umbrella AppHost, cross-service E2E, fleet manifest, IaC, deployment and rollback."
+      - "Renamed from `system`, which read as core infrastructure and misdescribed it."
+      - "E2E must lose service-implementation references (checkpoint 4) before this extraction can build standalone."
+
+  org-github:
+    repo: Concertable/.github
+    include:
+      - .github/workflows
+    notes:
+      - Only the reusable portions; monorepo-specific jobs are excluded by hand
+        during checkpoint 6A rather than by path.
+
+# Paths with no successor repository. Each target repo authors its own at the cut.
+dissolves:
+  - app/package.json
+  - app/package-lock.json
+  - api/Concertable.slnx
+  - AGENTS.md
+  - CLAUDE.md
+  - ARCHITECTURE.md
+
+# Paths deliberately retained by the archived monorepo only.
+archiveOnly:
+  - plans
+  - reviews
+  - docs
+  - Report.pdf
+  - PIPELINE_DEBT.md
+
+# Paths replicated into every target (each repo needs its own copy).
+replicated:
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .dockerignore
