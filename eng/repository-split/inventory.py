@@ -37,20 +37,27 @@ AREA_TARGETS = {
     "Concertable.DataAccess": "platform-dotnet",
     "Concertable.ServiceDefaults": "platform-dotnet",
     "Concertable.AppHost.Shared": "platform-dotnet",
-    "Concertable.AppHost": "system",
-    "tests": "system",
+    "Concertable.Frontend.Hosting": "platform-dotnet",
+    "Concertable.AppHost": "fleet",
+    "tests": "fleet",
 }
 
 FRONTEND_TARGETS = {
     "app/shared": "platform-web",
     "app/web/shared": "platform-web",
+    "app/mobile/shared": "platform-web",
     "app/web/b2b": "b2b",
     "app/b2b/shared": "b2b",
     "app/mobile/b2b": "b2b",
+    "app/web/admin": "b2b",
     "app/web/customer": "customer",
     "app/customer/shared": "customer",
     "app/mobile/customer": "customer",
 }
+
+# The npm workspace root exists only to bind the monorepo's workspaces together and
+# has no successor: each target repo declares its own root manifest at the cut.
+DISSOLVES_AT_CUT = {"app"}
 
 
 def tracked_files() -> list[str]:
@@ -194,7 +201,7 @@ def build_frontend(files: list[str]) -> dict:
         }
         target = next(
             (t for prefix, t in FRONTEND_TARGETS.items() if folder == prefix or folder.startswith(prefix + "/")),
-            None,
+            "(dissolves)" if folder in DISSOLVES_AT_CUT else None,
         )
         workspaces[folder] = {
             "packageName": data.get("name"),
