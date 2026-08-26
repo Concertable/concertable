@@ -136,7 +136,20 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
 `Concertable/agent-standards`, all delivered as plugins; `api/AGENTS.md` is 78 lines of pointers with no
 `@`-imports. `docs/INDEX.md` maps topic to owner.
 
-**When the cut runs — gated on the launch plan.** Executing the cut — creating the service repos and
+- [ ] 🟡 **The cut itself** `platform/polyrepo-cut` — owned by
+  [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) /
+  [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md).
+  Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
+  `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
+
+**The launch gate below is WITHDRAWN (2026-08-26.)** It is kept for the reasoning it records, but it
+inverted the trade-off: the monorepo taxes every launch PR — full E2E, full checkout, full migration,
+blast radius over untouched services — so the cut accelerates launch rather than delaying it. The
+sequencing insight replacing it: the monorepo survives as the fallback for local development and
+cross-service E2E until the final stage, so a service can be extracted before its AppHost and E2E
+story is perfect.
+
+**~~When the cut runs — gated on the launch plan.~~** Executing the cut — creating the service repos and
 deleting the monorepo — does **not** begin until the entire launch plan
 ([`plans/launch/LAUNCH_ROADMAP.md`](../launch/LAUNCH_ROADMAP.md)) is delivered; that is months out. What ran
 first was the polyrepo-*ready* corpus work (tracked by `docs/polyrepo-ready` in
