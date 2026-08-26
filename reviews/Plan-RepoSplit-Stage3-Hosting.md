@@ -1,7 +1,7 @@
 # Review — Plan/RepoSplit-Stage3-Hosting (PR #809)
 
-**Review status:** complete
-**Judgment:** approved
+**Review status:** `complete`
+**Judgment:** `approved`
 **Reviewed up to commit:** `4356e872effb397c5f053ad528156d2765fb7379`
 
 Candidate: base `24d6f0693` → head `4356e872e`, branch `Plan/RepoSplit-Stage3-Hosting`, scope `all`.
