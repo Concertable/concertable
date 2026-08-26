@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Judgment:** `changes-requested`
-**Reviewed up to commit:** `78900ee40185929538ad45ac367e9f07d7f9d260`
-**Security-reviewed up to commit:** `78900ee40185929538ad45ac367e9f07d7f9d260`
+**Judgment:** `clean`
+**Reviewed up to commit:** `ae5fd3e5fef9d05546e7d9e82bc8aad79e8c2bbd`
+**Security-reviewed up to commit:** `ae5fd3e5fef9d05546e7d9e82bc8aad79e8c2bbd`
 
 ## Review pass — 2026-08-26 — full
 
@@ -53,3 +53,17 @@
 
 - [x] **NAT5 — MEDIUM — replay availability** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/ManagerPaymentService.cs:211`
   A completed settlement that originally required 3DS now returns its locally persisted terminal outcome without calling Stripe. Added regression coverage proving replay succeeds without a provider call.
+
+## Review pass — 2026-08-26 — incremental
+
+**Candidate base:** `cf3caac66ac324510f4f365bba75348b6d30e8cb`
+**Candidate head:** `ae5fd3e5fef9d05546e7d9e82bc8aad79e8c2bbd`
+**Candidate branch:** `Feature/payments_settlement-operation-id`
+**Candidate scope:** `incremental`
+**Candidate path-set:** `sha256:72a99cb867cfaab10e653d722e6dadf2240cbeb792cc4ab3cd8e8dec8f4dbab1` `(8 paths)`
+**Work-order mode:** `append`
+**Pass judgment:** `clean`
+
+### Findings
+
+None.
