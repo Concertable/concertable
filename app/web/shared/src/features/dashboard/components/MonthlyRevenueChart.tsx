@@ -7,7 +7,7 @@ import {
   YAxis,
 } from "recharts";
 import dayjs from "dayjs";
-import type { MonthlyRevenuePoint } from "@concertable/shared/features/dashboard";
+import type { MonthlyRevenuePoint } from "@concertable/shared/features/dashboard/types";
 import { formatCurrency } from "@concertable/shared/lib";
 import { ChartTooltip } from "./ChartTooltip";
 

@@ -1,4 +1,4 @@
-import type { User } from "@concertable/shared/features/auth";
+import type { User } from "@concertable/shared/features/auth/types";
 import { useMobileAuthStore } from "./store/useMobileAuthStore";
 
 export const mobileAuthSession = {

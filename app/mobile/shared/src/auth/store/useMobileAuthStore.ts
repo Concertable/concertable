@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { User } from "@concertable/shared/features/auth";
+import type { User } from "@concertable/shared/features/auth/types";
 
 interface MobileAuthState {
   user?: User;

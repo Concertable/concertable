@@ -1,6 +1,6 @@
 import { FlatList, Pressable } from "react-native";
 import { useAutocompleteQuery } from "@concertable/shared/features/search";
-import type { AutocompleteResult, HeaderType } from "@concertable/shared/features/search";
+import type { AutocompleteResult, HeaderType } from "@concertable/shared/features/search/types";
 import { Text } from "@/components/ui/text";
 
 interface Props {

@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 import type {
   ReviewExcerpt,
   ReviewSummary,
-} from "@concertable/shared/features/dashboard";
+} from "@concertable/shared/features/dashboard/types";
 
 function timestampLabel(iso: string) {
   const at = dayjs(iso);

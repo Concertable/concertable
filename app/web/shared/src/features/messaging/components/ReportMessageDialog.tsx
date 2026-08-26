@@ -5,9 +5,9 @@ import {
   REPORT_CATEGORY_LABELS,
   reportMessageRequestSchema,
   useReportMessage,
-  type ReportMessageFormValues,
-  type ReportMessageRequest,
 } from "@concertable/shared/features/messaging";
+import type { ReportMessageRequest } from "@concertable/shared/features/messaging/types";
+import type { ReportMessageFormValues } from "@concertable/shared/features/messaging/schemas/reportMessageRequestSchema";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

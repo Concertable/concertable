@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { FlatList, View } from "react-native";
 import { useHeaderQuery, useSearchFilters } from "@concertable/shared/features/search";
-import type { Header, HeaderType } from "@concertable/shared/features/search";
+import type { Header, HeaderType } from "@concertable/shared/features/search/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConcertHeaderCard } from "./headers/ConcertHeaderCard";
