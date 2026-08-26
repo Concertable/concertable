@@ -23,7 +23,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = Path(__file__).resolve().parent / "inventory.json"
 
-# Target repository ownership, per REPOSITORY_PER_MICROSERVICE_MIGRATION.md.
+# Target repository ownership, per REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md.
 # An area absent from this map is reported as unassigned rather than guessed.
 AREA_TARGETS = {
     "Concertable.B2B": "b2b",

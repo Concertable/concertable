@@ -1,11 +1,13 @@
 # Repository-per-microservice migration progress
 
-- Plan: `plans/REPOSITORY_PER_MICROSERVICE_MIGRATION.md`
+- Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
+- Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
+- Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration`
 - Branch: `Plan/RepositoryPerMicroserviceMigration`
 - PR: not opened (`gh pr list --head Plan/RepositoryPerMicroserviceMigration --state all` → empty)
-- Dependency/package gates: none active. No checkpoint has been implemented, so nothing is published, pinned, or platform-synced against this plan.
-- Last reconciled: 2026-08-04, reconstructed from git + PR evidence (this ledger did not previously exist).
+- Dependency/package gates: none active. No stage has been implemented, so nothing is published, pinned, or platform-synced against this plan.
+- Last reconciled: **2026-08-26** — approved, rescoped against current `main`, Payment extraction proven; branch pushed.
 
 ## Current state
 
@@ -58,24 +60,13 @@ A payment change would load a 20-project repo instead of a 217-project one.
 Auth extraction. All other 136 cross-repository edges live in AppHost, E2E, test or `*.Hosting`
 projects, each owned by its own checkpoint.
 
-The branch holds two docs-only commits on top of merge-base `d3c399ec8` (the plan's own stated
-planning baseline):
+**Delivered on this branch (pushed, no PR yet):** the re-baseline onto current `main` (was 2873
+behind), the `eng/repository-split/` inventory generator with its `--check` drift gate, the complete
+target ownership map, the `map.yaml` extraction map with its coverage validator (4303 paths, 0
+duplicate claims), per-service CI test scoping with a 14-case classifier test, and this rescope.
 
-- `91e92c445 docs(plan): design repository-per-microservice migration` — authored the plan; deleted
-  the superseded `plans/POLYREPO.md` and `plans/SPLIT_TIME_E2E_STRATEGY.md`; touched
-  `api/Concertable.B2B/TECH_DEBT.md` and `api/Concertable.Customer/TECH_DEBT.md` (1 line each).
-- `3f8cb3494 docs(plan): resolve migration review blockers` — revised the plan (+55/-33) and
-  `plans/DEPLOYMENT.md` to resolve design-review blockers.
-
-Working tree is clean. No `api/**`, `app/**`, workflow, or migration code has changed on this branch.
-
-The plan breaks the migration into **17 checkpoints (0–16)**, each a separate PR/merge boundary, most
-with an explicit human-review hard stop. **None have started.**
-
-Staleness to be aware of: the branch is **138 commits behind `origin/main`** (docs-only branch, so
-this is expected and harmless while it stays design-only). The plan's inventory numbers were captured
-against baseline `d3c399ec8` and may have drifted since — treat them as a baseline snapshot, not
-current truth, and re-verify at Checkpoint 0.
+**The plan document's 17 checkpoints are superseded by the nine stages** in `## Next Steps`. Its
+inventory figures are a 2026-08-02 snapshot; this ledger overrides them.
 
 ## Verification — Payment extraction proven end to end (2026-08-26)
 
@@ -231,8 +222,8 @@ No code review applies — there is no implementation to review yet.
 
 ```
 cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration
-Read plans/REPOSITORY_PER_MICROSERVICE_MIGRATION.md and
-plans/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md.
+Read plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md and
+plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md.
 
 The migration is APPROVED and executing, decoupled from the launch roadmap. The plan document's
 inventory is a stale 2026-08-02 snapshot; this ledger overrides it. Nine stages remain, listed in
