@@ -194,7 +194,7 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Unit tests for the service; integration tests for the controller (round-trip submit → read status).
 - [x] Build + focused tests; commit.
 
-### Phase 3 — Cross-module gate + enforcement at publication and settlement ✅ implemented, PR #792 (draft, awaiting CI)
+### Phase 3 — Cross-module gate + enforcement at publication and settlement ✅ merged (`564649a26`, PR #792)
 
 - [x] Extend `ITenantModule` (Tenant.Contracts) with `Task<bool> IsVerifiedAsync(Guid tenantId,
   CancellationToken ct = default)`; implement in `TenantModule`/`TenantService` as
