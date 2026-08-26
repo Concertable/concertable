@@ -194,28 +194,28 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Unit tests for the service; integration tests for the controller (round-trip submit → read status).
 - [x] Build + focused tests; commit.
 
-### Phase 3 — Cross-module gate + enforcement at publication and settlement
+### Phase 3 — Cross-module gate + enforcement at publication and settlement ✅ implemented, PR #792 (draft, awaiting CI)
 
-- [ ] Extend `ITenantModule` (Tenant.Contracts) with `Task<bool> IsVerifiedAsync(Guid tenantId,
+- [x] Extend `ITenantModule` (Tenant.Contracts) with `Task<bool> IsVerifiedAsync(Guid tenantId,
   CancellationToken ct = default)`; implement in `TenantModule`/`TenantService` as
   `verification?.Status == Approved`, `false` when no row exists — fail-closed, same posture as
   `IsTaxComplianceCompleteAsync`.
-- [ ] **Opportunity publication gate**: inject `ITenantModule` into `OpportunityService`; in
+- [x] **Opportunity publication gate**: inject `ITenantModule` into `OpportunityService`; in
   `CreateAsync` and `CreateMultipleAsync`, after resolving the active tenant's venue, check
   `IsVerifiedAsync(tenantContext.GetTenantId())` before creating the `OpportunityEntity`. Add
   `OpportunityMutationError.VenueNotVerified` to the `[Union]` (Dunet) with
   `ErrorDefinition.Forbidden<VenueNotVerified>("This venue is not yet verified.")` and error code
   `opportunity.venue_not_verified`, following `VenueNotFound`'s shape exactly.
-- [ ] **Settlement gate**: in `FinishExecutor.FinishAsync`, immediately after the existing
+- [x] **Settlement gate**: in `FinishExecutor.FinishAsync`, immediately after the existing
   tax-compliance pair check, add the same pattern for verification —
   `tenantModule.IsVerifiedAsync(supplierTenantId)` and `IsVerifiedAsync(customerTenantId)` — returning
   a new `SettlementOutcome.DeferredPendingVerification` case on failure, with a matching
   `logger.SettlementDeferredPendingVerification(...)` `LoggerMessage`. No sweep changes needed:
   `ConcertCompletionRunner` already retries every non-`Settled` outcome hourly.
-- [ ] Integration tests: `TenantVerificationGateApiTests` (settlement defers/settles) mirroring
+- [x] Integration tests: `TenantVerificationGateApiTests` (settlement defers/settles) mirroring
   `SelfBillingAgreementGateApiTests`/`ConcertPayoutComplianceGateApiTests`, and an opportunity-creation
   test proving an unverified tenant's `POST` is rejected.
-- [ ] Build + focused tests; commit.
+- [x] Build + focused tests; commit.
 
 ### Phase 4 — Admin review + cross-module contact + notification
 

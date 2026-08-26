@@ -3,126 +3,118 @@
 - Plan: `plans/launch/TENANT_VERIFICATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/tenant-verification`
-- Worktree: none — Phase 2's worktree closed after merge; Phase 3 opens a fresh one
-- Branch: next proposed `Feature/launch_tenant-verification` (Phase 2's branch merged and deleted)
-- PR: [#784](https://github.com/Concertable/concertable/pull/784) — **MERGED**
-  (`1867f0a7200b245ebd7b9b66662a144c606a028f`), `full-e2e` label (new HTTP endpoint — a positive trigger).
-  Its causally-linked publish opened sync PR #787 (`0.1.0-alpha.0.1188`), which was itself superseded
-  (closed, not merged) by PR #789 (`0.1.0-alpha.0.1189`) — a later, unrelated publish from this session's
-  own docs PR #788 — before #787 could land; ownership transferred to that producer, matching the
-  "only one platform-sync PR is ever live" pattern already seen in Phase 1.
+- Worktree: `.worktrees/Feature-launch_tenant-verification`
+- Branch: `Feature/launch_tenant-verification`
+- PR: [#792](https://github.com/Concertable/concertable/pull/792) — **DRAFT**, `8be14e1b5`, awaiting
+  exact-head CI (build/carve/unit-tests/integration-tests). Not yet marked ready — do that once CI is
+  green, per this repo's `open-pr`/`merge` procedure.
 - Dependency/package gates: none — single-service (`Concertable.B2B`), no published-contract boundary
   crossed
-- Last reconciled: 2026-08-25, Phase 2 fully terminal (merged, reviewed clean, sync resolved by
-  supersession)
+- Last reconciled: 2026-08-26, Phase 3 implemented, reviewed clean (native + security, no findings),
+  pushed; PR opened as draft, CI not yet observed
 
 ## Current state
 
-Phase 1 and Phase 2 are both merged to `main` and fully terminal. No implementation started yet on Phase 3
-(cross-module `IsVerifiedAsync` gate + enforcement at opportunity publication and settlement).
+Phases 1–3 are implemented. Phase 3 (cross-module `IsVerifiedAsync` gate + enforcement at opportunity
+publication and settlement) is complete on `Feature/launch_tenant-verification`, committed
+(`8be14e1b5`), reviewed clean, and pushed as draft PR #792. Nothing uncommitted in the worktree.
 
 ## Next Steps
 
-1. `/open-worktree Feature/launch_tenant-verification` (branch off fetched `origin/main`) and start Phase 3
-   of `TENANT_VERIFICATION_PLAN.md` (cross-module gate + enforcement):
-   - Extend `ITenantModule` (Tenant.Contracts) with `Task<bool> IsVerifiedAsync(Guid tenantId,
-     CancellationToken ct = default)`; implement in `TenantModule`/`TenantService` as
-     `verification?.Status == Approved`, `false` when no row exists — fail-closed, matching
-     `IsTaxComplianceCompleteAsync`'s posture.
-   - **Opportunity publication gate**: inject `ITenantModule` into `OpportunityService`; in `CreateAsync`
-     and `CreateMultipleAsync`, check `IsVerifiedAsync(tenantContext.GetTenantId())` before creating the
-     `OpportunityEntity`. Add `OpportunityMutationError.VenueNotVerified` to the `[Union]` (Dunet) with
-     `ErrorDefinition.Forbidden<VenueNotVerified>(...)` and error code `opportunity.venue_not_verified`,
-     following `VenueNotFound`'s shape exactly.
-   - **Settlement gate**: in `FinishExecutor.FinishAsync`, immediately after the existing tax-compliance
-     pair check, add the same pattern for verification — `IsVerifiedAsync(supplierTenantId)` and
-     `IsVerifiedAsync(customerTenantId)` — returning a new `SettlementOutcome.DeferredPendingVerification`
-     on failure, with a matching `logger.SettlementDeferredPendingVerification(...)` `LoggerMessage`. No
-     sweep changes needed: `ConcertCompletionRunner` already retries every non-`Settled` outcome hourly.
-   - Integration tests: `TenantVerificationGateApiTests` (settlement defers/settles, mirroring
-     `SelfBillingAgreementGateApiTests`/`ConcertPayoutComplianceGateApiTests`) and an opportunity-creation
-     test proving an unverified tenant's `POST` is rejected.
-   - Build + focused tests; commit; review (check for a stale security marker if the diff touches a
-     `Controller[A-Za-z]*\.cs$` path or `.Contracts` — it will, here); push to a new PR.
-2. Update this ledger **in the normal checkout** — never inside the delivery worktree.
+1. Watch PR #792's CI (build, carve-*, unit-tests, integration-tests) reach green on `8be14e1b5`.
+   - If CI is green: mark the PR ready for review, then proceed to `/merge` — tier selection is the
+     `merge` skill's Step 4 call (this PR touches a controller/opportunity endpoint and a settlement
+     workflow, so expect `full-e2e`, but let the merge skill decide).
+   - If CI is red: diagnose in the `Feature-launch_tenant-verification` worktree per the
+     `failing-tests`/`e2e-*` skills' tier table, fix, push a new commit to the same PR, re-check.
+2. Once PR #792 merges: run `./scripts/worktrees.ps1 close -Worktree
+   .worktrees/Feature-launch_tenant-verification -PullRequest 792 -PlanManaged` from the normal
+   checkout, then update this ledger (Phase 3 → merged/terminal) and open a fresh worktree for
+   **Phase 4** (admin review + cross-module contact + notification) — see `TENANT_VERIFICATION_PLAN.md`
+   §Phase 4 for its full scope.
+3. Update this ledger **in the normal checkout** — never inside the delivery worktree.
 
 ## Completed work
 
 - **Phase 1 — Domain** (PR #772, **merged** `5222bce51`, reviewed clean): `TenantVerificationEntity`
   (`Pending`/`Approved`/`Rejected`, transitions validated through `Concertable.Kernel.StateMachine<TState,
-  TTrigger>` — the first real consumer of that shared abstraction in this codebase) and
-  `VerificationDocumentEntity` (append-only evidence, `Licence`/`ProofOfAddress`/`CompanyRegistration`).
-  EF configurations composed into `TenantDbContext` (confirmed no new tenancy stance needed —
-  `TenantDbContext` is already unscoped). Migration re-scaffolded via `./initial-migrations.ps1`.
-  19 unit tests. Skip-e2e tier (domain-only, no HTTP/UI/published-contract surface). Its version-sync
-  (#778) was superseded by an unrelated later publish — Phase 1's own delivery obligation ended at its own
-  successful publish.
+  TTrigger>`) and `VerificationDocumentEntity` (append-only evidence). 19 unit tests. Skip-e2e tier.
 - **Phase 2 — Tenant-facing submission API** (PR #784, **merged** `1867f0a72`, reviewed clean):
-  `IVerificationService`/`VerificationService` (`GetStatusAsync`, `SubmitAsync` — create-or-resubmit,
-  race-safe insert via `TryInsertAsync`), `VerificationController` (`api/organization/verification`: `GET`
-  no special permission, `POST documents` gated on `TenantSettingsEdit` + `RateLimitPolicies.Upload`),
-  evidence upload via `IBlobStorageService` with content-type + size + magic-byte validation
-  (PDF/JPEG/PNG). `EvidenceUpload` keeps the service free of `IFormFile` so it stays callable outside an
-  HTTP request; `VerificationDocumentEntity.Create(tenantId, documentType, fileExtension, uploadedAt)`
-  derives its own blob name. 174 unit tests (service + validators + domain). Integration tests cover the
-  submit/resubmit round-trip, the pending/approved eligibility gate, content-type/byte-mismatch rejection,
-  and the `TenantSettingsEdit` permission boundary. `full-e2e` tier (new HTTP endpoint). Its version-sync
-  (#787) was superseded by an unrelated later publish (#789, from this session's own docs PR #788) — Phase
-  2's own delivery obligation ended at its own successful publish.
-  Separately logged as tech debt (not fixed in this phase — pre-existing, unrelated to verification):
-  `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md` and `.../Artist/TECH_DEBT.md` — `Genres` should be
-  set-shaped to prevent duplicate tags, pending EF Core `PrimitiveCollection`/`HashSet<T>` verification.
+  `IVerificationService`/`VerificationService`, `VerificationController`
+  (`api/organization/verification`), evidence upload via `IBlobStorageService`. 174 unit tests, full
+  integration coverage. `full-e2e` tier. Tech debt logged separately (`Genres` set-shaping, unrelated to
+  verification) in Concert/Artist `TECH_DEBT.md`.
+- **Phase 3 — Cross-module gate + enforcement** (PR #792, **draft, pushed** `8be14e1b5`):
+  `ITenantModule.IsVerifiedAsync(tenantId)` (fail-closed, mirrors `IsTaxComplianceCompleteAsync`) via
+  `TenantModule` → `VerificationService.IsVerifiedAsync` → `VerificationRepository.IsApprovedAsync`
+  (a new `Any` query, no `.Include(Documents)`). Enforced at
+  `OpportunityService.CreateAsync`/`CreateMultipleAsync` (new
+  `OpportunityMutationError.VenueNotVerified`, `opportunity.venue_not_verified`, Forbidden) and
+  `FinishExecutor.FinishAsync` (new `SettlementOutcome.DeferredPendingVerification`, logged via
+  `Log.SettlementDeferredPendingVerification`, positioned immediately after the existing tax-compliance
+  pair check and before the self-billing-agreement gate — no sweep changes needed). Seed fixtures
+  extended: `SeedState.Verifications` gives every tax-compliant seeded tenant an `Approved` row (via new
+  `VerificationFactory.Approved`, persisted by the existing `TenantTestSeeder`/`TenantDevSeeder`), and a
+  dedicated `SeedState.UnverifiedTenant`/`UnverifiedVenueManager` fixture (tax-complete, venue-owning, but
+  no verification row — outside `SeedUsers.Managers`, so it touches no shared cross-service seed package)
+  isolates the new gate from the pre-existing tax-compliance one. New tests:
+  `TenantVerificationGateApiTests` (settlement defers/settles) and
+  `OpportunityApiTests.Create_ShouldReturn403_WhenVenueNotVerified`. 174 + 234 unit tests still green.
 
 ## Verification
 
-- `dotnet test Concertable.B2B.Tenant.UnitTests` (2026-08-25, commit `ca7b8ba0d`): 174 passed, 0 failed.
-- `dotnet build Concertable.B2B.Tenant.Api.csproj` and the full `Concertable.B2B.Tenant.IntegrationTests`
-  graph (2026-08-25, commit `ca7b8ba0d`): 0 errors — pulls in the whole `Concertable.B2B.Web` service.
-- PR #784's own CI (build, every carve, every unit/integration/architecture-tests project, `full-e2e`):
-  all green before enqueueing; merge-queue `merge_group` run also green.
+- `dotnet test Concertable.B2B.Tenant.UnitTests` and `Concertable.B2B.Concert.UnitTests` (2026-08-26,
+  commit `8be14e1b5`): 174 + 234 passed, 0 failed.
+- `dotnet build` for `Concertable.B2B.Web`, `Concertable.B2B.Tenant.IntegrationTests`,
+  `Concertable.B2B.Concert.IntegrationTests` (2026-08-26, commit `8be14e1b5`): 0 errors. Per this repo's
+  `remote-validation` policy, the integration/E2E suites themselves run on PR CI, not locally.
+- PR #792's own CI: not yet observed — draft, just pushed.
 
 ## Reviews
 
-`reviews/Feature-launch_tenant-verification.md` — spent, deleted with this phase's close-out (per the
-review-lifecycle standard: a review file is a work order for its branch, never an archive, and dies with
-the thing it gates). Final state before deletion: reviewed up to `ecc99648b` (marker) / security-reviewed
-up to `94720507` (re-run after later commits touched `VerificationController.cs` again). 10 findings across
-two rounds (native+security tooling, then a manual user re-review), all fixed or `[wontfix]`-justified —
-see git history (`reviews/Feature-launch_tenant-verification.md` at commit `ecc99648b`) for the full list.
-The manual re-review's most load-bearing findings, kept here since the review file itself is gone:
-`IReadOnlyList<T>` over `List<T>` on every collection return (`result-carriers`), C# 14 `extension()`
-blocks over legacy `this`-parameter extension methods (`csharp-style`), a repository never keeps a redundant
-concrete-context field when the inherited `Context.Query<T>()` already does the job (`persistence`), a
-domain entity deriving its own naming convention rather than infrastructure building it ad hoc (DDD), a
-service never taking an ASP.NET Core type (`IFormFile`) directly so it stays callable outside HTTP, and a
-single-query method named for what it returns, not for the scope it already runs under by default
-(`csharp-naming`).
+Reviewed at commit `8be14e1b5` — native layer (correctness, reuse, simplification, efficiency, error
+handling) and the repo's architecture lenses (service isolation — n/a, no service boundary crossed;
+module boundaries; data seeding; language/framework conventions; test coverage): **no findings**.
+Security-reviewed at the same commit (diff touches `.Contracts`): **no findings** — tenant-id sourcing
+verified server-side at both call sites (`ITenantContext`/`IDealPayeeResolver`, never caller-supplied),
+`IsApprovedAsync`'s EF query is parameterized LINQ, the new seed fixture doesn't leak outside dev/test
+seeders. Review file deleted (untracked, no findings — spent immediately per the review-lifecycle
+standard).
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Verification is modeled on `Tenant` (new `TenantVerificationEntity`), not duplicated onto
-  `Venue`/`Artist` — see plan §1.1 for the full rationale (mirrors `TenantEntity.TaxCompliance` +
-  `ITenantModule.IsTaxComplianceCompleteAsync`, which `FinishExecutor` already consumes as a fail-closed
-  gate). This is a load-bearing decision for every later phase — do not re-derive or re-litigate it.
+- Verification stays modeled on `Tenant` (`TenantVerificationEntity`), not duplicated onto
+  `Venue`/`Artist` — plan §1.1, load-bearing for every phase, do not re-litigate.
 - Only two enforcement points, exactly as scoped: opportunity publication and settlement. Artist
-  Application/Apply is deliberately not gated — see plan §1.4.
-- Phase 6 (removing `VenueEntity.Approved` and its admin surface) must not start before Phase 3's new
-  gate is merged and green — the old signal cannot be dropped before the new one is proven.
-- `TenantVerificationEntity` raises `TenantVerificationChangedDomainEvent` on every transition (Submit/
-  Resubmit/Approve/Reject) with no handler yet — legal per the domain-events standard ("zero handlers for
-  an event is valid"). No consumer is scoped in this plan; a future phase (or a separate one) may add a
-  pre-commit handler if a real need arises (e.g. activity-feed integration). Do not add one speculatively.
-- A cross-repo standards gap surfaced during Phase 2's review: `tomjseery/dotagents` PR #12 (framework
-  types off service signatures; name a controller's lone query action `Get`, disambiguate only past one;
-  a single-query service method named for what it returns) is open, not yet merged — needs manual merge
-  (a Concertable merge-gate hook intercepts `gh pr merge` for unrelated repos in this session). A larger,
-  deliberately-deferred item — an ArchUnit-based ban on `List<T>`/`Dictionary<K,V>`/`HashSet<T>` as a
-  declared return type, covering `internal`/`private` members Meziantou's `MA0016` cannot reach — is
-  written up in `plans/COLLECTION_ABSTRACTION_ARCHITECTURE_GATE.md`, merged with PR #784; not yet started.
+  Application/Apply is deliberately not gated — plan §1.4.
+- Phase 6 (removing `VenueEntity.Approved` and its admin surface) must not start before Phase 3 is
+  **merged and green** — the old signal cannot be dropped before the new one is proven. Phase 3 is not
+  yet merged (draft PR, CI not yet observed), so Phase 6 stays blocked.
+- `IsVerifiedAsync` deliberately is **not** exposed on `ITenantContext` (the ambient tenant context in
+  `Concertable.Kernel.Identity`, shared across all five services) — that type is deliberately anemic
+  (`TenantId` + `IsHost` only), consumed by every service's tenant-filtering plumbing, and the settlement
+  gate must check two *other* tenants' verification (supplier/customer resolved off the concert, not the
+  ambient request tenant) which an ambient-context field could never express. `ITenantModule.IsVerifiedAsync`
+  mirrors the existing `IsTaxComplianceCompleteAsync` shape exactly for the same reason.
+- The fail-closed gate meant every seeded tenant needed an `Approved` verification row or the whole
+  existing Concert/Opportunity/Tenant integration-test suite would start deferring — this was not called
+  out explicitly in the plan's Phase 3 checklist text but was a hard precondition; fixed via
+  `SeedState.Verifications` (mirrors the existing `bareTenantUserIds`/tax-compliance seeding pattern) and
+  `VerificationFactory.Approved`.
+- The two new gate tests need a tenant that is tax-complete but *specifically* unverified (isolating the
+  new gate from the pre-existing tax-compliance gate, and — for the opportunity test — one that also owns
+  a venue and can authenticate). None of the existing seeded fixtures combine those properties (the two
+  "bare" operators are unverified *and* tax-incomplete). Added `SeedState.UnverifiedTenant` +
+  `UnverifiedVenueManager` (+ one extra seeded venue, id `9001`) as a purely B2B-local addition — not
+  part of the shared `Concertable.Seed.Identity.SeedUsers` roster, so it touches no cross-service seed
+  package (Auth's credential seed, the B2B seeding simulator, Customer's projection seeders are all
+  unaffected).
+- A cross-repo standards gap from Phase 2's review (`tomjseery/dotagents` PR #12, framework types off
+  service signatures etc.) is still open, unmerged — unrelated to this phase, not re-checked here.
 
 ## Resume prompt
 
 ```
-/open-worktree Feature/launch_tenant-verification
+cd .worktrees/Feature-launch_tenant-verification
 Read @plans/launch/TENANT_VERIFICATION_PLAN.md and @plans/launch/TENANT_VERIFICATION_PROGRESS.md and do what its `## Next Steps` says.
 ```
