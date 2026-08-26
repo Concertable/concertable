@@ -122,20 +122,23 @@ inputs required to reproduce a Stripe create call:
 - payer owner and optional payee owner;
 - integer minor-unit amount and ISO currency when the session moves or authorizes money;
 - the provider-neutral funds-routing choice;
-- capture and customer-presence modes derived from the session kind;
+- capture mode derived from the session kind, plus a caller-supplied provider-neutral on-session or
+  off-session mode and optional selected payment-method identity;
 - Payment-resolved Stripe customer and connected-account identities.
 
 The create boundary validates the session-kind matrix before reserving: Payment and Authorization require
-the applicable money/payee inputs; setup and verification reject money-movement inputs; no consumer may
-supply a Stripe object ID or idempotency key. Canonical encoding uses invariant field order, explicit null
-markers, normalized currency/enums, and a persisted version. Presentation metadata and secrets are not
+the applicable money/payee inputs, and off-session money movement requires a selected payment method;
+setup and verification reject money-movement and payment-method inputs. The selected payment-method ID
+follows Payment's established contract and is sent only with Payment's resolved provider customer; no
+consumer may supply a PaymentIntent/SetupIntent ID or idempotency key. Canonical encoding uses invariant
+field order, explicit null markers, normalized currency/enums, and a persisted version. Presentation metadata and secrets are not
 hashed or persisted. Stripe metadata is rebuilt from the persisted opaque type/correlation plus
 Payment-owned operation, attempt, revision, and session-kind keys, so an ambiguous provider retry sends
 the same create parameters.
 
 Same `OperationId` plus the same computed fingerprint is replay. Same ID plus a different fingerprint
 returns `OperationConflict` before any provider call. A changed amount, currency, owner, routing choice,
-or session kind requires a new caller-owned operation ID.
+session mode, selected payment method, or session kind requires a new caller-owned operation ID.
 
 ### Reserve, create, bind, and replay
 
