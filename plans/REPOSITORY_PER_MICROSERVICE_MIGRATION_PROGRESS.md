@@ -231,5 +231,30 @@ No code review applies — there is no implementation to review yet.
 
 ```
 cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration
-Read AGENTS.md, plans/AGENTS.md, plans/REPOSITORY_PER_MICROSERVICE_MIGRATION.md, and plans/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read plans/REPOSITORY_PER_MICROSERVICE_MIGRATION.md and
+plans/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md.
+
+The migration is APPROVED and executing, decoupled from the launch roadmap. The plan document's
+inventory is a stale 2026-08-02 snapshot; this ledger overrides it. Nine stages remain, listed in
+the ledger's `## Next Steps`. Payment extraction is already PROVEN end to end — see the ledger's
+`## Verification`. Do not re-litigate whether to split, and do not re-audit what is already recorded.
+
+Do stage 1 now: swap the 41 test-tier cross-repository ProjectReferences to PackageReference. Every
+target is already published on the feed. Find them by running
+`python eng/repository-split/inventory.py` and reading `crossTargetEdges` in the generated
+inventory.json where `fromKind` is a test kind. Leave the four *.Hosting references alone — those
+are stage 2, and they need the producer published first.
+
+Gate — re-run the proven extraction and require a fully green build INCLUDING the integration tests:
+  git -c core.longpaths=true clone --no-local --single-branch --branch main <monorepo> C:/ce-extract
+  python "C:/Users/TommySeery/AppData/Roaming/Python/Python313/site-packages/git_filter_repo.py" \
+    --path api/Concertable.Payment/ --path-rename api/Concertable.Payment/: --force
+  dotnet build Concertable.Payment.slnx --configuration Release
+
+Two environment constraints that otherwise cost a session to rediscover: core.longpaths=true is
+mandatory on any fresh clone (MAX_PATH breaks the E2E helper paths), and git-filter-repo is NOT
+installed as a git subcommand here — invoke its module script directly.
+
+This branch is pushed and has no PR yet. It touches .github/workflows/test.yml, so when opened it
+requires full merge-queue E2E and must never take skip-e2e.
 ```
