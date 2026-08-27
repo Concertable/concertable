@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `5b4a6e0db091039494d266898cd759864af30566`  _(2026-08-27)_
-**Security-reviewed up to commit:** `5b4a6e0db091039494d266898cd759864af30566`  _(2026-08-27)_
+**Reviewed up to commit:** `b70447efac54a6515617aa03097d1f8f2b4eec7e`  _(2026-08-27)_
+**Security-reviewed up to commit:** `b70447efac54a6515617aa03097d1f8f2b4eec7e`  _(2026-08-27)_
 
 > Range reviewed: `7d4dd12fb..a7bbbc47a` (4 commits) — Phase 4 of tenant verification (admin review surface).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -90,3 +90,29 @@ validation is blocked by an unrelated, pre-existing local build issue in
 `Concertable.Shared.Notification.Infrastructure` (reproduces standalone and single-threaded, untouched by
 this PR); build of the E2E test project itself succeeds. Pushing for CI to validate as the authoritative
 gate per the `remote-validation` standard.
+
+## Incremental review — 2026-08-27 (base merge — `origin/main` into branch)
+
+**Candidate base:** `5b4a6e0db091039494d266898cd759864af30566`
+**Candidate head:** `b70447efac54a6515617aa03097d1f8f2b4eec7e`
+**Candidate branch:** `Feature/launch_tenant-verification`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:fe29fcd88e31b35cd88b33eb54c130656ac9996ab6fb708a568fe4c381066855` `(413 paths)`
+**Work-order mode:** `append`
+**Pass judgment:** `approved` — no findings
+
+The only first-parent commit in range is `b70447efa`, a clean `git merge origin/main` (one auto-merged
+line in `api/Concertable.B2B/TECH_DEBT.md`, taking `main`'s wording; no conflicts). It carries no
+branch-authored change: `git diff origin/main..b70447efa` is **byte-identical** to the pre-merge
+branch delta `git diff origin/main..5b4a6e0db` — the same 36 files
+(`sha256:5ca3568691ab9884df18f7e3c60d3b2512a62ec17336c754a1ed2f9367ce970b`), same content — and every
+other path in the 413-path range is identical to its already-reviewed, already-merged `origin/main`
+version. The branch's security surface (`Tenant.Api/Controllers/VerificationController.cs`, the
+`.Contracts` `IVenueModule`/`IArtistModule`/`TenantContact` files) is unchanged since the `5b4a6e0db`
+security review. Nothing new to review; both top-level markers moved to `b70447efa`.
+
+Reason for the merge: it brings in `f8fe9fe5d` (PR #818), the fix for the `e2e-ui-tests` merge-queue
+failure on this PR — a pre-existing `main` bug where the RHF venue editor's `canSave` (= `formState.isValid`)
+stayed `false` on entering edit mode (`reset()` without a follow-up `trigger()`), so the ConfigBar Save
+button never enabled and the five venue-edit happy-path scenarios timed out. Root cause and the isolated
+repro that confirms `void trigger()` fixes it are in the `b70447efa` merge-commit message.
