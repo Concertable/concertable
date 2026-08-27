@@ -83,9 +83,12 @@ or the normal checkout. Build changed projects individually, or enable long path
 
 ## Reviews
 
-No review recorded yet for the Phase 5 + Phase 6 slice. Phase 4's review file was deleted on merge (all
-findings resolved). Needs a fresh `reviews/Feature-launch_tenant-verification.md` before merge — this is
-the next step.
+**Gate: OPEN.** No canonical isolated review recorded yet for the Phase 5 + Phase 6 slice (frozen range
+`085520405..3685c5f47`). Phase 4's review file was deleted on merge. A parent self-review of the Phase 6
+diff during implementation found it clean (symmetric removal; builds + focused tests green; conventions
+re-checked against `csharp-style`, `http-api`, `persistence`, `multitenancy`, `result-errors`,
+`module-structure`) — but that is not the independent pass. Run `/review` (or `/code-review`) to produce
+`reviews/Feature-launch_tenant-verification.md` and record the watermark before merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
