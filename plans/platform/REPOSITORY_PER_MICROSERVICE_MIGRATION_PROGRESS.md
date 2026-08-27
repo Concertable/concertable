@@ -501,6 +501,7 @@ untouched.
 | In-monorepo build (swap-back fires) | `dotnet build -c Release` **succeeded, 0 warnings, 0 errors** — the four `*.Hosting` projects built *from source*, so the `PlatformSourcePackage` rows resolved |
 | Suite | `dotnet test` **7/7 passed** |
 | Carve build (targets file absent, feed only) | `git archive` of `Concertable.Shared` + `Concertable.AppHost.Shared` + `Concertable.Messaging` into a `platform-dotnet`-shaped tree, `GITHUB_PACKAGES_TOKEN` set: **0 errors** — the four `*.Hosting` packages restored from the feed at `0.1.0-alpha.0.1221` |
+| `split-inventory` (`inventory.py --check`) | Regenerated: `crossTargetEdgesByKind.unit-test` **4 → 0** (key gone), `crossAreaEdgesByKind.unit-test` 7 → 3, `crossTargetEdgeCount` 74 → 70, `crossAreaEdgeCount` 92 → 88. The repo's own generator measures the claim |
 
 **The carve shape is the finding worth keeping.** No existing `carve-*` job covers this project —
 the carve jobs are per-service and this test lives in `Concertable.Shared`. A single-folder
