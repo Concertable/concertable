@@ -210,3 +210,9 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
   both the in-monorepo swap-back and the carved feed-restore proven on the same commit. §5 closed by
   deletion — the six mirrors no longer exist, so `mirror.yml`, `mirror-parity.yml` and `POLYREPO.md` are
   gone. Extraction is unblocked: `blockingRuntimeEdges` is 1 repo-wide and all five carve gates are green.
+- **2026-08-27 — the launch-gate trigger is deleted, not archived.** `LAUNCH_ROADMAP` §8b carried a
+  two-condition trigger (a codebase milestone AND a second engineer owning a service) whose core claim was
+  that with one developer the monorepo is *strictly better*. Tommy's ruling: the monorepo has cost real
+  development time — repeated setbacks, not a theoretical tax — so that claim is refuted by delivery and
+  the trigger is removed rather than kept for reference. It also rested on dead facts: the mirrors are gone,
+  so "make the mirror writable" is not the mechanism. §8b is now a pointer to §6 and this ruling.
