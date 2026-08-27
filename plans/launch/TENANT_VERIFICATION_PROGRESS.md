@@ -6,15 +6,13 @@
 - Worktree: `.worktrees/Feature-launch_tenant-verification`
 - Branch: `Feature/launch_tenant-verification`
 - PR: [#824](https://github.com/Concertable/concertable/pull/824) — **DRAFT**, Phase 5 consumer wiring +
-  admin feature + Phase 6. **Delivery-gated on PR #825** (see below).
-- Split-off PR: [#825](https://github.com/Concertable/concertable/pull/825) — **DRAFT**, the publish-first
-  `web-b2b` `features/verification` export (Phase 5 shared half). Merge → `publish-fe-packages.yml`
-  publishes → #824's `carve-fe` can go green.
-- Dependency/package gates: **#824 `Blocked by:` #825's publish** — `@concertable/web-b2b` is a published
-  package; `carve-fe` restores it from the feed, so the venue/artist SPAs can't import
-  `@concertable/web-b2b/features/verification` until #825 merges and republishes.
-- Last reconciled: 2026-08-27, review complete (2 findings fixed); Phase 5 split for the web-b2b publish
-  boundary after `carve-fe` caught it on #824.
+  admin feature + Phase 6. `main` merged in (head `d0e50b6c4`) — carve-fe re-running against the published
+  `@concertable/web-b2b@0.1.0-alpha.0.5385`.
+- Split-off PR: [#825](https://github.com/Concertable/concertable/pull/825) — **MERGED** `04667a53a`;
+  `publish-fe-packages.yml` green, published `@concertable/web-b2b@0.1.0-alpha.0.5385` with the
+  `./features/verification` export.
+- Dependency/package gates: **cleared** — #825 published, #824 merged `main`.
+- Last reconciled: 2026-08-28, #825 merged + published; #824 merged main, awaiting carve-fe re-run + smoke.
 
 ## Current state
 
@@ -35,26 +33,20 @@ scope-addition note). Venue migration re-scaffolded (`20260827211555`, drops one
 
 ## Next Steps
 
-```
-Blocked: #824's carve-fe (web/b2b/venue, web/b2b/artist) fails until @concertable/web-b2b republishes with the ./features/verification export
-Blocked by: PR #825 (Feature/launch_tv-web-b2b-verification) — CI ALL GREEN + reviewed clean, DRAFT awaiting user: mark ready + `skip-e2e` label + merge
-Unblock action: user marks #825 ready → merge → publish-fe-packages.yml publishes @concertable/web-b2b@<next>-alpha
-Resume when: publish-fe-packages.yml run on the #825 merge commit is green (the feed's @concertable/web-b2b@alpha then exposes ./features/verification)
-```
+**#825 done, #824 unblocked.** Remaining:
 
-Once #825 is published:
-1. `git fetch && git rebase origin/main` in this worktree, drop the shared `features/verification/**` files
-   from `43b42bfb7` + `b347f5cff` (now on `main` via #825 — take `main`'s copy on the conflict), push.
-2. Re-run #824 `carve-fe` — should be green (feed now has the export).
-3. Run the deferred **Phase 5 manual in-app smoke** from this worktree:
+1. **carve-fe on #824's head `d0e50b6c4`** — re-running against the published package; expected green now
+   (the `features/verification/**` shared files auto-merged out of #824's diff, so its FE surface is just
+   the venue/artist route/nav wiring + the self-contained admin feature).
+2. Run the deferred **Phase 5 manual in-app smoke** from this worktree:
    `dotnet run --project api/Concertable.B2B/src/Concertable.B2B.AppHost` (B2B.AppHost builds clean here;
    local-dev config + secrets are now set — PR #827 / `docs/LOCAL_DEV.md`). Aspire dashboard → the SPAs.
    Log in `venuemanager1@test.com` / `Password11!` (venue), `artistmanager1@test.com` (artist), an admin.
    Submit evidence → banner flips to pending → publishing an opportunity is blocked → admin approves →
    banner clears + publish works → second party: admin rejects with a reason → banner shows the reason.
-4. Mark #824 ready once smoke passes + exact-head CI green, then `/merge` (single-service → `main`,
+3. Mark #824 ready once smoke passes + exact-head CI green, then `/merge` (single-service → `main`,
    `full-e2e` tier).
-5. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
+4. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
    the `Venue/artist verification enforced…` line in §7 Architecture; `git rm` this plan + ledger.
 
 Review gate is **satisfied** (see `## Reviews`). The worktree MAX_PATH build limit and the web-b2b publish

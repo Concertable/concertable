@@ -5,11 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `8bcbde3bff27b96372bee4d3e54a969d3a1f7c2a`  `(2026-08-27)`
+**Reviewed up to commit:** `bd95f8c380858d9078420e4fba948ea3b6a88308`  `(2026-08-28)`
 **Judgment:** `approved`
-
-Findings NAT1 + NAT2 remediated on-branch in the commit that carries this file; the only delta past the
-frozen head is that remediation (this review's own output), so no incremental pass is owed.
 
 ## Review pass — 2026-08-27 — full
 
@@ -64,3 +61,17 @@ the routed .NET standards — no additional findings. Phase 6 backend removals a
 are clean (symmetric, no dangling references anywhere in `api/` or `app/`, `VenueChangedDomainEvent` still
 raised for every remaining venue mutation). Both native findings fixed on-branch; five web builds +
 `lint:boundaries` + 28 web-b2b unit tests green after the fix.
+
+## Review pass — 2026-08-28 — incremental (`8bcbde3bf..bd95f8c38`)
+
+**Pass judgment:** `approved` — no findings.
+
+Delta since the frozen head: (1) `79fd01b20` — the NAT1 + NAT2 remediation, this review's own output,
+already `[x]` above; (2) merges pulling in `main` — PR #825 (publish-first `web-b2b` verification export,
+reviewed in `reviews/Feature-launch_tv-web-b2b-verification.md`), #826 (platform-sync `0.1.0-alpha.0.1225`),
+#827 (local-dev config, reviewed in `reviews/Chore-local-dev-config.md`), #823 (RepoSplit rt3, reviewed
+independently); (3) plan/ledger + review docs. No un-reviewed executable code in the range.
+`Concertable.B2B.Web` rebuilds 0-error on the new platform pin; five web builds + `lint:boundaries` green
+post-merge. Backend verified live from a running `Concertable.B2B.AppHost`: OIDC login renders with the
+correct venue `redirect_uri`, `GET /api/organization/verification` returns 401. Authenticated UI
+click-through is the merge-queue `full-e2e` tier (label applied). Watermark → `bd95f8c38`.
