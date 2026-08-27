@@ -1,9 +1,11 @@
+using Concertable.B2B.DataAccess.Application;
 using Concertable.DataAccess.Application;
+using Concertable.DataAccess.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.DataAccess.Infrastructure;
+namespace Concertable.B2B.DataAccess.Infrastructure;
 
-public class UnitOfWorkBoundary<TContext>(IDbContextFactory<TContext> dbContextFactory)
+public abstract class FactoryUnitOfWork<TContext>(IDbContextFactory<TContext> dbContextFactory)
     : IUnitOfWorkBoundary<TContext>
     where TContext : DbContextBase
 {

@@ -1,4 +1,4 @@
-namespace Concertable.DataAccess.Application;
+namespace Concertable.B2B.DataAccess.Application;
 
 public interface IUnitOfWorkBoundary<TContext>
 {
