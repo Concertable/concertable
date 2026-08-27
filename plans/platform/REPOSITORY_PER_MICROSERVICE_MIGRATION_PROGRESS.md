@@ -15,7 +15,7 @@
   pin-bump PR. Stage 1's merge (#798) duly triggered publish `0.1.0-alpha.0.1202` and sync PR #803
   (auto-merge armed, superseded #801); both self-managed with no action needed. Stage 2's own
   `IsPackable` publishes ride exactly this machinery.
-- Last reconciled: **2026-08-27** — **stage 1 + stage-2 round-trips 1–2 merged** (PRs #798, #805, #809;
+- Last reconciled: **2026-08-27** — stage 9 precondition check (blocked, see `## Stage 9`); **stage 1 + stage-2 round-trips 1–2 merged** (PRs #798, #805, #809;
   platform at `0.1.0-alpha.0.1211`, all four `*.Hosting` + `Customer.Ticket.Contracts` on the feed).
   rt3 is the small remainder; the `*.ArchitectureTests` carve gate was **corrected out of stage 2 into
   stage 3** (it fails until AppHost image mode removes the sibling `AddProject` edges — see `## Next Steps`).
@@ -52,10 +52,11 @@ was **right about the hard parts and wrong about the easy ones**.
   unpublished; both are already published tiers. Reality overtook the plan.
 - **Package naming drifted:** the plan says `@concertable/web-shared`; the published tier is
   `@concertable/web`.
-- **Mirrors are a month stale** (last pushed 2026-07-27) and are bootstrap inputs only, never cutover
-  sources. Being pure `subtree split` output they hold no unique content, and the packages are linked
-  to `concertable` rather than to them, so they are renamed to `<name>-mirror-archive-<date>` to free
-  the canonical names — not deleted, which is irreversible and buys nothing.
+- **The six mirrors no longer exist — the rename sub-task is void (verified 2026-08-27).** `gh repo view`
+  resolves none of `Concertable/{b2b,customer,auth,payment,search,shared}`, and `gh repo list Concertable`
+  returns exactly five repos: `concertable`, `agent-standards`, `docs`, `config`, `infra`. The canonical
+  names are therefore already free, and `mirror.yml`/`mirror-parity.yml` target deleted repositories —
+  which is what round-trip 3 deletes.
 - **`Concertable/config` and `Concertable/infra` exist** (private, unused proof-of-concepts). Retained
   untouched for production use; neither is a migration target.
 - **`Concertable/system` is renamed `Concertable/fleet`.** It composes and ships the fleet; "system"
@@ -79,6 +80,25 @@ duplicate claims), per-service CI test scoping with a 14-case classifier test, a
 
 **The plan document's 17 checkpoints are superseded by the nine stages** in `## Next Steps`. Its
 inventory figures are a 2026-08-02 snapshot; this ledger overrides them.
+
+## Stage 9 (archive the monorepo) — precondition check, 2026-08-27
+
+Requested directly; **not executable, and no work was attempted beyond this read-only check.** Stage 9 is
+the terminal stage and its precondition is "all services and platform extracted". Nothing is extracted.
+
+- **No extraction target exists.** `gh repo view` resolves none of `Concertable/{auth,payment,search,customer,b2b,platform-dotnet,platform-web,fleet}`
+  (nor the pre-rename `system`). `gh repo list Concertable --limit 100` returns 5 repos, none of them a target.
+- **Every service is still monorepo source.** `api/` still holds `Concertable.{Auth,B2B,Customer,Payment,Search}`
+  plus `DataAccess`, `Messaging`, `Shared`, `ServiceDefaults`, `AppHost`, `AppHost.Shared`, `Frontend.Hosting`;
+  `app/` still holds `b2b`, `customer`, `mobile`, `shared`, `web`.
+- **The monorepo still publishes and mirrors.** `.github/workflows/` still carries `publish-packages.yml`,
+  `publish-fe-packages.yml`, `platform-sync.yml`, `platform-sync-alert.yml`, `mirror.yml`, `mirror-parity.yml`
+  and `test.yml`; `main` moved today (`fd52181fe`, platform-sync `0.1.0-alpha.0.1219`).
+- **Position on the nine stages:** stage 2 round-trip 3 is the open remainder. Stages 3–8 (AppHost image mode,
+  E2E → `fleet`, the six extractions) are all outstanding, and plan checkpoint 15's hard stop — Tommy reviews
+  deploy/rollback evidence from canonical repos — has not been reached.
+
+Resume path is unchanged: round-trip 3, then stage 3. Stage 9 re-enters only after stage 8 closes.
 
 ## Verification — Payment extraction proven end to end (2026-08-26)
 
@@ -216,11 +236,9 @@ be extracted before its AppHost and E2E story is perfect.
 6. **Extract `auth`** — needs Duende persisted grants moved from `B2BDb` to `AuthDb` first.
 7. **Extract `search`, then `customer`, then `b2b`** — b2b last, widest contract and seed fan-out.
 8. **Extract `platform-dotnet`, `platform-web`, `fleet`.**
-9. **Archive the monorepo** and rename the six stale mirrors to `<name>-mirror-archive-<date>`.
+9. **Archive the monorepo.** Terminal stage; nothing to rename — the mirrors are gone (above).
 
-Stages 1 and 2 are days. The mirror renames happen at stage 9, not before: the canonical names are
-needed only when the real repositories claim them, and renaming earlier leaves public repositories
-with odd names for months.
+Stages 1 and 2 are days.
 
 **Sequencing correction — these stages are NOT a strict chain.** `blockingRuntimeEdges` is **1** for the
 whole repo (`Auth.Contracts → Messaging.Contracts`, a one-line swap on Auth extraction) and all five
