@@ -15,7 +15,7 @@ Plan and ledger are authored. The initial documentation review at `f1e925f31a277
 
 ## Next Steps
 
-Run the final incremental documentation review from `847ae2b110e41e45328c8ea5e5c64a83f29ec8ca`. Once that pass is clean, deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
+Open the plans-only docs PR, then deliver it through the docs workflow. After it is terminal, create the Payment implementation worktree from the then-current `origin/main` and begin Phase 1.
 
 ## Completed work
 
@@ -31,7 +31,7 @@ Run the final incremental documentation review from `847ae2b110e41e45328c8ea5e5c
 
 ## Reviews
 
-The initial review at `f1e925f31a2774e875e1b8f7883dfd8eed7d87b4` and two incremental reviews through `05f57298a52cf627ec5d1a81ab1a046c4773262d` have remediated findings; a final incremental docs review is required for this fixing commit.
+Documentation review is complete through `9a730ca0babe651d61ce2a64fd28b65287de0ad2`; all findings are resolved.
 
 ## Decisions, discoveries, blockers, and deviations
 
