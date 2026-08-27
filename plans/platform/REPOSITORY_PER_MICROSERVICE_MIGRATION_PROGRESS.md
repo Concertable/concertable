@@ -4,10 +4,10 @@
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: none active
-- Branch/PRs: stage 2 runs as publish round-trips — **rt1** (`IsPackable` on `AppHost.Shared`, PR #805) and
-  **rt2** (the four `*.Hosting` packable + published + cross-service deps as packages, PR #809) are both
-  **MERGED**. **rt3** is the small unblocked remainder: swap the 4 `AppHost.Shared.UnitTests` refs + delete
-  `mirror.yml`/`mirror-parity.yml`.
+- Branch/PRs: stage 2 ran as publish round-trips — **rt1** (`IsPackable` on `AppHost.Shared`, PR #805) and
+  **rt2** (the four `*.Hosting` packable + published + cross-service deps as packages, PR #809) are
+  **MERGED**; **rt3** (the last 4 `AppHost.Shared.UnitTests` refs + mirror-workflow deletion) is on
+  `Plan/RepoSplit-Stage2-rt3-Swap`. **Stage 2 is complete with rt3** — see `## Stage 2 round-trip 3`.
 - Dependency/package gates: none active. Stage 1 changed no *published contract* — it consumes only
   packages already on the feed at the pinned `0.1.0-alpha.0.1195`. But "publishes nothing" was wrong
   about the *pipeline*: every push to `main` reruns `publish-packages.yml`, which republishes all
@@ -15,7 +15,9 @@
   pin-bump PR. Stage 1's merge (#798) duly triggered publish `0.1.0-alpha.0.1202` and sync PR #803
   (auto-merge armed, superseded #801); both self-managed with no action needed. Stage 2's own
   `IsPackable` publishes ride exactly this machinery.
-- Last reconciled: **2026-08-27** — **stage 1 + stage-2 round-trips 1–2 merged** (PRs #798, #805, #809;
+- Last reconciled: **2026-08-27** — **stage 2 CLOSED by rt3** (all 45 test-tier cross-repository
+  `ProjectReference`s now packages; mirror workflows and runbook deleted); stage 9 precondition checked and
+  unmet; **stage 1 + stage-2 round-trips 1–2 merged** (PRs #798, #805, #809;
   platform at `0.1.0-alpha.0.1211`, all four `*.Hosting` + `Customer.Ticket.Contracts` on the feed).
   rt3 is the small remainder; the `*.ArchitectureTests` carve gate was **corrected out of stage 2 into
   stage 3** (it fails until AppHost image mode removes the sibling `AddProject` edges — see `## Next Steps`).
@@ -196,9 +198,9 @@ be extracted before its AppHost and E2E story is perfect.
 
 1. ~~**Swap the 41 test-tier `ProjectReference`s to `PackageReference`.**~~ **Done — see `## Stage 1`.**
 2. ~~**Make the four `*.Hosting` projects packable and publish them**, then swap the last 4 of the 45.~~
-   **Packable + published — DONE (round-trips 1–2; on the feed at `0.1.0-alpha.0.1211`).** Remaining in
-   stage 2: swap the last 4 `AppHost.Shared.UnitTests` refs + delete `mirror.yml`/`mirror-parity.yml`
-   (round-trip 3, small/unblocked). **CORRECTION (2026-08-27):** adding `*.ArchitectureTests` to the carve
+   **DONE — stage 2 is closed (round-trips 1–3).** rt1+rt2 published the packages; rt3 swapped the last 4
+   `AppHost.Shared.UnitTests` refs and deleted `mirror.yml`/`mirror-parity.yml`. See
+   `## Stage 2 round-trip 3`. **CORRECTION (2026-08-27):** adding `*.ArchitectureTests` to the carve
    jobs is **NOT** stage 2's gate and is **NOT** unblocked by `*.Hosting` reaching the feed — the earlier
    "once `*.Hosting` resolves from the feed" claim (from the stage-1 commit `bc1daf488`) was wrong. Verified
    empirically: the carve **with `*.ArchitectureTests`** still fails (`MSB3202` — `Payment.AppHost`
@@ -216,11 +218,11 @@ be extracted before its AppHost and E2E story is perfect.
 6. **Extract `auth`** — needs Duende persisted grants moved from `B2BDb` to `AuthDb` first.
 7. **Extract `search`, then `customer`, then `b2b`** — b2b last, widest contract and seed fan-out.
 8. **Extract `platform-dotnet`, `platform-web`, `fleet`.**
-9. **Archive the monorepo** and rename the six stale mirrors to `<name>-mirror-archive-<date>`.
+9. **Archive the monorepo.** ~~and rename the six stale mirrors to `<name>-mirror-archive-<date>`~~ —
+   the rename sub-task is **void**: the six mirror repos no longer exist (verified 2026-08-27, twice), so
+   the canonical names are already free.
 
-Stages 1 and 2 are days. The mirror renames happen at stage 9, not before: the canonical names are
-needed only when the real repositories claim them, and renaming earlier leaves public repositories
-with odd names for months.
+Stages 1 and 2 took days and are closed. The mirror-rename reasoning is moot — the mirrors are gone.
 
 **Sequencing correction — these stages are NOT a strict chain.** `blockingRuntimeEdges` is **1** for the
 whole repo (`Auth.Contracts → Messaging.Contracts`, a one-line swap on Auth extraction) and all five
@@ -230,15 +232,15 @@ them. Do not re-estimate archival on paper again — report the measured rate af
 
 ### Immediate next action
 
-**Round-trip 3 (small, unblocked).** `*.Hosting` is packable and published (round-trips 1–2 DONE). What
-remains of stage 2 is only: swap the last 4 `Concertable.AppHost.Shared.UnitTests` `ProjectReference`s → the
-published `*.Hosting` (use the stage-1 `PlatformSourcePackages.targets` source-swap-back, consistent with the
-rest of the test tier), and delete `mirror.yml` + `mirror-parity.yml`. This does **not** touch the carve jobs
-or `test.yml`, so it is a normal PR (no forced full-e2e).
+**Stage 3 — AppHost image mode.** Stage 2 is closed (rt3). Stage 3 composes foreign services and
+`AppHost.Shared` via `AddContainer` on a pinned image instead of `AddProject` against sibling source,
+converting the 44 `apphost` `AddProject(sibling)` edges. .NET 10 SDK container publishing means no
+Dockerfile per host. **It owns the `*.ArchitectureTests`-in-the-carve-jobs gate** — verified 2026-08-27
+that the gate fails until those edges are gone, so it is stage 3's closeout evidence, not stage 2's.
 
-**Do NOT add `*.ArchitectureTests` to the carve jobs in round-trip 3.** Verified 2026-08-27 that gate fails
-until **stage 3 (AppHost image mode)** removes the `AppHost → sibling deployable` `AddProject` edges. After
-round-trip 3, the next substantial stage is **stage 3**, which owns that gate.
+**Extraction is not blocked behind stage 3.** `blockingRuntimeEdges` is 1 repo-wide and all five carve
+gates are green, so **stage 5 (extract `payment`) can start in parallel** — the choice between running
+stage 3 first or extracting Payment first is a sequencing preference, not a dependency.
 
 **Use the `git archive` carve, not a `git-filter-repo` clone, to verify.** It is the same gate at a
 fraction of the cost, it needs no fresh clone (so no `core.longpaths` trap), and CI already runs it.
@@ -480,10 +482,69 @@ findings are recorded only as resolved via that commit; treat the specific findi
   — see the corrected `## Next Steps`. Lesson banked there: prove a "possible after stage Y" gate by running
   it at Y's closeout before writing it as the next step.
 
+## Stage 2 round-trip 3 — stage 2 closed (delivered 2026-08-27)
+
+The last **4** of the 45 test-tier cross-repository `ProjectReference`s are gone.
+`Concertable.AppHost.Shared.UnitTests` declares the four published `*.Hosting` packages, wired through the
+stage-1 mechanism rather than a second one: `api/PlatformSourcePackages.targets` gained the four
+package→source rows, and `api/Concertable.Shared/tests/Directory.Build.targets` now imports that file.
+`Concertable.Shared/Directory.Packages.props` gained the `ConcertablePlatformVersion` pin — the sync script
+discovers pins by grep over `api/**/Directory.Packages.props`, so `platform-sync` picks the new file up
+untouched.
+
+**Test-tier cross-repository `ProjectReference`s: 4 → 0. Stage 2 is closed.**
+
+**Both directions proven, in the same commit:**
+
+| Gate | Result |
+|---|---|
+| In-monorepo build (swap-back fires) | `dotnet build -c Release` **succeeded, 0 warnings, 0 errors** — the four `*.Hosting` projects built *from source*, so the `PlatformSourcePackage` rows resolved |
+| Suite | `dotnet test` **7/7 passed** |
+| Carve build (targets file absent, feed only) | `git archive` of `Concertable.Shared` + `Concertable.AppHost.Shared` + `Concertable.Messaging` into a `platform-dotnet`-shaped tree, `GITHUB_PACKAGES_TOKEN` set: **0 errors** — the four `*.Hosting` packages restored from the feed at `0.1.0-alpha.0.1221` |
+| `split-inventory` (`inventory.py --check`) | Regenerated: `crossTargetEdgesByKind.unit-test` **4 → 0** (key gone), `crossAreaEdgesByKind.unit-test` 7 → 3, `crossTargetEdgeCount` 74 → 70, `crossAreaEdgeCount` 92 → 88. The repo's own generator measures the claim |
+
+**The carve shape is the finding worth keeping.** No existing `carve-*` job covers this project —
+the carve jobs are per-service and this test lives in `Concertable.Shared`. A single-folder
+`git archive HEAD:api/Concertable.Shared` **cannot** pass, and that is not a defect: `AppHost.Shared`
+(sibling folder) and `Messaging.AzureServiceBus` (its own `ProjectReference`) both belong to
+**`platform-dotnet`** in the ownership map, so the honest gate is a carve of all three folders together.
+Stage 8 inherits this: `platform-dotnet` is the first target whose carve is *multi-folder*, and no
+`git archive <one prefix>` gate can express it.
+
+**A verification trap, banked.** `git archive HEAD:<prefix>` archives **HEAD, not the working tree** — the
+first carve run silently tested the *pre-edit* csproj and "failed" on the old `ProjectReference` paths.
+Commit before carving, or the gate measures the wrong tree.
+
+**Mirror machinery deleted, not deferred.** `mirror.yml`, `mirror-parity.yml` and the `POLYREPO.md`
+runbook are gone. Independently re-verified 2026-08-27: `gh repo list Concertable` returns exactly
+`agent-standards`, `concertable`, `docs`, `config`, `infra`, and `gh repo view` resolves none of
+`Concertable/{b2b,customer,auth,payment,search,shared}`. Both workflows were force-pushing to deleted
+repositories. Neither is a required status check — the merge-queue ruleset requires only `ci-complete`
+(`gh api repos/Concertable/concertable/rulesets/17393335`), so deleting them changes no gate.
+
+## Stage 9 (archive the monorepo) — precondition check, 2026-08-27
+
+Checked read-only; **not executable.** Stage 9 is terminal and its precondition is "all services and
+platform extracted". Nothing is extracted.
+
+- **No extraction target exists.** `gh repo view` resolves none of
+  `Concertable/{auth,payment,search,customer,b2b,platform-dotnet,platform-web,fleet}` (nor the pre-rename
+  `system`); the org holds 5 repos, none of them a target.
+- **Every service is still monorepo source.** `api/` still holds `Concertable.{Auth,B2B,Customer,Payment,Search}`
+  plus `DataAccess`, `Messaging`, `Shared`, `ServiceDefaults`, `AppHost`, `AppHost.Shared`,
+  `Frontend.Hosting`; `app/` still holds `b2b`, `customer`, `mobile`, `shared`, `web`.
+- **The monorepo still publishes.** `publish-packages.yml`, `publish-fe-packages.yml`,
+  `platform-sync.yml` and `platform-sync-alert.yml` all still run. (`mirror.yml`/`mirror-parity.yml` no
+  longer do — rt3 deleted them.)
+- **The mirror-rename sub-task is void**, not pending: the six mirrors are gone and the canonical names
+  are already free.
+
+Position after this check: **stage 2 closed; stage 3 or stage 5 next** (they are parallel, not chained).
+
 ## Resume prompt
 
 ```
-/open-worktree Plan/RepoSplit-Stage2-rt3
+/open-worktree Plan/RepoSplit-Stage3-ImageMode
 Read plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md and
 plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md and do what its
 `### Immediate next action` says.
