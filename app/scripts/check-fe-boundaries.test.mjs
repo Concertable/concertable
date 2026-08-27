@@ -52,3 +52,27 @@ test("rejects platform source imports from the cross-platform B2B tier", () => {
   assert.notEqual(result.status, 0, output);
   assert.match(output, /cross-platform-b2b-has-no-platform-dependencies/);
 });
+
+test("rejects misplaced feature type and runtime imports", () => {
+  assert.equal(existsSync(probe), false);
+  writeFileSync(
+    probe,
+    'import { useVenue, type Venue } from "@concertable/shared/features/venues";\nexport { type Venue as ExportedVenue } from "@concertable/shared/features/venues";\nimport { useVenue as wrongUseVenue } from "@concertable/shared/features/venues/types";\nvoid useVenue;\nvoid wrongUseVenue;\nvoid (null as Venue | null);\n',
+  );
+
+  let result;
+  try {
+    result = spawnSync(
+      process.execPath,
+      ["scripts/check-fe-boundaries.mjs"],
+      { cwd: appRoot, encoding: "utf8" },
+    );
+  } finally {
+    rmSync(probe, { force: true });
+  }
+
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+  assert.notEqual(result.status, 0, output);
+  assert.match(output, /feature-type-import-requires-types-entrypoint/);
+  assert.match(output, /feature-runtime-import-requires-feature-entrypoint/);
+});

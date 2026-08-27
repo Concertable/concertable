@@ -1,12 +1,12 @@
 import { CheckCircle, XCircle } from "lucide-react";
-import { useAuthStore } from "@/features/auth";
+import { useMeQuery } from "../hooks/useMeQuery";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 export function ProfilePage() {
-  const user = useAuthStore((state) => state.user);
+  const { data: user } = useMeQuery();
 
   if (!user) return null;
 

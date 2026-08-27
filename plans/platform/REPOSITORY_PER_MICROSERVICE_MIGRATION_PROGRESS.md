@@ -383,6 +383,64 @@ findings are recorded only as resolved via that commit; treat the specific findi
   round-trip 3 (last 4 refs in `AppHost.Shared.UnitTests`; delete `mirror.yml` + `mirror-parity.yml`).
   Gate: add `*.ArchitectureTests` to the five carve jobs once `*.Hosting` resolves from the feed.
 
+### 2026-08-26 — Stage 2 round-trip 2 delivered (branch `Plan/RepoSplit-Stage3-Hosting`)
+
+- Action: swapped the **20** cross-service `*.Hosting` `ProjectReference`s (15 Contracts + 5
+  `AppHost.Shared`) to `PackageReference`; made `Auth/B2B/Customer/Payment.Hosting` packable
+  (`<IsPackable>true</IsPackable>`); left `Search.Hosting` unpackable (nothing consumes it cross-repo).
+  Added the `Concertable.AppHost.Shared` `PackageVersion` in all five service folders (the sync bot does
+  not add it) and the missing Contracts/Email pins (Payment: `B2B.Concert`/`B2B.Tenant.Contracts`; Auth:
+  `Shared.Email.Application`). Regenerated `inventory.json` (`--check` green).
+- **BUILD1 resolved structurally, not hacked.** `Payment.Hosting`/`Customer.Hosting` each dragged one
+  non-packable Application layer in only to name one queued command in the ASB topology. Those commands —
+  `ProcessStripeWebhookCommand`, `SendTicketEmailCommand` — are `IIntegrationCommand` wire contracts
+  (`[MessageType]`, ASB-queued) sitting in the wrong layer; the escrow commands already live in
+  `Payment.Contracts`. Moved both to their `*.Contracts` (packable), which dissolved both Hosting→Application
+  `ProjectReference`s with **no cascade**. Making the Application layers packable was rejected — it would
+  cascade BUILD1 through Domain/Infrastructure and re-monolith the closure.
+- **`Customer.Ticket.Contracts` made packable.** It was intra-Customer only (0 feed versions), so a packable
+  `Customer.Hosting` keeping a `ProjectReference` to it would trip BUILD1. It is a Contracts layer with only
+  package deps → packable with no cascade. Kept `<PackageReference Include="Reunion" />` without
+  `PrivateAssets` to match its six sibling module Contracts (Artist/Concert/Tenant/Venue/User/Admin), which
+  all expose `Option<>` carriers the same way; the skill's `PrivateAssets` rule is honoured only by Kernel
+  in this repo — a pre-existing choice, not this round-trip's to change.
+- **Auth folder MinVer trap fixed (the phase-2 bug, live here).** `Auth/Directory.Build.props` +
+  `Directory.Packages.props` lacked MinVer + package metadata — Auth's only published contract
+  (`Auth.Contracts`) lives in a *separate* folder, so the service folder had never published. Added MinVer +
+  metadata mirroring Payment, else `Auth.Hosting` would have shipped `1.0.0`.
+- **Bumped `ConcertablePlatformVersion` 1202→1206** across all six folders. `local-platform.ps1 prepare`
+  restores the full slnx from the feed at the *real* `ConcertablePlatformVersion` (no local override at that
+  step), and `AppHost.Shared` exists on the feed only at 1206+, so 1202 would fail the pack restore. 1206 is
+  the current feed head (all packages published lockstep at #805's merge), so this is verified-safe — it is
+  exactly what open sync PR **#808** does, which this **supersedes**.
+- **Stage-3 question answered — the 44 `apphost` edges did NOT collapse.** `crossTargetEdgeCount` fell
+  94→74 (the 20 Hosting→cross-service edges), `blockingTestEdges` still 0, `blockingRuntimeEdges` still the
+  lone `Auth.Contracts → Messaging.Contracts`. All 44 `apphost` edges are rooted in the `Concertable.AppHost`
+  executable orchestrator referencing sibling deployables (`*.Web`, `*.Workers`, seeders) and the
+  `*.Hosting`/`AppHost.Shared` libraries via `AddProject` — untouched by Hosting packability. **AppHost image
+  mode (stage 3) does NOT shrink to runtime-only;** converting those 44 `AddProject` edges to `AddContainer`
+  is still its whole job.
+- Verified locally: all 5 `*.Hosting`, both moved-command `*.Contracts`, and the Payment + Customer `*.Web`
+  closures (Infrastructure/Application/Contracts — every moved-command consumer) build `-c Release` clean
+  against the feed; pin cross-check green; `inventory.py --check` green. The full-slnx `build`,
+  `local-platform-pack` (the real packability/BUILD1 gate) and the five carves run on CI — the dev machine's
+  C: is at 3.1 GB free and cannot fit the full pack (as in stages 1–2).
+- Tier: package-topology only, no `test.yml`/workflow/wire/UI change → **`skip-e2e`**. Deviation from the
+  ledger's stage-2 wording, which bundled the carve `*.ArchitectureTests` gate (and its forced full-e2e)
+  into stage 2: that gate restores `*.Hosting` from the feed, which is impossible until this round-trip
+  publishes them, so it is necessarily a later PR (round-trip 3). The split is forced by publish-before-consume,
+  not a shortcut.
+- Review (2 lenses, one finding, fixed): the package-topology lens caught that `Auth.Hosting` kept
+  `Auth.Contracts` as a `ProjectReference`, but `Auth.Contracts` lives at `api/Concertable.Auth.Contracts/` —
+  *outside* the Auth carve root (unlike the other three Hosting, whose kept Contracts refs are intra-carve-root).
+  The handoff mislabelled it "intra-service" by ownership; physically it escapes. Swapped to
+  `PackageReference` (pin already present), matching the Auth deployable's documented "never a
+  ProjectReference, so Auth carves standalone" rule. `Auth.Hosting` now has zero `ProjectReference`s.
+- Follow-up: merge (skip-e2e) → publish lands the 4 `*.Hosting` + `Ticket.Contracts` on the feed → sync PR
+  bumps pins (superseding #808) → round-trip 3 (last 4 `AppHost.Shared.UnitTests` refs + add
+  `*.ArchitectureTests` to the five carve jobs in `test.yml`, which forces full-e2e + security review +
+  delete `mirror.yml`/`mirror-parity.yml`).
+
 ## Resume prompt
 
 ```
