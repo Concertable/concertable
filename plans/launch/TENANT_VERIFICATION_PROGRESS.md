@@ -37,18 +37,21 @@ scope-addition note). Venue migration re-scaffolded (`20260827211555`, drops one
 
 ```
 Blocked: #824's carve-fe (web/b2b/venue, web/b2b/artist) fails until @concertable/web-b2b republishes with the ./features/verification export
-Blocked by: PR #825 (Feature/launch_tv-web-b2b-verification) + publish-fe-packages.yml
-Unblock action: get #825 green → mark ready → merge → publish-fe-packages.yml publishes @concertable/web-b2b@<next>-alpha
-Resume when: `npm view @concertable/web-b2b@alpha` (or the feed) exposes ./features/verification, i.e. publish-fe-packages.yml run on the #825 merge commit is green
+Blocked by: PR #825 (Feature/launch_tv-web-b2b-verification) — CI ALL GREEN + reviewed clean, DRAFT awaiting user: mark ready + `skip-e2e` label + merge
+Unblock action: user marks #825 ready → merge → publish-fe-packages.yml publishes @concertable/web-b2b@<next>-alpha
+Resume when: publish-fe-packages.yml run on the #825 merge commit is green (the feed's @concertable/web-b2b@alpha then exposes ./features/verification)
 ```
 
 Once #825 is published:
 1. `git fetch && git rebase origin/main` in this worktree, drop the shared `features/verification/**` files
    from `43b42bfb7` + `b347f5cff` (now on `main` via #825 — take `main`'s copy on the conflict), push.
 2. Re-run #824 `carve-fe` — should be green (feed now has the export).
-3. Run the deferred **Phase 5 manual in-app smoke** — submit as venue + artist, approve + reject (reason)
-   as admin, confirm the opportunity-publication block and the dashboard banner. Needs the local OIDC + B2B
-   stack.
+3. Run the deferred **Phase 5 manual in-app smoke** from this worktree:
+   `dotnet run --project api/Concertable.B2B/src/Concertable.B2B.AppHost` (B2B.AppHost builds clean here;
+   local-dev config + secrets are now set — PR #827 / `docs/LOCAL_DEV.md`). Aspire dashboard → the SPAs.
+   Log in `venuemanager1@test.com` / `Password11!` (venue), `artistmanager1@test.com` (artist), an admin.
+   Submit evidence → banner flips to pending → publishing an opportunity is blocked → admin approves →
+   banner clears + publish works → second party: admin rejects with a reason → banner shows the reason.
 4. Mark #824 ready once smoke passes + exact-head CI green, then `/merge` (single-service → `main`,
    `full-e2e` tier).
 5. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
@@ -133,11 +136,14 @@ to `app/web/b2b/shared/TECH_DEBT.md` (LOW). Phase 6 backend removals + migration
   publish it, then consume in a follow-up.** Precedent: commits `5246aeeb2`, `382bf817f` ("publish …
   exports"). `publish-fe-packages.yml` triggers only on push to `main`, so a combined export+consume PR's
   `carve-fe` can never go green.
-- **Local `dotnet build Concertable.slnx` blocked by Windows MAX_PATH** in this worktree
-  (`LongPathsEnabled=0`, worktree path depth → `obj` DLL path hits 260 chars on
-  `Concertable.Shared.Notification.Infrastructure` + `Concertable.Customer.DataAccess.Infrastructure`).
-  Reproduces with this change `git stash`ed; CI + normal checkout unaffected. Build changed projects
-  directly, or `HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled = 1` (admin).
+- **Windows MAX_PATH** only bites a *clean-obj standalone* build of the two longest-named projects
+  (`Concertable.Shared.Notification.Infrastructure`, `Concertable.Customer.DataAccess.Infrastructure`) in
+  this deep worktree (`LongPathsEnabled=0`). In-graph builds are fine: `Concertable.B2B.Web` and
+  `Concertable.B2B.AppHost` build 0-error here, so the local smoke runs from this worktree. Full
+  `Concertable.slnx` from clean still needs `HKLM\...\LongPathsEnabled = 1` (admin) or the main checkout.
+- **Local dev config is now set up** (PR #827): `setup-local-dev.ps1` ran — `ServiceAuth:*ClientSecret`
+  user-secrets on all 3 AppHosts (machine-wide), `appsettings.Development.json` created in this worktree +
+  the main checkout. `docs/LOCAL_DEV.md` documents it. Was previously undocumented tribal knowledge.
 - **Phase 5 manual in-app smoke still outstanding** — deferred (needs local OIDC + B2B stack). Run before
   closeout.
 - **Seeding stayed consistent:** `VenueFactory` no longer calls `venue.Approve()` (the method is gone);
