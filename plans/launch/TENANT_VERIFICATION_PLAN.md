@@ -241,22 +241,24 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Build + focused tests; commit; reviewed (2 findings, both fixed on branch — see ledger); pushed to
   PR #799.
 
-### Phase 5 — Admin SPA + tenant-facing UI
+### Phase 5 — Admin SPA + tenant-facing UI ✅ code-complete (`3c77f8115`) — manual in-app smoke deferred
 
-- [ ] `app/web/admin/src/features/verification/` mirroring `features/venues` structure: `api/`,
+- [x] `app/web/admin/src/features/verification/` mirroring `features/venues` structure: `api/`,
   `hooks/`, `components/` (`PendingVerificationsList.tsx`, `RejectVerificationDialog.tsx` — reason
   required, mirroring `ResolveReportDialog.tsx`), `pages/VerificationPage.tsx`, `types.ts`, `index.ts`.
-- [ ] New route `routes/_admin/verification.tsx`; add the nav entry alongside the existing
+- [x] New route `routes/_admin/verification.tsx`; add the nav entry alongside the existing
   Venues/Moderation links in `routes/_admin/route.tsx`.
-- [ ] Tenant-facing: a status banner (mirroring the existing DAC7 tax-compliance nag) + evidence-upload
+- [x] Tenant-facing: a status banner (mirroring the existing DAC7 tax-compliance nag) + evidence-upload
   form in `app/web/b2b/shared` (consumed by both venue and artist manager SPAs), showing
-  pending/approved/rejected(+reason) state and a re-submit action.
-- [ ] Run all five web builds (per `app/web/AGENTS.md` — the boundary gate) and the affected SPAs'
-  typecheck/lint.
+  pending/approved/rejected(+reason) state and a re-submit action. New `/settings/verification` route +
+  nav link in both venue and artist SPAs; new `./features/verification` export in the `web-b2b` package.
+- [x] Run all five web builds (per `app/web/AGENTS.md` — the boundary gate) and the affected SPAs'
+  typecheck/lint. All five green; `lint:boundaries` green.
 - [ ] Manual verification in the running app (submit as venue/artist, approve/reject as admin, confirm
-  the opportunity-publication block and dashboard banner) before marking the phase done — per this
-  repo's UI-change verification requirement.
-- [ ] Build + focused tests; commit.
+  the opportunity-publication block and dashboard banner) — per this repo's UI-change verification
+  requirement. **Deferred:** needs the local OIDC + B2B stack; tracked as an outstanding item in the
+  ledger, to be run before the plan closes out at the end of Phase 6.
+- [x] Build + focused tests; commit (`3c77f8115`).
 
 ### Phase 6 — Retire the decorative `VenueEntity.Approved` surface
 
