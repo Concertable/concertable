@@ -152,9 +152,15 @@ there is no other consumer of an approve/reject event to justify the extra indir
 
 ## 3. Phases
 
-Single service (`Concertable.B2B`) + one admin SPA (`app/web/admin`) + the b2b-shared org UI. No
-published-package boundary is crossed, so no publish/platform-sync hard stop is needed anywhere in this
-plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to `main`.
+Single service (`Concertable.B2B`) + one admin SPA (`app/web/admin`) + the b2b-shared org UI. The backend
+crosses no published-contract boundary, so no platform-sync hard stop.
+
+**Correction (Phase 5):** `@concertable/web-b2b` *is* a published package, and `carve-fe` restores it from
+the feed — so a new `./features/*` export the venue/artist SPAs consume must **publish before** the
+consumers can merge green. Phase 5 therefore splits into a publish-first step (the shared
+`features/verification` tree + the `package.json` export → PR #825 → `publish-fe-packages.yml`) and the
+consumer step (venue/artist wiring + admin feature, folded into the Phase 6 PR #824, delivery-gated on
+#825's publish). The admin SPA feature is self-contained (no `web-b2b` import) and needs no publish.
 
 ### Phase 1 — Domain: `TenantVerificationEntity` + evidence + migration ✅ shipped (`2a66f1a03`, PR #772)
 
@@ -241,7 +247,7 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Build + focused tests; commit; reviewed (2 findings, both fixed on branch — see ledger); pushed to
   PR #799.
 
-### Phase 5 — Admin SPA + tenant-facing UI ✅ code-complete (`3c77f8115`) — manual in-app smoke deferred
+### Phase 5 — Admin SPA + tenant-facing UI — code-complete; splitting for the `web-b2b` publish boundary
 
 - [x] `app/web/admin/src/features/verification/` mirroring `features/venues` structure: `api/`,
   `hooks/`, `components/` (`PendingVerificationsList.tsx`, `RejectVerificationDialog.tsx` — reason
@@ -250,8 +256,11 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
   Venues/Moderation links in `routes/_admin/route.tsx`.
 - [x] Tenant-facing: a status banner (mirroring the existing DAC7 tax-compliance nag) + evidence-upload
   form in `app/web/b2b/shared` (consumed by both venue and artist manager SPAs), showing
-  pending/approved/rejected(+reason) state and a re-submit action. New `/settings/verification` route +
-  nav link in both venue and artist SPAs; new `./features/verification` export in the `web-b2b` package.
+  pending/approved/rejected(+reason) state and a re-submit action.
+  - [x] **Publish step (PR #825):** the `features/verification` tree + `./features/verification` export
+    in `web-b2b`. No consumer → `carve-fe` green. Merge → `publish-fe-packages.yml` publishes.
+  - [ ] **Consumer step (in PR #824):** new `/settings/verification` route + nav link in both venue and
+    artist SPAs; `VerificationBanner` on both dashboards. Delivery-gated on #825's publish.
 - [x] Run all five web builds (per `app/web/AGENTS.md` — the boundary gate) and the affected SPAs'
   typecheck/lint. All five green; `lint:boundaries` green.
 - [ ] Manual verification in the running app (submit as venue/artist, approve/reject as admin, confirm

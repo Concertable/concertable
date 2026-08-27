@@ -5,49 +5,57 @@
 - Roadmap item: `launch/tenant-verification`
 - Worktree: `.worktrees/Feature-launch_tenant-verification`
 - Branch: `Feature/launch_tenant-verification`
-- PR: [#824](https://github.com/Concertable/concertable/pull/824) — **DRAFT** (Phase 5 + 6 together),
-  head `8bcbde3bf`. Not ready: canonical review + Phase 5 manual smoke outstanding.
-- Dependency/package gates: none — single-service (`Concertable.B2B`), no published-contract boundary
-  crossed
-- Last reconciled: 2026-08-27, draft PR #824 opened; review + manual smoke + merge outstanding
+- PR: [#824](https://github.com/Concertable/concertable/pull/824) — **DRAFT**, Phase 5 consumer wiring +
+  admin feature + Phase 6. **Delivery-gated on PR #825** (see below).
+- Split-off PR: [#825](https://github.com/Concertable/concertable/pull/825) — **DRAFT**, the publish-first
+  `web-b2b` `features/verification` export (Phase 5 shared half). Merge → `publish-fe-packages.yml`
+  publishes → #824's `carve-fe` can go green.
+- Dependency/package gates: **#824 `Blocked by:` #825's publish** — `@concertable/web-b2b` is a published
+  package; `carve-fe` restores it from the feed, so the venue/artist SPAs can't import
+  `@concertable/web-b2b/features/verification` until #825 merges and republishes.
+- Last reconciled: 2026-08-27, review complete (2 findings fixed); Phase 5 split for the web-b2b publish
+  boundary after `carve-fe` caught it on #824.
 
 ## Current state
 
-Phases 1–4 merged to `main`. **Phase 5 (frontend, `3c77f8115`) and Phase 6 (retire `VenueEntity.Approved`,
-this commit) are committed on `Feature/launch_tenant-verification`, not yet PR'd.**
+Phases 1–4 merged to `main`. Phase 5 + Phase 6 committed on `Feature/launch_tenant-verification` (PR #824,
+draft). Review complete + approved (2 findings fixed).
 
-Phase 6 removed the decorative venue-approval surface end to end: `VenueEntity.Approved`/`Approve()`, the
-`[Admin]` approve + `pending-approval` endpoints and their service/repo methods, `ApproveVenueError`,
-`PendingVenue`, the `Approved` wire field on venue details, the now-dead
-`IVenuePrivilegedRepository`/`VenuePrivilegedRepository`/`VenuePrivilegedDbContext` chain, and
-`app/web/admin/src/features/venues/` + its route/nav. Venue migration re-scaffolded (drops one column).
+**`carve-fe` on #824 failed** (`web/b2b/venue` + `web/b2b/artist`): `Cannot find module
+'@concertable/web-b2b/features/verification'`. `@concertable/web-b2b` is a published package that `carve-fe`
+restores from the feed — Phase 5 added the `./features/verification` export **and** consumed it from both
+manager SPAs in one commit, which can't build until `web-b2b` republishes. **Split:**
+- **PR #825** (new branch `Feature/launch_tv-web-b2b-verification`): the shared `features/verification` tree
+  + the `package.json` export, no consumer → `carve-fe` green.
+- **PR #824**: everything else — venue/artist route+nav+dashboard wiring, the self-contained admin
+  `features/verification`, and all of Phase 6. Its `carve-fe` goes green once #825 is published.
 
-**Two items outstanding before closeout:**
-1. Phase 5 manual in-app smoke (submit/approve/reject, publication block, banner) — needs local OIDC + B2B
-   stack.
-2. Review of the Phase 5 + 6 slice (no `## Reviews` entry yet), then PR → merge, then tick the roadmap
-   (line 41 + §7 Architecture line) and delete this plan + ledger in the closeout commit.
+Phase 6 removed the decorative venue-approval surface end to end (see plan Phase 6 + the `## Decisions`
+scope-addition note). Venue migration re-scaffolded (`20260827211555`, drops one column).
 
 ## Next Steps
 
-1. Run the deferred **Phase 5 manual in-app smoke** on PR #824's head — submit evidence as a venue and an
-   artist, approve + reject (with reason) as admin, confirm the opportunity-publication block and the
-   dashboard banner. Needs the local OIDC + B2B stack (`appsettings.Development.json` + ServiceAuth secrets).
-2. Mark PR [#824](https://github.com/Concertable/concertable/pull/824) ready once the smoke passes and
-   exact-head CI is green, then `/merge` (single-service → `main`, `full-e2e` tier — new observable HTTP
-   behaviour: removed venue-approval endpoints + verification UI).
-3. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
+```
+Blocked: #824's carve-fe (web/b2b/venue, web/b2b/artist) fails until @concertable/web-b2b republishes with the ./features/verification export
+Blocked by: PR #825 (Feature/launch_tv-web-b2b-verification) + publish-fe-packages.yml
+Unblock action: get #825 green → mark ready → merge → publish-fe-packages.yml publishes @concertable/web-b2b@<next>-alpha
+Resume when: `npm view @concertable/web-b2b@alpha` (or the feed) exposes ./features/verification, i.e. publish-fe-packages.yml run on the #825 merge commit is green
+```
+
+Once #825 is published:
+1. `git fetch && git rebase origin/main` in this worktree, drop the shared `features/verification/**` files
+   from `43b42bfb7` + `b347f5cff` (now on `main` via #825 — take `main`'s copy on the conflict), push.
+2. Re-run #824 `carve-fe` — should be green (feed now has the export).
+3. Run the deferred **Phase 5 manual in-app smoke** — submit as venue + artist, approve + reject (reason)
+   as admin, confirm the opportunity-publication block and the dashboard banner. Needs the local OIDC + B2B
+   stack.
+4. Mark #824 ready once smoke passes + exact-head CI green, then `/merge` (single-service → `main`,
+   `full-e2e` tier).
+5. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
    the `Venue/artist verification enforced…` line in §7 Architecture; `git rm` this plan + ledger.
 
-Review gate is **satisfied** (see `## Reviews`). Local full-`slnx` build still blocked by the worktree
-MAX_PATH issue (unrelated; CI unaffected) — see below.
-
-Note: `dotnet build Concertable.slnx` fails **locally in this worktree** on two long-named projects
-(`Concertable.Shared.Notification.Infrastructure`, `Concertable.Customer.DataAccess.Infrastructure`) — a
-pre-existing Windows MAX_PATH limit (`LongPathsEnabled=0`, worktree path depth pushes the `obj` DLL path to
-260 chars), **not** caused by this change (reproduces with the change `git stash`ed) and not present in CI
-or the normal checkout. Build changed projects individually, or enable long paths
-(`HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled = 1`, admin).
+Review gate is **satisfied** (see `## Reviews`). The worktree MAX_PATH build limit and the web-b2b publish
+rule are in `## Decisions` below.
 
 ## Completed work
 
@@ -65,26 +73,32 @@ or the normal checkout. Build changed projects individually, or enable long path
   `[Admin]` `GET api/verification/pending` / `POST {tenantId}/approve` / `reject` on the existing
   `VerificationController`; `IVenueModule`/`IArtistModule.GetContactByTenantIdAsync` +
   `TenantContact` readonly record struct per module Contracts; `IVerificationNotifier` (direct call).
-- **Phase 5 — Admin SPA + tenant-facing UI** (`3c77f8115`): admin `features/verification` (pending queue,
-  approve, reason-required reject dialog) + `/_admin/verification` route/nav; `app/web/b2b/shared`
-  `features/verification` — `VerificationBanner` (DAC7 `TaxDetailsBanner` shape, on both manager
-  dashboards), `VerificationPage` + `VerificationForm` (three fixed doc-type uploads, zod schema),
-  multipart POST with PascalCase enum tokens; `/settings/verification` route + nav in venue + artist SPAs;
-  `./features/verification` package export.
-- **Phase 6 — Retire `VenueEntity.Approved`** (this commit): see plan Phase 6 checklist. All the venue
-  approve/pending-approval API + admin SPA + `ApproveVenueError` + `PendingVenue` + the `Approved` wire
-  field removed; the dead `VenuePrivileged*` chain removed as a scope addition; Venue migration
-  re-scaffolded (`20260827211555_InitialCreate`, drops the one column).
+- **Phase 5 — Admin SPA + tenant-facing UI** (`43b42bfb7`, review fixes `b347f5cff`) — **split for the
+  web-b2b publish boundary:**
+  - admin `features/verification` (pending queue, approve, reason-required reject dialog) +
+    `/_admin/verification` route/nav — self-contained, stays in **#824**.
+  - shared `app/web/b2b/shared/features/verification` (`VerificationBanner` — DAC7 `TaxDetailsBanner`
+    shape; `VerificationPage` + `VerificationForm` — three fixed doc-type uploads, zod schema; multipart
+    POST, PascalCase enum tokens) + the `./features/verification` package export → **PR #825** (publish
+    first).
+  - `/settings/verification` route + nav in venue + artist SPAs + `VerificationBanner` on both dashboards
+    → stays in **#824**, delivery-gated on #825.
+- **Phase 6 — Retire `VenueEntity.Approved`** (`3685c5f47`, in #824): all the venue approve/pending-approval
+  API + admin SPA + `ApproveVenueError` + `PendingVenue` + the `Approved` wire field removed; the dead
+  `VenuePrivileged*` chain removed as a scope addition; Venue migration re-scaffolded
+  (`20260827211555_InitialCreate`, drops the one column).
 
 ## Verification
 
 - Phase 6 backend (`3685c5f47`): `Concertable.B2B.Web` build green; Venue unit 19/19, Venue integration
   28/28 (−7 removed approve/pending tests), B2B architecture 18/18. Venue migration diff = exactly the
   dropped `Approved` column.
-- Review fixes (this commit): five `app/web` builds + `lint:boundaries` green; 28 web-b2b unit tests green.
-- `dotnet test Concertable.B2B.E2ETests` / merge-queue `full-e2e` tier is the merge gate — not run
-  locally. Local full-`slnx` build blocked by a pre-existing MAX_PATH env issue (see Next Steps).
-- Backend suites last full green at Phase 4 (`c99c7795c`).
+- Review fixes (`b347f5cff`): five `app/web` builds + `lint:boundaries` green; 28 web-b2b unit tests green.
+- **#824 CI (`79fd01b20`): `carve-fe` RED** on `web/b2b/venue` + `web/b2b/artist` (the publish-boundary
+  issue). All backend unit + integration matrices, `fe-boundaries`, other carves — green. Blocked pending
+  the #825 split (see Next Steps).
+- **#825 CI:** in progress at time of writing.
+- `full-e2e` tier is the merge-queue gate — not run locally.
 
 ## Reviews
 
@@ -112,8 +126,18 @@ to `app/web/b2b/shared/TECH_DEBT.md` (LOW). Phase 6 backend removals + migration
 - **`Approved` was also removed from the public `DetailsResponse` / `VenueDetails`** — it was dead data on
   the wire (no FE reads it; grep confirmed). The `DetailsResponse` *type* stays (frozen public marketplace
   contract per `http-api`), only the field is gone.
-- **Local `dotnet build Concertable.slnx` blocked by Windows MAX_PATH** in this worktree — see Next Steps
-  for the exact cause and fix. Not caused by this change; CI unaffected. Build changed projects directly.
+- **`@concertable/web-b2b` is a published package** and `carve-fe` restores it from the feed, not from
+  workspace source — so a new `./features/*` export must publish before venue/artist can consume it. The
+  plan's §3 "no published-package boundary crossed" was wrong for Phase 5; corrected there. **Rule for any
+  future `web-b2b` (or `shared`/`web`) export: land the export in its own PR, let `publish-fe-packages.yml`
+  publish it, then consume in a follow-up.** Precedent: commits `5246aeeb2`, `382bf817f` ("publish …
+  exports"). `publish-fe-packages.yml` triggers only on push to `main`, so a combined export+consume PR's
+  `carve-fe` can never go green.
+- **Local `dotnet build Concertable.slnx` blocked by Windows MAX_PATH** in this worktree
+  (`LongPathsEnabled=0`, worktree path depth → `obj` DLL path hits 260 chars on
+  `Concertable.Shared.Notification.Infrastructure` + `Concertable.Customer.DataAccess.Infrastructure`).
+  Reproduces with this change `git stash`ed; CI + normal checkout unaffected. Build changed projects
+  directly, or `HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled = 1` (admin).
 - **Phase 5 manual in-app smoke still outstanding** — deferred (needs local OIDC + B2B stack). Run before
   closeout.
 - **Seeding stayed consistent:** `VenueFactory` no longer calls `venue.Approve()` (the method is gone);
