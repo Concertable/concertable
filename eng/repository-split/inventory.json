@@ -12,82 +12,17 @@
         "toTarget": "platform-dotnet"
       }
     ],
-    "blockingTestEdges": [
-      {
-        "from": "api/Concertable.B2B/src/Modules/Application/Tests/Concertable.B2B.Application.IntegrationTests/Concertable.B2B.Application.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Booking/Tests/Concertable.B2B.Booking.IntegrationTests/Concertable.B2B.Booking.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Dashboard/Tests/Concertable.B2B.Dashboard.IntegrationTests/Concertable.B2B.Dashboard.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.IntegrationTests/Concertable.B2B.Deal.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Opportunity/Tests/Concertable.B2B.Opportunity.IntegrationTests/Concertable.B2B.Opportunity.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "architecture-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/tests/Concertable.B2B.Process.IntegrationTests/Concertable.B2B.Process.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      }
-    ],
-    "crossAreaEdgeCount": 99,
+    "blockingTestEdges": [],
+    "crossAreaEdgeCount": 92,
     "crossAreaEdgesByKind": {
       "apphost": 44,
       "apphost-support": 1,
-      "architecture-test": 2,
+      "architecture-test": 1,
       "e2e": 21,
-      "integration-test": 6,
       "runtime": 18,
       "unit-test": 7
     },
-    "crossTargetEdgeCount": 81,
+    "crossTargetEdgeCount": 74,
     "crossTargetEdges": [
       {
         "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
@@ -322,69 +257,6 @@
         "to": "api/Concertable.Search/src/Concertable.Search.Hosting/Concertable.Search.Hosting.csproj",
         "toArea": "Concertable.Search",
         "toTarget": "search"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Application/Tests/Concertable.B2B.Application.IntegrationTests/Concertable.B2B.Application.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Booking/Tests/Concertable.B2B.Booking.IntegrationTests/Concertable.B2B.Booking.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Dashboard/Tests/Concertable.B2B.Dashboard.IntegrationTests/Concertable.B2B.Dashboard.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.IntegrationTests/Concertable.B2B.Deal.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/src/Modules/Opportunity/Tests/Concertable.B2B.Opportunity.IntegrationTests/Concertable.B2B.Opportunity.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "architecture-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.B2B/tests/Concertable.B2B.Process.IntegrationTests/Concertable.B2B.Process.IntegrationTests.csproj",
-        "fromArea": "Concertable.B2B",
-        "fromKind": "integration-test",
-        "fromTarget": "b2b",
-        "to": "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj",
-        "toArea": "Concertable.Shared",
-        "toTarget": "platform-dotnet"
       },
       {
         "from": "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj",
@@ -821,9 +693,7 @@
     ],
     "crossTargetEdgesByKind": {
       "apphost": 44,
-      "architecture-test": 1,
       "e2e": 21,
-      "integration-test": 6,
       "runtime": 5,
       "unit-test": 4
     },
