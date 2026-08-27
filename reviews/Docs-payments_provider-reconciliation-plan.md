@@ -77,3 +77,20 @@
 
 - [x] **ACC4 — LOW — accuracy** — `plans/payments/PROVIDER_RECONCILIATION_PROGRESS.md:24`
   Replace the malformed Refund-event entry with the three supported provider events.
+
+## Review pass — 2026-08-27 — incremental
+
+**Candidate base:** `05f57298a52cf627ec5d1a81ab1a046c4773262d`
+**Candidate head:** `847ae2b110e41e45328c8ea5e5c64a83f29ec8ca`
+**Candidate branch:** `Docs/payments_provider-reconciliation-plan`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:f658787043daa0f0ca0a8d33420ac04fdd32bd17aec1b706239c160743431e73` `(4 paths)`
+**Candidate bundle:** `C:\Users\TommySeery\AppData\Local\Temp\concertable-docs-clean-final`
+**Candidate bundle identity:** `sha256:40a7156b1005b7b45ba477c4123e003d763c88f3ec34c8e2e9d00e1f94fd7b2b`
+**Work-order path:** `reviews/Docs-payments_provider-reconciliation-plan.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [~] **INST3 — LOW — followability** — plans/payments/PROVIDER_RECONCILIATION_PROGRESS.md:18$([Environment]::NewLine)  Replace the stale commit instruction with the final incremental-review range.

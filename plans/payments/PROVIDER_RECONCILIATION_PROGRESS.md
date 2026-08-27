@@ -15,7 +15,7 @@ Plan and ledger are authored. The initial documentation review at `f1e925f31a277
 
 ## Next Steps
 
-Commit the final review remediation and run the incremental documentation review from `05f57298a52cf627ec5d1a81ab1a046c4773262d`. Once that pass is clean, deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
+Run the final incremental documentation review from `847ae2b110e41e45328c8ea5e5c64a83f29ec8ca`. Once that pass is clean, deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
 
 ## Completed work
 
