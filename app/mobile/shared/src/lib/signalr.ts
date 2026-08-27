@@ -1,5 +1,5 @@
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from "@microsoft/signalr";
-import { useAuthStore } from "@concertable/shared/features/auth";
+import { mobileAuthSession } from "../auth/mobileAuthSession";
 import { getValidAccessToken } from "../auth/getValidAccessToken";
 import { logger } from "./logger";
 import Config from "./config";
@@ -19,7 +19,7 @@ notificationConnection.onreconnected((id) => {
 });
 
 function startIfAuthenticated() {
-  const hasUser = useAuthStore.getState().user !== null;
+  const hasUser = mobileAuthSession.current() !== undefined;
   logger.log("[signalr] startIfAuthenticated entry", {
     user: hasUser,
     state: notificationConnection.state,
@@ -37,9 +37,9 @@ notificationConnection.onclose((err) => {
   setTimeout(startIfAuthenticated, 5_000);
 });
 
-useAuthStore.subscribe((state, prev) => {
-  const wasAuthenticated = prev.user !== null;
-  const isAuthenticated = state.user !== null;
+mobileAuthSession.subscribe((user, previousUser) => {
+  const wasAuthenticated = previousUser !== undefined;
+  const isAuthenticated = user !== undefined;
   logger.log("[signalr] auth transition", { wasAuthenticated, isAuthenticated });
 
   if (!wasAuthenticated && isAuthenticated)

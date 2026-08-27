@@ -225,6 +225,13 @@
       "note": "Build and package config is per service folder by design - there is deliberately no repo-root version or build config, because a carve takes only the service folder and would leave anything above it behind."
     },
     {
+      "path": "(TestConventions|PlatformSourcePackages)\\.targets$",
+      "skills": [
+        "packages"
+      ],
+      "note": "Shared build infra sitting above the service folders. Allowed there only because every import of it is Exists()-guarded, so a carve that leaves the file behind degrades to the intended package-only shape instead of failing to restore. Keyed on the file name, not on api/, so the row ports verbatim into a carved repo where the same file sits at the root."
+    },
+    {
       "path": "(Mappers?\\.cs|/Mappers/[^/]*\\.cs)$",
       "skills": [
         "dotnet-standards:csharp-naming"

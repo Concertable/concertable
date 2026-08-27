@@ -1,5 +1,5 @@
 import { customerClient } from "../../../lib/customerClient";
-import type { Review, ReviewEntityType } from "@concertable/shared/features/reviews";
+import type { Review, ReviewEntityType } from "@concertable/shared/features/reviews/types";
 import type { CreateReviewRequest } from "../types";
 
 const basePath = (type: ReviewEntityType, id: number) =>
@@ -11,9 +11,14 @@ const reviewApi = {
     return data;
   },
 
-  createReview: async (request: CreateReviewRequest): Promise<Review> => {
-    const { concertId, ...body } = request;
-    const { data } = await customerClient.post<Review>(`${basePath("concert", concertId)}`, body);
+  createReview: async (
+    concertId: number,
+    request: CreateReviewRequest,
+  ): Promise<Review> => {
+    const { data } = await customerClient.post<Review>(
+      basePath("concert", concertId),
+      request,
+    );
     return data;
   },
 };

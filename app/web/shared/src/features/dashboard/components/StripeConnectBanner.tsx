@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
-import type { StripeConnectStatus } from "@concertable/shared/features/dashboard";
+import type { StripeConnectStatus } from "@concertable/shared/features/dashboard/types";
 
 export function StripeConnectBanner({ status }: { status: StripeConnectStatus }) {
   if (status.state === "complete") return null;

@@ -24,7 +24,10 @@ function b2bChecks(name, tenantExport = "features/tenant") {
   return {
     node: [
       `import { TENANT_HEADER } from "${tenantModule}";`,
+      `import type { TenantRole } from "${name}/features/tenant/types";`,
       `if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected ${name} TENANT_HEADER");`,
+      `const role = "Admin" as TenantRole;`,
+      "void role;",
     ],
     metro: [
       'import { registerRootComponent } from "expo";',
@@ -42,36 +45,24 @@ function b2bChecks(name, tenantExport = "features/tenant") {
 const CHECKS = {
   "@concertable/shared": {
     node: [
-      'import { genreLabel } from "@concertable/shared";',
+      'import { GENRE_LABELS, type Genre } from "@concertable/shared/types";',
       'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import type { Genre } from "@concertable/shared/types";',
-      'import { useAuthStore, type User } from "@concertable/shared/features/auth";',
+      'import type { User } from "@concertable/shared/features/auth/types";',
       'const genre: Genre = "rock";',
-      'if (genreLabel(genre) !== "Rock") throw new Error("Unexpected genre label");',
+      'if (GENRE_LABELS[genre] !== "Rock") throw new Error("Unexpected genre labels");',
       'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
-      'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
       "const user = {} as User;",
       "void user;",
-    ],
-    nodeRuntime: [
-      'import { genreLabel } from "@concertable/shared";',
-      'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import { useAuthStore } from "@concertable/shared/features/auth";',
-      'if (genreLabel("rock") !== "Rock") throw new Error("Unexpected genre label");',
-      'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
-      'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
     ],
     metro: [
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
       'import { Text } from "react-native";',
-      'import { useAuthStore } from "@concertable/shared/features/auth";',
       'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import { genreLabel } from "@concertable/shared/types";',
+      'import { GENRE_LABELS } from "@concertable/shared/types";',
       "function App() {",
       "  useMountEffect(() => undefined);",
-      "  void useAuthStore;",
-      '  return React.createElement(Text, null, genreLabel("rock"));',
+      '  return React.createElement(Text, null, GENRE_LABELS.rock);',
       "}",
       "registerRootComponent(App);",
     ],
@@ -79,17 +70,29 @@ const CHECKS = {
   "@concertable/web": {
     node: [
       'import { cn } from "@concertable/web/lib/utils";',
+      'import type { User } from "@concertable/web/features/auth/types";',
       'import { ReviewRouteProvider, b2bReviewBasePath, customerReviewBasePath } from "@concertable/web/features/reviews";',
+      'import { useMeQuery } from "@concertable/web/features/user";',
       'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
       'if (typeof ReviewRouteProvider !== "function") throw new Error("Missing review route provider export");',
+      'if (typeof useMeQuery !== "function") throw new Error("Missing useMeQuery export");',
+      'const user = {} as User;',
+      'void user;',
       'if (b2bReviewBasePath("artist", 12) !== "/artist/12/review") throw new Error("Unexpected B2B review route");',
       'if (customerReviewBasePath("artist", 12) !== "/artists/12/reviews") throw new Error("Unexpected customer review route");',
+    ],
+    nodeRuntime: [
+      'import { cn } from "@concertable/web/lib/utils";',
+      'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
     ],
   },
   "@concertable/customer": {
     node: [
       'import { customerClient } from "@concertable/customer/lib/customerClient";',
+      'import type { CreateReviewRequest } from "@concertable/customer/features/reviews/types";',
       'if (!customerClient) throw new Error("Missing @concertable/customer customerClient export");',
+      'const request = {} as CreateReviewRequest;',
+      'void request;',
     ],
   },
   "@concertable/b2b": b2bChecks("@concertable/b2b"),
@@ -153,6 +156,7 @@ function verifyNodeConsumer() {
       "--save-exact",
       installTarget,
       "react@19.1.0",
+      "react-dom@19.1.0",
       "typescript@5.9",
       "@types/react@19",
     ],
@@ -166,15 +170,21 @@ function verifyNodeConsumer() {
       strict: true,
       skipLibCheck: true,
       jsx: "react-jsx",
+      outDir: "dist",
     },
-    include: ["index.ts"],
+    include: ["*.ts"],
   });
   writeFileSync(join(directory, "index.ts"), checks.node.join("\n") + "\n");
-  // Runtime ESM smoke test — plain JS, so use an explicit runtime profile when the type-check
-  // profile carries type-only syntax; otherwise the type-check lines are already valid JS.
-  writeFileSync(join(directory, "index.mjs"), (checks.nodeRuntime ?? checks.node).join("\n") + "\n");
-  run(["exec", "--", "tsc", "--noEmit"], directory);
-  run(["exec", "--", "node", "index.mjs"], directory);
+  if (checks.nodeRuntime) {
+    writeFileSync(join(directory, "runtime.ts"), checks.nodeRuntime.join("\n") + "\n");
+  }
+  run(["exec", "--", "tsc"], directory);
+  run([
+    "exec",
+    "--",
+    "node",
+    checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js",
+  ], directory);
 }
 
 function verifyMetroConsumer() {

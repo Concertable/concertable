@@ -52,9 +52,10 @@ jobs:
       run_e2e:    ${{ steps.detect.outputs.run_e2e }}
       run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
       run_fe:     ${{ steps.detect.outputs.run_fe }}
-      unit_projects: ${{ steps.test-projects.outputs.unit_projects }}
-      architecture_projects: ${{ steps.test-projects.outputs.architecture_projects }}
-      integration_projects: ${{ steps.test-projects.outputs.integration_projects }}
+      unit_projects: ${{ steps.scope.outputs.unit_projects }}
+      architecture_projects: ${{ steps.scope.outputs.architecture_projects }}
+      integration_projects: ${{ steps.scope.outputs.integration_projects }}
+      services:             ${{ steps.detect.outputs.services }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -68,9 +69,9 @@ jobs:
           [ "$unit_projects" != '[]' ] || { echo "No unit test projects found."; exit 1; }
           [ "$architecture_projects" != '[]' ] || { echo "No architecture test projects found."; exit 1; }
           [ "$integration_projects" != '[]' ] || { echo "No integration test projects found."; exit 1; }
-          echo "unit_projects=$unit_projects" >> "$GITHUB_OUTPUT"
-          echo "architecture_projects=$architecture_projects" >> "$GITHUB_OUTPUT"
-          echo "integration_projects=$integration_projects" >> "$GITHUB_OUTPUT"
+          echo "all_unit=$unit_projects"                 >> "$GITHUB_OUTPUT"
+          echo "all_architecture=$architecture_projects" >> "$GITHUB_OUTPUT"
+          echo "all_integration=$integration_projects"   >> "$GITHUB_OUTPUT"
       - name: Classify changed files
         id: detect
         run: |
@@ -92,6 +93,7 @@ jobs:
             echo "run_e2e=true"    >> "$GITHUB_OUTPUT"
             echo "run_e2e_ui=true" >> "$GITHUB_OUTPUT"
             echo "run_fe=true"     >> "$GITHUB_OUTPUT"
+            echo "services=ALL"    >> "$GITHUB_OUTPUT"
             exit 0
           fi
           files=$(git diff --name-only "$base" "$head")
@@ -120,6 +122,29 @@ jobs:
           elif printf '%s\n' "$files" | grep -qE '^app/scripts/carve-fe\.mjs$|^\.github/workflows/test\.yml$'; then run_fe=true
           else run_fe=false; fi
           echo "-> run_fe=$run_fe (FE feed-restore carves)."
+          # SERVICE SCOPE: which services a change can actually affect, so an unrelated service's
+          # suites and standalone carve never gate this PR. Fails safe to ALL: only a diff whose every
+          # api/ path sits inside one service folder narrows the scope, and any file outside those
+          # folders (shared tiers, api/ root config, the umbrella AppHost, this workflow) means ALL.
+          # An empty scope is legitimate — a frontend-only change affects no backend service.
+          api_files=$(printf '%s\n' "$files" | grep -E '^api/' || true)
+          SERVICE_DIRS='^api/Concertable\.(Auth|B2B|Customer|Payment|Search)([./]|$)'
+          if printf '%s\n' "$files" | grep -qE '^\.github/workflows/test\.yml$'; then
+            services=ALL
+            echo "-> the gate itself changed; every service in scope."
+          elif [ -z "$api_files" ]; then
+            services=""
+            echo "-> no api/ change; no backend service in scope."
+          elif printf '%s\n' "$api_files" | grep -qvE "$SERVICE_DIRS"; then
+            services=ALL
+            echo "-> a shared or api-root path changed; every service in scope."
+          else
+            services=$(printf '%s\n' "$api_files" \
+              | sed -E 's#^api/Concertable\.(Auth|B2B|Customer|Payment|Search).*#\1#' \
+              | sort -u | tr '\n' ' ')
+            echo "-> service scope: $services"
+          fi
+          echo "services=$services" >> "$GITHUB_OUTPUT"
           # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
           # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
           # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
@@ -161,6 +186,40 @@ jobs:
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
           echo "run_e2e_ui=$run_e2e_ui" >> "$GITHUB_OUTPUT"
           echo "run_fe=$run_fe"         >> "$GITHUB_OUTPUT"
+
+      - name: Scope test projects to the affected services
+        id: scope
+        env:
+          ALL_UNIT: ${{ steps.test-projects.outputs.all_unit }}
+          ALL_ARCHITECTURE: ${{ steps.test-projects.outputs.all_architecture }}
+          ALL_INTEGRATION: ${{ steps.test-projects.outputs.all_integration }}
+          SERVICES: ${{ steps.detect.outputs.services }}
+        run: |
+          # ALL keeps the historical full fan-out. A named scope filters each matrix to the owning
+          # service's projects; an empty scope yields empty matrices, so the jobs skip rather than
+          # running another service's suites. Shared-tier projects live outside the five service
+          # folders and therefore only ever run under ALL, which is exactly when they can be affected.
+          if [ "$SERVICES" = "ALL" ]; then
+            unit="$ALL_UNIT"; architecture="$ALL_ARCHITECTURE"; integration="$ALL_INTEGRATION"
+            echo "-> full fan-out."
+          else
+            pattern=$(printf '%s' "$SERVICES" | tr ' ' '\n' | grep -v '^$' \
+              | sed -E 's|^|^api/Concertable\\.|' | paste -sd '|' -)
+            if [ -z "$pattern" ]; then
+              unit='[]'; architecture='[]'; integration='[]'
+              echo "-> no service in scope; backend test matrices are empty."
+            else
+              filter() { printf '%s' "$1" | jq -c --arg p "$pattern" 'map(select(test($p)))'; }
+              unit=$(filter "$ALL_UNIT")
+              architecture=$(filter "$ALL_ARCHITECTURE")
+              integration=$(filter "$ALL_INTEGRATION")
+              echo "-> scoped to /$pattern/."
+            fi
+          fi
+          echo "unit=$unit"; echo "architecture=$architecture"; echo "integration=$integration"
+          echo "unit_projects=$unit"                 >> "$GITHUB_OUTPUT"
+          echo "architecture_projects=$architecture" >> "$GITHUB_OUTPUT"
+          echo "integration_projects=$integration"   >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -206,6 +265,23 @@ jobs:
         shell: pwsh
         run: ./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release
 
+  split-inventory:
+    # Gate: the committed repository-split inventory is current, and no test-tier project declares a
+    # cross-repository ProjectReference. The carve jobs catch such an edge only in the service they
+    # carve, and only once its whole closure compiles; this catches it repo-wide in seconds, with no
+    # build and no feed. Rule + rationale: eng/repository-split/inventory.py.
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.run_code == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python eng/repository-split/inventory.py --check
+
   local-platform-pack:
     runs-on: ubuntu-latest
     needs: changes
@@ -233,13 +309,18 @@ jobs:
           if-no-files-found: error
 
   carve-auth:
-    # Gate: Concertable.Auth must build standalone from its own package closure — a ProjectReference
-    # escaping api/Concertable.Auth/ fails here (project-not-found) instead of silently at a repo split.
+    # Gate: Concertable.Auth and its non-E2E test tier must build standalone from their own package
+    # closure — a ProjectReference escaping api/Concertable.Auth/ fails here (project-not-found)
+    # instead of silently at a repo split. ArchitectureTests is out until the AppHost stages: it
+    # reaches the composition layer, which still references cross-folder projects by design.
     # Use `git archive`, not `git subtree split`: the split rewrites the folder's whole history and is
     # far too slow for a gate; archive extracts the tracked tree at HEAD instantly (no fetch-depth: 0).
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Auth'))
     permissions:
       contents: read
       packages: read
@@ -285,19 +366,29 @@ jobs:
       - name: Restore + build the carved Auth from the feed (packages only)
         if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
-        run: pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/src/Concertable.Auth/Concertable.Auth.csproj" --configuration Release
+        run: |
+          dotnet new sln --name CarveAuth --format slnx
+          dotnet sln CarveAuth.slnx add \
+            src/Concertable.Auth/Concertable.Auth.csproj \
+            tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj \
+            tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj \
+            tests/Concertable.Auth.IntegrationTests/Concertable.Auth.IntegrationTests.csproj
+          pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveAuth.slnx" --configuration Release
 
   carve-payment:
-    # Gate: Concertable.Payment's deployable closure must build standalone from its own package
-    # closure — a ProjectReference escaping api/Concertable.Payment/ fails here (project-not-found)
-    # instead of silently at a repo split. Same `git archive` technique as carve-auth.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost.Extensions and the
-    # E2ETests.Helpers harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.Testing.E2E) that are absent from the carve and exempt by design (composition / E2E
-    # harness layers). The solution lists every package-clean project so each is built directly.
+    # Gate: Concertable.Payment's deployable closure AND its non-E2E test tier must build standalone
+    # from their own package closure — a ProjectReference escaping api/Concertable.Payment/ fails here
+    # (project-not-found) instead of silently at a repo split. Same `git archive` technique as carve-auth.
+    # Not the whole .slnx: the AppHost/Hosting composition layer and the E2E harness still reference
+    # cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E, sibling services'
+    # Hosting) that are absent from the carve, and ArchitectureTests reaches them via the AppHost.
+    # Those wait on the packable-Hosting, AppHost-image-mode and E2E-to-fleet stages.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Payment'))
     permissions:
       contents: read
       packages: read
@@ -356,21 +447,27 @@ jobs:
             src/Concertable.Payment.Application/Concertable.Payment.Application.csproj \
             src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj \
             src/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj \
-            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj
+            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj \
+            tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj \
+            tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj \
+            tests/Compatibility/Concertable.Payment.PublishedContractFixture/Concertable.Payment.PublishedContractFixture.csproj
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarvePayment.slnx" --configuration Release -p:MinVerSkip=true
 
   carve-search:
-    # Gate: Concertable.Search's deployable closure must build standalone from its own package
-    # closure — a ProjectReference escaping api/Concertable.Search/ fails here (project-not-found)
-    # instead of silently at a repo split. Same `git archive` technique as carve-auth/carve-payment.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost.Extensions and the
-    # IntegrationTests/E2ETests.Helpers harness, which reference cross-folder projects
-    # (Concertable.AppHost.Shared, Concertable.Testing*) absent from the carve and exempt by design
-    # (composition / test-harness layers). The solution lists every package-clean project so each is
-    # built directly. Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
+    # Gate: Concertable.Search's deployable closure AND its non-E2E test tier must build standalone
+    # from their own package closure — a ProjectReference escaping api/Concertable.Search/ fails here
+    # (project-not-found) instead of silently at a repo split. Same `git archive` technique as
+    # carve-auth/carve-payment. Not the whole .slnx: the AppHost/Hosting composition layer and the E2E
+    # harness still reference cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E)
+    # absent from the carve, and ArchitectureTests reaches them via the AppHost — those wait on the
+    # packable-Hosting, AppHost-image-mode and E2E-to-fleet stages.
+    # Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Search'))
     permissions:
       contents: read
       packages: read
@@ -427,22 +524,28 @@ jobs:
             src/Concertable.Search.Application/Concertable.Search.Application.csproj \
             src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
             src/Concertable.Search.Domain/Concertable.Search.Domain.csproj \
-            src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
+            src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj \
+            tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj \
+            tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj \
+            tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveSearch.slnx" --configuration Release
 
   carve-b2b:
     # Gate: Concertable.B2B's deployable closure must build standalone from its own package closure —
     # a ProjectReference escaping api/Concertable.B2B/ fails here (project-not-found) instead of
     # silently at a repo split. Same `git archive` technique as carve-auth/carve-payment/carve-search.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost(.Extensions) and the
-    # IntegrationTests/E2ETests harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.Testing*, Payment/Search E2E helpers) absent from the carve and exempt by design
-    # (composition / test-harness layers). The closure is large (42 projects), so discover it as "every
+    # Not the whole .slnx: the AppHost/Hosting composition layer and the E2E harness still reference
+    # cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E, Payment/Search E2E
+    # helpers) absent from the carve, and ArchitectureTests reaches them via the AppHost — those wait on
+    # the packable-Hosting, AppHost-image-mode and E2E-to-fleet stages. The non-E2E test tier is in. The closure is large (42 projects), so discover it as "every
     # csproj that is not a test or AppHost project" — every package-clean project is built directly, and
     # a new closure project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'B2B'))
     permissions:
       contents: read
       packages: read
@@ -491,12 +594,12 @@ jobs:
         # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
         run: |
           dotnet new sln --name CarveB2B --format slnx
-          # Closure = every csproj except the test (Tests/) and AppHost (composition) projects, which
-          # legitimately reference cross-folder projects absent from the carve. Path/name based, so it
-          # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
+          # Every csproj except E2E, ArchitectureTests and the AppHost/Hosting composition projects,
+          # which legitimately reference cross-folder projects absent from the carve. Path/name based, so
+          # it can't drift on comment wording and auto-includes new or transitively-only-reached projects.
           mapfile -t PROJS < <(find . -name '*.csproj' \
-            -not -path '*/Tests/*' \
-            -not -path '*/tests/*' \
+            -not -path '*E2ETests*' \
+            -not -name '*.ArchitectureTests.csproj' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.B2B.AppHost.csproj' \
             -not -name 'Concertable.B2B.Hosting.csproj')
@@ -509,15 +612,18 @@ jobs:
     # Gate: Concertable.Customer's deployable closure must build standalone from its own package closure —
     # a ProjectReference escaping api/Concertable.Customer/ fails here (project-not-found) instead of
     # silently at a repo split. Same `git archive` technique as carve-auth/carve-payment/carve-search/carve-b2b.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost(.Extensions) and the
-    # IntegrationTests/E2ETests harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.Testing*, Payment/Search E2E helpers) absent from the carve and exempt by design
-    # (composition / test-harness layers). The closure is large, so discover it as "every csproj that is
+    # Not the whole .slnx: the AppHost/Hosting composition layer and the E2E harness still reference
+    # cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E, Payment/Search E2E
+    # helpers) absent from the carve, and ArchitectureTests reaches them via the AppHost — those wait on
+    # the packable-Hosting, AppHost-image-mode and E2E-to-fleet stages. The non-E2E test tier is in. The closure is large, so discover it as "every csproj that is
     # not a test or AppHost project" — every package-clean project is built directly, and a new closure
     # project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Customer'))
     permissions:
       contents: read
       packages: read
@@ -566,12 +672,12 @@ jobs:
         # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
         run: |
           dotnet new sln --name CarveCustomer --format slnx
-          # Closure = every csproj except the test (Tests/) and AppHost (composition) projects, which
-          # legitimately reference cross-folder projects absent from the carve. Path/name based, so it
-          # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
+          # Every csproj except E2E, ArchitectureTests and the AppHost/Hosting composition projects,
+          # which legitimately reference cross-folder projects absent from the carve. Path/name based, so
+          # it can't drift on comment wording and auto-includes new or transitively-only-reached projects.
           mapfile -t PROJS < <(find . -name '*.csproj' \
-            -not -path '*/Tests/*' \
-            -not -path '*/tests/*' \
+            -not -path '*E2ETests*' \
+            -not -name '*.ArchitectureTests.csproj' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.Customer.AppHost.csproj' \
             -not -name 'Concertable.Customer.Hosting.csproj')
@@ -634,7 +740,7 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes, local-platform-pack]
-    if: needs.changes.outputs.run_tests == 'true'
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.unit_projects != '[]'
     permissions:
       contents: read
       packages: read
@@ -674,7 +780,7 @@ jobs:
   architecture-tests:
     runs-on: ubuntu-latest
     needs: [build, changes, local-platform-pack]
-    if: needs.changes.outputs.run_tests == 'true'
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.architecture_projects != '[]'
     permissions:
       contents: read
       packages: read
@@ -706,7 +812,7 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes, local-platform-pack, architecture-tests]
-    if: needs.changes.outputs.run_tests == 'true'
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.integration_projects != '[]'
     permissions:
       contents: read
       packages: read
@@ -1095,6 +1201,15 @@ jobs:
       - name: Test repository workflow policy helpers
         run: node --test .github/scripts/*.test.mjs
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test the CI service-scope classifier
+        run: |
+          python -m pip install --quiet pyyaml
+          python .github/workflows/tests/test_service_scope.py
+
   ci-complete:
     # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
     # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
@@ -1104,6 +1219,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
+      - split-inventory
       - local-platform-pack
       - carve-auth
       - carve-payment

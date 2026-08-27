@@ -1,87 +1,83 @@
 import { create } from "zustand";
-import { produce } from "immer";
-import type { Artist } from "../types";
+import { immer } from "zustand/middleware/immer";
 import type { ImageFile } from "../../../types/image";
+import type { Artist } from "../types";
 
-interface ArtistStore {
-  draft: Artist | undefined;
-  editMode: boolean;
-  isDirty: boolean;
+export interface ArtistState {
+  draft:
+    | Pick<
+        Artist,
+        | "name"
+        | "about"
+        | "bannerUrl"
+        | "avatar"
+        | "genres"
+        | "county"
+        | "town"
+        | "latitude"
+        | "longitude"
+      >
+    | undefined;
   banner: ImageFile | undefined;
   avatar: ImageFile | undefined;
-
-  beginEdit: (artist: Artist) => void;
+  editMode: boolean;
+  beginEdit: (artist: NonNullable<ArtistState["draft"]>) => void;
   endEdit: () => void;
-
   setName: (name: string) => void;
   setAbout: (about: string) => void;
-  setLocation: (lat: number, lng: number, county: string, town: string) => void;
-  setBanner: (file: ImageFile) => void;
-  setAvatar: (file: ImageFile) => void;
+  setBanner: (banner: ImageFile) => void;
+  setAvatar: (avatar: ImageFile) => void;
 }
 
-const notEditing = {
-  draft: undefined,
-  editMode: false,
-  isDirty: false,
-  banner: undefined,
-  avatar: undefined,
-};
-
-export const useArtistStore = create<ArtistStore>((set) => ({
-  ...notEditing,
-
-  beginEdit: (artist) => set({ ...notEditing, draft: { ...artist }, editMode: true }),
-
-  endEdit: () => set(notEditing),
-
-  setName: (name) =>
-    set(
-      produce((state: ArtistStore) => {
-        if (!state.draft) return;
-        state.draft.name = name;
-        state.isDirty = true;
+export const useArtistStore = create<ArtistState>()(
+  immer((set) => ({
+    draft: undefined,
+    banner: undefined,
+    avatar: undefined,
+    editMode: false,
+    beginEdit: (artist) =>
+      set((state) => {
+        state.draft = {
+          name: artist.name,
+          about: artist.about,
+          bannerUrl: artist.bannerUrl,
+          avatar: artist.avatar,
+          genres: [...artist.genres],
+          county: artist.county,
+          town: artist.town,
+          latitude: artist.latitude,
+          longitude: artist.longitude,
+        };
+        state.banner = undefined;
+        state.avatar = undefined;
+        state.editMode = true;
       }),
-    ),
-
-  setAbout: (about) =>
-    set(
-      produce((state: ArtistStore) => {
-        if (!state.draft) return;
-        state.draft.about = about;
-        state.isDirty = true;
+    endEdit: () =>
+      set((state) => {
+        state.draft = undefined;
+        state.banner = undefined;
+        state.avatar = undefined;
+        state.editMode = false;
       }),
-    ),
-
-  setLocation: (latitude, longitude, county, town) =>
-    set(
-      produce((state: ArtistStore) => {
-        if (!state.draft) return;
-        state.draft.latitude = latitude;
-        state.draft.longitude = longitude;
-        state.draft.county = county;
-        state.draft.town = town;
-        state.isDirty = true;
+    setName: (name) =>
+      set((state) => {
+        if (state.draft) state.draft.name = name;
       }),
-    ),
-
-  setBanner: (file) =>
-    set(
-      produce((state: ArtistStore) => {
-        if (!state.draft) return;
-        state.draft.bannerUrl = file.uri;
-        state.banner = file;
-        state.isDirty = true;
+    setAbout: (about) =>
+      set((state) => {
+        if (state.draft) state.draft.about = about;
       }),
-    ),
-
-  setAvatar: (file) =>
-    set(
-      produce((state: ArtistStore) => {
+    setBanner: (banner) =>
+      set((state) => {
         if (!state.draft) return;
-        state.draft.avatar = file.uri;
-        state.avatar = file;
-        state.isDirty = true;
+        state.draft.bannerUrl = banner.uri;
+        state.banner = banner;
       }),
-    ),
-}));
+    setAvatar: (avatar) =>
+      set((state) => {
+        if (!state.draft) return;
+        state.draft.avatar = avatar.uri;
+        state.avatar = avatar;
+      }),
+  })),
+);

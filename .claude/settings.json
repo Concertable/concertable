@@ -61,19 +61,22 @@
       "source": {
         "source": "github",
         "repo": "Concertable/agent-standards"
-      }
+      },
+      "autoUpdate": true
     },
     "dotagents": {
       "source": {
         "source": "github",
         "repo": "tomjseery/dotagents"
-      }
+      },
+      "autoUpdate": true
     },
     "react-agents": {
       "source": {
         "source": "github",
         "repo": "tomjseery/react-agents"
-      }
+      },
+      "autoUpdate": true
     }
   }
 }
