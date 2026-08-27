@@ -265,21 +265,33 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 Start only once Phase 3's gate is proven (merged and green) — the new gate must fully replace the old
 one's function before the old one is deleted, never dropped first and rebuilt after.
 
-- [ ] Remove `VenueEntity.Approved`, `VenueEntity.Approve()`, `VenueChangedDomainEvent` usage tied to
-  approval specifically (keep the event for other profile changes).
-- [ ] Remove `VenueController`'s `[Admin] PATCH {venueId}/approve` and `[Admin] GET pending-approval`,
-  `IVenuePrivilegedRepository.GetPendingApprovalAsync`, `IVenueService.ApproveAsync`/
-  `GetPendingApprovalAsync`, `ApproveVenueError`.
-- [ ] Remove `app/web/admin/src/features/venues/` (superseded by `features/verification`) and its route
-  + nav entry.
-- [ ] Re-scaffold the Venue module migration to drop the `Approved` column.
-- [ ] Run the rename/removal grep gate scoped to the removed symbols
-  (`VenueEntity.Approved`, `venueService.ApproveAsync`, `pending-approval`, `ApproveVenueError`) — zero
-  remaining references, or an explicit justified allowlist entry.
-- [ ] Build + focused tests; run the five web builds; commit.
-- [ ] Tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` (line 41) and the
-  Architecture-checklist line in §7. Delete this plan and its ledger in the final verified commit.
-- [ ] **Hard stop:** hand off for review; do not begin unrelated launch-gate work in this worktree.
+- [x] Remove `VenueEntity.Approved`, `VenueEntity.Approve()` (`VenueChangedDomainEvent` kept for other
+  profile changes — approval never had a dedicated event).
+- [x] Remove `VenueController`'s `[Admin] PATCH {venueId}/approve` and `[Admin] GET pending-approval`,
+  `IVenueService.ApproveAsync`/`GetPendingApprovalAsync`, `ApproveVenueError`, `PendingVenue` DTO +
+  `ToPendingVenue` mapper, and the `Approved` field on `VenueDetails` / `DetailsResponse` +
+  `QueryableVenueMappers` / `VenueResponseMappers`. **Scope addition:** removed the whole
+  `IVenuePrivilegedRepository` / `VenuePrivilegedRepository` / `VenuePrivilegedDbContext` chain + DI —
+  approval was its only consumer, so it was 100% dead. Doc pointers updated (`CODE_PATTERNS.md`,
+  `ARCHITECTURE.md`, `PrivilegedDbContext` XML doc, `Concertable.DataAccess/TECH_DEBT.md`) to the
+  `ConversationsPrivilegedDbContext` (moderation) example.
+- [x] Remove `app/web/admin/src/features/venues/` (superseded by `features/verification`) and its route
+  + nav entry; `routeTree.gen.ts` regenerated.
+- [x] Re-scaffold the Venue module migration to drop the `Approved` column
+  (`20260819155531` → `20260827211555_InitialCreate`; diff is exactly the one dropped column).
+- [x] Run the removal grep gate — zero code references to `VenueEntity.Approved`, `venueService.ApproveAsync`,
+  `pending-approval`, `ApproveVenueError` remain (only this plan + ledger, deleted at closeout; one generic
+  "approve/pending-approval coverage" doc-comment in `VerificationAdminApiTests` describes the *verification*
+  admin flow, not the removed venue surface).
+- [x] Build + focused tests; five web builds + `lint:boundaries`. `Concertable.B2B.Web` green;
+  Venue unit 19 / Venue integration 28 (−7 removed) / B2B architecture 18 — all green. Five web builds green.
+  (Local full-`slnx` build blocked by a pre-existing Windows MAX_PATH limit on two long-named projects
+  unrelated to this change — see ledger; CI is unaffected.)
+- [ ] **At closeout (after review + merge):** tick `launch/tenant-verification` in
+  `plans/launch/LAUNCH_ROADMAP.md` (line 41) and the Architecture-checklist line in §7; delete this plan
+  and its ledger in the final verified commit.
+- [ ] Run the deferred Phase 5 manual in-app smoke, then **hard stop:** hand off for review; do not begin
+  unrelated launch-gate work in this worktree.
 
 ## 4. Out of scope (per the roadmap item and explicit instruction)
 
