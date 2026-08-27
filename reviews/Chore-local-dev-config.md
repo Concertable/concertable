@@ -4,6 +4,7 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `254211396`  `(2026-08-27)`
+**Security-reviewed up to commit:** `3eef7d10867f806550fa83bbc5bcf906332cfd14`  `(2026-08-27)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-27 — full
@@ -41,3 +42,11 @@ the .NET config binder (no property matches) and are a common appsettings-commen
 
 Self-review by the authoring context — the diff is small, mechanical, and was executed end to end
 (script run, files verified, CI green: 66 pass / 5 merge_group-skipped). No lens dispatched. Approved.
+
+### Security layer
+
+Ran on the `appsettings.Development.json.example` (auth-config) paths. **Zero findings.** The templates
+carry only `https://localhost:517x` origins; `setup-local-dev.ps1` takes no untrusted input (all
+arguments are hardcoded literals or fixed-array elements — no injection or path traversal) and the
+`local-dev-shared-service-secret` value is a documented localhost placeholder that grants nothing off-box
+and does not weaken production (Key Vault). Marker stamped at `3eef7d10`.
