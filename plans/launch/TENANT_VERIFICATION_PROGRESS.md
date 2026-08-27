@@ -3,32 +3,30 @@
 - Plan: `plans/launch/TENANT_VERIFICATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/tenant-verification`
-- Worktree: `.worktrees/Feature-launch_tenant-verification` (still open — PR not yet merged)
-- Branch: `Feature/launch_tenant-verification`
-- PR: [#799](https://github.com/Concertable/concertable/pull/799) — **OPEN, draft**, head `7fce9d54b`.
-  Not yet labelled for end-to-end tier (that is the merge procedure's Step-4 call, read fresh at enqueue
-  time) — a plausible `full-e2e` candidate given new observable admin/notification HTTP behavior.
+- Worktree: none open — Phase 4's worktree removed after merge; Phase 5 needs a fresh one.
+- Branch: `Feature/launch_tenant-verification` (Phase 4's copy deleted on merge; Phase 5 recreates the
+  same name from current `main`)
+- PR: [#799](https://github.com/Concertable/concertable/pull/799) — **MERGED**, merge commit
+  `c99c7795c`, 2026-08-27T16:48:20Z. Landed `full-e2e` tier (new observable admin/notification HTTP
+  behavior).
 - Dependency/package gates: none — single-service (`Concertable.B2B`), no published-contract boundary
   crossed
-- Last reconciled: 2026-08-26, Phase 4 implemented + reviewed + pushed; PR open, draft, not yet enqueued
+- Last reconciled: 2026-08-27, Phase 4 merged; starting Phase 5 next
 
 ## Current state
 
-Phases 1–3 merged to `main`. Phase 4 (admin review + cross-module contact + notification) is implemented,
-reviewed clean, and pushed as draft PR #799 — not yet marked ready or enqueued (no instruction to land it
-yet). Nothing uncommitted in the worktree.
+Phases 1–4 merged to `main`. Phase 5 (`app/web/admin` verification feature + tenant-facing UI) not yet
+started — no worktree open.
 
 ## Next Steps
 
-1. Wait for PR #799's own CI to go green at head `7fce9d54b`, then mark it ready for review.
-2. Land it through the merge procedure once instructed: confirm the PR's own checks are terminal green,
-   select the end-to-end tier per the merge skill's Step 4, enqueue, poll to `MERGED`, close the worktree
-   (`./scripts/worktrees.ps1 close -Worktree .worktrees/Feature-launch_tenant-verification -PullRequest 799 -PlanManaged`
-   from the normal checkout), then check for a causally-linked publish/sync PR (none expected — no
-   published contract in this change, per the Dependency/package gates line above).
-3. Once merged, start Phase 5 (`app/web/admin` verification feature + tenant-facing UI) in a fresh
-   worktree — `/open-worktree Feature/launch_tenant-verification` again (Phase 4's branch will be deleted
-   by the close above).
+1. Start Phase 5 in a fresh worktree — `/open-worktree Feature/launch_tenant-verification` from current
+   `main` (Phase 4's branch of the same name was deleted on merge, so this recreates it clean).
+2. Scope is the plan's Phase 5 checklist: `app/web/admin/src/features/verification/` (mirroring
+   `features/venues`), the `routes/_admin/verification.tsx` route + nav entry, and the tenant-facing
+   status banner + evidence-upload form in `app/web/b2b/shared` (mirroring the DAC7 tax-compliance nag).
+   Run all five web builds (`app/web/AGENTS.md`'s boundary gate) and manually verify submit/approve/reject
+   plus the publication-block and dashboard banner in the running app before marking it done.
 
 ## Completed work
 
@@ -55,37 +53,39 @@ yet). Nothing uncommitted in the worktree.
   no shared cross-service seed package) isolates the new gate from the pre-existing tax-compliance one.
   Its causally-linked publish (`0.1.0-alpha.0.1195`) opened sync PR #794, which merged green — Phase 3's
   own delivery obligation ended there.
-- **Phase 4 — Admin review + cross-module contact + notification** (PR #799, open draft, head
-  `7fce9d54b`, not yet merged): `TenantVerificationAdminController` (`[Admin]`,
-  `api/tenant/verification`: `GET pending`, `POST {tenantId}/approve`, `POST {tenantId}/reject`) lives in
-  Tenant.Api, matching `VenueController`/`ModerationController` — never centralized in Admin.Api.
+- **Phase 4 — Admin review + cross-module contact + notification** (PR #799, **merged** `c99c7795c`,
+  2026-08-27): consolidated into the existing `VerificationController`/`IVerificationService`/
+  `VerificationService` (not a separate admin controller/service) after design review, matching
+  `VenueController`/`VenueService`'s one-controller-per-resource shape — `[Admin]`-gated `GET
+  api/verification/pending`, `POST {tenantId}/approve`, `POST {tenantId}/reject` alongside the existing
+  self-service `GET/POST api/organization/verification*` actions, all sharing one `RouteSegment` const.
   `IVenueModule`/`IArtistModule` gain a symmetric `GetContactByTenantIdAsync(tenantId)`; `TenantContact`
-  is declared once per module's own Contracts project (Venue, Artist), matching the existing
-  `DisplayNames` precedent — decided against `Concertable.Kernel` because both are already-packable,
-  per-service-published projects and duplicating a tiny value shape there needs no new cross-module
-  reference. `VerificationAdminService` composes the pending queue with contact info and drives
-  approve/reject; `IVerificationNotifier`/`VerificationNotifier` emails the tenant on a decision,
-  mirroring `ContentReportNotifier`'s direct-call shape. Two review findings fixed on the branch (see
-  Reviews below). 174 unit tests unchanged, 18 architecture tests unchanged, 82 Tenant integration tests
-  (+16 new), 35 Venue + 22 Artist integration tests unchanged — all green.
+  is a `readonly record struct` declared once per module's own Contracts project (Venue, Artist),
+  matching the existing `DisplayNames` precedent — decided against `Concertable.Kernel` because both are
+  already-packable, per-service-published projects. `IVerificationNotifier`/`VerificationNotifier`
+  emails the tenant on a decision, mirroring `ContentReportNotifier`'s direct-call shape. Two review
+  findings fixed on the branch (see Reviews below). 174 unit tests unchanged, 18 architecture tests
+  unchanged, 82 Tenant integration tests (+16 new), 35 Venue + 22 Artist integration tests unchanged —
+  all green.
 
 ## Verification
 
 - `dotnet test` on `Concertable.B2B.Tenant.UnitTests` (174), `Concertable.B2B.ArchitectureTests` (18),
   `Concertable.B2B.Tenant.IntegrationTests` (82), `Concertable.B2B.Venue.IntegrationTests` (35),
-  `Concertable.B2B.Artist.IntegrationTests` (22) — 2026-08-26, commit `7fce9d54b`: all passed, 0 failed.
-- PR #799's own CI: not yet observed green (just pushed as draft) — check before marking ready.
+  `Concertable.B2B.Artist.IntegrationTests` (22) — 2026-08-26: all passed, 0 failed.
+- PR #799 merged via the merge queue at `full-e2e` tier, `c99c7795c`, 2026-08-27T16:48:20Z.
 
 ## Reviews
 
-`reviews/Feature-launch_tenant-verification.md` on the Phase-4 branch — reviewed up to `4928e1647`,
-security-reviewed up to the same commit. Two findings, both fixed on the branch (fix commit `4928e1647`):
-a `Task.WhenAll` DbContext-concurrency bug in the admin pending-queue's contact enrichment (two same-
+`reviews/Feature-launch_tenant-verification.md` was reviewed clean through several incremental passes
+(controller/service consolidation, the `TenantContact` struct conversion, two E2E DI-registration fixes —
+see Decisions below) up to the merged commit. Two original findings, both fixed on the branch: a
+`Task.WhenAll` DbContext-concurrency bug in the admin pending-queue's contact enrichment (two same-
 `TenantType` pending rows on one page crashed the endpoint — two scoped read-DbContexts hit
 concurrently), and a missing try/catch around the approve/reject notification call (mirrors
 `ContentReportService`'s established shape: a transport failure must not fail a request whose write
-already committed). No security findings. Will be deleted with this phase's close-out once PR #799
-merges, per the review-lifecycle standard.
+already committed). No security findings. Deleted with the worktree on merge, per the review-lifecycle
+standard.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -126,10 +126,26 @@ merges, per the review-lifecycle standard.
 - Contact enrichment in the admin pending-queue is one query per row, not batched per page (fixed to be
   sequential rather than concurrent for correctness; batching is a separate, logged follow-up —
   `api/Concertable.B2B/TECH_DEBT.md`, "Admin verification queue enriches contact per row, not per page").
+- **`Concertable.B2B.E2ETests/AppFixture.cs`'s standalone seed host under-provisioned itself once
+  `VerificationService` gained `IVenueModule`/`IArtistModule` dependencies**: `ConcertDevSeeder` (a
+  registered `IDevSeeder`, eagerly constructed via `IEnumerable<IDevSeeder>`) already depended on
+  `ITenantModule`, so extending `VerificationService`'s graph pulled `VenueService`/`ArtistService` into
+  a host that never registered `AddSharedImaging`/`AddSharedGeocoding`/`AddSharedEmail` (unlike the real
+  app host, which always has). Fixed by adding all three; a MED tech-debt entry in
+  `api/Concertable.B2B/TECH_DEBT.md` flags the structural risk (the seed host hand-duplicates a subset of
+  `AddB2BWebHost`'s registrations rather than reusing it) for whoever's diff next extends a cross-module
+  facade's dependency graph — **check that file's registrations before assuming a new
+  `IVenueModule`/`IArtistModule`/`ITenantModule` dependency "just works" in E2E.**
+- **Unrelated to this plan but touches a file Phase 5 will likely also touch**: `app/shared/src/features/venues/hooks/useMyVenue.ts` was migrated to `react-hook-form` + `zodResolver`
+  by a concurrent, unrelated change while this phase was in flight (commit `f8fe9fe5d`, "validate form
+  when editing opportunities") — entering edit mode must call `trigger()` after `reset()`, or
+  `formState.isValid` (and anything gating Save on it) stays stale until a field changes, which broke the
+  UI E2E "post an opportunity" happy paths for one merge-queue cycle. If Phase 5's evidence-upload
+  form or tenant-facing banner uses `useMyVenue`-style edit/save wiring, check this pattern is followed.
 
 ## Resume prompt
 
 ```
-cd C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_tenant-verification
+/open-worktree Feature/launch_tenant-verification
 Read @plans/launch/TENANT_VERIFICATION_PLAN.md and @plans/launch/TENANT_VERIFICATION_PROGRESS.md and do what its `## Next Steps` says.
 ```
