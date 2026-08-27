@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `bd95f8c380858d9078420e4fba948ea3b6a88308`  `(2026-08-28)`
+**Reviewed up to commit:** `5df88875fd3b92d9954bc99f1618e16262466f20`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-27 — full
@@ -70,4 +70,7 @@ independently); (3) plan/ledger + review docs. No un-reviewed executable code in
 `Concertable.B2B.Web` rebuilds 0-error on the new platform pin; five web builds + `lint:boundaries` green
 post-merge. Backend verified live from a running `Concertable.B2B.AppHost`: OIDC login renders with the
 correct venue `redirect_uri`, `GET /api/organization/verification` returns 401. Authenticated UI
-click-through is the merge-queue `full-e2e` tier (label applied). Watermark → `bd95f8c38`.
+click-through is the merge-queue `full-e2e` tier (label applied).
+
+Commits after `bd95f8c38` are docs-only — the ledger reconcile (`5df88875f`) and this file's structural
+flatten — so the watermark advances to `5df88875f` with nothing further to review.
