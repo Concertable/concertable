@@ -6,16 +6,16 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payments_provider-reconciliation-plan`
 - Branch: `Docs/payments_provider-reconciliation-plan`
 - PR: not opened
-- Dependency/package gates: Payment session state is terminal through PR #721 and platform-sync PR #794; no implementation blocker exists. Any new published Payment contract must complete its own producer, publication, and generated-sync gates before consumers merge.
+- Dependency/package gates: Payment session state is terminal through PR #721 and platform-sync PR #794; no implementation blocker exists. A changed published `Concertable.*` contract requires a dedicated producer plan, publication, and generated-sync chain before this plan may consume its terminal baseline.
 - Last reconciled: `2026-08-27` against `origin/main` `fe0f9dac14c73027f0c67feb35a932b685530580`, current open PR inventory, and Payment session/webhook/refund source.
 
 ## Current state
 
-Plan and ledger are newly authored. The repository workflow provider is `repository`; no external task host supplies an owning task or session. This docs worktree owns only plan publication. Implementation has not started and must use a fresh Payment delivery worktree from the then-current `origin/main` after this docs branch lands.
+Plan and ledger are authored. The initial documentation review at `f1e925f31a2774e875e1b8f7883dfd8eed7d87b4` found and remediated three plan gaps: Refund webhook coverage, published-contract plan ownership, and B2B dependency wording. This docs worktree owns only plan publication. Implementation has not started and must use a fresh Payment delivery worktree from the then-current `origin/main` after this docs branch lands.
 
 ## Next Steps
 
-Run the documentation review for `Docs/payments_provider-reconciliation-plan`; resolve any findings, then deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
+Commit the reviewed plan corrections and run the incremental documentation review from `f1e925f31a2774e875e1b8f7883dfd8eed7d87b4`. Once that pass is clean, deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
 
 ## Completed work
 
@@ -24,11 +24,13 @@ Run the documentation review for `Docs/payments_provider-reconciliation-plan`; r
 
 ## Verification
 
-- Pending: run the plan-graph and documentation checks after authoring.
+- `python .agents/hooks/plan_graph.py --root <docs worktree>`: 0 errors, 0 warnings.
+- `python .agents/hooks/docs_reachability.py --root <docs worktree>`: 0 errors; 27 warnings are pre-existing outside this plan.
+- `git diff --check`: passed.
 
 ## Reviews
 
-Documentation review pending; no review artifact exists yet.
+Initial docs review: `reviews/Docs-payments_provider-reconciliation-plan.md` is complete with three remediated findings at `f1e925f31a2774e875e1b8f7883dfd8eed7d87b4`; incremental docs review is required for the fixing commit.
 
 ## Decisions, discoveries, blockers, and deviations
 

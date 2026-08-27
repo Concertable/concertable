@@ -46,7 +46,7 @@ Make Payment's durable provider projections authoritative when Stripe events are
 
 ## Delivery shape
 
-The implementation is a Payment producer change. It may add private persistence and runtime composition, but it must not make consumers compile against source-only changes. If the implementation requires a published contract change, split that contract producer/publication/sync chain from consumer adoption and leave consumers delivery-gated until the generated platform-sync PR is terminal.
+The implementation is a Payment producer change. It may add private persistence and runtime composition, but it must not make consumers compile against source-only changes. A changed published `Concertable.*` contract is out of scope for this plan: author a dedicated producer plan, publish it, and merge its generated platform-sync chain before this plan consumes that terminal baseline.
 
 ## Phases
 
@@ -78,6 +78,7 @@ The implementation is a Payment producer change. It may add private persistence 
 
 - Add persisted due-work selection and lease/claim behaviour for nonterminal session attempts and pending refunds, with bounded retries, next-due calculation, last observation, and operator-safe failure diagnostics.
 - Add a Payment-hosted reconciliation worker that claims due records, retrieves current Stripe state, and delegates to the same session/refund reconciliation services. It must be safe under multiple replicas and restart after a lease expires.
+- Route supported `refund.created`, `refund.updated`, and `refund.failed` webhook events through current-object Refund retrieval and the same refund reconciliation service; the webhook payload remains evidence rather than state truth.
 - Extend the refund-specific persistence and service boundary only as necessary to retain Stripe refund identity, current provider status, observation evidence, and recovery outcome without weakening escrow/settlement reservations or duplicate-refund protection.
 - Reconcile ambiguous refund creation before deciding whether to complete or release a reservation; never issue a second refund merely because the original response was lost.
 - Emit structured metrics/logs for claimed, completed, deferred, terminal-failed, and overdue work, with correlation by Payment operation/refund identity and no client-secret or raw-provider diagnostic leakage.
@@ -85,14 +86,14 @@ The implementation is a Payment producer change. It may add private persistence 
 
 **Consumption contract:** the worker produces the same committed Payment projection and semantic outcome as a request or webhook trigger. It has no HTTP endpoint and exposes no consumer-domain recovery command.
 
-**Green gate:** focused domain/integration tests prove duplicate claims, lease expiry, restart, absent webhook, ambiguous provider success, pending-refund repair, and no duplicate Stripe action; the smallest affected Payment host/worker projects build cleanly.
+**Green gate:** focused domain/integration tests prove duplicate claims, lease expiry, restart, absent webhook, ambiguous provider success, pending-refund repair, duplicate/reordered/stale Refund webhooks, and no duplicate Stripe action; the smallest affected Payment host/worker projects build cleanly.
 
 ### Phase 4 - Verify delivery and unblock dependent work
 
 - Run the repository-required generators, provider-inventory/architecture checks, affected builds, and focused Payment tests for the completed phases; remote exact-head CI remains authoritative for the full matrix.
 - Obtain a clean code review, then deliver the Payment producer through the normal PR lifecycle.
-- If a published package changes, verify publication and own only the causally generated platform-sync PR through its terminal state before marking a consumer dependency available.
-- Reconcile the plan ledger and roadmap only after the producer and any required package/sync gates are terminal. At that point, unblock `payments/b2b-payment-workflows`; leave Customer and frontend migrations with their own owners.
+- If the work exposes a need to change a published `Concertable.*` contract, stop that contract work and author its dedicated producer plan. This implementation may consume only the separate plan's terminal published and synced baseline.
+- Reconcile the plan ledger and roadmap only after the producer and any required package/sync gates are terminal. This clears only the provider-reconciliation prerequisite; B2B remains blocked on frontend orchestration and active B2B consumer gates.
 
 **Green gate:** delayed, duplicated, reordered, and absent webhook scenarios converge without a duplicate provider action or stranded local projection; review and exact-head CI are green; all required publication/sync gates are terminal.
 
