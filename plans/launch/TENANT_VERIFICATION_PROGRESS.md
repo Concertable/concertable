@@ -5,10 +5,11 @@
 - Roadmap item: `launch/tenant-verification`
 - Worktree: `.worktrees/Feature-launch_tenant-verification`
 - Branch: `Feature/launch_tenant-verification`
-- PR: not opened — Phase 5 + Phase 6 land together in a fresh PR off current `main`
+- PR: [#824](https://github.com/Concertable/concertable/pull/824) — **DRAFT** (Phase 5 + 6 together),
+  head `8bcbde3bf`. Not ready: canonical review + Phase 5 manual smoke outstanding.
 - Dependency/package gates: none — single-service (`Concertable.B2B`), no published-contract boundary
   crossed
-- Last reconciled: 2026-08-27, Phase 6 code complete + committed; review + manual smoke + merge outstanding
+- Last reconciled: 2026-08-27, draft PR #824 opened; review + manual smoke + merge outstanding
 
 ## Current state
 
@@ -29,13 +30,17 @@ Phase 6 removed the decorative venue-approval surface end to end: `VenueEntity.A
 
 ## Next Steps
 
-1. Open a review of the full `Feature/launch_tenant-verification` delta (Phase 5 `3c77f8115` + Phase 6) —
-   write `reviews/Feature-launch_tenant-verification.md`; address findings; record the `## Reviews` gate.
-2. Run the deferred Phase 5 manual in-app smoke.
-3. `/open-pr` then `/merge` (single-service, merges straight to `main`, `full-e2e` tier — new observable
-   HTTP behaviour: removed endpoints + verification UI).
-4. Closeout commit: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 + the
-   `Venue/artist verification enforced…` line in §7 Architecture; `git rm` this plan + ledger.
+1. Run the deferred **Phase 5 manual in-app smoke** on PR #824's head — submit evidence as a venue and an
+   artist, approve + reject (with reason) as admin, confirm the opportunity-publication block and the
+   dashboard banner. Needs the local OIDC + B2B stack (`appsettings.Development.json` + ServiceAuth secrets).
+2. Mark PR [#824](https://github.com/Concertable/concertable/pull/824) ready once the smoke passes and
+   exact-head CI is green, then `/merge` (single-service → `main`, `full-e2e` tier — new observable HTTP
+   behaviour: removed venue-approval endpoints + verification UI).
+3. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
+   the `Venue/artist verification enforced…` line in §7 Architecture; `git rm` this plan + ledger.
+
+Review gate is **satisfied** (see `## Reviews`). Local full-`slnx` build still blocked by the worktree
+MAX_PATH issue (unrelated; CI unaffected) — see below.
 
 Note: `dotnet build Concertable.slnx` fails **locally in this worktree** on two long-named projects
 (`Concertable.Shared.Notification.Infrastructure`, `Concertable.Customer.DataAccess.Infrastructure`) — a
@@ -73,22 +78,27 @@ or the normal checkout. Build changed projects individually, or enable long path
 
 ## Verification
 
-- Phase 6 (2026-08-27, this commit): `Concertable.B2B.Web` build green; Venue unit tests 19/19,
-  Venue integration 28/28 (−7 removed approve/pending tests), B2B architecture 18/18 — all green.
-  Five `app/web` builds green + `lint:boundaries` green. Venue migration diff = exactly the dropped
-  `Approved` column.
+- Phase 6 backend (`3685c5f47`): `Concertable.B2B.Web` build green; Venue unit 19/19, Venue integration
+  28/28 (−7 removed approve/pending tests), B2B architecture 18/18. Venue migration diff = exactly the
+  dropped `Approved` column.
+- Review fixes (this commit): five `app/web` builds + `lint:boundaries` green; 28 web-b2b unit tests green.
 - `dotnet test Concertable.B2B.E2ETests` / merge-queue `full-e2e` tier is the merge gate — not run
   locally. Local full-`slnx` build blocked by a pre-existing MAX_PATH env issue (see Next Steps).
 - Backend suites last full green at Phase 4 (`c99c7795c`).
 
 ## Reviews
 
-**Gate: OPEN.** No canonical isolated review recorded yet for the Phase 5 + Phase 6 slice (frozen range
-`085520405..3685c5f47`). Phase 4's review file was deleted on merge. A parent self-review of the Phase 6
-diff during implementation found it clean (symmetric removal; builds + focused tests green; conventions
-re-checked against `csharp-style`, `http-api`, `persistence`, `multitenancy`, `result-errors`,
-`module-structure`) — but that is not the independent pass. Run `/review` (or `/code-review`) to produce
-`reviews/Feature-launch_tenant-verification.md` and record the watermark before merge.
+`reviews/Feature-launch_tenant-verification.md` — **status `complete`**, frozen range
+`085520405..8bcbde3bf`, native layer via an independent cold `code-reviewer` context + parent synthesis.
+Two findings, both **fixed on-branch**:
+- **NAT1 (MEDIUM)** — `verificationApi.get` returned `undefined` on HTTP 204 (the common "never submitted"
+  case) → TanStack Query v5 throws → permanent error state on the dashboard banner + `/settings/verification`.
+  Fixed: returns `Verification | null`.
+- **NAT2 (LOW)** — `VerificationForm` mapped per-file validation errors by catalog order, not attach order.
+  Fixed: derives from `Object.keys(buffer)`.
+
+One cross-area note (`organizationApi.get` has the same latent 204 bug, unreachable in practice) transferred
+to `app/web/b2b/shared/TECH_DEBT.md` (LOW). Phase 6 backend removals + migration reviewed clean.
 
 ## Decisions, discoveries, blockers, and deviations
 
