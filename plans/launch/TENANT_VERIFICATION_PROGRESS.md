@@ -3,9 +3,8 @@
 - Plan: `plans/launch/TENANT_VERIFICATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/tenant-verification`
-- Worktree: none open — Phase 4's worktree removed after merge; Phase 5 needs a fresh one.
-- Branch: `Feature/launch_tenant-verification` (Phase 4's copy deleted on merge; Phase 5 recreates the
-  same name from current `main`)
+- Worktree:
+- Branch: `Feature/launch_tenant-verification`
 - PR: [#799](https://github.com/Concertable/concertable/pull/799) — **MERGED**, merge commit
   `c99c7795c`, 2026-08-27T16:48:20Z. Landed `full-e2e` tier (new observable admin/notification HTTP
   behavior).
@@ -16,7 +15,8 @@
 ## Current state
 
 Phases 1–4 merged to `main`. Phase 5 (`app/web/admin` verification feature + tenant-facing UI) not yet
-started — no worktree open.
+started — no worktree open. Phase 4's `Feature/launch_tenant-verification` branch/worktree were deleted
+on merge; Phase 5 recreates the same branch name fresh from current `main`.
 
 ## Next Steps
 
