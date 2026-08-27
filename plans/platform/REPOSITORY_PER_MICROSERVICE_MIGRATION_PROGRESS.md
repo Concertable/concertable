@@ -3,11 +3,11 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepoSplit-Stage2-AppHostShared`
-- Branch: `Plan/RepoSplit-Stage2-AppHostShared` (stage 2, round-trip 1). Stage 1 shipped on
-  `Plan/RepositoryPerMicroserviceMigration` (PR #798, merged 2026-08-26; worktree closed).
-- PR: stage 2 is two ordered publish round-trips, so multiple PRs; this branch is round-trip 1
-  (`IsPackable` on `Concertable.AppHost.Shared`).
+- Worktree: none active for landed work. Next work opens a fresh one — see `## Resume prompt`.
+- Branch/PRs: stage 2 runs as publish round-trips — **rt1** (`IsPackable` on `AppHost.Shared`, PR #805) and
+  **rt2** (the four `*.Hosting` packable + published + cross-service deps as packages, PR #809) are both
+  **MERGED**. **rt3** is the small unblocked remainder: swap the 4 `AppHost.Shared.UnitTests` refs + delete
+  `mirror.yml`/`mirror-parity.yml`.
 - Dependency/package gates: none active. Stage 1 changed no *published contract* — it consumes only
   packages already on the feed at the pinned `0.1.0-alpha.0.1195`. But "publishes nothing" was wrong
   about the *pipeline*: every push to `main` reruns `publish-packages.yml`, which republishes all
@@ -15,8 +15,10 @@
   pin-bump PR. Stage 1's merge (#798) duly triggered publish `0.1.0-alpha.0.1202` and sync PR #803
   (auto-merge armed, superseded #801); both self-managed with no action needed. Stage 2's own
   `IsPackable` publishes ride exactly this machinery.
-- Last reconciled: **2026-08-26** — **stage 1 merged (PR #798)**; stage 2 in flight, round-trip 1
-  (`IsPackable` on `Concertable.AppHost.Shared`) committed and packing clean locally.
+- Last reconciled: **2026-08-27** — **stage 1 + stage-2 round-trips 1–2 merged** (PRs #798, #805, #809;
+  platform at `0.1.0-alpha.0.1211`, all four `*.Hosting` + `Customer.Ticket.Contracts` on the feed).
+  rt3 is the small remainder; the `*.ArchitectureTests` carve gate was **corrected out of stage 2 into
+  stage 3** (it fails until AppHost image mode removes the sibling `AddProject` edges — see `## Next Steps`).
 
 ## Current state
 
@@ -193,12 +195,21 @@ survives as the fallback for local development and cross-service E2E until stage
 be extracted before its AppHost and E2E story is perfect.
 
 1. ~~**Swap the 41 test-tier `ProjectReference`s to `PackageReference`.**~~ **Done — see `## Stage 1`.**
-2. **Make the four `*.Hosting` projects packable and publish them**, then swap the last 4 of the 45.
-   The carve build has already named the missing symbols; adding `*.ArchitectureTests` to the five carve
-   jobs is this stage's gate.
-3. **AppHost image mode** — foreign services composed via `AddContainer` on a pinned image instead of
-   `AddProject` against sibling source. .NET 10 SDK container publishing means no Dockerfile per host.
-   This is what lets a service leave without breaking every other service's local development.
+2. ~~**Make the four `*.Hosting` projects packable and publish them**, then swap the last 4 of the 45.~~
+   **Packable + published — DONE (round-trips 1–2; on the feed at `0.1.0-alpha.0.1211`).** Remaining in
+   stage 2: swap the last 4 `AppHost.Shared.UnitTests` refs + delete `mirror.yml`/`mirror-parity.yml`
+   (round-trip 3, small/unblocked). **CORRECTION (2026-08-27):** adding `*.ArchitectureTests` to the carve
+   jobs is **NOT** stage 2's gate and is **NOT** unblocked by `*.Hosting` reaching the feed — the earlier
+   "once `*.Hosting` resolves from the feed" claim (from the stage-1 commit `bc1daf488`) was wrong. Verified
+   empirically: the carve **with `*.ArchitectureTests`** still fails (`MSB3202` — `Payment.AppHost`
+   `AddProject`s the sibling **Auth deployable**, absent in a single-service carve). That gate is owned by
+   **stage 3**, below.
+3. **AppHost image mode** — foreign services (and `AppHost.Shared`) composed via `AddContainer` on a pinned
+   image instead of `AddProject` against sibling source; this is what converts the **44 `apphost`
+   `AddProject(sibling)` edges** (measured untouched in rt2). .NET 10 SDK container publishing means no
+   Dockerfile per host. It lets a service leave without breaking every other service's local development —
+   **and it OWNS the `*.ArchitectureTests`-in-the-carve-jobs gate** (moved here from stage 2, verified
+   2026-08-27): that gate can only pass once these `AddProject(sibling)` edges are gone.
 4. **Move cross-service E2E to `fleet`** — 21 E2E cross-repository edges, and no TestKit exists yet.
    The largest single stage; it gates `fleet`, customer and b2b, but not auth or payment.
 5. **Extract `payment`** — mechanism already proven end to end.
@@ -219,14 +230,22 @@ them. Do not re-estimate archival on paper again — report the measured rate af
 
 ### Immediate next action
 
-**Stage 2.** Make `Concertable.{Auth,B2B,Customer,Payment}.Hosting` packable and publish them, then swap
-the last 4 test-tier refs in `Concertable.AppHost.Shared.UnitTests`. The work list is already measured —
-see the 7 named symbols in `## Stage 1`. Its gate: add `*.ArchitectureTests` to the five carve jobs and
-require them green, which is only possible once `*.Hosting` resolves from the feed.
+**Round-trip 3 (small, unblocked).** `*.Hosting` is packable and published (round-trips 1–2 DONE). What
+remains of stage 2 is only: swap the last 4 `Concertable.AppHost.Shared.UnitTests` `ProjectReference`s → the
+published `*.Hosting` (use the stage-1 `PlatformSourcePackages.targets` source-swap-back, consistent with the
+rest of the test tier), and delete `mirror.yml` + `mirror-parity.yml`. This does **not** touch the carve jobs
+or `test.yml`, so it is a normal PR (no forced full-e2e).
+
+**Do NOT add `*.ArchitectureTests` to the carve jobs in round-trip 3.** Verified 2026-08-27 that gate fails
+until **stage 3 (AppHost image mode)** removes the `AppHost → sibling deployable` `AddProject` edges. After
+round-trip 3, the next substantial stage is **stage 3**, which owns that gate.
 
 **Use the `git archive` carve, not a `git-filter-repo` clone, to verify.** It is the same gate at a
 fraction of the cost, it needs no fresh clone (so no `core.longpaths` trap), and CI already runs it.
-Reach for `git-filter-repo` only at stage 5+, when history actually has to move.
+Reach for `git-filter-repo` only at stage 5+, when history actually has to move. **When a stage claims a
+gate becomes possible after a prior stage, prove it by running that gate at the prior stage's closeout
+before writing it as the next step — the mis-sequenced `*.ArchitectureTests` gate above was asserted, never
+run, and cost a wasted phase.**
 
 ### Interaction with the two open PRs
 
@@ -452,46 +471,26 @@ findings are recorded only as resolved via that commit; treat the specific findi
   here was a no-op against `main` by merge time; the effective jump was 1206→1211 via #812. The "supersedes
   #808" framing above was written pre-merge and did not hold — #808 landed on its own.) **Round-trip 2 is
   DONE.** Next: round-trip 3.
+- **CORRECTION (2026-08-27) — supersedes this entry's `Follow-up` and `Tier` bullets above.** Those said
+  round-trip 3 would "add `*.ArchitectureTests` to the five carve jobs" and framed that gate as merely
+  awaiting `*.Hosting` on the feed. **Wrong** — proven by running the carve *with* `*.ArchitectureTests`
+  (fails `MSB3202`: the service `AppHost` `AddProject`s a sibling **deployable**, absent in a single-service
+  carve). That gate belongs to **stage 3 (AppHost image mode)**, not round-trip 3. Round-trip 3's real scope
+  is ONLY: swap the 4 `AppHost.Shared.UnitTests` refs (source-swap-back) + delete `mirror.yml`/`mirror-parity.yml`
+  — see the corrected `## Next Steps`. Lesson banked there: prove a "possible after stage Y" gate by running
+  it at Y's closeout before writing it as the next step.
 
 ## Resume prompt
 
 ```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Plan\RepositoryPerMicroserviceMigration
+/open-worktree Plan/RepoSplit-Stage2-rt3
 Read plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md and
-plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md.
-
-The migration is APPROVED and executing, decoupled from the launch roadmap. The plan document's
-inventory is a stale 2026-08-02 snapshot; this ledger overrides it. Nine stages remain, listed in
-the ledger's `## Next Steps`. Payment extraction is already PROVEN end to end — see the ledger's
-`## Verification`. Do not re-litigate whether to split, and do not re-audit what is already recorded.
-
-Stage 1 is DONE — see the ledger's `## Stage 1`. Do not re-swap references and do not re-verify it;
-`python eng/repository-split/inventory.py --check` proves it in seconds (blockingTestEdges must be 0).
-
-Do stage 2 now: make Concertable.{Auth,B2B,Customer,Payment}.Hosting packable (<IsPackable>true</IsPackable>
-— that one line is the whole publish opt-in, see .github/workflows/publish-packages.yml), publish them,
-then swap the last 4 test-tier refs in api/Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests.
-The work list is already measured: a Payment carve including ArchitectureTests fails with exactly 7
-errors in src/Concertable.Payment.Hosting — missing Concertable.Messaging.AzureServiceBus,
-Concertable.AppHost.Shared (AsbTopology, SqlServerDatabaseResource) and the sibling Concertable.{Auth,B2B}
-topologies. Note *.Hosting referencing SIBLING SERVICES' Hosting projects is the part stage 3 (AppHost
-image mode) owns; do not try to package your way out of it.
-
-Gate — add *.ArchitectureTests to the five carve jobs in .github/workflows/test.yml and require green.
-Verify locally with the cheap carve, NOT a git-filter-repo clone:
-  SHA=$(git stash create); git archive "${SHA:-HEAD}":api/Concertable.Payment | tar -x -C <tmp>
-  cd <tmp> && dotnet new sln --name Carve --format slnx && dotnet sln Carve.slnx add <projects>
-  dotnet build Carve.slnx --configuration Release -p:MinVerSkip=true
-GITHUB_PACKAGES_TOKEN must be in the environment (it is). Publishing is a two-step release: the pin can
-only move to a version already on the feed, so publish first, then bump ConcertablePlatformVersion.
-
-Because *.Hosting becomes packable, it also becomes a published contract — check whether it exposes any
-Reunion carrier before publishing (the `packages` skill's PrivateAssets rule).
-
-This branch is pushed and has no PR yet. It touches .github/workflows/test.yml, so when opened it
-requires full merge-queue E2E and must never take skip-e2e.
-
-Machine caveat: C: was at 0 bytes free at the end of stage 1 and the full `dotnet build
-api/Concertable.slnx` could not run locally. Check `df -h /c` first; if it is still full, the reclaim
-options and their permission traps are in the 2026-08-26 event-log entry.
+plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md and do what its
+`### Immediate next action` says.
 ```
+
+Deliberately NO scope, gates, commands, versions or worktree specifics are restated here — they live in
+the ledger above and drift the moment they are duplicated. That duplication is exactly what mis-sequenced
+the `*.ArchitectureTests` gate (asserted in a copied "next step", never run). **The ledger is the single
+source of truth; if a prompt and the ledger disagree, the ledger wins, and any "gate X becomes possible
+after stage Y" claim must be re-proven by running the gate before it is acted on.**
