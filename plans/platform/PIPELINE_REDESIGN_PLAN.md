@@ -110,8 +110,8 @@ Every one of these is downstream of: *required checks are not authoritative on t
 | `platform-sync.yml` | Publish→pin-bump PR→auto-merge | **Keep, simplify.** Inherits the queue fix; its stalls disappear. |
 | `platform-sync-alert.yml` | Issue+label when a sync PR goes red | **Keep** as a cheap path-independent backstop; re-assess post-migration. |
 | `publish-packages.yml` | Pack `IsPackable` + verify-restore closure | **Keep, gate smarter.** Well-designed; reduce needless republish churn (N3). |
-| `mirror.yml` | Subtree-split 6 services → standalone repos on every push | **Move off the hot path** (N4, N7): tag/manual-triggered, `git archive`-based. |
-| `mirror-parity.yml` | Nightly drift check of the mirrors | **Keep** (already off the hot path). |
+| ~~`mirror.yml`~~ | ~~Subtree-split 6 services → standalone repos on every push~~ | **VOID 2026-08-27 — deleted.** The six mirror repos no longer exist; the polyrepo cut extracts with `git-filter-repo`. |
+| ~~`mirror-parity.yml`~~ | ~~Nightly drift check of the mirrors~~ | **VOID 2026-08-27 — deleted** with `mirror.yml`. |
 | `claude-review.yml` | Opt-in AI PR review on a label | **Keep** (independent, harmless). |
 
 ---

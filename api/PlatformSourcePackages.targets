@@ -20,6 +20,10 @@
     <PlatformSourcePackage Include="Concertable.Seed.Infrastructure"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Infrastructure\Concertable.Seed.Infrastructure.csproj" />
     <PlatformSourcePackage Include="Concertable.Messaging.Domain"         Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
     <PlatformSourcePackage Include="Concertable.Messaging.Infrastructure" Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
+    <PlatformSourcePackage Include="Concertable.Auth.Hosting"             Project="$(MSBuildThisFileDirectory)Concertable.Auth\src\Concertable.Auth.Hosting\Concertable.Auth.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.B2B.Hosting"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.Hosting\Concertable.B2B.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Customer.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.Hosting\Concertable.Customer.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Payment.Hosting"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.Hosting\Concertable.Payment.Hosting.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">

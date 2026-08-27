@@ -11,15 +11,19 @@
 >
 > **Definition of done for the epic:** each service (`B2B`, `Customer`, `Auth`, `Payment`, `Search`,
 > `Shared`) builds, tests, **documents, and plans** itself standing alone; every cross-service dependency
-> is Contracts/published-package only; a mirror (or a true cut) of any service folder is a coherent,
-> self-describing repo.
+> is Contracts/published-package only; and the cut (§6) has run, so each service folder **is** its own
+> coherent, self-describing repo.
 >
 > **Scope note:** this tracks only the polyrepo/services-as-repos streams. Other `plans/platform/` plans
 > (deployment, DNS, pipeline redesign, E2E strategy) are separate concerns and are **not** tracked here.
 >
-> **Companion / standing docs:** [`POLYREPO.md`](POLYREPO.md) (mirror runbook),
-> [`../../api/docs/MICROSERVICES_ARCHITECTURE.md`](../../api/docs/MICROSERVICES_ARCHITECTURE.md),
-> [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md).
+> **The cut itself — "repository per microservice" — is §6, and its plan is
+> [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) with its
+> ledger [`..._PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md).** It is named for the target
+> shape rather than for this epic, so a search for "polyrepo" does not find it — start at §6.
+>
+> **Companion / standing docs:**
+> [`../../api/docs/MICROSERVICES_ARCHITECTURE.md`](../../api/docs/MICROSERVICES_ARCHITECTURE.md).
 
 ---
 
@@ -28,17 +32,16 @@
 **Shipped — verified, don't rebuild:** in-monolith decomposition (god-`ConcertEntity` split, `Shared.*`
 collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first cross-process extraction
 (Customer on its own host + DB) · the **backend carve** (feed `PackageReference`s, per-folder CPM,
-`EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · six standalone mirror repos exist and the split
-mechanism (prefix `git subtree split`) is proven.
+`EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · the extraction mechanism, proven end to end on
+Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
-**In flight:** the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 2 done on branch, Phase
-3 left).
+**In flight:** the **cut** (§6) — stages 1 and 2 delivered, extraction unblocked; and the **frontend
+full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
 `AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
 
-**Deferred by decision:** mirror automation is off the hot path (manual `workflow_dispatch`); the
-end-state shape (buildable mirrors vs. a true cut) is undecided.
+**Retired:** mirroring (§5) — the six mirror repos, both workflows and the runbook are deleted.
 
 ---
 
@@ -117,13 +120,15 @@ Gap map (verified 2026-08-05):
 
 **Sequencing:** 4a + 4b are done (PR #383); 4c holds until the end-state seam (§6) is decided.
 
-## 5. Mirror automation — ⏸ deferred by decision
+## 5. Mirror automation — ✅ retired 2026-08-27
 
-[`mirror.yml`](../../.github/workflows/mirror.yml) is `workflow_dispatch`-only (taken off the hot path as
-tech-debt N7: "a full 6-service history rewrite for a split-repo future nothing consumes yet"). A nightly
-`mirror-parity.yml` flags drift. Re-enable/automate when a mirror repo is actually consumed downstream —
-gated on §6. (`mirror.yml` still references a `POLYREPO_COMPLETION.md` that no longer exists; fix or drop
-that reference as part of this stream.)
+**The stream is closed by deletion, not by delivery.** §6 chose a true one-way cut, which makes read-only
+mirrors a dead end. The six mirror repos no longer exist on GitHub (verified twice on 2026-08-27:
+`gh repo list Concertable` returns only `agent-standards`, `concertable`, `docs`, `config`, `infra`), so
+`mirror.yml` and `mirror-parity.yml` were force-pushing to deleted repositories. Stage 2 round-trip 3 of the
+§6 plan deleted both workflows and the `POLYREPO.md` runbook. Neither workflow was a required status check.
+The bootstrap role mirrors once had is superseded: the §6 plan extracts with `git-filter-repo`, proven end
+to end on Payment.
 
 ## 6. End-state shape — ✅ decided 2026-08-18: a true one-way cut
 
@@ -141,6 +146,9 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md).
   Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
   `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
+  **Stages 1–2 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages).
+  Next: stage 3 (AppHost image mode) or stage 5 (extract `payment`) — parallel, not chained, because
+  only one blocking runtime edge exists repo-wide.
 
 **The launch gate below is WITHDRAWN (2026-08-26.)** It is kept for the reasoning it records, but it
 inverted the trade-off: the monorepo taxes every launch PR — full E2E, full checkout, full migration,
@@ -197,3 +205,14 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
   alone; its plan/ledger are deleted (tracked done as `docs/polyrepo-ready`). The only residual is §4c
   plans-locality — relocating the plan *documents* — which is cut-time work owned here, still gated on the §6
   colocation sub-decision below.
+- **2026-08-27 — §6 stages 1–2 delivered; §5 retired.** The test-tier package boundary is complete: 45 → 0
+  cross-repository `ProjectReference`s in the test tier, `*.Hosting` published and consumed from the feed,
+  both the in-monorepo swap-back and the carved feed-restore proven on the same commit. §5 closed by
+  deletion — the six mirrors no longer exist, so `mirror.yml`, `mirror-parity.yml` and `POLYREPO.md` are
+  gone. Extraction is unblocked: `blockingRuntimeEdges` is 1 repo-wide and all five carve gates are green.
+- **2026-08-27 — the launch-gate trigger is deleted, not archived.** `LAUNCH_ROADMAP` §8b carried a
+  two-condition trigger (a codebase milestone AND a second engineer owning a service) whose core claim was
+  that with one developer the monorepo is *strictly better*. Tommy's ruling: the monorepo has cost real
+  development time — repeated setbacks, not a theoretical tax — so that claim is refuted by delivery and
+  the trigger is removed rather than kept for reference. It also rested on dead facts: the mirrors are gone,
+  so "make the mirror writable" is not the mechanism. §8b is now a pointer to §6 and this ruling.
