@@ -217,7 +217,7 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
   test proving an unverified tenant's `POST` is rejected.
 - [x] Build + focused tests; commit.
 
-### Phase 4 — Admin review + cross-module contact + notification ✅ implemented, PR #799 (open draft, `7fce9d54b`)
+### Phase 4 — Admin review + cross-module contact + notification ✅ merged, PR #799 (`c99c7795c`, 2026-08-27)
 
 - [x] Admin-listing query: `GetPendingAsync(pageParams)` over `TenantVerificationEntity` where
   `Status == Pending`, ordered by `SubmittedAt`. Named `PendingVerificationProjection` in code (the

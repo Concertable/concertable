@@ -296,35 +296,23 @@ See [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md) for the detail. He
 
 **Earliest realistic marketplace switch-on:** Q1 2027 (3 months after B2B launch). Push later if B2B traction needs all the focus.
 
-## 8b. Repo topology — stay monorepo until the polyrepo trigger fires (post-launch)
+## 8b. Repo topology — the cut is running, and it is not launch-gated
 
-We stay on the **monorepo** through launch and well beyond. What we have is already a *monorepo of
-independently-deployable services*, not a lazy monolith: package-clean service closures off the org
-feed, `EnforceServiceBoundary` + `carve-*` CI gates, standalone AppHosts, and six read-only mirror
-repos that already clone-and-build (see [../POLYREPO.md](../platform/POLYREPO.md) and
-[../../api/ARCHITECTURE.md](../../api/ARCHITECTURE.md)). The split to a **true polyrepo** (mirrors
-become the writable dev repos) is a **one-way door** — bias to cutting *late*, not on time.
+Owned by [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md)
+(§6 of [`POLYREPO_ROADMAP.md`](../platform/POLYREPO_ROADMAP.md)) — approved and in execution, stages 1–2
+delivered. Nothing about it waits for launch.
 
-The trigger is the **AND** of two conditions; the first alone is necessary but **not** sufficient:
+**Tommy's ruling, 2026-08-27:** the monorepo has cost real development time — repeated setbacks, not a
+theoretical tax — and cutting is the fix. That settles it against the two-condition trigger this section
+used to carry (a codebase milestone AND a second engineer owning a service). That trigger is **deleted**,
+not deferred: it argued the monorepo was strictly better for a single developer, and delivery has shown
+otherwise. It also rested on facts that no longer hold — the six read-only mirror repos are gone, so a
+"make the mirror writable" flip is not the mechanism; extraction is `git-filter-repo`, proven end to end
+on Payment.
 
-1. **Cost gone (codebase milestone).** Post-launch, cross-service contracts frozen, `Shared`/`Kernel`
-   core stopped churning, and the **cross-boundary commit rate down to ~single digits** (measured
-   **~47%** pre-launch — half of `api/` commits touch >1 service; ~16% touch `Shared`). Above ~20% the
-   publish→platform-sync→migrate tax bleeds you, and atomic cross-service changes stop being possible.
-2. **A distinct owner (team milestone).** A second engineer owns a service end-to-end and is genuinely
-   blocked by the shared merge stream or needs a hard source boundary. Polyrepo's payoff is *purely
-   organizational* — with one person (+ agents) the monorepo is strictly better (atomic cross-service
-   changes, trivial cross-service E2E, zero cross-repo tax), no matter how stable or large the code gets.
-
-Stable-steady-state feature delivery makes a split *cheap and safe*; it does not make it *worth it*.
-Worth-it waits on the second owner. Parallel-agent isolation is **not** a reason to split — worktrees
-already give per-service isolation inside the monorepo, and a cross-cutting refactor is *harder* across
-repos (N coordinated PRs + a sync), not easier.
-
-When both fire, execute **service-by-service, cheapest-first** — `Auth`/`Payment` (stable adapters,
-low co-change) before the churny `B2B`/`Customer`/`Shared` core — never big-bang. The mirrors already
-build standalone, so each flip is mechanical (make the mirror writable, redirect dev, give it its own
-copy of the workflows).
+Sequencing lives in the plan's ledger, not here. The shape of it: the monorepo survives as the fallback
+for local development and cross-service E2E until the final stage, so a service can be extracted before
+its AppHost and E2E story is perfect.
 
 ## 9. Decision points still open
 

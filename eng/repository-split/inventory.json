@@ -13,16 +13,16 @@
       }
     ],
     "blockingTestEdges": [],
-    "crossAreaEdgeCount": 92,
+    "crossAreaEdgeCount": 88,
     "crossAreaEdgesByKind": {
       "apphost": 44,
       "apphost-support": 1,
       "architecture-test": 1,
       "e2e": 21,
       "runtime": 18,
-      "unit-test": 7
+      "unit-test": 3
     },
-    "crossTargetEdgeCount": 74,
+    "crossTargetEdgeCount": 70,
     "crossTargetEdges": [
       {
         "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
@@ -619,42 +619,6 @@
         "toTarget": "auth"
       },
       {
-        "from": "api/Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests/Concertable.AppHost.Shared.UnitTests.csproj",
-        "fromArea": "Concertable.Shared",
-        "fromKind": "unit-test",
-        "fromTarget": "platform-dotnet",
-        "to": "api/Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj",
-        "toArea": "Concertable.Auth",
-        "toTarget": "auth"
-      },
-      {
-        "from": "api/Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests/Concertable.AppHost.Shared.UnitTests.csproj",
-        "fromArea": "Concertable.Shared",
-        "fromKind": "unit-test",
-        "fromTarget": "platform-dotnet",
-        "to": "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
-        "toArea": "Concertable.B2B",
-        "toTarget": "b2b"
-      },
-      {
-        "from": "api/Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests/Concertable.AppHost.Shared.UnitTests.csproj",
-        "fromArea": "Concertable.Shared",
-        "fromKind": "unit-test",
-        "fromTarget": "platform-dotnet",
-        "to": "api/Concertable.Customer/src/Concertable.Customer.Hosting/Concertable.Customer.Hosting.csproj",
-        "toArea": "Concertable.Customer",
-        "toTarget": "customer"
-      },
-      {
-        "from": "api/Concertable.Shared/tests/Concertable.AppHost.Shared.UnitTests/Concertable.AppHost.Shared.UnitTests.csproj",
-        "fromArea": "Concertable.Shared",
-        "fromKind": "unit-test",
-        "fromTarget": "platform-dotnet",
-        "to": "api/Concertable.Payment/src/Concertable.Payment.Hosting/Concertable.Payment.Hosting.csproj",
-        "toArea": "Concertable.Payment",
-        "toTarget": "payment"
-      },
-      {
         "from": "api/Concertable.Shared/tests/Concertable.Testing.E2E/Concertable.Testing.E2E.csproj",
         "fromArea": "Concertable.Shared",
         "fromKind": "runtime",
@@ -694,8 +658,7 @@
     "crossTargetEdgesByKind": {
       "apphost": 44,
       "e2e": 21,
-      "runtime": 5,
-      "unit-test": 4
+      "runtime": 5
     },
     "packableProjects": [
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj",

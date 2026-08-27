@@ -3,15 +3,17 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-fullstack`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `b5af92fdc` through this merge.
-- Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary`
+- Branch: `Feature/platform_polyrepo_import-boundary`
 - PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified work head `0da4186e5`, base `main`, not draft, no labels. Exact-head run 31312792051 is queued; this verified-push checkpoint is the sole local tail. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
 - Last reconciled: 2026-08-09 — pushed verified current-main merge `0da4186e5` from starting remote `cda144bd6`; local, remote-tracking, and PR heads were exactly equal at `0da4186e5`. Exact-head run 31312792051 is queued.
 
 ## Current state
 
-Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e25`) landed the tier-subpath rename (`@concertable/<tier>/<path>`, no `/shared`) + surface dependency-closure self-declaration + the `carve-fe.mjs` harness. Phase 3b (PR #389, merge `1cbeb2175`) landed the FE carve **gate**: `test.yml` now carries the `run_fe` classifier + the `carve-fe-web` matrix job (4 web surfaces feed-restore-and-build standalone) + its `ci-complete` wiring. Phases 0–3b are fully terminal.
+The worktree above is the dedicated Phase 3 import-boundary checkout, current with `origin/main` at
+`b5af92fdc` through this merge, and its branch is the direct owner of the remaining Phase 3
+import-boundary work. Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e25`) landed the tier-subpath rename (`@concertable/<tier>/<path>`, no `/shared`) + surface dependency-closure self-declaration + the `carve-fe.mjs` harness. Phase 3b (PR #389, merge `1cbeb2175`) landed the FE carve **gate**: `test.yml` now carries the `run_fe` classifier + the `carve-fe-web` matrix job (4 web surfaces feed-restore-and-build standalone) + its `ci-complete` wiring. Phases 0–3b are fully terminal.
 
 **Carved-web CSS `@source` strategy — MERGED (#405, `d9c62e2c5`) + republished. TERMINAL.** `app/web/shared/src/index.css` adds two dist-scanning `@source` globs (`../dist/**/*.js` for the `@concertable/web` tier — same offset from the file in both layouts; `../../b2b/dist/**/*.js` for `@concertable/b2b`). The existing sibling-`src` globs are kept: each is inert in the layout it doesn't belong to, and Tailwind silently ignores an `@source` matching nothing, so both sets coexist. Only `@concertable/{web,b2b}` carry web class strings (shared/customer tier dists have 0 classNames — logic-only). Proven by a local carved-layout vite build (tiers packed into `node_modules`): the tier canary classes go from **absent (baseline) → present (fixed)** for customer (`@concertable/web`) and venue (`@concertable/web` + `@concertable/b2b`).
 
