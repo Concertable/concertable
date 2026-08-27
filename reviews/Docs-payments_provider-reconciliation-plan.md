@@ -50,3 +50,30 @@
 
 - [x] **CON2 — MEDIUM — contradiction** — `plans/payments/STRIPE_RELIABILITY_ROADMAP.md:Implementation DAG`
   Add the frontend-orchestration dependency edge to B2B payment workflows so the DAG matches the item dependency table.
+
+## Review pass — 2026-08-27 — incremental
+
+**Candidate base:** `c0c9bbaf36f39b2432cad8eb3019b024c5e5308e`
+**Candidate head:** `05f57298a52cf627ec5d1a81ab1a046c4773262d`
+**Candidate branch:** `Docs/payments_provider-reconciliation-plan`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:f658787043daa0f0ca0a8d33420ac04fdd32bd17aec1b706239c160743431e73` `(4 paths)`
+**Candidate bundle:** `C:\Users\TommySeery\AppData\Local\Temp\concertable-docs-final-5e0d9e28072841d7b3a39a7e4aafecbe`
+**Candidate bundle identity:** `sha256:e2d8b32f0071e4b4076353237656f92fa344517402cf80f5444d0657bb7b731c`
+**Work-order path:** `reviews/Docs-payments_provider-reconciliation-plan.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **ACC3 — MEDIUM — accuracy** — `plans/payments/PROVIDER_RECONCILIATION_PLAN.md:81`
+  Remove `refund.succeeded`; Refund webhook coverage is limited to created, updated, and failed events.
+
+- [x] **CON3 — MEDIUM — contradiction** — `plans/payments/STRIPE_RELIABILITY_ROADMAP.md:590`
+  State that B2B remains independent of Customer work but requires provider reconciliation, frontend orchestration, and its active package/consumer gates.
+
+- [x] **INST2 — LOW — followability** — `plans/payments/PROVIDER_RECONCILIATION_PROGRESS.md:18`
+  Replace the stale commit instruction with the actual final incremental review range.
+
+- [x] **ACC4 — LOW — accuracy** — `plans/payments/PROVIDER_RECONCILIATION_PROGRESS.md:24`
+  Replace the malformed Refund-event entry with the three supported provider events.

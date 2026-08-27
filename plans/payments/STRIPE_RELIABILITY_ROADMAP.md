@@ -587,7 +587,7 @@ all migration items --> reliability-closeout
 
 Once the baseline locks the consumer status contract, frontend orchestration can proceed in parallel
 with Payment persistence. Customer web and mobile can proceed in parallel after the Customer attempt
-API exists. B2B may proceed independently once its package/consumer gates are clear.
+API exists. B2B remains independent of Customer work, but may proceed only after provider reconciliation and frontend orchestration are terminal and its package/consumer gates are clear.
 
 ### Delivery DAG
 

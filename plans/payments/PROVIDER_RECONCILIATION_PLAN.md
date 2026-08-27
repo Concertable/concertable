@@ -78,7 +78,7 @@ The implementation is a Payment producer change. It may add private persistence 
 
 - Add persisted due-work selection and lease/claim behaviour for nonterminal session attempts and pending refunds, with bounded retries, next-due calculation, last observation, and operator-safe failure diagnostics.
 - Add a Payment-hosted reconciliation worker that claims due records, retrieves current Stripe state, and delegates to the same session/refund reconciliation services. It must be safe under multiple replicas and restart after a lease expires.
-- Route supported `refund.created`, `refund.updated`, `refund.failed`, and `refund.succeeded` webhook events through current-object Refund retrieval and the same refund reconciliation service; the webhook payload remains evidence rather than state truth.
+- Route supported `refund.created`, `refund.updated`, and `refund.failed` webhook events through current-object Refund retrieval and the same refund reconciliation service; the webhook payload remains evidence rather than state truth.
 - Extend the refund-specific persistence and service boundary only as necessary to retain Stripe refund identity, current provider status, observation evidence, and recovery outcome without weakening escrow/settlement reservations or duplicate-refund protection.
 - Reconcile ambiguous refund creation before deciding whether to complete or release a reservation; never issue a second refund merely because the original response was lost.
 - Emit structured metrics/logs for claimed, completed, deferred, terminal-failed, and overdue work, with correlation by Payment operation/refund identity and no client-secret or raw-provider diagnostic leakage.
@@ -86,7 +86,7 @@ The implementation is a Payment producer change. It may add private persistence 
 
 **Consumption contract:** the worker produces the same committed Payment projection and semantic outcome as a request or webhook trigger. It has no HTTP endpoint and exposes no consumer-domain recovery command.
 
-**Green gate:** focused domain/integration tests prove duplicate claims, lease expiry, restart, absent webhook, ambiguous provider success, pending-refund repair, duplicate/reordered/stale Refund webhooks across created, updated, failed, and succeeded outcomes, and no duplicate Stripe action; the smallest affected Payment host/worker projects build cleanly.
+**Green gate:** focused domain/integration tests prove duplicate claims, lease expiry, restart, absent webhook, ambiguous provider success, pending-refund repair, duplicate/reordered/stale Refund webhooks across created, updated, and failed outcomes, and no duplicate Stripe action; the smallest affected Payment host/worker projects build cleanly.
 
 ### Phase 4 - Verify delivery and unblock dependent work
 

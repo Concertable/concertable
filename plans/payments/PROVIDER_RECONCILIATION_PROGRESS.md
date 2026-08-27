@@ -15,13 +15,13 @@ Plan and ledger are authored. The initial documentation review at `f1e925f31a277
 
 ## Next Steps
 
-Commit the second review remediation and run the incremental documentation review from `c0c9bbaf36f39b2432cad8eb3019b024c5e5308e`. Once that pass is clean, deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
+Commit the final review remediation and run the incremental documentation review from `05f57298a52cf627ec5d1a81ab1a046c4773262d`. Once that pass is clean, deliver this plans-only branch through the docs PR workflow. After it is terminal, create the Payment implementation worktree and begin Phase 1.
 
 ## Completed work
 
 - Selected `payments/provider-reconciliation` as the next ready, unowned Stripe reliability roadmap item after verifying PR #721 and platform sync PR #794 are terminal.
 - Authored the implementation plan and this recovery ledger against the current Payment session, webhook, and refund seams.
-- Reconciled the roadmap DAG with its explicit B2B dependency table and added the missing efund.succeeded reconciliation coverage.
+- Reconciled the roadmap DAG with its explicit B2B dependency table and aligned Refund webhook coverage with the three supported provider events.
 
 ## Verification
 
@@ -31,7 +31,7 @@ Commit the second review remediation and run the incremental documentation revie
 
 ## Reviews
 
-The initial review at `f1e925f31a2774e875e1b8f7883dfd8eed7d87b4` and first incremental review at `c0c9bbaf36f39b2432cad8eb3019b024c5e5308e` have remediated findings; a final incremental docs review is required for this fixing commit.
+The initial review at `f1e925f31a2774e875e1b8f7883dfd8eed7d87b4` and two incremental reviews through `05f57298a52cf627ec5d1a81ab1a046c4773262d` have remediated findings; a final incremental docs review is required for this fixing commit.
 
 ## Decisions, discoveries, blockers, and deviations
 
