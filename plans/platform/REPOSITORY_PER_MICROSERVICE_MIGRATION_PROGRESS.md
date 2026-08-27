@@ -437,9 +437,21 @@ findings are recorded only as resolved via that commit; treat the specific findi
   `PackageReference` (pin already present), matching the Auth deployable's documented "never a
   ProjectReference, so Auth carves standalone" rule. `Auth.Hosting` now has zero `ProjectReference`s.
 - Follow-up: merge (skip-e2e) → publish lands the 4 `*.Hosting` + `Ticket.Contracts` on the feed → sync PR
-  bumps pins (superseding #808) → round-trip 3 (last 4 `AppHost.Shared.UnitTests` refs + add
+  bumps pins → round-trip 3 (last 4 `AppHost.Shared.UnitTests` refs + add
   `*.ArchitectureTests` to the five carve jobs in `test.yml`, which forces full-e2e + security review +
   delete `mirror.yml`/`mirror-parity.yml`).
+- **LANDED (2026-08-27).** **PR #809 merged** (`059165407`). During review its `carve-fe (web/b2b/venue)`
+  went red — not from this diff: the branch had fallen 8 behind `main` and CI ran the FE carve against the
+  stale `app/`, hitting a `@concertable/shared` `Checkout` mismatch already fixed on `main` by #810. Merged
+  `origin/main` in (clean); the FE carve then skipped (backend-only PR) and the merge-queue run went green.
+  Publish republished everything at **`0.1.0-alpha.0.1211`** — the four `*.Hosting` and
+  `Customer.Ticket.Contracts` are on the feed; **`Search.Hosting` is correctly absent** (unpackable by
+  design). Platform-sync **PR #812 synced `ConcertablePlatformVersion` → `0.1.0-alpha.0.1211`** (merged);
+  `main` now pins 1211 everywhere and the `AppHost.Shared` pins added here follow the variable. (Note: the
+  earlier 1206 sync **#808 merged independently** at 1206 before #809 landed, so the intra-PR 1202→1206 bump
+  here was a no-op against `main` by merge time; the effective jump was 1206→1211 via #812. The "supersedes
+  #808" framing above was written pre-merge and did not hold — #808 landed on its own.) **Round-trip 2 is
+  DONE.** Next: round-trip 3.
 
 ## Resume prompt
 
