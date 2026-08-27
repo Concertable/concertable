@@ -3,7 +3,7 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: none active for landed work. Next work opens a fresh one — see `## Resume prompt`.
+- Worktree: none active
 - Branch/PRs: stage 2 runs as publish round-trips — **rt1** (`IsPackable` on `AppHost.Shared`, PR #805) and
   **rt2** (the four `*.Hosting` packable + published + cross-service deps as packages, PR #809) are both
   **MERGED**. **rt3** is the small unblocked remainder: swap the 4 `AppHost.Shared.UnitTests` refs + delete
