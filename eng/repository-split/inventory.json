@@ -667,7 +667,9 @@
       "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
       "api/Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Contracts/Concertable.B2B.Admin.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Contracts/Concertable.B2B.Artist.Contracts.csproj",
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Contracts/Concertable.B2B.Booking.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Contracts/Concertable.B2B.Concert.Contracts.csproj",
+      "api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Contracts/Concertable.B2B.Deal.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Contracts/Concertable.B2B.Tenant.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Contracts/Concertable.B2B.User.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Contracts/Concertable.B2B.Venue.Contracts.csproj",
@@ -1004,7 +1006,7 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.Booking.Contracts",
-        "packable": false,
+        "packable": true,
         "target": "b2b"
       },
       "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Domain/Concertable.B2B.Booking.Domain.csproj": {
@@ -1235,7 +1237,7 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.Deal.Contracts",
-        "packable": false,
+        "packable": true,
         "target": "b2b"
       },
       "api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Domain/Concertable.B2B.Deal.Domain.csproj": {
