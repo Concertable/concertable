@@ -63,6 +63,7 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
     handleSubmit,
     reset,
     setValue,
+    trigger,
     formState: { errors, isDirty: venueIsDirty, isValid },
   } = useForm<UpdateVenueRequest>({
     resolver: zodResolver(updateVenueRequestSchema),
@@ -104,6 +105,7 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
       resetDraft();
     } else if (venue) {
       reset(Venue.toUpdateRequest(venue));
+      void trigger();
       beginEdit(venue);
     }
     options?.onToggleEdit?.();

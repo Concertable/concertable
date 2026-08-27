@@ -575,17 +575,19 @@ operation appears in the ownership/reconciliation inventory.
 provider-contract-baseline
     +--> payment-session-state --> provider-reconciliation --> b2b-payment-workflows
     |             |
-    |             +--> customer-ticket-attempt --> customer-web-checkout
-    |                                      |       customer-mobile-checkout
-    |                                      |
-    +--> frontend-orchestration-core ------+
+    |             +--> customer-ticket-attempt --+--> customer-web-checkout
+    |                                              +--> customer-mobile-checkout
+    |
+    +--> frontend-orchestration-core -----------+--> customer-web-checkout
+                                                  +--> customer-mobile-checkout
+                                                  +--> b2b-payment-workflows
 
 all migration items --> reliability-closeout
 ```
 
 Once the baseline locks the consumer status contract, frontend orchestration can proceed in parallel
 with Payment persistence. Customer web and mobile can proceed in parallel after the Customer attempt
-API exists. B2B may proceed independently once its package/consumer gates are clear.
+API exists. B2B remains independent of Customer work, but may proceed only after provider reconciliation and frontend orchestration are terminal and its package/consumer gates are clear.
 
 ### Delivery DAG
 
