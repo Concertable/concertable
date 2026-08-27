@@ -77,15 +77,15 @@ started — no worktree open.
 
 ## Reviews
 
-`reviews/Feature-launch_tenant-verification.md` was reviewed clean through several incremental passes
-(controller/service consolidation, the `TenantContact` struct conversion, two E2E DI-registration fixes —
-see Decisions below) up to the merged commit. Two original findings, both fixed on the branch: a
+Phase 4's `reviews/Feature-launch_tenant-verification.md` was reviewed clean through several incremental
+passes (controller/service consolidation, the `TenantContact` struct conversion, two E2E DI-registration
+fixes — see Decisions below) up to the merged commit. Two original findings, both fixed on the branch: a
 `Task.WhenAll` DbContext-concurrency bug in the admin pending-queue's contact enrichment (two same-
 `TenantType` pending rows on one page crashed the endpoint — two scoped read-DbContexts hit
 concurrently), and a missing try/catch around the approve/reject notification call (mirrors
 `ContentReportService`'s established shape: a transport failure must not fail a request whose write
-already committed). No security findings. Deleted with the worktree on merge, per the review-lifecycle
-standard.
+already committed). No security findings. Deleted now that every finding is resolved and the PR has
+merged, per the review-lifecycle standard.
 
 ## Decisions, discoveries, blockers, and deviations
 
