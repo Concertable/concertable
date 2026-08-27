@@ -292,13 +292,28 @@ See [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md) for the detail. He
 
 **Earliest realistic marketplace switch-on:** Q1 2027 (3 months after B2B launch). Push later if B2B traction needs all the focus.
 
-## 8b. Repo topology — stay monorepo until the polyrepo trigger fires (post-launch)
+## 8b. Repo topology — the cut is running now, NOT launch-gated
+
+**This section's two-condition trigger was WITHDRAWN on 2026-08-26 and is kept only for the trade-off it
+records.** The cut is owned by
+[`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md)
+(§6 of [`POLYREPO_ROADMAP.md`](../platform/POLYREPO_ROADMAP.md)), approved and in execution, stages 1–2
+delivered. It does **not** wait for launch: the monorepo taxes every launch PR — full E2E, full checkout,
+full migration, blast radius over untouched services — so cutting accelerates launch rather than delaying
+it. The sequencing insight that replaced the trigger: the monorepo survives as the fallback for local
+development and cross-service E2E until the final stage, so a service can be extracted before its AppHost
+and E2E story is perfect.
+
+Two factual corrections to the withdrawn reasoning below: the six read-only mirror repos **no longer
+exist** (deleted; `mirror.yml`/`mirror-parity.yml` and the `POLYREPO.md` runbook are gone with them), and
+extraction is by `git-filter-repo`, not by promoting a mirror.
+
+### Withdrawn trigger (kept for the reasoning)
 
 We stay on the **monorepo** through launch and well beyond. What we have is already a *monorepo of
 independently-deployable services*, not a lazy monolith: package-clean service closures off the org
 feed, `EnforceServiceBoundary` + `carve-*` CI gates, standalone AppHosts, and six read-only mirror
-repos that already clone-and-build (see [../POLYREPO.md](../platform/POLYREPO.md) and
-[../../api/ARCHITECTURE.md](../../api/ARCHITECTURE.md)). The split to a **true polyrepo** (mirrors
+repos that already clone-and-build. The split to a **true polyrepo** (mirrors
 become the writable dev repos) is a **one-way door** — bias to cutting *late*, not on time.
 
 The trigger is the **AND** of two conditions; the first alone is necessary but **not** sufficient:
