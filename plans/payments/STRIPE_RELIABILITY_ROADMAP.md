@@ -575,10 +575,12 @@ operation appears in the ownership/reconciliation inventory.
 provider-contract-baseline
     +--> payment-session-state --> provider-reconciliation --> b2b-payment-workflows
     |             |
-    |             +--> customer-ticket-attempt --> customer-web-checkout
-    |                                      |       customer-mobile-checkout
-    |                                      |
-    +--> frontend-orchestration-core ------+
+    |             +--> customer-ticket-attempt --+--> customer-web-checkout
+    |                                              +--> customer-mobile-checkout
+    |
+    +--> frontend-orchestration-core -----------+--> customer-web-checkout
+                                                  +--> customer-mobile-checkout
+                                                  +--> b2b-payment-workflows
 
 all migration items --> reliability-closeout
 ```
