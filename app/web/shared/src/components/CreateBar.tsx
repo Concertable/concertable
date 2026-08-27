@@ -6,10 +6,16 @@ import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 interface Props {
   isSaving: boolean;
   canSubmit: boolean;
+  error?: string;
   onCreate: () => void;
 }
 
-export function CreateBar({ isSaving, canSubmit, onCreate }: Readonly<Props>) {
+export function CreateBar({
+  isSaving,
+  canSubmit,
+  error,
+  onCreate,
+}: Readonly<Props>) {
   const ref = useRef<HTMLDivElement>(null);
   const { navbarHeight, setConfigHeight } = useNavbarHeight();
 
@@ -24,13 +30,20 @@ export function CreateBar({ isSaving, canSubmit, onCreate }: Readonly<Props>) {
       className="bg-background border-border sticky z-10 flex items-center justify-end gap-2 border-b px-6 py-3"
       style={{ top: navbarHeight }}
     >
-      <Button
-        onClick={onCreate}
-        disabled={!canSubmit || isSaving}
-        data-testid="submit"
-      >
-        {isSaving ? "Creating..." : "Create"}
-      </Button>
+      <div className="flex items-center gap-2">
+        {error && (
+          <p className="text-destructive text-sm" data-testid="create-error">
+            {error}
+          </p>
+        )}
+        <Button
+          onClick={onCreate}
+          disabled={!canSubmit || isSaving}
+          data-testid="submit"
+        >
+          {isSaving ? "Creating..." : "Create"}
+        </Button>
+      </div>
     </div>
   );
 }

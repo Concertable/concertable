@@ -1,12 +1,17 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyArtistQuery, artistKeys } from "./useArtistQuery";
-import { useArtistStore } from "../store/useArtistStore";
+import { useForm } from "react-hook-form";
+import { useMountEffect } from "../../../hooks/useMountEffect";
+import type { ImageFile } from "../../../types/image";
 import artistApi from "../api/artistApi";
-import type { Artist } from "../types";
+import { updateArtistRequestSchema } from "../schemas/artistRequestSchemas";
+import { useArtistStore } from "../store/useArtistStore";
+import { Artist, type UpdateArtistRequest } from "../types";
+import { artistKeys, useMyArtistQuery } from "./useArtistQuery";
 
 export interface UseMyArtistOptions {
   onSuccess?: (saved: Artist) => void;
-  onError?: (err: unknown) => void;
+  onError?: () => void;
 }
 
 export interface UseMyArtistResult {
@@ -17,39 +22,132 @@ export interface UseMyArtistResult {
   editMode: boolean;
   isDirty: boolean;
   isSaving: boolean;
+  canSave: boolean;
+  saveError?: string;
   save: () => void;
   toggleEdit: () => void;
   resetDraft: () => void;
+  setName: (name: string) => void;
+  setAbout: (about: string) => void;
+  setBanner: (banner: ImageFile) => void;
+  setAvatar: (avatar: ImageFile) => void;
 }
+
+const emptyRequest: UpdateArtistRequest = {
+  name: "",
+  about: "",
+  latitude: 0,
+  longitude: 0,
+  genres: [],
+};
 
 export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
   const query = useMyArtistQuery();
   const queryClient = useQueryClient();
+  const artistDraft = useArtistStore((state) => state.draft);
+  const editMode = useArtistStore((state) => state.editMode);
+  const beginEdit = useArtistStore((state) => state.beginEdit);
+  const endEdit = useArtistStore((state) => state.endEdit);
+  const setStoreName = useArtistStore((state) => state.setName);
+  const setStoreAbout = useArtistStore((state) => state.setAbout);
+  const setStoreBanner = useArtistStore((state) => state.setBanner);
+  const setStoreAvatar = useArtistStore((state) => state.setAvatar);
+  const {
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isDirty, isValid },
+  } = useForm<UpdateArtistRequest>({
+    resolver: zodResolver(updateArtistRequestSchema),
+    defaultValues: emptyRequest,
+    mode: "onChange",
+  });
 
-  const { beginEdit, endEdit, draft, banner, avatar, isDirty, editMode } =
-    useArtistStore();
+  useMountEffect(() => () => endEdit());
 
   const mutation = useMutation({
-    mutationFn: () => artistApi.updateArtist(draft!, banner, avatar),
+    mutationFn: (request: UpdateArtistRequest) =>
+      artistApi.updateArtist(request),
     onSuccess: (saved) => {
       queryClient.setQueryData(artistKeys.my(), saved);
       queryClient.setQueryData(artistKeys.byId(saved.id), saved);
+      reset(Artist.toUpdateRequest(saved));
       endEdit();
       options?.onSuccess?.(saved);
     },
-    onError: (err) => options?.onError?.(err),
+    onError: () => options?.onError?.(),
   });
 
+  const artist = query.data ?? undefined;
+  const draft =
+    editMode && artist && artistDraft
+      ? { ...artist, ...artistDraft }
+      : undefined;
+
+  const resetDraft = () => {
+    if (artist) reset(Artist.toUpdateRequest(artist));
+    endEdit();
+  };
+
+  const toggleEdit = () => {
+    if (editMode) {
+      resetDraft();
+    } else if (artist) {
+      reset(Artist.toUpdateRequest(artist));
+      beginEdit(artist);
+    }
+  };
+
+  const save = () => {
+    void handleSubmit((request) => mutation.mutate(request))();
+  };
+
+  const setName = (name: string) => {
+    setStoreName(name);
+    setValue("name", name, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAbout = (about: string) => {
+    setStoreAbout(about);
+    setValue("about", about, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setBanner = (banner: ImageFile) => {
+    setStoreBanner(banner);
+    setValue("banner", banner, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const setAvatar = (avatar: ImageFile) => {
+    setStoreAvatar(avatar);
+    setValue("avatar", avatar, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const saveError = isDirty
+    ? errors.name?.message ??
+      errors.about?.message ??
+      errors.latitude?.message ??
+      errors.longitude?.message ??
+      errors.genres?.message ??
+      errors.banner?.message ??
+      errors.avatar?.message
+    : undefined;
+
   return {
-    artist: query.data ?? undefined,
+    artist,
     draft,
     isLoading: query.isLoading,
     isError: query.isError,
     editMode,
     isDirty,
-    save: mutation.mutate,
     isSaving: mutation.isPending,
-    toggleEdit: () => (editMode ? endEdit() : beginEdit(query.data!)),
-    resetDraft: endEdit,
+    canSave: isValid,
+    saveError,
+    save,
+    toggleEdit,
+    resetDraft,
+    setName,
+    setAbout,
+    setBanner,
+    setAvatar,
   };
 }

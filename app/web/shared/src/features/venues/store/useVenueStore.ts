@@ -1,1 +1,1 @@
-export * from '@concertable/shared/features/venues/store/useVenueStore';
+export * from "@concertable/shared/features/venues/store/useVenueStore";

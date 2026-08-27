@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { ReportCategory } from "../types";
 import {
   REPORT_CATEGORY_LABELS,
   reportMessageRequestSchema,
   useReportMessage,
 } from "@concertable/shared/features/messaging";
+import type { ReportMessageRequest } from "@concertable/shared/features/messaging/types";
+import type { ReportMessageFormValues } from "@concertable/shared/features/messaging/schemas/reportMessageRequestSchema";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,9 +26,9 @@ interface CategoryOption {
   label: string;
 }
 
-const categories: CategoryOption[] = reportMessageRequestSchema.shape.category.options.map(
-  (value) => ({ value, label: REPORT_CATEGORY_LABELS[value] }),
-);
+const categories: CategoryOption[] = (
+  Object.keys(REPORT_CATEGORY_LABELS) as ReportCategory[]
+).map((value) => ({ value, label: REPORT_CATEGORY_LABELS[value] }));
 
 interface Props {
   messageId: number;
@@ -38,17 +41,17 @@ export function ReportMessageDialog({
   open,
   onOpenChange,
 }: Readonly<Props>) {
-  // No preselected reason: a default would let an untouched form file the most serious OSA category.
-  const [category, setCategory] = useState<CategoryOption>();
-  const [details, setDetails] = useState<string>();
-  const { validate, submit, isPending, isSuccess, isError } =
-    useReportMessage(messageId);
-
-  const buffer = { category: category?.value, details };
-  const parsed = validate(buffer);
-  const detailsError = parsed.success
-    ? undefined
-    : parsed.error.issues.find((issue) => issue.path[0] === "details")?.message;
+  const { submit, isPending, isSuccess, isError } = useReportMessage(messageId);
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<ReportMessageFormValues, unknown, ReportMessageRequest>({
+    resolver: zodResolver(reportMessageRequestSchema),
+    defaultValues: { details: "" },
+    mode: "onChange",
+  });
 
   // Closing mid-flight would unmount before the acknowledgement, leaving the reporter unsure whether
   // the report landed — and free to file a duplicate.
@@ -78,18 +81,30 @@ export function ReportMessageDialog({
             reference for it.
           </p>
         ) : (
-          <div className="space-y-4">
+          <form
+            id="report-message-form"
+            onSubmit={handleSubmit(submit)}
+            className="space-y-4"
+          >
             <div className="space-y-2" data-testid="report-category">
               <Label>Reason</Label>
-              <Select
-                options={categories}
-                value={category}
-                onChange={setCategory}
-                getLabel={(c) => c.label}
-                getValue={(c) => c.value}
-                placeholder="Choose a reason"
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select
+                    options={categories}
+                    value={categories.find(
+                      (category) => category.value === field.value,
+                    )}
+                    onChange={(category) => field.onChange(category.value)}
+                    getLabel={(category) => category.label}
+                    getValue={(category) => category.value}
+                    placeholder="Choose a reason"
+                  />
+                )}
               />
-              {!category && (
+              {errors.category && (
                 <p className="text-muted-foreground text-sm">
                   Choose a reason to submit your report.
                 </p>
@@ -101,20 +116,19 @@ export function ReportMessageDialog({
               <Textarea
                 id="report-details"
                 data-testid="report-details"
-                aria-invalid={detailsError !== undefined}
+                aria-invalid={errors.details !== undefined}
                 aria-describedby={
-                  detailsError ? "report-details-error" : undefined
+                  errors.details ? "report-details-error" : undefined
                 }
                 rows={4}
-                value={details ?? ""}
-                onChange={(e) => setDetails(e.target.value)}
+                {...register("details")}
               />
-              {detailsError && (
+              {errors.details && (
                 <p
                   id="report-details-error"
                   className="text-destructive text-sm"
                 >
-                  {detailsError}
+                  {errors.details.message}
                 </p>
               )}
             </div>
@@ -124,7 +138,7 @@ export function ReportMessageDialog({
                 We could not submit your report. Please try again.
               </p>
             )}
-          </div>
+          </form>
         )}
 
         <DialogFooter>
@@ -140,9 +154,10 @@ export function ReportMessageDialog({
                 Cancel
               </Button>
               <Button
+                type="submit"
+                form="report-message-form"
                 data-testid="report-submit"
-                disabled={isPending || !parsed.success}
-                onClick={() => submit(buffer)}
+                disabled={isPending || !isValid}
               >
                 {isPending ? "Submitting..." : "Submit report"}
               </Button>

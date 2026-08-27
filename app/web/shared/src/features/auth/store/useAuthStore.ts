@@ -1,1 +1,1 @@
-export * from '@concertable/shared/features/auth/store/useAuthStore';
+export * from "@concertable/shared/features/auth/store/useAuthStore";

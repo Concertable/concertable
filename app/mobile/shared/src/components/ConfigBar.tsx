@@ -6,6 +6,8 @@ interface Props {
   editMode: boolean;
   isDirty: boolean;
   isSaving: boolean;
+  canSave?: boolean;
+  error?: string;
   onToggleEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
@@ -15,6 +17,8 @@ export function ConfigBar({
   editMode,
   isDirty,
   isSaving,
+  canSave = true,
+  error,
   onToggleEdit,
   onSave,
   onCancel,
@@ -29,11 +33,20 @@ export function ConfigBar({
 
   return (
     <View className="flex-row items-center gap-2">
+      {error && <Text className="text-destructive text-xs">{error}</Text>}
       <Button variant="outline" size="sm" onPress={onCancel} disabled={isSaving}>
         <Text>Cancel</Text>
       </Button>
-      <Button size="sm" onPress={onSave} disabled={!isDirty || isSaving}>
-        {isSaving ? <ActivityIndicator size="small" color="white" /> : <Text>Save</Text>}
+      <Button
+        size="sm"
+        onPress={onSave}
+        disabled={!isDirty || isSaving || !canSave}
+      >
+        {isSaving ? (
+          <ActivityIndicator size="small" color="white" />
+        ) : (
+          <Text>Save</Text>
+        )}
       </Button>
     </View>
   );

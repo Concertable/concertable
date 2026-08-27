@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import type {
   ActivityItem,
   ActivityType,
-} from "@concertable/shared/features/dashboard";
+} from "@concertable/shared/features/dashboard/types";
 
   const iconMap: Record<ActivityType, LucideIcon> = {
   applicationReceived: UserPlus,

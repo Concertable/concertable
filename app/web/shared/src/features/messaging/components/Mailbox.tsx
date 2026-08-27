@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useMailbox } from "../hooks/useMailbox";
-import { messageActionLabel } from "../types";
+import { MESSAGE_ACTION_LABELS } from "../types";
 import { ReportMessageDialog } from "./ReportMessageDialog";
 
 export function Mailbox() {
@@ -79,23 +79,23 @@ export function Mailbox() {
                 </span>
                 {message.action && (
                   <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                    {messageActionLabel(message.action)}
+                    {MESSAGE_ACTION_LABELS[message.action]}
                   </span>
                 )}
               </div>
-              {message.sender.kind === "org"
-                ? message.sender.town && (
-                    <span className="text-muted-foreground text-[11px]">
-                      {[message.sender.town, message.sender.county]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </span>
-                  )
-                : (
-                    <span className="text-muted-foreground text-[11px]">
-                      Sent by your team
-                    </span>
-                  )}
+              {message.sender.kind === "org" ? (
+                message.sender.town && (
+                  <span className="text-muted-foreground text-[11px]">
+                    {[message.sender.town, message.sender.county]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </span>
+                )
+              ) : (
+                <span className="text-muted-foreground text-[11px]">
+                  Sent by your team
+                </span>
+              )}
               <p className="text-sm">{message.content}</p>
               {message.actions?.report && (
                 <Button

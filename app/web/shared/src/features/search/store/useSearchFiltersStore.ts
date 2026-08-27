@@ -1,1 +1,1 @@
-export * from '@concertable/shared/features/search/store/useSearchFiltersStore';
+export * from "@concertable/shared/features/search/store/useSearchFiltersStore";

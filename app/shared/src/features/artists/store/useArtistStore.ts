@@ -1,61 +1,92 @@
 import { create } from "zustand";
-import { produce } from "immer";
-import type { Artist } from "../types";
+import { immer } from "zustand/middleware/immer";
 import type { ImageFile } from "../../../types/image";
+import type { Artist } from "../types";
 
-interface ArtistStore {
+export interface ArtistState {
   draft: Artist | undefined;
-  editMode: boolean;
-  isDirty: boolean;
   banner: ImageFile | undefined;
   avatar: ImageFile | undefined;
-
+  editMode: boolean;
+  isDirty: boolean;
   beginEdit: (artist: Artist) => void;
   endEdit: () => void;
-
   setName: (name: string) => void;
   setAbout: (about: string) => void;
-  setLocation: (lat: number, lng: number, county: string, town: string) => void;
-  setBanner: (file: ImageFile) => void;
-  setAvatar: (file: ImageFile) => void;
+  setBanner: (banner: ImageFile) => void;
+  setAvatar: (avatar: ImageFile) => void;
+  setLocation: (
+    latitude: number,
+    longitude: number,
+    county: string,
+    town: string,
+  ) => void;
 }
 
-const notEditing = {
-  draft: undefined,
-  editMode: false,
-  isDirty: false,
-  banner: undefined,
-  avatar: undefined,
-};
-
-export const useArtistStore = create<ArtistStore>((set) => ({
-  ...notEditing,
-
-  beginEdit: (artist) => set({ ...notEditing, draft: { ...artist }, editMode: true }),
-
-  endEdit: () => set(notEditing),
-
-  setName: (name) =>
-    set(
-      produce((state: ArtistStore) => {
+export const useArtistStore = create<ArtistState>()(
+  immer((set) => ({
+    draft: undefined,
+    banner: undefined,
+    avatar: undefined,
+    editMode: false,
+    isDirty: false,
+    beginEdit: (artist) =>
+      set((state) => {
+        state.draft = {
+          id: artist.id,
+          name: artist.name,
+          about: artist.about,
+          bannerUrl: artist.bannerUrl,
+          avatar: artist.avatar,
+          rating: artist.rating,
+          genres: [...artist.genres],
+          email: artist.email,
+          county: artist.county,
+          town: artist.town,
+          latitude: artist.latitude,
+          longitude: artist.longitude,
+        };
+        state.banner = undefined;
+        state.avatar = undefined;
+        state.editMode = true;
+        state.isDirty = false;
+      }),
+    endEdit: () =>
+      set((state) => {
+        state.draft = undefined;
+        state.banner = undefined;
+        state.avatar = undefined;
+        state.editMode = false;
+        state.isDirty = false;
+      }),
+    setName: (name) =>
+      set((state) => {
         if (!state.draft) return;
         state.draft.name = name;
         state.isDirty = true;
       }),
-    ),
-
-  setAbout: (about) =>
-    set(
-      produce((state: ArtistStore) => {
+    setAbout: (about) =>
+      set((state) => {
         if (!state.draft) return;
         state.draft.about = about;
         state.isDirty = true;
       }),
-    ),
-
-  setLocation: (latitude, longitude, county, town) =>
-    set(
-      produce((state: ArtistStore) => {
+    setBanner: (banner) =>
+      set((state) => {
+        if (!state.draft) return;
+        state.draft.bannerUrl = banner.uri;
+        state.banner = banner;
+        state.isDirty = true;
+      }),
+    setAvatar: (avatar) =>
+      set((state) => {
+        if (!state.draft) return;
+        state.draft.avatar = avatar.uri;
+        state.avatar = avatar;
+        state.isDirty = true;
+      }),
+    setLocation: (latitude, longitude, county, town) =>
+      set((state) => {
         if (!state.draft) return;
         state.draft.latitude = latitude;
         state.draft.longitude = longitude;
@@ -63,25 +94,5 @@ export const useArtistStore = create<ArtistStore>((set) => ({
         state.draft.town = town;
         state.isDirty = true;
       }),
-    ),
-
-  setBanner: (file) =>
-    set(
-      produce((state: ArtistStore) => {
-        if (!state.draft) return;
-        state.draft.bannerUrl = file.uri;
-        state.banner = file;
-        state.isDirty = true;
-      }),
-    ),
-
-  setAvatar: (file) =>
-    set(
-      produce((state: ArtistStore) => {
-        if (!state.draft) return;
-        state.draft.avatar = file.uri;
-        state.avatar = file;
-        state.isDirty = true;
-      }),
-    ),
-}));
+  })),
+);

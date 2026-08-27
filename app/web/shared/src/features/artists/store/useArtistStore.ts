@@ -1,1 +1,1 @@
-export * from '@concertable/shared/features/artists/store/useArtistStore';
+export * from "@concertable/shared/features/artists/store/useArtistStore";

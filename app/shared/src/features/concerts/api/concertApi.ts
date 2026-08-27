@@ -1,6 +1,5 @@
 import { apiClient } from "../../../lib/apiClient";
-import type { Concert } from "../types";
-import type { UpdateConcertRequest } from "../schemas/updateConcertRequestSchema";
+import type { Concert, UpdateConcertRequest } from "../types";
 import type { DoorRevenueRequest } from "../schemas/doorRevenueRequestSchema";
 
 const concertApi = {

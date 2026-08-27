@@ -18,7 +18,7 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
 
 export function attachAuth(
   instance: AxiosInstance,
-  getToken: () => Promise<string | null> | string | null,
+  getToken: () => Promise<string | undefined> | string | undefined,
   onUnauthorized: () => void | Promise<void>,
 ) {
   instance.interceptors.request.use(async (config) => {
@@ -31,7 +31,7 @@ export function attachAuth(
     async (error: unknown) => {
       if (!isAxiosError(error)) return Promise.reject(error);
 
-      const status = error.response?.status ?? null;
+      const status = error.response?.status;
       if (status === 401) await onUnauthorized();
       const responseData = error.response?.data;
       const details =

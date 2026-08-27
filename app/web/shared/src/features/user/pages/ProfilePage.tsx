@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 export function ProfilePage() {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
 
   if (!user) return null;
 
