@@ -46,21 +46,17 @@ the frozen range) + parent synthesis against the routed .NET / React standards (
   the wrong file input. **Fix:** `attached` now derives from `Object.keys(buffer)` — the same iteration order
   `submit` uses.
 
-## Cross-area notes
+- [wontfix] **pre-existing, transferred** — `app/web/b2b/shared/src/features/organizations/api/organizationApi.ts:7`
+  has the identical `undefined`-on-204 pattern as NAT1, but it pre-existed on the base, is latent (a B2B
+  manager always has an organization, so the 204 branch is unreachable), and its repair is independent of
+  this branch. Logged to `app/web/b2b/shared/TECH_DEBT.md` (LOW) with its resolution condition.
 
-- [wontfix] `app/web/b2b/shared/src/features/organizations/api/organizationApi.ts:7` — same `undefined`-on-204
-  pattern as NAT1, but pre-existing on the base, latent (a B2B manager always has an organization, so the 204
-  branch is unreachable), and its repair is independent of this branch. Transferred to
-  `app/web/b2b/shared/TECH_DEBT.md` (LOW) with the resolution condition.
-
-## Parent finalization
-
-Native layer: `code-reviewer` agent over the frozen range (independent cold context). Parent verified both
-citations against the source, confirmed the failure scenarios, and re-checked the Phase 6 removals against
-the routed .NET standards — no additional findings. Phase 6 backend removals and the re-scaffolded migration
-are clean (symmetric, no dangling references anywhere in `api/` or `app/`, `VenueChangedDomainEvent` still
-raised for every remaining venue mutation). Both native findings fixed on-branch; five web builds +
-`lint:boundaries` + 28 web-b2b unit tests green after the fix.
+Synthesis: native layer was the `code-reviewer` agent over the frozen range (independent cold context).
+Parent verified both citations against the source, confirmed the failure scenarios, and re-checked the
+Phase 6 removals against the routed .NET standards — no additional findings. Phase 6 backend removals and
+the re-scaffolded migration are clean (symmetric, no dangling references anywhere in `api/` or `app/`,
+`VenueChangedDomainEvent` still raised for every remaining venue mutation). Both native findings fixed
+on-branch; five web builds + `lint:boundaries` + 28 web-b2b unit tests green after the fix.
 
 ## Review pass — 2026-08-28 — incremental (`8bcbde3bf..bd95f8c38`)
 
