@@ -2,6 +2,7 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `692d1ad249535e796ec631d037b8cf74c126fa14`  `(2026-08-28)`
+**Security-reviewed up to commit:** `692d1ad249535e796ec631d037b8cf74c126fa14`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-28 — docs
@@ -35,3 +36,9 @@ None.
   key, never the deleted plan file. Nothing links to the deleted review files.
 - **contradiction / concision / followability** — no `AGENTS.md`/`SKILL.md` changes; the supersession note
   agrees with the ticked line; the TECH_DEBT entry has a concrete `Resolves when`.
+
+### Security layer
+
+`api/Concertable.Auth/TECH_DEBT.md` classified as a security-sensitive path. The change is a single
+markdown tech-debt note about a dev-only seeder gap — no auth code, config, or runtime touched. **Zero
+findings** (documentation-only). Marker at `692d1ad24`.
