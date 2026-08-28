@@ -1,5 +1,6 @@
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.Lifecycle;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Infrastructure.Data;
 using Concertable.B2B.Concert.Infrastructure.Mappers;
 using Concertable.B2B.Concert.Infrastructure.Specifications;

@@ -52,7 +52,7 @@ public sealed class InvoiceEntity : IIdEntity, IVenueArtistTenantScoped
     {
         ArgumentNullException.ThrowIfNull(concert);
         if (concert.VenueTenantId == Guid.Empty || concert.ArtistTenantId == Guid.Empty)
-            throw new InvalidOperationException("An invoice cannot inherit unresolved concert tenants.");
+            throw new DomainException("An invoice cannot inherit unresolved concert tenants.");
 
         return new()
         {

@@ -1,4 +1,5 @@
 using Concertable.B2B.Concert.Application.DTOs;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Application.Responses;
 
 namespace Concertable.B2B.Concert.Application.Mappers;
@@ -10,5 +11,5 @@ namespace Concertable.B2B.Concert.Application.Mappers;
 /// </summary>
 internal interface ISettlementMapper
 {
-    ISettlement ToSettlement(DealDto deal, ManagerConcertDetailsProjection projection, DateTime nowUtc);
+    ISettlement ToSettlement(DealDto deal, ConcertDetails concert, RevenueShareSettlementRowProjection? settlement, DateTime nowUtc);
 }

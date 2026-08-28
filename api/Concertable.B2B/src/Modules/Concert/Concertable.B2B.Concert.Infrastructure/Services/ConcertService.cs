@@ -1,5 +1,6 @@
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Application.Errors;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Domain.Lifecycle;
 using Concertable.B2B.Tenant.Contracts;
 using Concertable.Kernel.Identity;
@@ -202,7 +203,8 @@ internal sealed class ConcertService : IConcertService
         int? invoiceId) => new()
     {
         Concert = projection.Concert,
-        Settlement = settlementMapper.ToSettlement(deal, projection, timeProvider.GetUtcNow().UtcDateTime),
+        Settlement = settlementMapper.ToSettlement(
+            deal, projection.Concert, projection.Settlement, timeProvider.GetUtcNow().UtcDateTime),
         InvoiceId = invoiceId,
         CanCancel = projection.Concert.State == LifecycleState.Booked
     };

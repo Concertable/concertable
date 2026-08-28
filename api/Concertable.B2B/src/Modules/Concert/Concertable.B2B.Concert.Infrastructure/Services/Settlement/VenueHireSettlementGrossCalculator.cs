@@ -6,6 +6,6 @@ namespace Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 
 internal sealed class VenueHireSettlementGrossCalculator : ISettlementGrossCalculator
 {
-    public Money CalculateGross(DealDto deal, Money eligibleTakings) =>
+    public Money CalculateGross(DealDto deal, Money? eligibleTakings = null) =>
         Money.Gbp(((VenueHireDealDto)deal).HireFee);
 }

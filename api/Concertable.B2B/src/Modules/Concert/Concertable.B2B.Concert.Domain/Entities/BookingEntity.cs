@@ -26,7 +26,7 @@ public abstract class BookingEntity : IIdEntity, IVenueArtistTenantScoped, IEven
     {
         ArgumentNullException.ThrowIfNull(application);
         if (application.VenueTenantId == Guid.Empty || application.ArtistTenantId == Guid.Empty)
-            throw new InvalidOperationException("A booking cannot inherit unresolved application tenants.");
+            throw new DomainException("A booking cannot inherit unresolved application tenants.");
 
         Application = application;
         ApplicationId = application.Id;

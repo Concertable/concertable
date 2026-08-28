@@ -1,4 +1,5 @@
 using Concertable.B2B.Concert.Application.DTOs;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Application.Responses;
 using Concertable.B2B.Concert.Domain.Lifecycle;
 
@@ -17,18 +18,16 @@ internal sealed class RevenueShareSettlementMapper : ISettlementMapper
         this.paymentAmountMapper = paymentAmountMapper;
     }
 
-    public ISettlement ToSettlement(DealDto deal, ManagerConcertDetailsProjection projection, DateTime nowUtc)
+    public ISettlement ToSettlement(DealDto deal, ConcertDetails concert, RevenueShareSettlementRowProjection? settlement, DateTime nowUtc)
     {
-        var concert = projection.Concert;
-        var row = projection.Settlement;
         var ticketSalesMinor = Money.Gbp(concert.TicketsSold * concert.Price).ToMinorUnits();
 
-        ISettlementDeclaration declaration = row switch
+        ISettlementDeclaration declaration = settlement switch
         {
             null => new Undeclared(WindowOpen: concert.State == LifecycleState.Booked && concert.EndDate < nowUtc),
-            { Review: null } => new Declared(row.DoorRevenue, ticketSalesMinor, row.DeclaredAtUtc),
+            { Review: null } => new Declared(settlement.DoorRevenue, ticketSalesMinor, settlement.DeclaredAtUtc),
             { Review: { } review } => new Reviewed(
-                row.DoorRevenue, ticketSalesMinor, row.DeclaredAtUtc, review.GrossMinor, review.ReviewedAtUtc),
+                settlement.DoorRevenue, ticketSalesMinor, settlement.DeclaredAtUtc, review.GrossMinor, review.ReviewedAtUtc),
         };
 
         return new RevenueShareSettlement(paymentAmountMapper.ToPaymentAmount(deal), declaration);

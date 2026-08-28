@@ -12,5 +12,5 @@ namespace Concertable.B2B.Concert.Application.Interfaces;
 /// </summary>
 internal interface ISettlementGrossCalculator
 {
-    Money CalculateGross(DealDto deal, Money eligibleTakings);
+    Money CalculateGross(DealDto deal, Money? eligibleTakings = null);
 }

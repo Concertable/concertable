@@ -14,6 +14,6 @@ internal sealed class SettlementGrossCalculator : ISettlementGrossCalculator
         this.calculators = calculators;
     }
 
-    public Money CalculateGross(DealDto deal, Money eligibleTakings) =>
+    public Money CalculateGross(DealDto deal, Money? eligibleTakings = null) =>
         this.calculators.Create(deal.DealType).CalculateGross(deal, eligibleTakings);
 }

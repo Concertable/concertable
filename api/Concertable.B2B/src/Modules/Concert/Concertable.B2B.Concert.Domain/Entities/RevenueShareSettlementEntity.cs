@@ -41,9 +41,9 @@ public sealed class RevenueShareSettlementEntity : IIdEntity, IVenueArtistTenant
     {
         ArgumentNullException.ThrowIfNull(concert);
         if (concert.Booking is not DeferredBooking)
-            throw new InvalidOperationException("A revenue-share settlement requires a revenue-share (deferred) booking.");
+            throw new DomainException("A revenue-share settlement requires a revenue-share (deferred) booking.");
         if (concert.VenueTenantId == Guid.Empty || concert.ArtistTenantId == Guid.Empty)
-            throw new InvalidOperationException("A revenue-share settlement cannot inherit unresolved concert tenants.");
+            throw new DomainException("A revenue-share settlement cannot inherit unresolved concert tenants.");
         if (doorRevenue < 0)
             return new DoorRevenueDeclarationError.NegativeRevenue();
 
@@ -73,7 +73,7 @@ public sealed class RevenueShareSettlementEntity : IIdEntity, IVenueArtistTenant
     public void FreezeReviewedGross(long grossMinor, DateTime reviewedAtUtc)
     {
         if (grossMinor < 0)
-            throw new InvalidOperationException("A settlement gross cannot be negative.");
+            throw new DomainException("A settlement gross cannot be negative.");
 
         Review = new SettlementReview(grossMinor, reviewedAtUtc);
     }

@@ -1,4 +1,5 @@
 using Concertable.B2B.Concert.Infrastructure.Services.Settlement;
+using Concertable.Kernel;
 using Concertable.Kernel.ValueObjects;
 
 namespace Concertable.B2B.Concert.UnitTests.Settlement;
@@ -22,7 +23,7 @@ public sealed class SettlementGrossCalculatorTests
     {
         var deal = new FlatFeeDealDto { Fee = 500m };
 
-        var gross = this.flatFee.CalculateGross(deal, Money.Zero(Currency.Gbp));
+        var gross = this.flatFee.CalculateGross(deal);
 
         Assert.Equal(Money.Gbp(500m), gross);
     }
@@ -46,7 +47,7 @@ public sealed class SettlementGrossCalculatorTests
     {
         var deal = new VenueHireDealDto { HireFee = 400m };
 
-        var gross = this.venueHire.CalculateGross(deal, Money.Zero(Currency.Gbp));
+        var gross = this.venueHire.CalculateGross(deal);
 
         Assert.Equal(Money.Gbp(400m), gross);
     }
@@ -101,6 +102,14 @@ public sealed class SettlementGrossCalculatorTests
         var gross = this.doorSplit.CalculateGross(deal, Money.Gbp(100m));
 
         Assert.Equal(Money.Gbp(33.33m), gross);
+    }
+
+    [Fact]
+    public void CalculateGross_DoorSplitWithoutEligibleTakings_Throws()
+    {
+        var deal = new DoorSplitDealDto { ArtistDoorPercent = 70m };
+
+        Assert.Throws<DomainException>(() => this.doorSplit.CalculateGross(deal));
     }
 
     #endregion

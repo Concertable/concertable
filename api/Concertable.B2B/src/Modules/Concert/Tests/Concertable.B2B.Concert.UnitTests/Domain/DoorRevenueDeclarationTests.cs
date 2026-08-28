@@ -2,6 +2,7 @@ using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.Errors;
 using Concertable.Contracts;
 using Concertable.Contracts.Enums;
+using Concertable.Kernel;
 using Concertable.Kernel.ValueObjects;
 
 namespace Concertable.B2B.Concert.UnitTests.Domain;
@@ -91,7 +92,7 @@ public sealed class DoorRevenueDeclarationTests
     {
         var settlement = Declared(200m);
 
-        Assert.Throws<InvalidOperationException>(() => settlement.FreezeReviewedGross(-1, DeclaredAt));
+        Assert.Throws<DomainException>(() => settlement.FreezeReviewedGross(-1, DeclaredAt));
     }
 
     private static RevenueShareSettlementEntity Declared(decimal doorRevenue)

@@ -14,5 +14,5 @@ internal sealed class VenueHireSettlementAmount : ISettlementAmountResolver
     }
 
     public Task<Money> ResolveGrossAsync(int concertId, DealDto deal, CancellationToken ct = default) =>
-        Task.FromResult(this.grossCalculator.CalculateGross(deal, Money.Zero(Currency.Gbp)));
+        Task.FromResult(this.grossCalculator.CalculateGross(deal));
 }

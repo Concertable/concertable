@@ -1,4 +1,5 @@
 using Concertable.B2B.Concert.Application.DTOs;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Application.Interfaces;
 using Concertable.B2B.Concert.Application.Responses;
 
@@ -14,6 +15,6 @@ internal sealed class FixedSettlementMapper : ISettlementMapper
         this.grossCalculator = grossCalculator;
     }
 
-    public ISettlement ToSettlement(DealDto deal, ManagerConcertDetailsProjection projection, DateTime nowUtc) =>
-        new FixedSettlement(grossCalculator.CalculateGross(deal, Money.Zero(Currency.Gbp)).ToMinorUnits());
+    public ISettlement ToSettlement(DealDto deal, ConcertDetails concert, RevenueShareSettlementRowProjection? settlement, DateTime nowUtc) =>
+        new FixedSettlement(grossCalculator.CalculateGross(deal).ToMinorUnits());
 }

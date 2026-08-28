@@ -55,7 +55,7 @@ public sealed class ContractEntity : IIdEntity, IVenueArtistTenantScoped
     {
         ArgumentNullException.ThrowIfNull(booking);
         if (booking.VenueTenantId == Guid.Empty || booking.ArtistTenantId == Guid.Empty)
-            throw new InvalidOperationException("A contract cannot inherit unresolved booking tenants.");
+            throw new DomainException("A contract cannot inherit unresolved booking tenants.");
 
         return new()
         {

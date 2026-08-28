@@ -223,6 +223,20 @@ platform lockstep version `0.1.0-alpha.0.1235` confirms B2B/Customer consume the
 
 ## Event log
 
+### 2026-08-28 — Phase 2 step 2: review-feedback cleanup
+
+- Action (post-review, Tommy's feedback): projections `ManagerConcertDetailsProjection` /
+  `RevenueShareSettlementRowProjection` moved `DTOs/` → `Application/Projections/`;
+  `QueryableSettlementMappers.ToManagerDetails` folded into `QueryableConcertMappers` (file deleted);
+  **all Concert domain `InvalidOperationException` → `DomainException`** (11 sites + the settlement
+  guard in `RevenueShareSettlementAmount`), rule added to `ARCHITECTURE.md` and enforced by
+  `DomainInvariantExceptionTests` (source scan); `ISettlementGrossCalculator.CalculateGross` takes
+  `Money? eligibleTakings = null` so fixed-fee callers stop passing a `Money.Zero` sentinel;
+  `ISettlementMapper.ToSettlement` takes `(DealDto, ConcertDetails, RevenueShareSettlementRowProjection?,
+  DateTime)` instead of the whole projection.
+- Evidence: 276 Concert unit tests green; Concert.Api / Concert.IntegrationTests / B2B.AppHost build clean.
+- Outcome: recorded as an incremental review pass. Next: push, CI, mark PR #847 ready.
+
 ### 2026-08-28 — Phase 2 step 2: settlement-model foundation (own PR)
 
 - Action: `ApplicationEntity.CommissionBindingId` + `BindCommission(Guid)`. Extracted all revenue-share

@@ -25,7 +25,7 @@ internal sealed class RevenueShareSettlementAmount : ISettlementAmountResolver
     public async Task<Money> ResolveGrossAsync(int concertId, DealDto deal, CancellationToken ct = default)
     {
         var totalRevenue = await this.concertRepository.GetTotalRevenueByConcertIdAsync(concertId)
-            ?? throw new InvalidOperationException(
+            ?? throw new DomainException(
                 $"Concert {concertId} reached settlement with no declared door revenue — the completion gate should make this unreachable.");
         return this.grossCalculator.CalculateGross(deal, Money.Gbp(totalRevenue));
     }

@@ -11,14 +11,16 @@ namespace Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 /// </summary>
 internal abstract class RevenueShareSettlementGrossCalculator : ISettlementGrossCalculator
 {
-    public abstract Money CalculateGross(DealDto deal, Money eligibleTakings);
+    public abstract Money CalculateGross(DealDto deal, Money? eligibleTakings = null);
 
-    protected static Money RevenueShare(Money eligibleTakings, decimal artistDoorPercent)
+    protected static Money RevenueShare(Money? eligibleTakings, decimal artistDoorPercent)
     {
+        var takings = eligibleTakings
+            ?? throw new DomainException("A revenue-share settlement gross requires the eligible takings.");
         var shareMinor = decimal.Round(
-            eligibleTakings.ToMinorUnits() * artistDoorPercent / 100m,
+            takings.ToMinorUnits() * artistDoorPercent / 100m,
             0,
             MidpointRounding.AwayFromZero);
-        return Money.FromMinorUnits((long)shareMinor, eligibleTakings.Currency);
+        return Money.FromMinorUnits((long)shareMinor, takings.Currency);
     }
 }

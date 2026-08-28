@@ -9,7 +9,7 @@ namespace Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 /// </summary>
 internal sealed class VersusSettlementGrossCalculator : RevenueShareSettlementGrossCalculator
 {
-    public override Money CalculateGross(DealDto deal, Money eligibleTakings)
+    public override Money CalculateGross(DealDto deal, Money? eligibleTakings = null)
     {
         var versus = (VersusDealDto)deal;
         return Money.Gbp(versus.Guarantee) + RevenueShare(eligibleTakings, versus.ArtistDoorPercent);

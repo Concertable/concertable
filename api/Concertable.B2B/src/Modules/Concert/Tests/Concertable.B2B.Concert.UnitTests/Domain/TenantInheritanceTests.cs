@@ -1,6 +1,7 @@
 using System.Net;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.ValueObjects;
+using Concertable.Kernel;
 using Concertable.Kernel.ValueObjects;
 
 namespace Concertable.B2B.Concert.UnitTests.Domain;
@@ -77,7 +78,7 @@ public sealed class TenantInheritanceTests
         var venue = emptyVenue ? Guid.Empty : venueTenantId;
         var artist = emptyArtist ? Guid.Empty : artistTenantId;
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<DomainException>(
             () => StandardApplication.Create(1, 2, DealType.FlatFee, venue, artist));
     }
 

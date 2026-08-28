@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** complete
-**Reviewed up to commit:** `1cd46f0a8` — findings TEST1 + DOC1 closed here _(2026-08-28)_
+**Reviewed up to commit:** pending the incremental commit — see the incremental pass below _(2026-08-28)_
 **Judgment:** approved
 
 ## Review pass — 2026-08-28 — full
@@ -93,6 +93,37 @@ member removed; `DeferredBooking` guard on `Declare`). This pass is the independ
 
 `1cd46f0a8` closes TEST1 and DOC1 — test and documentation only, no runtime change. 274 Concert unit
 tests green (+8 in `SettlementMapperTests`). No new findings.
+
+## Review pass — 2026-08-28 — incremental (author + Tommy)
+
+**Candidate head:** post-`6ae3c5797` working tree
+**Pass judgment:** approved
+
+Tommy raised five further issues on the settlement model; all fixed in the same session:
+
+- [x] **PLACE1 — LOW — placement** — `ManagerConcertDetailsProjection` / `RevenueShareSettlementRowProjection`
+  were in `Application/DTOs/ConcertDtos.cs`. Projections aren't DTOs (`csharp-naming`). Moved to
+  `Application/Projections/ManagerConcertDetailsProjection.cs`, matching the existing
+  `OpportunityApplicationProjection` precedent.
+- [x] **PLACE2 — LOW — placement** — `QueryableSettlementMappers.ToManagerDetails` is `ToDetails` plus a
+  join, a concert-details query mapper. Folded into `QueryableConcertMappers`; `QueryableSettlementMappers.cs`
+  deleted.
+- [x] **CONV1 — MEDIUM — exception convention** — Concert domain entities threw `InvalidOperationException`
+  for invariant breaches; the rest of B2B (Admin/Artist/Venue/Tenant/Conversations) throws
+  `Concertable.Kernel.DomainException`. Converted all 11 sites (`ApplicationEntity`, `BookingEntity`,
+  `ConcertEntity`, `ContractEntity`, `InvoiceEntity`, `RevenueShareSettlementEntity`) plus
+  `RevenueShareSettlementAmount`'s settlement guard. Rule added to `ARCHITECTURE.md`; enforced by
+  `DomainInvariantExceptionTests` (source scan — currently zero offenders).
+- [x] **API1 — LOW — sentinel** — `FlatFee`/`VenueHire` gross callers passed `Money.Zero(Currency.Gbp)`
+  as a "no takings" sentinel, reading as a real zero. `ISettlementGrossCalculator.CalculateGross` now
+  takes `Money? eligibleTakings = null`; fixed-fee callers omit it, and `RevenueShare(...)` throws
+  `DomainException` if a revenue-share formula is called without takings.
+- [x] **API2 — LOW — coupling** — `ISettlementMapper.ToSettlement` took the whole
+  `ManagerConcertDetailsProjection` (a query shape). Now takes `(DealDto, ConcertDetails,
+  RevenueShareSettlementRowProjection?, DateTime)` — the pieces it reads.
+
+Verified: 276 Concert unit tests green (+2); `Concert.Api` / `Concert.IntegrationTests` / `B2B.AppHost`
+build clean.
 
 ## CI-only validation (recorded, not a finding)
 

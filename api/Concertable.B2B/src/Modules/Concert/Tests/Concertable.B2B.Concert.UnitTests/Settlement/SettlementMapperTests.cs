@@ -1,5 +1,6 @@
 using Concertable.B2B.Concert.Application.DTOs;
 using Concertable.B2B.Concert.Application.Mappers;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Application.Responses;
 using Concertable.B2B.Concert.Domain.Lifecycle;
 using Concertable.B2B.Concert.Infrastructure.Services.Settlement;
@@ -25,7 +26,7 @@ public sealed class SettlementMapperTests
     {
         var mapper = new FixedSettlementMapper(new FlatFeeSettlementGrossCalculator());
 
-        var settlement = mapper.ToSettlement(new FlatFeeDealDto { Fee = 500m }, Projection(), Now);
+        var settlement = mapper.ToSettlement(new FlatFeeDealDto { Fee = 500m }, Concert(), null, Now);
 
         Assert.Equal(new FixedSettlement(50_000), Assert.IsType<FixedSettlement>(settlement));
     }
@@ -35,7 +36,7 @@ public sealed class SettlementMapperTests
     {
         var mapper = new FixedSettlementMapper(new VenueHireSettlementGrossCalculator());
 
-        var settlement = mapper.ToSettlement(new VenueHireDealDto { HireFee = 400m }, Projection(), Now);
+        var settlement = mapper.ToSettlement(new VenueHireDealDto { HireFee = 400m }, Concert(), null, Now);
 
         Assert.Equal(new FixedSettlement(40_000), Assert.IsType<FixedSettlement>(settlement));
     }
@@ -48,7 +49,7 @@ public sealed class SettlementMapperTests
     public void ToSettlement_NoRow_EndedAndBooked_ReturnsUndeclaredWithOpenWindow()
     {
         var settlement = RevenueShare().ToSettlement(
-            DoorSplitDeal, Projection(state: LifecycleState.Booked, endDate: Now.AddHours(-1)), Now);
+            DoorSplitDeal, Concert(state: LifecycleState.Booked, endDate: Now.AddHours(-1)), null, Now);
 
         var declaration = Assert.IsType<Undeclared>(RevenueShareOf(settlement).Declaration);
         Assert.True(declaration.WindowOpen);
@@ -62,7 +63,7 @@ public sealed class SettlementMapperTests
         int endHoursFromNow)
     {
         var settlement = RevenueShare().ToSettlement(
-            DoorSplitDeal, Projection(state: state, endDate: Now.AddHours(endHoursFromNow)), Now);
+            DoorSplitDeal, Concert(state: state, endDate: Now.AddHours(endHoursFromNow)), null, Now);
 
         var declaration = Assert.IsType<Undeclared>(RevenueShareOf(settlement).Declaration);
         Assert.False(declaration.WindowOpen);
@@ -72,12 +73,10 @@ public sealed class SettlementMapperTests
     public void ToSettlement_RowWithoutReview_ReturnsDeclaredWithTakingsAndConcertableSales()
     {
         var declaredAt = Now.AddHours(-2);
-        var projection = Projection(
-            ticketsSold: 10,
-            price: 25m,
-            row: new RevenueShareSettlementRowProjection(200m, declaredAt, Review: null));
+        var row = new RevenueShareSettlementRowProjection(200m, declaredAt, Review: null);
 
-        var settlement = RevenueShare().ToSettlement(DoorSplitDeal, projection, Now);
+        var settlement = RevenueShare().ToSettlement(
+            DoorSplitDeal, Concert(ticketsSold: 10, price: 25m), row, Now);
 
         var declared = Assert.IsType<Declared>(RevenueShareOf(settlement).Declaration);
         Assert.Equal(200m, declared.DoorRevenue);
@@ -90,13 +89,11 @@ public sealed class SettlementMapperTests
     {
         var declaredAt = Now.AddHours(-2);
         var reviewedAt = Now.AddHours(-1);
-        var projection = Projection(
-            ticketsSold: 10,
-            price: 25m,
-            row: new RevenueShareSettlementRowProjection(
-                200m, declaredAt, new SettlementReview(70_000, reviewedAt)));
+        var row = new RevenueShareSettlementRowProjection(
+            200m, declaredAt, new SettlementReview(70_000, reviewedAt));
 
-        var settlement = RevenueShare().ToSettlement(DoorSplitDeal, projection, Now);
+        var settlement = RevenueShare().ToSettlement(
+            DoorSplitDeal, Concert(ticketsSold: 10, price: 25m), row, Now);
 
         var reviewed = Assert.IsType<Reviewed>(RevenueShareOf(settlement).Declaration);
         Assert.Equal(200m, reviewed.DoorRevenue);
@@ -109,7 +106,7 @@ public sealed class SettlementMapperTests
     [Fact]
     public void ToSettlement_RevenueShare_CarriesTheDealFormulaFromThePaymentAmountMapper()
     {
-        var settlement = RevenueShare().ToSettlement(DoorSplitDeal, Projection(), Now);
+        var settlement = RevenueShare().ToSettlement(DoorSplitDeal, Concert(), null, Now);
 
         var doorShare = Assert.IsType<DoorSharePayment>(RevenueShareOf(settlement).Formula);
         Assert.Equal(70m, doorShare.ArtistPercent);
@@ -125,28 +122,23 @@ public sealed class SettlementMapperTests
     private static RevenueShareSettlement RevenueShareOf(ISettlement settlement) =>
         Assert.IsType<RevenueShareSettlement>(settlement);
 
-    private static ManagerConcertDetailsProjection Projection(
+    private static ConcertDetails Concert(
         LifecycleState state = LifecycleState.Booked,
         DateTime? endDate = null,
         int ticketsSold = 0,
-        decimal price = 0m,
-        RevenueShareSettlementRowProjection? row = null) =>
+        decimal price = 0m) =>
         new()
         {
-            Concert = new ConcertDetails
-            {
-                Id = 1,
-                Name = "Concert",
-                About = "About",
-                Price = price,
-                TicketsSold = ticketsSold,
-                State = state,
-                IsRevenueShare = true,
-                StartDate = Now.AddDays(-1),
-                EndDate = endDate ?? Now.AddHours(-1),
-                Venue = new ConcertVenue { Name = "Venue", County = "County", Town = "Town" },
-                Artist = new ConcertArtist { Name = "Artist", County = "County", Town = "Town" }
-            },
-            Settlement = row
+            Id = 1,
+            Name = "Concert",
+            About = "About",
+            Price = price,
+            TicketsSold = ticketsSold,
+            State = state,
+            IsRevenueShare = true,
+            StartDate = Now.AddDays(-1),
+            EndDate = endDate ?? Now.AddHours(-1),
+            Venue = new ConcertVenue { Name = "Venue", County = "County", Town = "Town" },
+            Artist = new ConcertArtist { Name = "Artist", County = "County", Town = "Town" }
         };
 }

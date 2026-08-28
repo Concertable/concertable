@@ -46,7 +46,7 @@ public abstract class ApplicationEntity : IIdEntity, IVenueArtistTenantScoped, I
         Guid artistTenantId)
     {
         if (venueTenantId == Guid.Empty || artistTenantId == Guid.Empty)
-            throw new InvalidOperationException("An application requires resolved venue and artist tenants.");
+            throw new DomainException("An application requires resolved venue and artist tenants.");
 
         ArtistId = artistId;
         OpportunityId = opportunityId;
@@ -77,7 +77,7 @@ public abstract class ApplicationEntity : IIdEntity, IVenueArtistTenantScoped, I
     internal void RecordFinancialFailure(string code, string message)
     {
         if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(message))
-            throw new InvalidOperationException("A financial failure requires a code and message.");
+            throw new DomainException("A financial failure requires a code and message.");
 
         FinancialFailureCode = code;
         FinancialFailureMessage = message;
@@ -90,9 +90,9 @@ public abstract class ApplicationEntity : IIdEntity, IVenueArtistTenantScoped, I
     public void BindCommission(Guid commissionBindingId)
     {
         if (commissionBindingId == Guid.Empty)
-            throw new InvalidOperationException("A commission binding requires a non-empty identifier.");
+            throw new DomainException("A commission binding requires a non-empty identifier.");
         if (CommissionBindingId is { } existing && existing != commissionBindingId)
-            throw new InvalidOperationException("This application is already bound to a different commission binding.");
+            throw new DomainException("This application is already bound to a different commission binding.");
 
         CommissionBindingId = commissionBindingId;
     }

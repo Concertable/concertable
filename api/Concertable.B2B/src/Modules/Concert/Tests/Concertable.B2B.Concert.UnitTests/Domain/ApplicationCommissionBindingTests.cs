@@ -1,4 +1,5 @@
 using Concertable.B2B.Concert.Domain.Entities;
+using Concertable.Kernel;
 using Xunit;
 
 namespace Concertable.B2B.Concert.UnitTests.Domain;
@@ -34,7 +35,7 @@ public sealed class ApplicationCommissionBindingTests
         var application = CreateApplication();
         application.BindCommission(Guid.NewGuid());
 
-        Assert.Throws<InvalidOperationException>(() => application.BindCommission(Guid.NewGuid()));
+        Assert.Throws<DomainException>(() => application.BindCommission(Guid.NewGuid()));
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public sealed class ApplicationCommissionBindingTests
     {
         var application = CreateApplication();
 
-        Assert.Throws<InvalidOperationException>(() => application.BindCommission(Guid.Empty));
+        Assert.Throws<DomainException>(() => application.BindCommission(Guid.Empty));
     }
 
     private static ApplicationEntity CreateApplication() =>

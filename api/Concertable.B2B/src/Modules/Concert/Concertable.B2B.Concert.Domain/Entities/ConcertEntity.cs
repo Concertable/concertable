@@ -55,7 +55,7 @@ public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRa
     {
         ArgumentNullException.ThrowIfNull(booking);
         if (booking.VenueTenantId == Guid.Empty || booking.ArtistTenantId == Guid.Empty)
-            throw new InvalidOperationException("A concert cannot inherit unresolved booking tenants.");
+            throw new DomainException("A concert cannot inherit unresolved booking tenants.");
 
         return new()
         {

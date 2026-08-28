@@ -1,4 +1,5 @@
 using Concertable.B2B.Concert.Application.DTOs;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Application.Responses;
 using Concertable.B2B.Concert.Application.Strategies;
 
@@ -13,6 +14,6 @@ internal sealed class SettlementMapper : ISettlementMapper
         this.mappers = mappers;
     }
 
-    public ISettlement ToSettlement(DealDto deal, ManagerConcertDetailsProjection projection, DateTime nowUtc) =>
-        mappers.Create(deal.DealType).ToSettlement(deal, projection, nowUtc);
+    public ISettlement ToSettlement(DealDto deal, ConcertDetails concert, RevenueShareSettlementRowProjection? settlement, DateTime nowUtc) =>
+        mappers.Create(deal.DealType).ToSettlement(deal, concert, settlement, nowUtc);
 }

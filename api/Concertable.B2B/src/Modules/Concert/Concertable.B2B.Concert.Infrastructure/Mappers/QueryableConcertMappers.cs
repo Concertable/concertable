@@ -1,4 +1,5 @@
 using Concertable.B2B.Artist.Domain.ReadModels;
+using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.ReadModels;
 using Concertable.B2B.Venue.Domain.ReadModels;
@@ -90,5 +91,26 @@ internal static class QueryableConcertMappers
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
                 Genres = c.Booking.Application.Artist.Genres.Select(g => g.Genre)
             }
+        };
+
+    /// <summary>
+    /// <see cref="ToDetails"/> for the owner view, in one round trip: the marketplace projection joined
+    /// to the concert's revenue-share settlement row (absent for a fixed-fee deal, or before the venue
+    /// declares the door take). The service maps this into a non-nullable settlement.
+    /// </summary>
+    public static IQueryable<ManagerConcertDetailsProjection> ToManagerDetails(
+        this IQueryable<ConcertEntity> query,
+        IQueryable<ConcertRatingProjection> concertRatings,
+        IQueryable<ArtistRatingProjection> artistRatings,
+        IQueryable<VenueRatingProjection> venueRatings,
+        IQueryable<RevenueShareSettlementEntity> settlements) =>
+        from concert in query.ToDetails(concertRatings, artistRatings, venueRatings)
+        select new ManagerConcertDetailsProjection
+        {
+            Concert = concert,
+            Settlement = settlements
+                .Where(s => s.ConcertId == concert.Id)
+                .Select(s => new RevenueShareSettlementRowProjection(s.DoorRevenue, s.DeclaredAtUtc, s.Review))
+                .FirstOrDefault()
         };
 }

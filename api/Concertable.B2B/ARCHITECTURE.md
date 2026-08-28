@@ -104,6 +104,12 @@ B2B is a modular monolith *inside* the service. The `dotnet-standards:module-str
 - Cross-module calls: `IXModule` facade only (in `<Module>.Contracts`)
 - Per-module `XDbContext` with its own schema; all point at `B2BDb`
 - Intra-service events: in-process `IEventRaiser` + `XChangedDomainEvent` — no bus involvement
+- **Domain-invariant breaches throw `Concertable.Kernel.DomainException`** — an entity/value-object
+  constructor, factory or method that rejects an input or a state it must never hold throws
+  `DomainException` (or its `ThrowIfNull` / `ThrowIfNullOrWhiteSpace` helpers), never
+  `InvalidOperationException`. `InvalidOperationException` stays for framework-level "this code path is
+  unreachable if the system is consistent" assertions in services/handlers and for builder/composition
+  misuse. Enforced by `DomainInvariantExceptionTests` in `Concertable.B2B.Concert.UnitTests`.
 - Module-owned `IEntityTypeConfiguration<T>` in `<Module>.Infrastructure/Data/Configurations/`
 - Per-module `IDevSeeder` / `ITestSeeder`
 - `InternalsVisibleTo` chains; module Application interfaces stay `internal`
