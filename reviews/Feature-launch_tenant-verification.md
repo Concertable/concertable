@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `d77d0ff5b6245fa5544ffe1a287a384efda275b6`  `(2026-08-28)`
-**Security-reviewed up to commit:** `d77d0ff5b6245fa5544ffe1a287a384efda275b6`  `(2026-08-28)`
+**Reviewed up to commit:** `3c2947fd725f5c50db498b42763a0dba8925b3f6`  `(2026-08-28)`
+**Security-reviewed up to commit:** `3c2947fd725f5c50db498b42763a0dba8925b3f6`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-27 — full
@@ -94,7 +94,8 @@ reviewed + security-marked in its own work order). The only conflict was `VenueR
 (deleted by #830's rename, modified by this branch) — resolved by re-applying this branch's one change
 (drop `Approved = dto.Approved`) to #830's renamed `VenueMappers.cs` and `git rm`-ing the old file.
 `Concertable.B2B.Web` + Venue unit/integration + venue/artist/admin web builds + `lint:boundaries` green
-post-merge. No un-reviewed executable code. Both watermarks → `d77d0ff5b`.
+post-merge. No un-reviewed executable code. Both watermarks → `3c2947fd7` (the merge `d77d0ff5b` + the
+docs commit recording it; nothing executable after `d77d0ff5b`).
 
 ## Security layer — 2026-08-28
 
