@@ -401,7 +401,10 @@ unpublished Payment package source.
 
 Start from updated `origin/main` after Phase 1b's platform sync.
 
-1. Establish the four keyed pure gross strategies and exhaustive formula/rounding tests.
+1. ~~Establish the four keyed pure gross strategies and exhaustive formula/rounding tests.~~ Done —
+   `ISettlementGrossCalculator` (`Concert.Application/Interfaces/`) with four keyed leaves in
+   `Concert.Infrastructure/Services/Settlement/`; the impure `ISettlementAmountResolver` now loads the
+   takings and delegates the formula, so there is one formula home. Round-half-up at the minor unit.
 2. Persist only `CommissionBindingId`; add the frozen final-gross snapshot for deferred deals.
 3. Bind the rate at each payer commitment point and route all four payment journeys through the new
    Payment methods.

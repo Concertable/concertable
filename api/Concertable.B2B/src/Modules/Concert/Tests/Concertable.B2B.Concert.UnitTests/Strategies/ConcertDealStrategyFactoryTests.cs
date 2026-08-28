@@ -86,8 +86,8 @@ public sealed class ConcertDealStrategyFactoryTests
 
     [Theory]
     [InlineData(DealType.FlatFee, typeof(FlatFeeSettlementAmount))]
-    [InlineData(DealType.DoorSplit, typeof(DoorSplitSettlementAmount))]
-    [InlineData(DealType.Versus, typeof(VersusSettlementAmount))]
+    [InlineData(DealType.DoorSplit, typeof(RevenueShareSettlementAmount))]
+    [InlineData(DealType.Versus, typeof(RevenueShareSettlementAmount))]
     [InlineData(DealType.VenueHire, typeof(VenueHireSettlementAmount))]
     public void Create_SettlementAmountType_ResolvesExpectedStrategyFromRequestScope(
         DealType dealType,
@@ -102,6 +102,30 @@ public sealed class ConcertDealStrategyFactoryTests
         using var scope = provider.CreateScope();
         var factory = scope.ServiceProvider
             .GetRequiredService<IConcertDealStrategyFactory<ISettlementAmountResolver>>();
+
+        var strategy = factory.Create(dealType);
+
+        Assert.IsType(expectedType, strategy);
+    }
+
+    [Theory]
+    [InlineData(DealType.FlatFee, typeof(FlatFeeSettlementGrossCalculator))]
+    [InlineData(DealType.DoorSplit, typeof(DoorSplitSettlementGrossCalculator))]
+    [InlineData(DealType.Versus, typeof(VersusSettlementGrossCalculator))]
+    [InlineData(DealType.VenueHire, typeof(VenueHireSettlementGrossCalculator))]
+    public void Create_SettlementGrossType_ResolvesExpectedStrategyFromRequestScope(
+        DealType dealType,
+        Type expectedType)
+    {
+        var services = CreateServices();
+        services.AddConcertDealStrategies();
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+        var factory = scope.ServiceProvider
+            .GetRequiredService<IConcertDealStrategyFactory<ISettlementGrossCalculator>>();
 
         var strategy = factory.Create(dealType);
 
@@ -196,6 +220,7 @@ public sealed class ConcertDealStrategyFactoryTests
     [InlineData(typeof(IDealPayeeResolver))]
     [InlineData(typeof(IPaymentAmountMapper))]
     [InlineData(typeof(ISettlementAmountResolver))]
+    [InlineData(typeof(ISettlementGrossCalculator))]
     public void AddConcertDealStrategies_ScopeCapturingServices_RegistersScoped(Type serviceType)
     {
         var services = CreateServices();

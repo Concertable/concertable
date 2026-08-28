@@ -6,6 +6,13 @@ namespace Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 
 internal sealed class FlatFeeSettlementAmount : ISettlementAmountResolver
 {
+    private readonly ISettlementGrossCalculator grossCalculator;
+
+    public FlatFeeSettlementAmount(ISettlementGrossCalculator grossCalculator)
+    {
+        this.grossCalculator = grossCalculator;
+    }
+
     public Task<Money> ResolveGrossAsync(int concertId, DealDto deal, CancellationToken ct = default) =>
-        Task.FromResult(Money.Gbp(((FlatFeeDealDto)deal).Fee));
+        Task.FromResult(this.grossCalculator.CalculateGross(deal, Money.Zero(Currency.Gbp)));
 }

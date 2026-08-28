@@ -3,9 +3,10 @@
 - Plan: `plans/launch/PLATFORM_COMMISSION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/platform-commission`
-- Worktree: none active. Phases 1 and 1b are terminal on `origin/main`. Phase 2 starts a fresh
-  worktree — `Feature/launch_platform-commission-phase2` from the current remote default.
-- Branch: none active (Phase 1b delivered on `Feature/PaymentOwnedResultExpansion` via PR #392).
+- Worktree: `C:/Users/tommy/source/repos/Concertable/.worktrees/Feature-launch_platform-commission-phase2`
+  (created 2026-08-28 from `origin/main` `10a1aa0bb` for Phase 2). Phases 1 and 1b are terminal on `origin/main`.
+- Branch: `Feature/launch_platform-commission-phase2` (Phase 2 active; Phase 1b delivered on
+  `Feature/PaymentOwnedResultExpansion` via PR #392).
 - PR: [#392 — refactor(payment): own typed operation results](https://github.com/Concertable/concertable/pull/392) (MERGED 2026-08-07) — absorbed and superseded [#296](https://github.com/Concertable/concertable/pull/296).
 - Dependency/package gates: Phase 1b's breaking Payment package published and its generated platform
   sync migrated the B2B and Customer consumers. `ConcertablePlatformVersion` has since advanced to
@@ -30,12 +31,20 @@ confirms the Phase 1b shape:
   `reserved "expected_commission_minor", "expected_payer_total_minor"` (and the bind/calc requests
   also reserve `"gross_minor"`) — no post-binding call accepts a caller-supplied commission or total.
 
-There is no uncommitted work and no active worktree for this plan.
+**Phase 2 is in progress** on `Feature/launch_platform-commission-phase2`. Step 1 of §10 Phase 2 is
+committed: `ISettlementGrossCalculator` — four pure, deal-type-keyed final-gross formulae
+(`Concert.Application/Interfaces/ISettlementGrossCalculator.cs` + four leaves in
+`Concert.Infrastructure/Services/Settlement/`). The impure `ISettlementAmountResolver` now loads the
+eligible takings and delegates the formula to the pure calculator, so `RevenueShareSettlementAmount`
+serves both DoorSplit and Guarantee Plus and the redundant `DoorSplitSettlementAmount` /
+`VersusSettlementAmount` leaves are gone. Revenue-share multiplication rounds once, half-up, at the
+minor unit. 252 Concert unit tests green (17 new in `SettlementGrossCalculatorTests`).
+
+Steps 2–9 remain. No review recorded yet.
 
 ## Next Steps
 
-**Start Phase 2 — B2B gross ownership and percentage cut-over.** This session deliberately stops
-here (Phase 1b was the gate; it is already through). Phase 2 is a separate delivery slice.
+**Continue Phase 2 from step 2 of `PLATFORM_COMMISSION_PLAN.md` §10.**
 
 **Delivery-gate status: none. Phase 2 is directly implementable.** The entire producer surface it
 consumes is already published in `Concertable.Payment.Client` at the pinned platform version
@@ -49,28 +58,40 @@ and Payment applies the temporary £10 internally — those call sites are what 
 binding step at each payer commitment point. §10's "do not compile against unpublished Payment source"
 warning does not apply here: the surface is published.
 
-1. Branch a fresh worktree from the current remote default (`main`).
-2. Follow `PLATFORM_COMMISSION_PLAN.md` §10 "Phase 2" steps 1–9: the four keyed pure gross
-   strategies + exhaustive formula/rounding tests; persist only `CommissionBindingId` + the frozen
-   final-gross snapshot for deferred deals; bind the rate at each payer commitment point and route
-   all four payment journeys through the binding-aware Payment methods; exact/deferred pricing DTOs
-   + final takings review/attestation + fail-closed error mapping; payer and artist disclosures in
-   the manager SPAs; re-scaffold the Concert model; local build + focused unit tests, then push the
-   checkpoint for full CI (merge queue stays the E2E gate).
-3. Phase 2's own hard stop: merge and own publish/platform-sync before Phase 3 removes the legacy
-   Payment APIs.
+1. ~~Branch a fresh worktree from the current remote default (`main`).~~ Done 2026-08-28.
+2. ~~§10 Phase 2 step 1 — four keyed pure gross strategies + exhaustive formula/rounding tests.~~
+   Done 2026-08-28 (commit on `Feature/launch_platform-commission-phase2`).
+3. **Next: §10 Phase 2 step 2** — persist only `CommissionBindingId` on the application/booking path
+   that owns the payer commitment (§3.3); add the frozen `FinalSettlementGrossMinor` snapshot for the
+   deferred deals (DoorSplit / Guarantee Plus) per §4.1. Re-scaffold the Concert model via
+   `./initial-migrations.ps1` from `api/` (never an additive migration).
+4. Then steps 3–6: bind the rate at each payer commitment point and route all four payment journeys
+   through the binding-aware Payment methods; exact/deferred pricing DTOs + final takings
+   review/attestation + fail-closed error mapping; payer and artist disclosures in the manager SPAs;
+   re-scaffold the Concert model.
+5. Steps 7–8: local build + focused unit tests, then push the checkpoint for full CI (merge queue
+   stays the E2E gate); update this plan and the launch trackers in the implementation commit.
+6. Step 9 hard stop: merge and own publish/platform-sync before Phase 3 removes the legacy Payment APIs.
 
 Do not touch Phase 3 (removing the temporary £10 seam) until Phase 2 and its platform sync are green.
 
 ## Resume prompt
 
 ```
-/open-worktree Feature/launch_platform-commission-phase2
+cd C:/Users/tommy/source/repos/Concertable/.worktrees/Feature-launch_platform-commission-phase2
 Read @plans/launch/PLATFORM_COMMISSION_PLAN.md and @plans/launch/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
 ```
 
 ## Completed work
 
+- **Phase 2 step 1** (2026-08-28, `Feature/launch_platform-commission-phase2`) — `ISettlementGrossCalculator`,
+  four pure deal-type-keyed final-gross formulae: FlatFee/VenueHire return the agreed fixed term;
+  DoorSplit returns `artistPercent × eligibleTakings`; Guarantee Plus (`Versus`) returns
+  `guarantee + artistPercent × eligibleTakings`. Revenue-share term rounds once, half-up, at the minor
+  unit. The impure `ISettlementAmountResolver` keeps ownership of loading the takings and delegates the
+  formula, so there is one formula home (`RevenueShareSettlementAmount` now serves both revenue-share
+  deal types; `DoorSplitSettlementAmount` / `VersusSettlementAmount` deleted). 252 Concert unit tests
+  green; 17 new in `SettlementGrossCalculatorTests`.
 - **Phase 1** — percentage configuration, immutable SQL configuration history, bindings by
   configuration ID, additive preview/bind/bound-calculation contracts, distinct binding-aware
   money-movement RPCs, transaction tax facts, multi-refund persistence, proportional refund logic,
@@ -85,6 +106,12 @@ Read @plans/launch/PLATFORM_COMMISSION_PLAN.md and @plans/launch/PLATFORM_COMMIS
   B2B and Customer consumers.
 
 ## Verification
+
+Phase 2 step 1 (2026-08-28, `Feature/launch_platform-commission-phase2`):
+
+- `dotnet build src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests` (from `api/Concertable.B2B`): 0 errors.
+- `dotnet test Concertable.B2B.Concert.UnitTests`: 252 passed, 0 failed (was 235; +17 `SettlementGrossCalculatorTests`).
+- Full B2B build + carve + integration + merge-queue E2E: deferred to the Phase 2 checkpoint push (step 7).
 
 Phase 1b, from PR #392's merge candidate:
 
@@ -124,6 +151,46 @@ platform lockstep version `0.1.0-alpha.0.1235` confirms B2B/Customer consume the
   the commission binding surface.
 
 ## Event log
+
+### 2026-08-28 — Phase 2 step 1: pure keyed settlement-gross calculators
+
+- Action: Added `ISettlementGrossCalculator` (Concert.Application) + four keyed leaves
+  (`{FlatFee,VenueHire,DoorSplit,Versus}SettlementGrossCalculator`, revenue-share leaves on a shared
+  `RevenueShareSettlementGrossCalculator` base) in `Concert.Infrastructure/Services/Settlement/`.
+  Refactored the impure `ISettlementAmountResolver`: `FlatFeeSettlementAmount` /
+  `VenueHireSettlementAmount` / `RevenueShareSettlementAmount` now delegate the formula to the pure
+  calculator; `RevenueShareSettlementAmount` (formerly abstract) serves both DoorSplit and Versus keys;
+  `DoorSplitSettlementAmount` / `VersusSettlementAmount` deleted. Registered the new family with
+  `RequireAll<ISettlementGrossCalculator>()`.
+- Evidence: `SettlementGrossCalculatorTests` (17 cases: exact, whole-takings, zero-share,
+  half-minor-unit round-up, fractional-percentage round-once, additive-not-max for Guarantee Plus).
+  Concert unit tests 252 passed. `ConcertDealStrategyFactoryTests` updated for the new family and the
+  DoorSplit/Versus → `RevenueShareSettlementAmount` repoint.
+- Decision: kept `ISettlementAmountResolver` as the impure orchestration seam (it already encodes
+  "load takings or not" per deal type) rather than collapsing it; the pure calculator owns the formula
+  so there is no duplicate. Step 2/4 will split "eligible takings" into Concertable sales + declared
+  external takings behind that same seam.
+- Outcome: step 1 committed. Next: step 2 (persist `CommissionBindingId` + frozen gross snapshot).
+
+### 2026-08-28 — Phase 2 started: worktree created, producer surface verified
+
+- Action: Opened `Feature/launch_platform-commission-phase2` worktree from `origin/main` `10a1aa0bb`.
+  Confirmed no open red platform-sync PR. Restored B2B against pin `0.1.0-alpha.0.1235` and reflected
+  the published `Concertable.Payment.Client` binding-aware surface.
+- Evidence: `ICommissionPricingClient` = `PreviewAsync` / `CreateOrBindAsync(externalReference,
+  payerReference, currency, reviewedCommissionConfigurationId, stripePaymentIntentId,
+  stripeSetupIntentId)` / `ConfirmReviewedGrossAsync(bindingId, externalReference, payerReference,
+  reviewedGross)` / `CalculateBoundAsync(bindingId, externalReference, payerReference, gross,
+  stripePaymentIntentId, stripeSetupIntentId)`. `IManagerPaymentOperationsClient.PayBoundCommissionAsync`
+  + `CreateBoundCommissionHoldSessionAsync`; `IEscrowOperationsClient.DepositBoundCommissionAsync` /
+  `CaptureBoundCommissionAsync` / `RefundBoundCommissionByBookingIdAsync`. No bound variant of
+  `ReleaseByBookingIdAsync` — release transfers the stored payee gross (plan §6.2), so no rebind needed.
+- Discovery: B2B already has an impure keyed settlement family — `ISettlementAmountResolver`
+  (`Concert.Infrastructure/Services/Settlement/`, keyed by `IConcertDealStrategyFactory`), with
+  `FlatFeeSettlementAmount` / `VenueHireSettlementAmount` / `DoorSplitSettlementAmount` /
+  `VersusSettlementAmount`, the last two on the revenue-loading `RevenueShareSettlementAmount` base.
+  Phase 2 step 1 separates the pure formula (`gross = f(deal, eligibleTakings)`) from the takings IO.
+- Outcome: Worktree live, ledger reconciled. Next: implement step 1.
 
 ### 2026-08-28 — reconciled: Phase 1b is terminal, delivered via PR #392
 
