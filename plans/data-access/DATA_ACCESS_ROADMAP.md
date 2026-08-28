@@ -10,3 +10,4 @@ package and its service consumers.
   — the capability seam is stable; any package extraction remains separate while Kernel entity and
   messaging couplings are measured.
 - [ ] DateTimeOffset audit contract and Payment adoption `data-access/audit-datetimeoffset`
+- [ ] Shared concurrency-save recovery and Payment adoption `data-access/try-save-changes`
