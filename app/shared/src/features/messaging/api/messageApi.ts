@@ -3,16 +3,18 @@ import type { Pagination } from "../../../types/common";
 import type { PaginationParams } from "../../../hooks/usePagination";
 import type { Message, ReportMessageRequest } from "../types";
 
+const BASE = "/message";
+
 const messageApi = {
   getUnreadCount: async (): Promise<number> => {
-    const { data } = await apiClient.get<number>("/message/user/unread-count");
+    const { data } = await apiClient.get<number>(`${BASE}/user/unread-count`);
     return data;
   },
 
   getMessages: async (
     params: PaginationParams,
   ): Promise<Pagination<Message>> => {
-    const { data } = await apiClient.get<Pagination<Message>>("/message/user", {
+    const { data } = await apiClient.get<Pagination<Message>>(`${BASE}/user`, {
       params,
     });
     return data;
@@ -22,11 +24,11 @@ const messageApi = {
     messageId: number,
     request: ReportMessageRequest,
   ): Promise<void> => {
-    await apiClient.post(`/message/${messageId}/report`, request);
+    await apiClient.post(`${BASE}/${messageId}/report`, request);
   },
 
   markInboxRead: async (): Promise<number> => {
-    const { data } = await apiClient.post<number>("/message/mark-read");
+    const { data } = await apiClient.post<number>(`${BASE}/mark-read`);
     return data;
   },
 };

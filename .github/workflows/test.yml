@@ -24,8 +24,8 @@ jobs:
     #   run_e2e_ui -> e2e-ui-tests
     #   run_fe     -> fe-boundaries + carve-fe (the FE COMPILE FLOOR: ownership holds and each surface builds from the feed)
     # Automatic classification, by the changed-file set:
-    #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
-    #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
+    #   - non-code    (docs / .claude / .agents / .codex / plans / reviews / root dotfiles) -> ALL FOUR
+    #                 false: nothing to compile or test. build + carve no-op, unit/integration skip, E2E no-op.
     #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
@@ -99,7 +99,7 @@ jobs:
           files=$(git diff --name-only "$base" "$head")
           echo "Changed files:"; printf '%s\n' "$files"
           # Inert = cannot affect any build or test: markdown anywhere, and the doc/tooling trees.
-          INERT='(\.md$|^\.claude/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
+          INERT='(\.md$|^\.claude/|^\.agents/|^\.codex/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
           PKG='(^|/)Directory\.Packages\.props$'
           run_code=true
           run_tests=true

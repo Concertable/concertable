@@ -39,25 +39,28 @@ function toUpdateFormData(request: UpdateArtistRequest): FormData {
   return formData;
 }
 
+const BASE = "/artist";
+const ORGANIZATION_BASE = "/organization/artist";
+
 const artistApi = {
   getArtist: async (id: number): Promise<Artist> => {
-    const { data } = await apiClient.get<Artist>(`/artist/${id}`);
+    const { data } = await apiClient.get<Artist>(`${BASE}/${id}`);
     return data;
   },
 
   getArtistById: async (id: number): Promise<Artist> => {
-    const { data } = await apiClient.get<Artist>(`/artist/${id}`);
+    const { data } = await apiClient.get<Artist>(`${BASE}/${id}`);
     return data;
   },
 
   getMyArtist: async (): Promise<Artist | undefined> => {
-    const { data } = await apiClient.getOptional<Artist>("/organization/artist");
+    const { data } = await apiClient.getOptional<Artist>(ORGANIZATION_BASE);
     return data ?? undefined;
   },
 
   createArtist: async (request: CreateArtistRequest): Promise<Artist> => {
     const { data } = await apiClient.post<Artist>(
-      "/organization/artist",
+      ORGANIZATION_BASE,
       toCreateFormData(request),
     );
     return data;
@@ -65,7 +68,7 @@ const artistApi = {
 
   updateArtist: async (request: UpdateArtistRequest): Promise<Artist> => {
     const { data } = await apiClient.put<Artist>(
-      "/organization/artist",
+      ORGANIZATION_BASE,
       toUpdateFormData(request),
     );
     return data;
