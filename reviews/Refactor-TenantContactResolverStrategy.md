@@ -54,10 +54,17 @@ is absent. So the contactless shape runs and is unasserted.
 that test, and add an Approve case for a tenant owning no profile that asserts the verification still
 transitions to Approved while `fixture.EmailSender.Sent` gains no entry.
 
-**Addressed 2026-08-28:** `GetPending_ShouldReturn200_WhenTwoPendingRowsShareTenantType` now asserts
-`Assert.Null(contactless.Contact)` on the `VenueManagerNoVenue` row, and
-`Approve_ShouldReturn204_AndSendNothing_WhenTenantOwnsNoProfile` pins the rerouted decision — Approved status
-with the sent-mail count unchanged.
+**Addressed 2026-08-28:** the first attempt used `VenueManagerNoVenue` to assert absence in
+`GetPending_ShouldReturn200_WhenTwoPendingRowsShareTenantType` and in a new Approve test; CI showed that
+tenant's contact resolving to a value, contradicting both a static read of the venue seed catalog and the
+independent `VenueApiTests.GetDetails_ShouldReturn204_WhenNoVenueExists` test, and it could not be
+reproduced locally (an unrelated Windows path-length failure blocked Testcontainers in this environment).
+Rather than push a second unverified assumption about the same fixture, the concurrency test's assertions
+were reverted to their original form (its purpose is sequential-await concurrency, not contact absence), and
+`Approve_ShouldReturn204_AndSendNothing_WhenTenantOwnsNoProfile` now uses `ArtistManagerNoArtist` without
+creating an artist — the same fixture the adjacent, already-passing
+`GetPending_ShouldReturn200_WithArtistContactEnrichment` test proves is contactless by explicitly creating
+one before asserting on it. It pins the rerouted decision: Approved status, sent-mail count unchanged.
 
 ### [x] RT1 (LOW) — `skill-routes.json` does not route this code to `keyed-strategies`
 
