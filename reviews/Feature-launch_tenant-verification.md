@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `fe22e96f3832dbee40902791f59a6538b145cbbb`  `(2026-08-28)`
-**Security-reviewed up to commit:** `56a0bdce03964b56cd418b884eb69724716c43a9`  `(2026-08-28)`
+**Reviewed up to commit:** `d77d0ff5b6245fa5544ffe1a287a384efda275b6`  `(2026-08-28)`
+**Security-reviewed up to commit:** `d77d0ff5b6245fa5544ffe1a287a384efda275b6`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-27 — full
@@ -84,10 +84,22 @@ flatten — so the watermark advanced to `5df88875f`.
 `1228`; venue/artist/admin web builds + `lint:boundaries` green. All incoming code is #828/#829 —
 independently reviewed and merged. No findings. Watermark → `fe22e96f3`.
 
+## Review pass — 2026-08-28 — incremental (`fe22e96f3..d77d0ff5b`)
+
+**Pass judgment:** `approved` — no findings.
+
+Ejected from the queue twice more as `main` moved. Two more base merges: #829 (already noted),
+#830 (`Refactor/mapper-naming` — renames every `*ResponseMappers.cs` → `*Mappers.cs`, independently
+reviewed + security-marked in its own work order). The only conflict was `VenueResponseMappers.cs`
+(deleted by #830's rename, modified by this branch) — resolved by re-applying this branch's one change
+(drop `Approved = dto.Approved`) to #830's renamed `VenueMappers.cs` and `git rm`-ing the old file.
+`Concertable.B2B.Web` + Venue unit/integration + venue/artist/admin web builds + `lint:boundaries` green
+post-merge. No un-reviewed executable code. Both watermarks → `d77d0ff5b`.
+
 ## Security layer — 2026-08-28
 
 Ran on the security-sensitive paths (`VenueController.cs`, `PrivilegedDbContext.cs`, the migration, the
-admin/venue/artist API + route wiring). **Zero findings.** Phase 6's backend diff is overwhelmingly
+admin/venue/artist API + route wiring; re-checked over the #830 mapper rename). **Zero findings.** Phase 6's backend diff is overwhelmingly
 deletions that *reduce* attack surface: two `[Admin]` endpoints removed, and the entire
 `VenuePrivilegedDbContext` (an unfiltered cross-tenant *writable* context) removed. The `Approved` field
 is dropped from the wire contract, not added. The admin/venue/artist frontend is client-side wiring over

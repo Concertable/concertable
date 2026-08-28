@@ -79,15 +79,18 @@ credential to `AuthDevSeeder`.
 - Review fixes: five `app/web` builds + `lint:boundaries` + 28 web-b2b unit tests green.
 - **#824 full CI green** on head `92a60f13e` — all backend unit/integration matrices, `carve-fe` (all
   surfaces, against the published `web-b2b`), `fe-boundaries`. `full-e2e` runs in the merge queue.
-- **Manual smoke (2026-08-28, live `B2B.AppHost` from this worktree):** real OIDC venue login works (proves
-  `appsettings.Development.json`); venue dashboard renders with **no** verification banner (correct — a
-  seeded tenant is `Approved`); `/settings/verification` route + Settings-nav item render, showing the
-  approved-state card ("Your organisation is verified. Company registration — 27 Aug 2026") and no upload
-  form (correct); the `GET /api/organization/verification` round-trip renders (the NAT1 non-204 path);
-  admin SPA `requireAdmin` guard correctly denies a non-admin. **Not visually reached:** the submit form +
-  populated admin queue + approve/reject buttons — no OIDC-loginable seed user is in the unverified state
-  (see the Next Steps follow-up); covered by `VerificationAdminApiTests` / `submitVerificationRequestSchema.test.ts`
-  / `usePendingVerifications.test.ts` (all merged) + `full-e2e`.
+- **Manual smoke — COMPLETE (2026-08-28, live `B2B.AppHost`, real OIDC).** Screenshots + a GIF of the full
+  flow posted to PR #824 (`pr-screenshots/824` branch, scratch). Drove **Rejected → submit 3 files
+  (PDF+PNG+JPEG) → Pending → admin Approve → Approved** end to end as `venuemanager1@test.com` +
+  `admin@test.com`: rejected `VerificationBanner` (with reason) on the venue dashboard; the
+  `VerificationForm` (3 fixed doc-type inputs) on `/settings/verification`; multipart submit → 204,
+  "evidence submitted" toast, Pending card, append-only doc list; admin `/verification` queue row enriched
+  with the venue name + email (`GetContactByTenantIdAsync`); `POST /api/verification/{tenantId}/approve` →
+  204 → "Organisation verified" toast + empty state; venue side then shows "Your organisation is verified".
+  Admin `requireAdmin` guard also verified to deny a non-admin. To reach the unverified state I set that
+  tenant's `Verifications` row to `Rejected` in the dev DB (it's `Approved` again via the real flow — clean
+  end state). **Follow-up:** `AuthDevSeeder` should seed a credential for `SeedState.UnverifiedVenueManager`
+  so no DB poke is needed next time (in Next Steps).
 
 ## Reviews
 
