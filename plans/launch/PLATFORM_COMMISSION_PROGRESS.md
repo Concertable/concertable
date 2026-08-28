@@ -70,14 +70,14 @@ next step before the PR merges.
 
 ## Next Steps
 
-**Deliver the step-2 PR (settlement-model foundation), then continue with step 3.**
+**Push the step-2 branch and open its PR, then continue with step 3.**
 
-1. **Record a formal review** of the step-2 commit (`review` skill) — the session's back-and-forth
-   with Tommy shaped it but there is no review artifact yet, and `plan_graph.py` gates merge on one.
-2. **Open the PR** — `refactor(b2b): revenue-share settlement as its own aggregate`. Zero
-   published-contract impact (all internal B2B), so it does not need the Phase 2 payment PR.
-   Merge-queue E2E is still the gate: the `ToManagerDetails` query + the `OwnsOne` projection cannot
-   run in this worktree (`Microsoft.Data.SqlClient.SNI` fails — Windows MAX_PATH on the deep worktree
+1. ~~Record a formal review of step 2.~~ Done — `reviews/Feature-launch_platform-commission-phase2.md`,
+   approved up to `559595388`; TEST1 + DOC1 closed.
+2. **Open the PR** — `refactor(b2b): revenue-share settlement as its own aggregate`. Contains
+   `c68878297` (step 1) + `bfd511848` + `559595388` (step 2). Zero published-contract impact (all
+   internal B2B). Merge-queue E2E is the gate: the `ToManagerDetails` query + the `OwnsOne` projection
+   cannot run in this worktree (`Microsoft.Data.SqlClient.SNI` — Windows MAX_PATH on the deep worktree
    path), so the Concert integration suite must confirm them in CI.
 3. **Step 3** — bind the rate at each payer commitment point (§3.2: FlatFee at Confirm & Pay / hold;
    VenueHire at Authorise & Apply / setup; DoorSplit + Guarantee Plus at booking acceptance / setup)
@@ -180,13 +180,13 @@ platform lockstep version `0.1.0-alpha.0.1235` confirms B2B/Customer consume the
 
 ## Reviews
 
-- **Phase 2 step 2** — reviewed interactively with Tommy across the session; that back-and-forth drove
-  the design from "nullable on `ConcertEntity`" to the extracted aggregate + `SettlementReview` value
-  object + the `$type` declaration union. Findings raised and fixed in-session: 3 correlated subqueries
-  → 1; dead `IConcertReadDbContext.RevenueShareSettlements` removed; `DeferredBooking` guard on
-  `Declare`; `CanDeclare` + two coupled nullables → the non-null `ISettlementDeclaration` union; the
-  two `ReviewedGross*` columns → one `SettlementReview` value object. **A formal `review` artifact is
-  still owed before merge** (Next Steps item 1).
+- **Phase 2 step 2** — `reviews/Feature-launch_platform-commission-phase2.md`, complete, **approved**
+  up to `559595388`. Interactive review with Tommy across the session drove the design (nullable on
+  `ConcertEntity` → extracted aggregate + `SettlementReview` VO + the `$type` declaration union; 3
+  subqueries → 1; dead read-context member; `DeferredBooking` guard). The independent pass added two
+  findings, both closed: TEST1 (settlement-mapper state coverage — `SettlementMapperTests`), DOC1
+  (`CODE_PATTERNS.md` unfiltered-entity roster). CI-only: the `ToManagerDetails` EF translation and the
+  `OwnsOne` projection.
 - 2026-08-28 docs reconciliation: `reviews/Docs-platform-commission-1b-reconcile.md` —
   complete, approved, no findings.
 - Review artifact: `reviews/Feature-CommissionBindingDeferredPricing.md`.

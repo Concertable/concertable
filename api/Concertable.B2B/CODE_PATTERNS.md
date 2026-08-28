@@ -29,15 +29,19 @@ its own purpose-named abstraction over the read context — `IConcertAvailabilit
 ## Which entities are filtered
 
 - **Unfiltered by design:** `Opportunity` (the applying artist reads the venue's opportunity to stamp the
-  deal), `Deal` (the applying artist reads the venue's terms), `Concert` (public listing).
+  deal), `Deal` (the applying artist reads the venue's terms), `Concert` (public listing),
+  `RevenueShareSettlement` (the completion sweep reads it host-side across tenants, like `Concert`;
+  writes are interceptor-guarded and every request-path read sits behind a `VenueForbidden` guard).
 - **Filtered:** `Venue`, `Artist` — owner-private reads, with public browse split off to the read stance.
 
 ## The `DealType` strategy families
 
 Declared vertically at the Deal module's composition root through `AddDealStrategies`, resolved by the
 module-local `IDealStrategyFactory<TStrategy>`. Named facades are the business API: `DealMapper`,
-`DealUpdater`, `DealTermsRenderer`, `SettlementAmountResolver`. `IConcertWorkflowFactory` stays a *named*
-factory because its caller genuinely needs the selected workflow instance.
+`DealUpdater`, `DealTermsRenderer`, `SettlementAmountResolver`, `SettlementGrossCalculator` (pure
+final-gross formula), `SettlementMapper` (the manager-facing `ISettlement` view).
+`IConcertWorkflowFactory` stays a *named* factory because its caller genuinely needs the selected
+workflow instance.
 
 Every family declares `RequireAll<T>()` or `RequireExactly<T>(...)`, so adding a `DealType` member fails
 composition until the new type is handled. `DealStrategyArchitectureTests` guards the shape.
