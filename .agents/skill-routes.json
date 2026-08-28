@@ -47,6 +47,13 @@
       "note": "Area floor. Every C# file gets the style and naming standard, so a shape nobody wrote a route for is still gated. Specific routes below add to this, they do not replace it."
     },
     {
+      "path": "(KeyedStrategies/.*\\.cs$|/Strategies/.*\\.cs$)",
+      "skills": [
+        "dotnet-standards:keyed-strategies"
+      ],
+      "note": "Keyed-strategy route. The shared KeyedStrategyBuilder and every module's per-key family live under these folders; without this the standard governing them is never loaded at write or review time."
+    },
+    {
       "path": "\\.Application/.*\\.cs$",
       "skills": [
         "dotnet-standards:result-carriers",

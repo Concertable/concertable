@@ -12,7 +12,7 @@ Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progr
 
 ## Summary
 
-Review complete — all 4 areas `[x]`. **2 findings**, neither merge-blocking.
+Review complete — all 4 areas `[x]`. **2 findings**, both addressed on this branch.
 
 - **By severity:** MEDIUM ×1 (COV1) · LOW ×1 (RT1).
 - **By lens:** changed-behaviour test impact ×1 (COV1) · route-table defect ×1 (RT1).
@@ -34,7 +34,7 @@ than a runtime throw. `Option.None<TenantContact>()` in `ReviewAsync` is correct
 
 ## Findings
 
-### [ ] COV1 (MEDIUM) — the rerouted "no contact, don't notify" decision has no test
+### [x] COV1 (MEDIUM) — the rerouted "no contact, don't notify" decision has no test
 
 `IVerificationNotifier` previously took `string? contactEmail` and `VerificationNotifier.SendAsync` owned the
 decision behind a null check — log `VerificationContactEmailMissing`, return without sending. This branch
@@ -51,7 +51,12 @@ is absent. So the contactless shape runs and is unasserted.
 that test, and add an Approve case for a tenant owning no profile that asserts the verification still
 transitions to Approved while `fixture.EmailSender.Sent` gains no entry.
 
-### [ ] RT1 (LOW) — `skill-routes.json` does not route this code to `keyed-strategies`
+**Addressed 2026-08-28:** `GetPending_ShouldReturn200_WhenTwoPendingRowsShareTenantType` now asserts
+`Assert.Null(contactless.Contact)` on the `VenueManagerNoVenue` row, and
+`Approve_ShouldReturn204_AndSendNothing_WhenTenantOwnsNoProfile` pins the rerouted decision — Approved status
+with the sent-mail count unchanged.
+
+### [x] RT1 (LOW) — `skill-routes.json` does not route this code to `keyed-strategies`
 
 Running the frozen tree's router over all 28 changed paths returns 16 skills; `keyed-strategies` is not among
 them, despite this branch adding the shared `KeyedStrategyBuilder<TKey>`, a `TenantType`-keyed strategy family,
@@ -60,6 +65,9 @@ that actually governs this code, and the write-time hook does not enforce it eit
 
 **Fix:** add a route mapping the keyed-strategy surfaces — `api/Concertable.B2B/src/Concertable.B2B.KeyedStrategies/**`
 and `**/Strategies/**` under a module's Application/Infrastructure — to `dotnet-standards:keyed-strategies`.
+
+**Addressed 2026-08-28:** route added to `.agents/skill-routes.json`; the router now returns
+`dotnet-standards:keyed-strategies` for 4 files on this branch, where it previously returned none.
 
 ## Notes (no action)
 
