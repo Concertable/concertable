@@ -3,7 +3,7 @@
 - Plan: `plans/launch/MUSIC_LICENCE_ATTESTATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/music-licence-attestation`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_music-licence-attestation` (created)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_music-licence-attestation`
 - Branch: `Feature/launch_music-licence-attestation`
 - PR: [#363](https://github.com/Concertable/concertable/pull/363) — open, full E2E tier
 - Dependency/package gates: none pre-merge. Post-merge: `chore/platform-sync-*` (api/** MinVer bump), expected non-breaking.

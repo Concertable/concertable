@@ -4,7 +4,7 @@
 - Roadmap: `plans/dotnet-11/DOTNET_11_ROADMAP.md`
 - Roadmap item: `dotnet-11/b2b-workflow-unions`
 - Worktree: not created
-- Branch: `Refactor/dotnet-11_b2b-runtime` (reserved; not created)
+- Branch: `Refactor/dotnet-11_b2b-runtime`
 - Plan PR: #448 merged; historical closeout PR #449 does not authorize implementation
 - Dependency/package gates: blocked on terminal delivery of
   `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`
@@ -14,7 +14,7 @@
 
 ## Current state
 
-No .NET 11 implementation exists. The previous design proposed unions over concrete workflow step
+The reserved branch name above has not been created yet. No .NET 11 implementation exists. The previous design proposed unions over concrete workflow step
 services. That target is superseded: the lifecycle refactor deletes the cross-stage workflow and gives
 Application, Booking, and Concert independent state machines and contextual operations. Native unions
 are selected for small closed internal values, beginning with the read-only combined journey
