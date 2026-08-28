@@ -44,6 +44,7 @@ Product & system narrative lives in the central [`Concertable/docs`](https://git
 | Which E2E tier a merge runs | skill `merge`, Step 4 |
 | Platform sync gate after an `api/**` merge | skill `merging` |
 | Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
+| Running the app locally — one-time `setup-local-dev.ps1`, gitignored dev config, ServiceAuth secrets, port map, MAX_PATH gotcha | [`LOCAL_DEV.md`](./LOCAL_DEV.md) (`README.md` links it from "How to Run the Code") |
 | A red suite is never just reported, and which tier's skill owns it | skill `failing-tests` |
 | Driving a red suite to green — the in-process, service-E2E and browser-E2E tiers, the baseline regression check, both tiers at once | skills `integration-debug`, `e2e-api-debug`, `e2e-ui-debug`, `e2e-ui-regress`, `e2e-debug` |
 | Test Explorer showing traits the build strips, or missing a project's tests | skill `reset-test-explorer` |
