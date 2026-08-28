@@ -5,7 +5,10 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f125ee9687982e1b7ce4e66b31baca4c299d86a2`  _(2026-08-28)_
+**Reviewed up to commit:** `f15616cdf626a6bf312fddd9b43440687288a3eb`  _(2026-08-28)_
+
+Watermark advanced past the frozen head `f125ee9` to cover the two remediation commits for COV1 and
+RT1, which change only test assertions and the route table — no production behaviour.
 
 Net diff reviewed: `1c0a260..f125ee9` — 28 files, 10 commits.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
