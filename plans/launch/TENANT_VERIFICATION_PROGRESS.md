@@ -5,52 +5,40 @@
 - Roadmap item: `launch/tenant-verification`
 - Worktree: `.worktrees/Feature-launch_tenant-verification`
 - Branch: `Feature/launch_tenant-verification`
-- PR: [#824](https://github.com/Concertable/concertable/pull/824) — **DRAFT**, Phase 5 consumer wiring +
-  admin feature + Phase 6. `main` merged in (head `d0e50b6c4`) — carve-fe re-running against the published
-  `@concertable/web-b2b@0.1.0-alpha.0.5385`.
-- Split-off PR: [#825](https://github.com/Concertable/concertable/pull/825) — **MERGED** `04667a53a`;
-  `publish-fe-packages.yml` green, published `@concertable/web-b2b@0.1.0-alpha.0.5385` with the
-  `./features/verification` export.
-- Dependency/package gates: **cleared** — #825 published, #824 merged `main`.
-- Last reconciled: 2026-08-28, #825 merged + published; #824 merged main, awaiting carve-fe re-run + smoke.
+- PR: [#824](https://github.com/Concertable/concertable/pull/824) — **ENQUEUED** (`--merge --auto`,
+  `full-e2e` label), head `92a60f13e`. Phase 5 consumer wiring + admin feature + Phase 6. All gates green;
+  in the merge queue (~29 min ETA at last check).
+- Split-off PR: [#825](https://github.com/Concertable/concertable/pull/825) — **MERGED** `04667a53a`,
+  published `@concertable/web-b2b@0.1.0-alpha.0.5385` with the `./features/verification` export.
+- Related PR: [#827](https://github.com/Concertable/concertable/pull/827) — **MERGED** `99bcccce4`,
+  `setup-local-dev.ps1` + `docs/LOCAL_DEV.md`.
+- Dependency/package gates: cleared.
+- Last reconciled: 2026-08-28, #824 enqueued after review + security review + smoke.
 
 ## Current state
 
-Phases 1–4 merged to `main`. Phase 5 + Phase 6 committed on `Feature/launch_tenant-verification` (PR #824,
-draft). Review complete + approved (2 findings fixed).
+Phases 1–4 merged. **#824 (Phase 5 consumers + admin feature + Phase 6) is in the merge queue.** Phase 5's
+shared `web-b2b` half went via #825 (published), because `@concertable/web-b2b` is a published package whose
+`carve-fe` restores from the feed — a new export must publish before consumers can build. #824 carries the
+venue/artist route/nav wiring, the self-contained admin `features/verification`, and all of Phase 6.
 
-**`carve-fe` on #824 failed** (`web/b2b/venue` + `web/b2b/artist`): `Cannot find module
-'@concertable/web-b2b/features/verification'`. `@concertable/web-b2b` is a published package that `carve-fe`
-restores from the feed — Phase 5 added the `./features/verification` export **and** consumed it from both
-manager SPAs in one commit, which can't build until `web-b2b` republishes. **Split:**
-- **PR #825** (new branch `Feature/launch_tv-web-b2b-verification`): the shared `features/verification` tree
-  + the `package.json` export, no consumer → `carve-fe` green.
-- **PR #824**: everything else — venue/artist route+nav+dashboard wiring, the self-contained admin
-  `features/verification`, and all of Phase 6. Its `carve-fe` goes green once #825 is published.
-
-Phase 6 removed the decorative venue-approval surface end to end (see plan Phase 6 + the `## Decisions`
-scope-addition note). Venue migration re-scaffolded (`20260827211555`, drops one column).
+Gates: review ✅ + security review ✅ (0 findings) + `carve-fe` ✅ + all unit/integration ✅. Manual smoke
+partially done (see `## Verification`); the submit/approve/reject UI flow is covered by merged integration
+tests + `full-e2e` in the queue.
 
 ## Next Steps
 
-**#825 done, #824 unblocked.** Remaining:
+1. `full-e2e` runs in the merge queue → #824 merges to `main`.
+2. **Closeout** (fresh `Docs/tv_closeout` worktree, `merge-docs`): tick `launch/tenant-verification` in
+   `plans/launch/LAUNCH_ROADMAP.md` line 41 + the `Venue/artist verification enforced…` line in §7
+   Architecture; `git rm` `TENANT_VERIFICATION_PLAN.md` + this ledger + `reviews/Feature-launch_tenant-verification.md`.
+   Also add the seed follow-up (below) to `api/Concertable.B2B/TECH_DEBT.md`.
+3. If `full-e2e` ejects #824: `failing-tests` on the failing scenario, fix, push, re-enqueue.
 
-1. **carve-fe on #824's head `d0e50b6c4`** — re-running against the published package; expected green now
-   (the `features/verification/**` shared files auto-merged out of #824's diff, so its FE surface is just
-   the venue/artist route/nav wiring + the self-contained admin feature).
-2. Run the deferred **Phase 5 manual in-app smoke** from this worktree:
-   `dotnet run --project api/Concertable.B2B/src/Concertable.B2B.AppHost` (B2B.AppHost builds clean here;
-   local-dev config + secrets are now set — PR #827 / `docs/LOCAL_DEV.md`). Aspire dashboard → the SPAs.
-   Log in `venuemanager1@test.com` / `Password11!` (venue), `artistmanager1@test.com` (artist), an admin.
-   Submit evidence → banner flips to pending → publishing an opportunity is blocked → admin approves →
-   banner clears + publish works → second party: admin rejects with a reason → banner shows the reason.
-3. Mark #824 ready once smoke passes + exact-head CI green, then `/merge` (single-service → `main`,
-   `full-e2e` tier).
-4. Closeout commit on merge: tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` line 41 +
-   the `Venue/artist verification enforced…` line in §7 Architecture; `git rm` this plan + ledger.
-
-Review gate is **satisfied** (see `## Reviews`). The worktree MAX_PATH build limit and the web-b2b publish
-rule are in `## Decisions` below.
+Follow-up (not blocking): `AuthDevSeeder` seeds credentials only for `SeedUsers.Managers` + admin +
+customers, so `SeedState.UnverifiedVenueManager` (`tenant-verification-gate@test.com`) has **no OIDC
+credential** — the verification submit/admin-review flow can't be manually smoked in dev. Add its
+credential to `AuthDevSeeder`.
 
 ## Completed work
 
@@ -85,15 +73,21 @@ rule are in `## Decisions` below.
 
 ## Verification
 
-- Phase 6 backend (`3685c5f47`): `Concertable.B2B.Web` build green; Venue unit 19/19, Venue integration
-  28/28 (−7 removed approve/pending tests), B2B architecture 18/18. Venue migration diff = exactly the
-  dropped `Approved` column.
-- Review fixes (`b347f5cff`): five `app/web` builds + `lint:boundaries` green; 28 web-b2b unit tests green.
-- **#824 CI (`79fd01b20`): `carve-fe` RED** on `web/b2b/venue` + `web/b2b/artist` (the publish-boundary
-  issue). All backend unit + integration matrices, `fe-boundaries`, other carves — green. Blocked pending
-  the #825 split (see Next Steps).
-- **#825 CI:** in progress at time of writing.
-- `full-e2e` tier is the merge-queue gate — not run locally.
+- Phase 6 backend: Venue unit 19/19, Venue integration 28/28 (−7 removed), B2B architecture 18/18;
+  `Concertable.B2B.Web` + `Concertable.B2B.AppHost` build 0-error. Migration diff = exactly the dropped
+  `Approved` column.
+- Review fixes: five `app/web` builds + `lint:boundaries` + 28 web-b2b unit tests green.
+- **#824 full CI green** on head `92a60f13e` — all backend unit/integration matrices, `carve-fe` (all
+  surfaces, against the published `web-b2b`), `fe-boundaries`. `full-e2e` runs in the merge queue.
+- **Manual smoke (2026-08-28, live `B2B.AppHost` from this worktree):** real OIDC venue login works (proves
+  `appsettings.Development.json`); venue dashboard renders with **no** verification banner (correct — a
+  seeded tenant is `Approved`); `/settings/verification` route + Settings-nav item render, showing the
+  approved-state card ("Your organisation is verified. Company registration — 27 Aug 2026") and no upload
+  form (correct); the `GET /api/organization/verification` round-trip renders (the NAT1 non-204 path);
+  admin SPA `requireAdmin` guard correctly denies a non-admin. **Not visually reached:** the submit form +
+  populated admin queue + approve/reject buttons — no OIDC-loginable seed user is in the unverified state
+  (see the Next Steps follow-up); covered by `VerificationAdminApiTests` / `submitVerificationRequestSchema.test.ts`
+  / `usePendingVerifications.test.ts` (all merged) + `full-e2e`.
 
 ## Reviews
 
@@ -136,8 +130,6 @@ to `app/web/b2b/shared/TECH_DEBT.md` (LOW). Phase 6 backend removals + migration
 - **Local dev config is now set up** (PR #827): `setup-local-dev.ps1` ran — `ServiceAuth:*ClientSecret`
   user-secrets on all 3 AppHosts (machine-wide), `appsettings.Development.json` created in this worktree +
   the main checkout. `docs/LOCAL_DEV.md` documents it. Was previously undocumented tribal knowledge.
-- **Phase 5 manual in-app smoke still outstanding** — deferred (needs local OIDC + B2B stack). Run before
-  closeout.
 - **Seeding stayed consistent:** `VenueFactory` no longer calls `venue.Approve()` (the method is gone);
   verification seeding (`SeedState.Verifications`, every seeded tenant gets an `Approved` verification row)
   is untouched. Any new seeded venue/artist fixture still needs an explicit verified/unverified decision.
