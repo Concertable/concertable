@@ -6,6 +6,7 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `2c5818f10025bd16cd535c9c0864418e8c8a8f8b`  `(2026-08-28)`
+**Security-reviewed up to commit:** `2c5818f10025bd16cd535c9c0864418e8c8a8f8b`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-28 — full
@@ -28,5 +29,11 @@ No findings. The change adds `^\.agents/` and `^\.codex/` to the `changes` job's
 deletes the now-resolved entry from the root `TECH_DEBT.md` (`docs-and-debt` skill applied — no other file
 references the deleted entry). Verified locally: the updated regex evaluates `run_code=false` against the
 PR #579 repro file set (markdown + `AGENTS.md` + `.agents/hooks/docs_reachability.py`), and still evaluates
-`run_code=true` against a mixed docs+code diff, so no regression to the existing gate behaviour. No
-`security_paths` pattern in `.agents/merge-gate.json` matches either changed file.
+`run_code=true` against a mixed docs+code diff, so no regression to the existing gate behaviour.
+
+**Security pass:** `.github/workflows/test.yml` matches the hook's generic CI-workflow pattern, so a
+focused security pass ran. No vulnerability found: `hook-tests` and `workflow-tests` carry no `run_code`
+gate and run unconditionally on every push/PR/merge_group, so a tampered `.agents/`/`.codex/` file (hooks,
+wiring) still fails `hook-tests`' byte-for-byte vendored-hook verification regardless of this diff's
+classification; nothing under `.agents/`/`.codex/` is consumed by any `run_code`-gated job; and the
+pre-existing guard forcing full CI whenever `test.yml` itself changes is untouched by this diff.
