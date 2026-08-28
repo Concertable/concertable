@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `56e16d02381c4b34a74e5782d40ca33e35ddda44`  `(2026-08-28)`
+**Reviewed up to commit:** `b16a50d78a73f3aae6736ec22582b9542061ec5e`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-28 — full
@@ -49,3 +49,28 @@ no security marker.
 None. Contract and behavior verified unchanged (same `Transition` signature, duplicate-edge
 `ArgumentException`, immutable snapshot, concurrent-read safety) — proven by `Concertable.Kernel.UnitTests`,
 246/246 passing against the new type.
+
+## Review pass — 2026-08-28 — incremental
+
+**Candidate base:** `56e16d02381c4b34a74e5782d40ca33e35ddda44`
+**Candidate head:** `b16a50d78a73f3aae6736ec22582b9542061ec5e`
+**Candidate branch:** `Refactor/kernel-inheritable-statemachine`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:7900d92000a3b27ef0eeb48e303e06d16cfea637ed79d4a64a43d02cdf5dbc82` `(2 paths)`
+**Work-order path:** `reviews/Refactor-kernel-inheritable-statemachine.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Scope
+
+CI's monorepo `build` job compiles `Concertable.B2B` against `Concertable.Kernel`'s live project source
+(not the published package), so the prior pass's `protected` constructor broke
+`TenantVerificationEntity.cs`'s existing direct construction (`error CS0122`) immediately — not deferred to
+a future package-sync PR as assumed. This pass reverts the constructor back to `public`, restoring exact
+backward compatibility. `ConfiguredStateMachine` is retained: it's what gives `MA0053` a real derived type
+in-assembly, independent of the constructor's own accessibility.
+
+### Findings
+
+None. Verified: `Concertable.Kernel.UnitTests` 246/246 passing; `Concertable.B2B.Tenant.Domain` builds clean
+against the published Kernel package, unmodified, with this change.
