@@ -9,8 +9,8 @@ internal interface IConcertRepository : IRepository<ConcertEntity>
     Task<ConcertEntity?> GetByIdWithArtistAndVenueAsync(int id);
     Task<ConcertEntity?> GetByIdWithVenueAsync(int id);
     Task<ConcertEntity?> GetByIdWithBookingAsync(int id, CancellationToken ct = default);
-    Task<ConcertDetails?> GetDetailsByIdAsync(int id, CancellationToken ct = default);
-    Task<ConcertDetails?> GetDetailsByApplicationIdAsync(int applicationId);
+    Task<ManagerConcertDetailsProjection?> GetManagerDetailsByIdAsync(int id, CancellationToken ct = default);
+    Task<ManagerConcertDetailsProjection?> GetManagerDetailsByApplicationIdAsync(int applicationId);
     Task<IEnumerable<ConcertSummary>> GetUnpostedByArtistIdAsync(int id);
     Task<IEnumerable<ConcertSummary>> GetUnpostedByVenueIdAsync(int id);
     Task<IReadOnlyList<ManagerConcertCard>> GetUpcomingCardsForVenueTenantIdAsync(Guid venueTenantId);

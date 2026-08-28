@@ -104,27 +104,29 @@ internal sealed class ConcertRepository : Repository<ConcertEntity>, IConcertRep
     /* Owner read by concert id. Concert itself is public/unfiltered, so scope by requiring a
        tenant-visible Booking (Bookings is tenant-filtered) — a non-party sees none and gets a 404,
        exactly like ContractRepository.GetByConcertIdAsync. */
-    public async Task<ConcertDetails?> GetDetailsByIdAsync(
+    public async Task<ManagerConcertDetailsProjection?> GetManagerDetailsByIdAsync(
         int id,
         CancellationToken ct = default)
     {
         return await context.Concerts
             .Where(e => e.Id == id && context.Bookings.Any(b => b.Id == e.BookingId))
-            .ToDetails(
+            .ToManagerDetails(
                 context.ConcertRatingProjections,
                 context.ArtistRatingProjections,
-                context.VenueRatingProjections)
+                context.VenueRatingProjections,
+                context.RevenueShareSettlements)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<ConcertDetails?> GetDetailsByApplicationIdAsync(int applicationId)
+    public async Task<ManagerConcertDetailsProjection?> GetManagerDetailsByApplicationIdAsync(int applicationId)
     {
         return await context.Concerts
             .Where(e => e.Booking.ApplicationId == applicationId)
-            .ToDetails(
+            .ToManagerDetails(
                 context.ConcertRatingProjections,
                 context.ArtistRatingProjections,
-                context.VenueRatingProjections)
+                context.VenueRatingProjections,
+                context.RevenueShareSettlements)
             .FirstOrDefaultAsync();
     }
 
@@ -159,12 +161,15 @@ internal sealed class ConcertRepository : Repository<ConcertEntity>, IConcertRep
             .ToListAsync();
 
     /* The gross the artist's revenue share settles against: Concertable's own ticket sales
-       (TicketsSold * Price, known) plus the venue-declared external/box-office/cash take
-       (DoorRevenue). Null until the venue has declared — DoorRevenue null propagates to null. */
+       (TicketsSold * Price, known) plus the venue-declared external/box-office/cash take, held on the
+       revenue-share settlement record. Null until the venue has declared — no settlement row, no total. */
     public Task<decimal?> GetTotalRevenueByConcertIdAsync(int concertId) =>
         context.Concerts
             .Where(c => c.Id == concertId)
-            .Select(c => c.TicketsSold * c.Price + c.DoorRevenue)
+            .Select(c => context.RevenueShareSettlements
+                .Where(s => s.ConcertId == c.Id)
+                .Select(s => (decimal?)(c.TicketsSold * c.Price + s.DoorRevenue))
+                .FirstOrDefault())
             .FirstOrDefaultAsync();
 
 }

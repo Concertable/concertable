@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Concertable.B2B.Concert.Application.Responses;
 using Concertable.B2B.Concert.Domain.Lifecycle;
 using Concertable.Contracts;
 
@@ -22,14 +23,40 @@ internal sealed record ConcertDetails
     public LifecycleState State { get; init; }
     public bool IsRevenueShare { get; init; }
     public int TicketsSold { get; init; }
-    public decimal? DoorRevenue { get; init; }
-    public int? InvoiceId { get; init; }
-    public bool CanCancel { get; init; }
-    public bool CanDeclareDoorRevenue { get; init; }
     public required ConcertVenue Venue { get; init; }
     public required ConcertArtist Artist { get; init; }
     public IEnumerable<Genre> Genres { get; init; } = [];
 }
+
+/// <summary>
+/// A concert as its own venue or artist sees it: the marketplace <see cref="ConcertDetails"/> plus the
+/// settlement view and owner-only affordances. Deal-type-specific settlement data lives on
+/// <see cref="ISettlement"/>, never as conditional nullables here.
+/// </summary>
+internal sealed record ManagerConcertDetails
+{
+    public required ConcertDetails Concert { get; init; }
+    public required ISettlement Settlement { get; init; }
+    public int? InvoiceId { get; init; }
+    public bool CanCancel { get; init; }
+}
+
+/// <summary>
+/// The one-round-trip manager-details query shape: the marketplace projection plus the raw revenue-share
+/// settlement row (null for a fixed-fee deal, or before the venue declares). The service maps this into a
+/// non-nullable <see cref="ISettlement"/> before returning <see cref="ManagerConcertDetails"/>.
+/// </summary>
+internal sealed record ManagerConcertDetailsProjection
+{
+    public required ConcertDetails Concert { get; init; }
+    public RevenueShareSettlementRowProjection? Settlement { get; init; }
+}
+
+/// <summary>The columns of a concert's revenue-share settlement row — projected whole so absence is one null, not a zero.</summary>
+internal sealed record RevenueShareSettlementRowProjection(
+    decimal DoorRevenue,
+    DateTime DeclaredAtUtc,
+    SettlementReview? Review);
 
 internal sealed record ConcertVenue
 {

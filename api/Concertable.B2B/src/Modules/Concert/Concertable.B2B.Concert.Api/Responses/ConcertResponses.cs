@@ -39,7 +39,7 @@ internal sealed record MyDetailsResponse
     public required VenueResponse Venue { get; init; }
     public IReadOnlyList<Genre> Genres { get; init; } = [];
     public int TicketsSold { get; init; }
-    public decimal? DoorRevenue { get; init; }
+    public required ISettlement Settlement { get; init; }
     public required ConcertActions Actions { get; init; }
 }
 

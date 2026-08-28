@@ -9,10 +9,10 @@ namespace Concertable.B2B.Concert.Application.Interfaces;
 internal interface IConcertService
 {
     Task<Result<ConcertDetails, ConcertError>> GetDetailsByIdAsync(int id);
-    Task<Result<ConcertDetails, ConcertError>> GetDetailsAsync(
+    Task<Result<ManagerConcertDetails, ConcertError>> GetDetailsAsync(
         int id,
         CancellationToken ct = default);
-    Task<Result<ConcertDetails, ConcertError>> GetDetailsByApplicationIdAsync(int applicationId);
+    Task<Result<ManagerConcertDetails, ConcertError>> GetDetailsByApplicationIdAsync(int applicationId);
     Task<IReadOnlyList<ConcertSummary>> GetUpcomingByVenueIdAsync(int id);
     Task<IReadOnlyList<ConcertSummary>> GetUpcomingByArtistIdAsync(int id);
     Task<Result<IReadOnlyList<ManagerConcertCard>, ConcertError>> GetUpcomingForCurrentVenueAsync();

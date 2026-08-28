@@ -14,7 +14,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ConcertDbContext))]
-    [Migration("20260819155554_InitialCreate")]
+    [Migration("20260828154959_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -65,6 +65,9 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CancellationOperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CommissionBindingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("DealType")
@@ -137,6 +140,10 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("CancellationOperationId")
                         .IsUnique()
                         .HasFilter("[CancellationOperationId] IS NOT NULL");
+
+                    b.HasIndex("CommissionBindingId")
+                        .IsUnique()
+                        .HasFilter("[CommissionBindingId] IS NOT NULL");
 
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
@@ -211,9 +218,6 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
 
                     b.Property<DateTime?>("DatePosted")
                         .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("DoorRevenue")
-                        .HasColumnType("decimal(18,2)");
 
                     b.PrimitiveCollection<string>("Genres")
                         .IsRequired()
@@ -623,6 +627,37 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("VenueId");
 
                     b.ToTable("Opportunities", "concert");
+                });
+
+            modelBuilder.Entity("Concertable.B2B.Concert.Domain.Entities.RevenueShareSettlementEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("ArtistTenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DeclaredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DoorRevenue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("VenueTenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConcertId")
+                        .IsUnique();
+
+                    b.ToTable("RevenueShareSettlements", "concert");
                 });
 
             modelBuilder.Entity("Concertable.B2B.Concert.Domain.Entities.SelfBillingAgreementEntity", b =>
@@ -1048,6 +1083,36 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Concertable.B2B.Concert.Domain.Entities.RevenueShareSettlementEntity", b =>
+                {
+                    b.HasOne("Concertable.B2B.Concert.Domain.Entities.ConcertEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Concertable.B2B.Concert.Domain.Entities.RevenueShareSettlementEntity", "ConcertId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.OwnsOne("Concertable.B2B.Concert.Domain.ValueObjects.SettlementReview", "Review", b1 =>
+                        {
+                            b1.Property<int>("RevenueShareSettlementEntityId")
+                                .HasColumnType("int");
+
+                            b1.Property<long>("GrossMinor")
+                                .HasColumnType("bigint");
+
+                            b1.Property<DateTime>("ReviewedAtUtc")
+                                .HasColumnType("datetime2");
+
+                            b1.HasKey("RevenueShareSettlementEntityId");
+
+                            b1.ToTable("RevenueShareSettlements", "concert");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RevenueShareSettlementEntityId");
+                        });
+
+                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("Concertable.B2B.Concert.Domain.ReadModels.ArtistReadModel", b =>

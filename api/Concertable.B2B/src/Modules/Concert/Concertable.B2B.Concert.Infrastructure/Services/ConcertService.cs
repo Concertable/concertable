@@ -11,11 +11,14 @@ internal sealed class ConcertService : IConcertService
     private readonly IConcertRepository repository;
     private readonly IConcertReadRepository readRepository;
     private readonly IInvoiceRepository invoiceRepository;
+    private readonly IRevenueShareSettlementRepository settlementRepository;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IApplicationValidator applicationValidator;
     private readonly IConcertDraftService concertDraftService;
     private readonly ICancelExecutor cancelExecutor;
+    private readonly IDealResolver dealResolver;
+    private readonly ISettlementMapper settlementMapper;
     private readonly TimeProvider timeProvider;
     private readonly ITenantContext tenantContext;
 
@@ -23,22 +26,28 @@ internal sealed class ConcertService : IConcertService
         IConcertRepository repository,
         IConcertReadRepository readRepository,
         IInvoiceRepository invoiceRepository,
+        IRevenueShareSettlementRepository settlementRepository,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IApplicationValidator applicationValidator,
         IConcertDraftService concertDraftService,
         ICancelExecutor cancelExecutor,
+        IDealResolver dealResolver,
+        ISettlementMapper settlementMapper,
         TimeProvider timeProvider,
         ITenantContext tenantContext)
     {
         this.repository = repository;
         this.readRepository = readRepository;
         this.invoiceRepository = invoiceRepository;
+        this.settlementRepository = settlementRepository;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
         this.concertDraftService = concertDraftService;
         this.cancelExecutor = cancelExecutor;
+        this.dealResolver = dealResolver;
+        this.settlementMapper = settlementMapper;
         this.timeProvider = timeProvider;
         this.tenantContext = tenantContext;
     }
@@ -72,33 +81,31 @@ internal sealed class ConcertService : IConcertService
             .ToOption()
             .OrFailure(() => (ConcertError)new ConcertError.NotFound(id));
 
-    public async Task<Result<ConcertDetails, ConcertError>> GetDetailsAsync(
+    public async Task<Result<ManagerConcertDetails, ConcertError>> GetDetailsAsync(
         int id,
         CancellationToken ct = default)
     {
-        return await repository.GetDetailsByIdAsync(id, ct)
-            .ToOption()
-            .OrFailure(() => (ConcertError)new ConcertError.NotFound(id))
-            .MapAsync(async details =>
-            {
-                var invoice = await invoiceRepository.GetByConcertIdAsync(id, ct);
-                return WithActions(details with { InvoiceId = invoice?.Id });
-            });
+        var projection = await repository.GetManagerDetailsByIdAsync(id, ct);
+        if (projection is null)
+            return new ConcertError.NotFound(id);
+
+        var invoice = await invoiceRepository.GetByConcertIdAsync(id, ct);
+        var deal = await dealResolver.ResolveByConcertIdAsync(id);
+        return BuildManagerDetails(projection, deal, invoice?.Id);
     }
 
     public Task<Result<ConcertEntity, CreateConcertDraftError>> CreateDraftAsync(int applicationId) =>
         concertDraftService.CreateAsync(applicationId);
 
-    public async Task<Result<ConcertDetails, ConcertError>> GetDetailsByApplicationIdAsync(int applicationId)
+    public async Task<Result<ManagerConcertDetails, ConcertError>> GetDetailsByApplicationIdAsync(int applicationId)
     {
-        return await repository.GetDetailsByApplicationIdAsync(applicationId)
-            .ToOption()
-            .OrFailure(() => (ConcertError)new ConcertError.ApplicationNotFound(applicationId))
-            .MapAsync(async details =>
-            {
-                var invoice = await invoiceRepository.GetByApplicationIdAsync(applicationId);
-                return WithActions(details with { InvoiceId = invoice?.Id });
-            });
+        var projection = await repository.GetManagerDetailsByApplicationIdAsync(applicationId);
+        if (projection is null)
+            return new ConcertError.ApplicationNotFound(applicationId);
+
+        var invoice = await invoiceRepository.GetByApplicationIdAsync(applicationId);
+        var deal = await dealResolver.ResolveByConcertIdAsync(projection.Concert.Id);
+        return BuildManagerDetails(projection, deal, invoice?.Id);
     }
 
     public async Task<Result<ConcertUpdateResponse, UpdateConcertError>> UpdateAsync(int id, UpdateConcertRequest request)
@@ -165,9 +172,22 @@ internal sealed class ConcertService : IConcertService
         if (concert.Booking.Application.State != LifecycleState.Booked)
             return new DeclareDoorRevenueError.AlreadySettled();
 
-        return await concert.DeclareDoorRevenue(doorRevenue)
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var existing = await settlementRepository.GetByConcertIdAsync(id);
+        if (existing is not null)
+            return await existing.Redeclare(doorRevenue, now)
+                .MapError(error => error.ToDeclareDoorRevenueError())
+                .TapAsync(() => settlementRepository.SaveChangesAsync());
+
+        return await RevenueShareSettlementEntity.Declare(concert, doorRevenue, now)
             .MapError(error => error.ToDeclareDoorRevenueError())
-            .TapAsync(() => repository.SaveChangesAsync());
+            .Match(
+                async settlement =>
+                {
+                    await settlementRepository.InsertAsync(settlement);
+                    return UnitResult.Success<DeclareDoorRevenueError>();
+                },
+                error => Task.FromResult(UnitResult.Failure(error)));
     }
 
     public async Task<IReadOnlyList<ConcertSummary>> GetUnpostedByArtistIdAsync(int id) =>
@@ -176,12 +196,14 @@ internal sealed class ConcertService : IConcertService
     public async Task<IReadOnlyList<ConcertSummary>> GetUnpostedByVenueIdAsync(int id) =>
         (await repository.GetUnpostedByVenueIdAsync(id)).ToList();
 
-    private ConcertDetails WithActions(ConcertDetails details) => details with
+    private ManagerConcertDetails BuildManagerDetails(
+        ManagerConcertDetailsProjection projection,
+        DealDto deal,
+        int? invoiceId) => new()
     {
-        CanCancel = details.State == LifecycleState.Booked,
-        CanDeclareDoorRevenue = details.State == LifecycleState.Booked
-            && details.IsRevenueShare
-            && details.DoorRevenue is null
-            && details.EndDate < timeProvider.GetUtcNow().UtcDateTime
+        Concert = projection.Concert,
+        Settlement = settlementMapper.ToSettlement(deal, projection, timeProvider.GetUtcNow().UtcDateTime),
+        InvoiceId = invoiceId,
+        CanCancel = projection.Concert.State == LifecycleState.Booked
     };
 }

@@ -59,38 +59,45 @@ internal static class ConcertMappers
             Artist = dto.Artist.ToArtistResponse(),
             Venue = dto.Venue.ToVenueResponse()
         };
+    }
 
-        public MyDetailsResponse ToMyDetailsResponse() => new()
+    extension(ManagerConcertDetails owner)
+    {
+        public MyDetailsResponse ToMyDetailsResponse()
         {
-            Id = dto.Id,
-            Name = dto.Name,
-            About = dto.About,
-            BannerUrl = dto.BannerUrl,
-            Avatar = dto.Avatar ?? dto.Artist.Avatar,
-            Rating = dto.Rating,
-            Price = dto.Price,
-            TotalTickets = dto.TotalTickets,
-            AvailableTickets = dto.AvailableTickets,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
-            DatePosted = dto.DatePosted,
-            Genres = dto.Genres.ToList(),
-            Artist = dto.Artist.ToArtistResponse(),
-            Venue = dto.Venue.ToVenueResponse(),
-            TicketsSold = dto.TicketsSold,
-            DoorRevenue = dto.DoorRevenue,
-            Actions = new ConcertActions(
-                Cancel: dto.CanCancel
-                    ? new ActionLink($"/api/concert/{dto.Id}/cancel", HttpMethods.Post)
-                    : null,
-                Contract: new ActionLink($"/api/concert/{dto.Id}/contract/pdf", HttpMethods.Get),
-                DeclareDoorRevenue: dto.CanDeclareDoorRevenue
-                    ? new ActionLink($"/api/concert/{dto.Id}/door-revenue", HttpMethods.Post)
-                    : null,
-                Invoice: dto.InvoiceId is not null
-                    ? new ActionLink($"/api/concert/{dto.Id}/invoice/pdf", HttpMethods.Get)
-                    : null)
-        };
+            var dto = owner.Concert;
+            return new MyDetailsResponse
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                About = dto.About,
+                BannerUrl = dto.BannerUrl,
+                Avatar = dto.Avatar ?? dto.Artist.Avatar,
+                Rating = dto.Rating,
+                Price = dto.Price,
+                TotalTickets = dto.TotalTickets,
+                AvailableTickets = dto.AvailableTickets,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                DatePosted = dto.DatePosted,
+                Genres = dto.Genres.ToList(),
+                Artist = dto.Artist.ToArtistResponse(),
+                Venue = dto.Venue.ToVenueResponse(),
+                TicketsSold = dto.TicketsSold,
+                Settlement = owner.Settlement,
+                Actions = new ConcertActions(
+                    Cancel: owner.CanCancel
+                        ? new ActionLink($"/api/concert/{dto.Id}/cancel", HttpMethods.Post)
+                        : null,
+                    Contract: new ActionLink($"/api/concert/{dto.Id}/contract/pdf", HttpMethods.Get),
+                    DeclareDoorRevenue: owner.Settlement is RevenueShareSettlement { Declaration: Undeclared { WindowOpen: true } }
+                        ? new ActionLink($"/api/concert/{dto.Id}/door-revenue", HttpMethods.Post)
+                        : null,
+                    Invoice: owner.InvoiceId is not null
+                        ? new ActionLink($"/api/concert/{dto.Id}/invoice/pdf", HttpMethods.Get)
+                        : null)
+            };
+        }
     }
 
     extension(ConcertArtist artist)

@@ -10,6 +10,7 @@ internal static class Schema
         public const string ConcertImages = "ConcertImages";
         public const string ConcertRatingProjections = "ConcertRatingProjections";
         public const string Bookings = "Bookings";
+        public const string RevenueShareSettlements = "RevenueShareSettlements";
         public const string Contracts = "Contracts";
         public const string Invoices = "Invoices";
         public const string InvoiceSequences = "InvoiceSequences";

@@ -16,6 +16,9 @@ internal sealed class ConcertDbContext(
 {
     public DbSet<ConcertEntity> Concerts => Set<ConcertEntity>();
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
+    /* Carries the owner ids (write-guarded by the interceptor) but is not query-filtered: the completion
+       sweep reads it across tenants on the host path, exactly like ConcertEntity. */
+    public DbSet<RevenueShareSettlementEntity> RevenueShareSettlements => Set<RevenueShareSettlementEntity>();
     public DbSet<ContractEntity> Contracts => Set<ContractEntity>();
     public DbSet<InvoiceEntity> Invoices => Set<InvoiceEntity>();
     public DbSet<InvoiceSequenceEntity> InvoiceSequences => Set<InvoiceSequenceEntity>();

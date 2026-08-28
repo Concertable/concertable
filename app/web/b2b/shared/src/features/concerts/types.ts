@@ -65,7 +65,6 @@ export interface ConcertActions {
 
 export interface MyConcert extends Concert {
   ticketsSold: number;
-  doorRevenue?: number;
   actions: ConcertActions;
 }
 

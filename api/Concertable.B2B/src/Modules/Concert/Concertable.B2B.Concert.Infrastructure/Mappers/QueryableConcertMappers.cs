@@ -36,7 +36,6 @@ internal static class QueryableConcertMappers
             State = c.Booking.Application.State,
             IsRevenueShare = c.Booking is DeferredBooking,
             TicketsSold = c.TicketsSold,
-            DoorRevenue = c.DoorRevenue,
             Genres = c.Genres,
             Venue = new ConcertVenue
             {

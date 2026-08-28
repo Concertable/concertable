@@ -1,5 +1,6 @@
 using Concertable.B2B.Concert.Application.Errors;
 using Concertable.B2B.Concert.Application.Interfaces;
+using Concertable.B2B.Concert.Application.Mappers;
 using Concertable.B2B.Concert.Application.Workflow.Executors;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.Lifecycle;
@@ -15,7 +16,7 @@ namespace Concertable.B2B.Concert.UnitTests.Services;
 public sealed class ConcertServiceTests
 {
     [Fact]
-    public async Task DeclareDoorRevenueAsync_NegativeRevenue_MapsDomainFailureWithoutSaving()
+    public async Task DeclareDoorRevenueAsync_NegativeRevenue_MapsDomainFailureWithoutPersisting()
     {
         var now = new DateTimeOffset(2026, 8, 10, 23, 0, 0, TimeSpan.Zero);
         var application = StandardApplication.Create(
@@ -38,17 +39,24 @@ public sealed class ConcertServiceTests
         repository
             .Setup(value => value.GetByIdWithBookingAsync(42, It.IsAny<CancellationToken>()))
             .ReturnsAsync(concert);
+        var settlementRepository = new Mock<IRevenueShareSettlementRepository>();
+        settlementRepository
+            .Setup(value => value.GetByConcertIdAsync(42, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RevenueShareSettlementEntity?)null);
         var tenantContext = new Mock<ITenantContext>();
         tenantContext.SetupGet(context => context.IsHost).Returns(true);
         var service = new ConcertService(
             repository.Object,
             Mock.Of<IConcertReadRepository>(),
             Mock.Of<IInvoiceRepository>(),
+            settlementRepository.Object,
             Mock.Of<IConcertValidator>(),
             Mock.Of<ICurrentUser>(),
             Mock.Of<IApplicationValidator>(),
             Mock.Of<IConcertDraftService>(),
             Mock.Of<ICancelExecutor>(),
+            Mock.Of<IDealResolver>(),
+            Mock.Of<ISettlementMapper>(),
             new FakeTimeProvider(now),
             tenantContext.Object);
 
@@ -56,7 +64,10 @@ public sealed class ConcertServiceTests
 
         Assert.True(result.TryGetError(out var error));
         Assert.IsType<DeclareDoorRevenueError.Negative>(error);
-        repository.Verify(
+        settlementRepository.Verify(
+            value => value.InsertAsync(It.IsAny<RevenueShareSettlementEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        settlementRepository.Verify(
             value => value.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Never);
     }

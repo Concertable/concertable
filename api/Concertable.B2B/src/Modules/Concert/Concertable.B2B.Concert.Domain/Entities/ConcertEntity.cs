@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Concertable.B2B.Concert.Contracts;
 using Concertable.B2B.Concert.Domain.Events;
-using Concertable.B2B.Concert.Domain.Errors;
 using Concertable.B2B.Concert.Domain.ReadModels;
 using Concertable.B2B.DataAccess.Application;
 using Concertable.Contracts;
@@ -31,7 +30,6 @@ public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRa
     public decimal Price { get; private set; }
     public int TotalTickets { get; private set; }
     public int TicketsSold { get; private set; }
-    public decimal? DoorRevenue { get; private set; }
     public DateRange Period { get; private set; } = null!;
     public DateTime? DatePosted { get; private set; }
     public BookingEntity Booking { get; private set; } = null!;
@@ -75,16 +73,6 @@ public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRa
     }
 
     public void IncrementTicketsSold(int quantity) => TicketsSold += quantity;
-
-    /* Venue-declared gross the artist's revenue share settles against (external ticketing + box
-       office + cash on the door). A dead night is a real 0m; null means "not yet declared". */
-    public UnitResult<DoorRevenueDeclarationError> DeclareDoorRevenue(decimal doorRevenue)
-    {
-        if (doorRevenue < 0)
-            return new DoorRevenueDeclarationError.NegativeRevenue();
-        DoorRevenue = doorRevenue;
-        return new Success();
-    }
 
     public void Update(string name, string about, decimal price, int totalTickets)
     {

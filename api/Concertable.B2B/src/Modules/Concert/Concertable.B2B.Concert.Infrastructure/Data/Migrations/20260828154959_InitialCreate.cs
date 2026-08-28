@@ -177,6 +177,7 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                     DealType = table.Column<int>(type: "int", nullable: false),
                     AcceptanceOperationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CancellationOperationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CommissionBindingId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     FinancialFailureCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     FinancialFailureMessage = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     TermsFingerprint = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -249,7 +250,6 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalTickets = table.Column<int>(type: "int", nullable: false),
                     TicketsSold = table.Column<int>(type: "int", nullable: false),
-                    DoorRevenue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     DatePosted = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Genres = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -395,6 +395,32 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RevenueShareSettlements",
+                schema: "concert",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    VenueTenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ArtistTenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConcertId = table.Column<int>(type: "int", nullable: false),
+                    DoorRevenue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DeclaredAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Review_GrossMinor = table.Column<long>(type: "bigint", nullable: true),
+                    Review_ReviewedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RevenueShareSettlements", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RevenueShareSettlements_Concerts_ConcertId",
+                        column: x => x.ConcertId,
+                        principalSchema: "concert",
+                        principalTable: "Concerts",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_AcceptanceOperationId",
                 schema: "concert",
@@ -416,6 +442,14 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                 column: "CancellationOperationId",
                 unique: true,
                 filter: "[CancellationOperationId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Applications_CommissionBindingId",
+                schema: "concert",
+                table: "Applications",
+                column: "CommissionBindingId",
+                unique: true,
+                filter: "[CommissionBindingId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_OpportunityId_ArtistId",
@@ -491,6 +525,13 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
                 column: "VenueId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RevenueShareSettlements_ConcertId",
+                schema: "concert",
+                table: "RevenueShareSettlements",
+                column: "ConcertId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_VenueReadModels_TenantId",
                 schema: "concert",
                 table: "VenueReadModels",
@@ -523,6 +564,10 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "InvoiceSequences",
+                schema: "concert");
+
+            migrationBuilder.DropTable(
+                name: "RevenueShareSettlements",
                 schema: "concert");
 
             migrationBuilder.DropTable(

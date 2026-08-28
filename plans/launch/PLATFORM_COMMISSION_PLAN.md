@@ -405,10 +405,20 @@ Start from updated `origin/main` after Phase 1b's platform sync.
    `ISettlementGrossCalculator` (`Concert.Application/Interfaces/`) with four keyed leaves in
    `Concert.Infrastructure/Services/Settlement/`; the impure `ISettlementAmountResolver` now loads the
    takings and delegates the formula, so there is one formula home. Round-half-up at the minor unit.
-2. Persist only `CommissionBindingId`; add the frozen final-gross snapshot for deferred deals.
+2. ~~Persist only `CommissionBindingId`; add the frozen final-gross snapshot for deferred deals.~~ Done —
+   `ApplicationEntity.CommissionBindingId` + `BindCommission` (filtered-unique index). Rather than a
+   nullable on `ConcertEntity`, all revenue-share settlement data was **extracted into its own
+   aggregate** `RevenueShareSettlementEntity` (own table; a row exists only for a declared
+   DoorSplit/Guarantee Plus concert): `DoorRevenue` moved off `ConcertEntity`, plus a `SettlementReview`
+   value object (`GrossMinor` + `ReviewedAtUtc`, all-or-nothing) for the frozen payer-reviewed gross.
+   The manager `settlement` response became a `$type` union (`fixed` | `revenueShare` with a nested
+   `undeclared` | `declared` | `reviewed` declaration state) via a keyed `ISettlementMapper`. This
+   pulled step 4's read-model shape forward. Call-site wiring (bind at commitment / freeze on review /
+   worker reads the frozen gross) is step 3. **Landing as its own PR** — zero published-contract impact.
 3. Bind the rate at each payer commitment point and route all four payment journeys through the new
    Payment methods.
 4. Add exact and deferred pricing DTOs, final takings review/attestation and fail-closed error mapping.
+   (The manager settlement-view shape landed early in step 2.)
 5. Implement payer and artist disclosures in the manager SPAs.
 6. Re-scaffold the Concert model.
 7. Build the affected B2B/Payment projects and manager SPAs locally and run focused unit tests. Push
@@ -416,6 +426,9 @@ Start from updated `origin/main` after Phase 1b's platform sync.
    behaviour, so the merge queue remains the E2E gate.
 8. Update this plan and launch trackers in the implementation commit.
 9. **Hard stop:** merge and own publish/platform-sync before removing legacy Payment APIs.
+
+Phase 2 delivers in two PRs: (a) the settlement-model foundation above (step 2), zero contract impact;
+(b) steps 3–6 — the payment-journey rewiring and SPA disclosures. Both land before the step 9 hard stop.
 
 ### Phase 3 — Remove the temporary £10 model
 

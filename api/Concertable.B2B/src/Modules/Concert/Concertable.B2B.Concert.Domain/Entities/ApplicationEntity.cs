@@ -24,6 +24,12 @@ public abstract class ApplicationEntity : IIdEntity, IVenueArtistTenantScoped, I
     public BookingEntity? Booking { get; private set; }
     public Guid? AcceptanceOperationId { get; private set; }
     public Guid? CancellationOperationId { get; private set; }
+
+    /// <summary>
+    /// The opaque Payment-issued commission binding fixing the platform rate for this payer commitment.
+    /// Null until the payer reaches the binding point; immutable once set (§3.3 — a binding is never rebound).
+    /// </summary>
+    public Guid? CommissionBindingId { get; private set; }
     public string? FinancialFailureCode { get; private set; }
     public string? FinancialFailureMessage { get; private set; }
 
@@ -75,6 +81,20 @@ public abstract class ApplicationEntity : IIdEntity, IVenueArtistTenantScoped, I
 
         FinancialFailureCode = code;
         FinancialFailureMessage = message;
+    }
+
+    /// <summary>
+    /// Records the Payment-issued commission binding at the payer commitment point. Re-supplying the same
+    /// binding is idempotent for retry; a different binding is rejected — a commitment is never repriced.
+    /// </summary>
+    public void BindCommission(Guid commissionBindingId)
+    {
+        if (commissionBindingId == Guid.Empty)
+            throw new InvalidOperationException("A commission binding requires a non-empty identifier.");
+        if (CommissionBindingId is { } existing && existing != commissionBindingId)
+            throw new InvalidOperationException("This application is already bound to a different commission binding.");
+
+        CommissionBindingId = commissionBindingId;
     }
 
     internal void RecordPaymentVerified() => PaymentVerification = PaymentVerification.Verified;

@@ -1,5 +1,6 @@
 using System.Net;
 using Concertable.B2B.Concert.Api.Responses;
+using Concertable.B2B.Concert.Application.Responses;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.Lifecycle;
 using Concertable.B2B.IntegrationTests.Fixtures;
@@ -35,7 +36,10 @@ public sealed class ConcertDoorRevenueApiTests : IAsyncLifetime
         var concertId = fixture.SeedState.PastDoorSplitBooking.Concert!.Id;
 
         var before = await (await client.GetAsync($"/api/concert/application/{appId}")).Content.ReadAsync<MyDetailsResponse>();
-        Assert.NotNull(before!.Actions!.DeclareDoorRevenue); // offered while ended, Booked, undeclared
+        var beforeSettlement = Assert.IsType<RevenueShareSettlement>(before!.Settlement);
+        var undeclared = Assert.IsType<Undeclared>(beforeSettlement.Declaration); // ended, Booked, undeclared
+        Assert.True(undeclared.WindowOpen);
+        Assert.NotNull(before.Actions!.DeclareDoorRevenue);
 
         // Act
         var response = await client.PostAsync($"/api/concert/{concertId}/door-revenue", new { doorRevenue = DoorRevenue });
@@ -43,7 +47,9 @@ public sealed class ConcertDoorRevenueApiTests : IAsyncLifetime
         // Assert — persisted; the action clears now the take is declared.
         await response.ShouldBe(HttpStatusCode.NoContent);
         var after = await (await client.GetAsync($"/api/concert/application/{appId}")).Content.ReadAsync<MyDetailsResponse>();
-        Assert.Equal(DoorRevenue, after!.DoorRevenue);
+        var afterSettlement = Assert.IsType<RevenueShareSettlement>(after!.Settlement);
+        var declared = Assert.IsType<Declared>(afterSettlement.Declaration);
+        Assert.Equal(DoorRevenue, declared.DoorRevenue);
         Assert.Null(after.Actions!.DeclareDoorRevenue);
 
         // ...and settlement now charges the artist's share of the declared take.
