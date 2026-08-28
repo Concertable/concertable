@@ -33,25 +33,28 @@ function toUpdateFormData(request: UpdateVenueRequest): FormData {
   return formData;
 }
 
+const BASE = "/venue";
+const ORGANIZATION_BASE = "/organization/venue";
+
 const venueApi = {
   getVenue: async (id: number): Promise<Venue> => {
-    const { data } = await apiClient.get<Venue>(`/venue/${id}`);
+    const { data } = await apiClient.get<Venue>(`${BASE}/${id}`);
     return data;
   },
 
   getVenueById: async (id: number): Promise<Venue> => {
-    const { data } = await apiClient.get<Venue>(`/venue/${id}`);
+    const { data } = await apiClient.get<Venue>(`${BASE}/${id}`);
     return data;
   },
 
   getMyVenue: async (): Promise<Venue | undefined> => {
-    const { data } = await apiClient.getOptional<Venue>("/organization/venue");
+    const { data } = await apiClient.getOptional<Venue>(ORGANIZATION_BASE);
     return data ?? undefined;
   },
 
   createVenue: async (request: CreateVenueRequest): Promise<Venue> => {
     const { data } = await apiClient.post<Venue>(
-      "/organization/venue",
+      ORGANIZATION_BASE,
       toCreateFormData(request),
     );
     return data;
@@ -59,7 +62,7 @@ const venueApi = {
 
   updateVenue: async (request: UpdateVenueRequest): Promise<Venue> => {
     const { data } = await apiClient.put<Venue>(
-      "/organization/venue",
+      ORGANIZATION_BASE,
       toUpdateFormData(request),
     );
     return data;
