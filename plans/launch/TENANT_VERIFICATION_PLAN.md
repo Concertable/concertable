@@ -152,9 +152,15 @@ there is no other consumer of an approve/reject event to justify the extra indir
 
 ## 3. Phases
 
-Single service (`Concertable.B2B`) + one admin SPA (`app/web/admin`) + the b2b-shared org UI. No
-published-package boundary is crossed, so no publish/platform-sync hard stop is needed anywhere in this
-plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to `main`.
+Single service (`Concertable.B2B`) + one admin SPA (`app/web/admin`) + the b2b-shared org UI. The backend
+crosses no published-contract boundary, so no platform-sync hard stop.
+
+**Correction (Phase 5):** `@concertable/web-b2b` *is* a published package, and `carve-fe` restores it from
+the feed — so a new `./features/*` export the venue/artist SPAs consume must **publish before** the
+consumers can merge green. Phase 5 therefore splits into a publish-first step (the shared
+`features/verification` tree + the `package.json` export → PR #825 → `publish-fe-packages.yml`) and the
+consumer step (venue/artist wiring + admin feature, folded into the Phase 6 PR #824, delivery-gated on
+#825's publish). The admin SPA feature is self-contained (no `web-b2b` import) and needs no publish.
 
 ### Phase 1 — Domain: `TenantVerificationEntity` + evidence + migration ✅ shipped (`2a66f1a03`, PR #772)
 
@@ -241,43 +247,60 @@ plan — unlike `PLATFORM_COMMISSION_PLAN.md`, every phase can merge straight to
 - [x] Build + focused tests; commit; reviewed (2 findings, both fixed on branch — see ledger); pushed to
   PR #799.
 
-### Phase 5 — Admin SPA + tenant-facing UI
+### Phase 5 — Admin SPA + tenant-facing UI — code-complete; splitting for the `web-b2b` publish boundary
 
-- [ ] `app/web/admin/src/features/verification/` mirroring `features/venues` structure: `api/`,
+- [x] `app/web/admin/src/features/verification/` mirroring `features/venues` structure: `api/`,
   `hooks/`, `components/` (`PendingVerificationsList.tsx`, `RejectVerificationDialog.tsx` — reason
   required, mirroring `ResolveReportDialog.tsx`), `pages/VerificationPage.tsx`, `types.ts`, `index.ts`.
-- [ ] New route `routes/_admin/verification.tsx`; add the nav entry alongside the existing
+- [x] New route `routes/_admin/verification.tsx`; add the nav entry alongside the existing
   Venues/Moderation links in `routes/_admin/route.tsx`.
-- [ ] Tenant-facing: a status banner (mirroring the existing DAC7 tax-compliance nag) + evidence-upload
+- [x] Tenant-facing: a status banner (mirroring the existing DAC7 tax-compliance nag) + evidence-upload
   form in `app/web/b2b/shared` (consumed by both venue and artist manager SPAs), showing
   pending/approved/rejected(+reason) state and a re-submit action.
-- [ ] Run all five web builds (per `app/web/AGENTS.md` — the boundary gate) and the affected SPAs'
-  typecheck/lint.
+  - [x] **Publish step (PR #825):** the `features/verification` tree + `./features/verification` export
+    in `web-b2b`. No consumer → `carve-fe` green. Merge → `publish-fe-packages.yml` publishes.
+  - [ ] **Consumer step (in PR #824):** new `/settings/verification` route + nav link in both venue and
+    artist SPAs; `VerificationBanner` on both dashboards. Delivery-gated on #825's publish.
+- [x] Run all five web builds (per `app/web/AGENTS.md` — the boundary gate) and the affected SPAs'
+  typecheck/lint. All five green; `lint:boundaries` green.
 - [ ] Manual verification in the running app (submit as venue/artist, approve/reject as admin, confirm
-  the opportunity-publication block and dashboard banner) before marking the phase done — per this
-  repo's UI-change verification requirement.
-- [ ] Build + focused tests; commit.
+  the opportunity-publication block and dashboard banner) — per this repo's UI-change verification
+  requirement. **Deferred:** needs the local OIDC + B2B stack; tracked as an outstanding item in the
+  ledger, to be run before the plan closes out at the end of Phase 6.
+- [x] Build + focused tests; commit (`3c77f8115`).
 
 ### Phase 6 — Retire the decorative `VenueEntity.Approved` surface
 
 Start only once Phase 3's gate is proven (merged and green) — the new gate must fully replace the old
 one's function before the old one is deleted, never dropped first and rebuilt after.
 
-- [ ] Remove `VenueEntity.Approved`, `VenueEntity.Approve()`, `VenueChangedDomainEvent` usage tied to
-  approval specifically (keep the event for other profile changes).
-- [ ] Remove `VenueController`'s `[Admin] PATCH {venueId}/approve` and `[Admin] GET pending-approval`,
-  `IVenuePrivilegedRepository.GetPendingApprovalAsync`, `IVenueService.ApproveAsync`/
-  `GetPendingApprovalAsync`, `ApproveVenueError`.
-- [ ] Remove `app/web/admin/src/features/venues/` (superseded by `features/verification`) and its route
-  + nav entry.
-- [ ] Re-scaffold the Venue module migration to drop the `Approved` column.
-- [ ] Run the rename/removal grep gate scoped to the removed symbols
-  (`VenueEntity.Approved`, `venueService.ApproveAsync`, `pending-approval`, `ApproveVenueError`) — zero
-  remaining references, or an explicit justified allowlist entry.
-- [ ] Build + focused tests; run the five web builds; commit.
-- [ ] Tick `launch/tenant-verification` in `plans/launch/LAUNCH_ROADMAP.md` (line 41) and the
-  Architecture-checklist line in §7. Delete this plan and its ledger in the final verified commit.
-- [ ] **Hard stop:** hand off for review; do not begin unrelated launch-gate work in this worktree.
+- [x] Remove `VenueEntity.Approved`, `VenueEntity.Approve()` (`VenueChangedDomainEvent` kept for other
+  profile changes — approval never had a dedicated event).
+- [x] Remove `VenueController`'s `[Admin] PATCH {venueId}/approve` and `[Admin] GET pending-approval`,
+  `IVenueService.ApproveAsync`/`GetPendingApprovalAsync`, `ApproveVenueError`, `PendingVenue` DTO +
+  `ToPendingVenue` mapper, and the `Approved` field on `VenueDetails` / `DetailsResponse` +
+  `QueryableVenueMappers` / `VenueResponseMappers`. **Scope addition:** removed the whole
+  `IVenuePrivilegedRepository` / `VenuePrivilegedRepository` / `VenuePrivilegedDbContext` chain + DI —
+  approval was its only consumer, so it was 100% dead. Doc pointers updated (`CODE_PATTERNS.md`,
+  `ARCHITECTURE.md`, `PrivilegedDbContext` XML doc, `Concertable.DataAccess/TECH_DEBT.md`) to the
+  `ConversationsPrivilegedDbContext` (moderation) example.
+- [x] Remove `app/web/admin/src/features/venues/` (superseded by `features/verification`) and its route
+  + nav entry; `routeTree.gen.ts` regenerated.
+- [x] Re-scaffold the Venue module migration to drop the `Approved` column
+  (`20260819155531` → `20260827211555_InitialCreate`; diff is exactly the one dropped column).
+- [x] Run the removal grep gate — zero code references to `VenueEntity.Approved`, `venueService.ApproveAsync`,
+  `pending-approval`, `ApproveVenueError` remain (only this plan + ledger, deleted at closeout; one generic
+  "approve/pending-approval coverage" doc-comment in `VerificationAdminApiTests` describes the *verification*
+  admin flow, not the removed venue surface).
+- [x] Build + focused tests; five web builds + `lint:boundaries`. `Concertable.B2B.Web` green;
+  Venue unit 19 / Venue integration 28 (−7 removed) / B2B architecture 18 — all green. Five web builds green.
+  (Local full-`slnx` build blocked by a pre-existing Windows MAX_PATH limit on two long-named projects
+  unrelated to this change — see ledger; CI is unaffected.)
+- [ ] **At closeout (after review + merge):** tick `launch/tenant-verification` in
+  `plans/launch/LAUNCH_ROADMAP.md` (line 41) and the Architecture-checklist line in §7; delete this plan
+  and its ledger in the final verified commit.
+- [ ] Run the deferred Phase 5 manual in-app smoke, then **hard stop:** hand off for review; do not begin
+  unrelated launch-gate work in this worktree.
 
 ## 4. Out of scope (per the roadmap item and explicit instruction)
 

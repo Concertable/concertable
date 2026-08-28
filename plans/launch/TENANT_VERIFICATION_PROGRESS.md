@@ -3,145 +3,145 @@
 - Plan: `plans/launch/TENANT_VERIFICATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/tenant-verification`
-- Worktree:
+- Worktree: `.worktrees/Feature-launch_tenant-verification`
 - Branch: `Feature/launch_tenant-verification`
-- PR: [#799](https://github.com/Concertable/concertable/pull/799) — **MERGED**, merge commit
-  `c99c7795c`, 2026-08-27T16:48:20Z. Landed `full-e2e` tier (new observable admin/notification HTTP
-  behavior).
-- Dependency/package gates: none — single-service (`Concertable.B2B`), no published-contract boundary
-  crossed
-- Last reconciled: 2026-08-27, Phase 4 merged; starting Phase 5 next
+- PR: [#824](https://github.com/Concertable/concertable/pull/824) — **ENQUEUED** (`--merge --auto`,
+  `full-e2e` label), head `92a60f13e`. Phase 5 consumer wiring + admin feature + Phase 6. All gates green;
+  in the merge queue (~29 min ETA at last check).
+- Split-off PR: [#825](https://github.com/Concertable/concertable/pull/825) — **MERGED** `04667a53a`,
+  published `@concertable/web-b2b@0.1.0-alpha.0.5385` with the `./features/verification` export.
+- Related PR: [#827](https://github.com/Concertable/concertable/pull/827) — **MERGED** `99bcccce4`,
+  `setup-local-dev.ps1` + `docs/LOCAL_DEV.md`.
+- Dependency/package gates: cleared.
+- Last reconciled: 2026-08-28, #824 enqueued after review + security review + smoke.
 
 ## Current state
 
-Phases 1–4 merged to `main`. Phase 5 (`app/web/admin` verification feature + tenant-facing UI) not yet
-started — no worktree open. Phase 4's `Feature/launch_tenant-verification` branch/worktree were deleted
-on merge; Phase 5 recreates the same branch name fresh from current `main`.
+Phases 1–4 merged. **#824 (Phase 5 consumers + admin feature + Phase 6) is in the merge queue.** Phase 5's
+shared `web-b2b` half went via #825 (published), because `@concertable/web-b2b` is a published package whose
+`carve-fe` restores from the feed — a new export must publish before consumers can build. #824 carries the
+venue/artist route/nav wiring, the self-contained admin `features/verification`, and all of Phase 6.
+
+Gates: review ✅ + security review ✅ (0 findings) + `carve-fe` ✅ + all unit/integration ✅. Manual smoke
+partially done (see `## Verification`); the submit/approve/reject UI flow is covered by merged integration
+tests + `full-e2e` in the queue.
 
 ## Next Steps
 
-1. Start Phase 5 in a fresh worktree — `/open-worktree Feature/launch_tenant-verification` from current
-   `main` (Phase 4's branch of the same name was deleted on merge, so this recreates it clean).
-2. Scope is the plan's Phase 5 checklist: `app/web/admin/src/features/verification/` (mirroring
-   `features/venues`), the `routes/_admin/verification.tsx` route + nav entry, and the tenant-facing
-   status banner + evidence-upload form in `app/web/b2b/shared` (mirroring the DAC7 tax-compliance nag).
-   Run all five web builds (`app/web/AGENTS.md`'s boundary gate) and manually verify submit/approve/reject
-   plus the publication-block and dashboard banner in the running app before marking it done.
+1. `full-e2e` runs in the merge queue → #824 merges to `main`.
+2. **Closeout** (fresh `Docs/tv_closeout` worktree, `merge-docs`): tick `launch/tenant-verification` in
+   `plans/launch/LAUNCH_ROADMAP.md` line 41 + the `Venue/artist verification enforced…` line in §7
+   Architecture; `git rm` `TENANT_VERIFICATION_PLAN.md` + this ledger + `reviews/Feature-launch_tenant-verification.md`.
+   Also add the seed follow-up (below) to `api/Concertable.B2B/TECH_DEBT.md`.
+3. If `full-e2e` ejects #824: `failing-tests` on the failing scenario, fix, push, re-enqueue.
+
+Follow-up (not blocking): `AuthDevSeeder` seeds credentials only for `SeedUsers.Managers` + admin +
+customers, so `SeedState.UnverifiedVenueManager` (`tenant-verification-gate@test.com`) has **no OIDC
+credential** — the verification submit/admin-review flow can't be manually smoked in dev. Add its
+credential to `AuthDevSeeder`.
 
 ## Completed work
 
-- **Phase 1 — Domain** (PR #772, **merged** `5222bce51`, reviewed clean): `TenantVerificationEntity`
-  (`Pending`/`Approved`/`Rejected`, transitions validated through `Concertable.Kernel.StateMachine<TState,
-  TTrigger>`) and `VerificationDocumentEntity` (append-only evidence). 19 unit tests. Skip-e2e tier.
-- **Phase 2 — Tenant-facing submission API** (PR #784, **merged** `1867f0a72`, reviewed clean):
-  `IVerificationService`/`VerificationService`, `VerificationController`
-  (`api/organization/verification`), evidence upload via `IBlobStorageService`. 174 unit tests, full
-  integration coverage. `full-e2e` tier. Tech debt logged separately (`Genres` set-shaping, unrelated to
-  verification) in Concert/Artist `TECH_DEBT.md`.
-- **Phase 3 — Cross-module gate + enforcement** (PR #792, **merged** `564649a26`, reviewed clean):
-  `ITenantModule.IsVerifiedAsync(tenantId)` (fail-closed, mirrors `IsTaxComplianceCompleteAsync`) via
-  `TenantModule` → `VerificationService.IsVerifiedAsync` → `VerificationRepository.IsApprovedByTenantIdAsync`
-  (a new `Any` query, no `.Include(Documents)`). Enforced at
-  `OpportunityService.CreateAsync`/`CreateMultipleAsync` (new
-  `OpportunityMutationError.VenueNotVerified`, `opportunity.venue_not_verified`, Forbidden) and
-  `FinishExecutor.FinishAsync` (new `SettlementOutcome.DeferredPendingVerification`, logged via
-  `Log.SettlementDeferredPendingVerification`, positioned immediately after the existing tax-compliance
-  pair check and before the self-billing-agreement gate — no sweep changes needed). Seed fixtures
-  extended: `SeedState.Verifications` gives every tax-compliant seeded tenant an `Approved` row (via new
-  `VerificationFactory.Approved`), and a dedicated `SeedState.UnverifiedTenant`/`UnverifiedVenueManager`
-  fixture (tax-complete, venue-owning, no verification row — outside `SeedUsers.Managers`, so it touches
-  no shared cross-service seed package) isolates the new gate from the pre-existing tax-compliance one.
-  Its causally-linked publish (`0.1.0-alpha.0.1195`) opened sync PR #794, which merged green — Phase 3's
-  own delivery obligation ended there.
-- **Phase 4 — Admin review + cross-module contact + notification** (PR #799, **merged** `c99c7795c`,
-  2026-08-27): consolidated into the existing `VerificationController`/`IVerificationService`/
-  `VerificationService` (not a separate admin controller/service) after design review, matching
-  `VenueController`/`VenueService`'s one-controller-per-resource shape — `[Admin]`-gated `GET
-  api/verification/pending`, `POST {tenantId}/approve`, `POST {tenantId}/reject` alongside the existing
-  self-service `GET/POST api/organization/verification*` actions, all sharing one `RouteSegment` const.
-  `IVenueModule`/`IArtistModule` gain a symmetric `GetContactByTenantIdAsync(tenantId)`; `TenantContact`
-  is a `readonly record struct` declared once per module's own Contracts project (Venue, Artist),
-  matching the existing `DisplayNames` precedent — decided against `Concertable.Kernel` because both are
-  already-packable, per-service-published projects. `IVerificationNotifier`/`VerificationNotifier`
-  emails the tenant on a decision, mirroring `ContentReportNotifier`'s direct-call shape. Two review
-  findings fixed on the branch (see Reviews below). 174 unit tests unchanged, 18 architecture tests
-  unchanged, 82 Tenant integration tests (+16 new), 35 Venue + 22 Artist integration tests unchanged —
-  all green.
+- **Phase 1 — Domain** (PR #772, merged `5222bce51`): `TenantVerificationEntity` +
+  `VerificationDocumentEntity`, transitions via `Concertable.Kernel.StateMachine`.
+- **Phase 2 — Tenant-facing submission API** (PR #784, merged `1867f0a72`): `IVerificationService` /
+  `VerificationController` (`api/organization/verification`), evidence upload via `IBlobStorageService`,
+  content-type + magic-byte + size validation.
+- **Phase 3 — Cross-module gate + enforcement** (PR #792, merged `564649a26`):
+  `ITenantModule.IsVerifiedAsync` (fail-closed); enforced at `OpportunityService.CreateAsync` /
+  `CreateMultipleAsync` (`OpportunityMutationError.VenueNotVerified`) and `FinishExecutor.FinishAsync`
+  (`SettlementOutcome.DeferredPendingVerification`). Seed: `SeedState.Verifications` +
+  `SeedState.UnverifiedTenant` / `UnverifiedVenueManager` (+ venue `9001`). Sync PR #794 merged.
+- **Phase 4 — Admin review + cross-module contact + notification** (PR #799, merged `c99c7795c`):
+  `[Admin]` `GET api/verification/pending` / `POST {tenantId}/approve` / `reject` on the existing
+  `VerificationController`; `IVenueModule`/`IArtistModule.GetContactByTenantIdAsync` +
+  `TenantContact` readonly record struct per module Contracts; `IVerificationNotifier` (direct call).
+- **Phase 5 — Admin SPA + tenant-facing UI** (`43b42bfb7`, review fixes `b347f5cff`) — **split for the
+  web-b2b publish boundary:**
+  - admin `features/verification` (pending queue, approve, reason-required reject dialog) +
+    `/_admin/verification` route/nav — self-contained, stays in **#824**.
+  - shared `app/web/b2b/shared/features/verification` (`VerificationBanner` — DAC7 `TaxDetailsBanner`
+    shape; `VerificationPage` + `VerificationForm` — three fixed doc-type uploads, zod schema; multipart
+    POST, PascalCase enum tokens) + the `./features/verification` package export → **PR #825** (publish
+    first).
+  - `/settings/verification` route + nav in venue + artist SPAs + `VerificationBanner` on both dashboards
+    → stays in **#824**, delivery-gated on #825.
+- **Phase 6 — Retire `VenueEntity.Approved`** (`3685c5f47`, in #824): all the venue approve/pending-approval
+  API + admin SPA + `ApproveVenueError` + `PendingVenue` + the `Approved` wire field removed; the dead
+  `VenuePrivileged*` chain removed as a scope addition; Venue migration re-scaffolded
+  (`20260827211555_InitialCreate`, drops the one column).
 
 ## Verification
 
-- `dotnet test` on `Concertable.B2B.Tenant.UnitTests` (174), `Concertable.B2B.ArchitectureTests` (18),
-  `Concertable.B2B.Tenant.IntegrationTests` (82), `Concertable.B2B.Venue.IntegrationTests` (35),
-  `Concertable.B2B.Artist.IntegrationTests` (22) — 2026-08-26: all passed, 0 failed.
-- PR #799 merged via the merge queue at `full-e2e` tier, `c99c7795c`, 2026-08-27T16:48:20Z.
+- Phase 6 backend: Venue unit 19/19, Venue integration 28/28 (−7 removed), B2B architecture 18/18;
+  `Concertable.B2B.Web` + `Concertable.B2B.AppHost` build 0-error. Migration diff = exactly the dropped
+  `Approved` column.
+- Review fixes: five `app/web` builds + `lint:boundaries` + 28 web-b2b unit tests green.
+- **#824 full CI green** on head `92a60f13e` — all backend unit/integration matrices, `carve-fe` (all
+  surfaces, against the published `web-b2b`), `fe-boundaries`. `full-e2e` runs in the merge queue.
+- **Manual smoke — COMPLETE (2026-08-28, live `B2B.AppHost`, real OIDC).** Screenshots + a GIF of the full
+  flow posted to PR #824 (`pr-screenshots/824` branch, scratch). Drove **Rejected → submit 3 files
+  (PDF+PNG+JPEG) → Pending → admin Approve → Approved** end to end as `venuemanager1@test.com` +
+  `admin@test.com`: rejected `VerificationBanner` (with reason) on the venue dashboard; the
+  `VerificationForm` (3 fixed doc-type inputs) on `/settings/verification`; multipart submit → 204,
+  "evidence submitted" toast, Pending card, append-only doc list; admin `/verification` queue row enriched
+  with the venue name + email (`GetContactByTenantIdAsync`); `POST /api/verification/{tenantId}/approve` →
+  204 → "Organisation verified" toast + empty state; venue side then shows "Your organisation is verified".
+  Admin `requireAdmin` guard also verified to deny a non-admin. To reach the unverified state I set that
+  tenant's `Verifications` row to `Rejected` in the dev DB (it's `Approved` again via the real flow — clean
+  end state). **Follow-up:** `AuthDevSeeder` should seed a credential for `SeedState.UnverifiedVenueManager`
+  so no DB poke is needed next time (in Next Steps).
 
 ## Reviews
 
-Phase 4's `reviews/Feature-launch_tenant-verification.md` was reviewed clean through several incremental
-passes (controller/service consolidation, the `TenantContact` struct conversion, two E2E DI-registration
-fixes — see Decisions below) up to the merged commit. Two original findings, both fixed on the branch: a
-`Task.WhenAll` DbContext-concurrency bug in the admin pending-queue's contact enrichment (two same-
-`TenantType` pending rows on one page crashed the endpoint — two scoped read-DbContexts hit
-concurrently), and a missing try/catch around the approve/reject notification call (mirrors
-`ContentReportService`'s established shape: a transport failure must not fail a request whose write
-already committed). No security findings. Deleted now that every finding is resolved and the PR has
-merged, per the review-lifecycle standard.
+`reviews/Feature-launch_tenant-verification.md` — **status `complete`**, frozen range
+`085520405..8bcbde3bf`, native layer via an independent cold `code-reviewer` context + parent synthesis.
+Two findings, both **fixed on-branch**:
+- **NAT1 (MEDIUM)** — `verificationApi.get` returned `undefined` on HTTP 204 (the common "never submitted"
+  case) → TanStack Query v5 throws → permanent error state on the dashboard banner + `/settings/verification`.
+  Fixed: returns `Verification | null`.
+- **NAT2 (LOW)** — `VerificationForm` mapped per-file validation errors by catalog order, not attach order.
+  Fixed: derives from `Object.keys(buffer)`.
+
+One cross-area note (`organizationApi.get` has the same latent 204 bug, unreachable in practice) transferred
+to `app/web/b2b/shared/TECH_DEBT.md` (LOW). Phase 6 backend removals + migration reviewed clean.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Verification stays modeled on `Tenant` (`TenantVerificationEntity`), not duplicated onto
-  `Venue`/`Artist` — plan §1.1, load-bearing for every phase, do not re-litigate.
-- Only two enforcement points, exactly as scoped: opportunity publication and settlement. Artist
-  Application/Apply is deliberately not gated — plan §1.4.
-- **Phase 6 (removing `VenueEntity.Approved` and its admin surface) is now unblocked** — Phase 3's gate
-  is merged and green, so the old signal may be dropped once its replacement (Phase 4's admin review +
-  Phase 5's UI) also ships. Still start Phase 6 only after Phase 5, per the plan's phase order.
-- `IsVerifiedAsync` deliberately is **not** exposed on `ITenantContext` (the ambient tenant context in
-  `Concertable.Kernel.Identity`, shared across all five services) — that type is deliberately anemic
-  (`TenantId` + `IsHost` only), and the settlement gate must check two *other* tenants' verification
-  (supplier/customer resolved off the concert, not the ambient request tenant) which an ambient-context
-  field could never express. `ITenantModule.IsVerifiedAsync` mirrors `IsTaxComplianceCompleteAsync`'s
-  shape exactly for the same reason.
-- The fail-closed gate meant every seeded tenant needed an `Approved` verification row or the whole
-  existing Concert/Opportunity/Tenant integration-test suite would defer — not called out explicitly in
-  the plan's Phase 3 checklist text but a hard precondition. Fixed via `SeedState.Verifications` (mirrors
-  the existing `bareTenantUserIds`/tax-compliance seeding pattern). **Load-bearing for Phase 4/5/6**: any
-  new seeded tenant/venue/artist fixture added in later phases needs an explicit decision about whether
-  it's verified, the same way tax-compliance already requires one.
-- A tenant needing to be tax-complete but *specifically* unverified (isolating gates from each other, and
-  for HTTP tests, one that also owns a venue and can authenticate) has no combination among the
-  pre-existing seeded fixtures. `SeedState.UnverifiedTenant` + `UnverifiedVenueManager` (+ one extra
-  seeded venue, id `9001`) fill that gap as a purely B2B-local addition — not part of the shared
-  `Concertable.Seed.Identity.SeedUsers` roster, so no cross-service seed package is touched. **Reuse this
-  fixture** for any future "needs one unverified party" test rather than inventing another.
-- A cross-repo standards gap from Phase 2's review (`tomjseery/dotagents` PR #12, framework types off
-  service signatures etc.) is still open, unmerged — unrelated to this plan, not re-checked here.
-- **Phase 4 deviated from the plan's literal "unit tests for the admin service and notifier"**: per the
-  `unit-testing` standard, an orchestration service with several mocked collaborators defaults to the
-  integration tier, not mocked unit tests. Covered instead by `TenantVerificationAdminApiTests.cs`
-  (integration), which caught the `Task.WhenAll` concurrency bug a mocked unit test would have hidden.
-  Applies to Phase 5/6 too: prefer integration coverage for any further admin-service orchestration work.
-  Also, `PendingVerification` from the plan's own text is `PendingVerificationProjection` in code —
-  `PendingVerification` was reserved for the enriched, API-facing DTO name.
-- Contact enrichment in the admin pending-queue is one query per row, not batched per page (fixed to be
-  sequential rather than concurrent for correctness; batching is a separate, logged follow-up —
-  `api/Concertable.B2B/TECH_DEBT.md`, "Admin verification queue enriches contact per row, not per page").
-- **`Concertable.B2B.E2ETests/AppFixture.cs`'s standalone seed host under-provisioned itself once
-  `VerificationService` gained `IVenueModule`/`IArtistModule` dependencies**: `ConcertDevSeeder` (a
-  registered `IDevSeeder`, eagerly constructed via `IEnumerable<IDevSeeder>`) already depended on
-  `ITenantModule`, so extending `VerificationService`'s graph pulled `VenueService`/`ArtistService` into
-  a host that never registered `AddSharedImaging`/`AddSharedGeocoding`/`AddSharedEmail` (unlike the real
-  app host, which always has). Fixed by adding all three; a MED tech-debt entry in
-  `api/Concertable.B2B/TECH_DEBT.md` flags the structural risk (the seed host hand-duplicates a subset of
-  `AddB2BWebHost`'s registrations rather than reusing it) for whoever's diff next extends a cross-module
-  facade's dependency graph — **check that file's registrations before assuming a new
-  `IVenueModule`/`IArtistModule`/`ITenantModule` dependency "just works" in E2E.**
-- **Unrelated to this plan but touches a file Phase 5 will likely also touch**: `app/shared/src/features/venues/hooks/useMyVenue.ts` was migrated to `react-hook-form` + `zodResolver`
-  by a concurrent, unrelated change while this phase was in flight (commit `f8fe9fe5d`, "validate form
-  when editing opportunities") — entering edit mode must call `trigger()` after `reset()`, or
-  `formState.isValid` (and anything gating Save on it) stays stale until a field changes, which broke the
-  UI E2E "post an opportunity" happy paths for one merge-queue cycle. If Phase 5's evidence-upload
-  form or tenant-facing banner uses `useMyVenue`-style edit/save wiring, check this pattern is followed.
+- Verification stays modeled on `Tenant` (`TenantVerificationEntity`), not duplicated onto `Venue` /
+  `Artist` — plan §1.1, do not re-litigate.
+- Only two enforcement points: opportunity publication and settlement. Artist Apply is not gated — §1.4.
+- **Phase 6 scope addition:** the entire `IVenuePrivilegedRepository` / `VenuePrivilegedRepository` /
+  `VenuePrivilegedDbContext` + DI was removed, not just the two approval methods — venue approval was its
+  only consumer, so leaving a zero-consumer unfiltered writable `DbContext` was the worse option. Doc
+  pointers repointed to `ConversationsPrivilegedDbContext` (still live for moderation).
+- **`Approved` was also removed from the public `DetailsResponse` / `VenueDetails`** — it was dead data on
+  the wire (no FE reads it; grep confirmed). The `DetailsResponse` *type* stays (frozen public marketplace
+  contract per `http-api`), only the field is gone.
+- **`@concertable/web-b2b` is a published package** and `carve-fe` restores it from the feed, not from
+  workspace source — so a new `./features/*` export must publish before venue/artist can consume it. The
+  plan's §3 "no published-package boundary crossed" was wrong for Phase 5; corrected there. **Rule for any
+  future `web-b2b` (or `shared`/`web`) export: land the export in its own PR, let `publish-fe-packages.yml`
+  publish it, then consume in a follow-up.** Precedent: commits `5246aeeb2`, `382bf817f` ("publish …
+  exports"). `publish-fe-packages.yml` triggers only on push to `main`, so a combined export+consume PR's
+  `carve-fe` can never go green.
+- **Windows MAX_PATH** only bites a *clean-obj standalone* build of the two longest-named projects
+  (`Concertable.Shared.Notification.Infrastructure`, `Concertable.Customer.DataAccess.Infrastructure`) in
+  this deep worktree (`LongPathsEnabled=0`). In-graph builds are fine: `Concertable.B2B.Web` and
+  `Concertable.B2B.AppHost` build 0-error here, so the local smoke runs from this worktree. Full
+  `Concertable.slnx` from clean still needs `HKLM\...\LongPathsEnabled = 1` (admin) or the main checkout.
+- **Local dev config is now set up** (PR #827): `setup-local-dev.ps1` ran — `ServiceAuth:*ClientSecret`
+  user-secrets on all 3 AppHosts (machine-wide), `appsettings.Development.json` created in this worktree +
+  the main checkout. `docs/LOCAL_DEV.md` documents it. Was previously undocumented tribal knowledge.
+- **Seeding stayed consistent:** `VenueFactory` no longer calls `venue.Approve()` (the method is gone);
+  verification seeding (`SeedState.Verifications`, every seeded tenant gets an `Approved` verification row)
+  is untouched. Any new seeded venue/artist fixture still needs an explicit verified/unverified decision.
+- `Concertable.B2B.E2ETests/AppFixture.cs`'s standalone seed host hand-duplicates a subset of
+  `AddB2BWebHost` registrations — MED tech-debt in `api/Concertable.B2B/TECH_DEBT.md`. It builds green
+  with Phase 6's removals (E2E project builds).
+- Per `unit-testing`, admin-service orchestration defaults to the integration tier — no new mocked unit
+  tests added for Phase 6; the Venue integration suite covers the removed surface's absence.
+- Cross-repo standards gap from Phase 2's review (`tomjseery/dotagents` PR #12) still open — unrelated.
 
 ## Resume prompt
 
