@@ -1499,13 +1499,6 @@
         "packable": false,
         "target": "b2b"
       },
-      "api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj": {
-        "area": "Concertable.B2B",
-        "kind": "unit-test",
-        "name": "Concertable.B2B.Workers.UnitTests",
-        "packable": false,
-        "target": "b2b"
-      },
       "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj": {
         "area": "Concertable.B2B",
         "kind": "e2e",
