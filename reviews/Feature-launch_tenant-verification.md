@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `5df88875fd3b92d9954bc99f1618e16262466f20`  `(2026-08-28)`
+**Reviewed up to commit:** `fe22e96f3832dbee40902791f59a6538b145cbbb`  `(2026-08-28)`
 **Security-reviewed up to commit:** `56a0bdce03964b56cd418b884eb69724716c43a9`  `(2026-08-28)`
 **Judgment:** `approved`
 
@@ -74,7 +74,15 @@ correct venue `redirect_uri`, `GET /api/organization/verification` returns 401. 
 click-through is the merge-queue `full-e2e` tier (label applied).
 
 Commits after `bd95f8c38` are docs-only — the ledger reconcile (`5df88875f`) and this file's structural
-flatten — so the watermark advances to `5df88875f` with nothing further to review.
+flatten — so the watermark advanced to `5df88875f`.
+
+**2026-08-28 (b):** #824 was ejected from the merge queue as `DIRTY` after #828 (platform-sync
+`0.1.0-alpha.0.1228`) and #829 (`app/shared` + `app/web/b2b/shared` `BASE`-const api refactor + a
+`TECH_DEBT.md` clear) landed on `main`. Merged `main` in (`fe22e96f3`); the only conflict was
+`app/web/b2b/shared/TECH_DEBT.md` — resolved by keeping this branch's still-valid `organizationApi.get`
+204 entry and dropping the `BASE`-const entry #829 fixed. `Concertable.B2B.Web` rebuilds 0-error on pin
+`1228`; venue/artist/admin web builds + `lint:boundaries` green. All incoming code is #828/#829 —
+independently reviewed and merged. No findings. Watermark → `fe22e96f3`.
 
 ## Security layer — 2026-08-28
 
