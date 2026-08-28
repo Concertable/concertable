@@ -5,7 +5,54 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f15616cdf626a6bf312fddd9b43440687288a3eb`  _(2026-08-28)_
+**Reviewed up to commit:** `31851a883`  _(2026-08-28)_
+
+## Incremental pass — f15616cdf..31851a883
+
+Prior watermark `f15616cdf` through `31851a883` spans two `main` merges (129 changed paths), but nearly all
+of that is already-reviewed trunk history pulled in by the merges (the tenant-verification closeout,
+payments reconciliation, and platform-sync PRs each carry their own review file). The genuine incremental
+delta — this branch's own new work, found by intersecting `git diff origin/main...HEAD` against
+`git diff f15616cdf..HEAD` — is three files: `ArtistReadRepository.cs`, `VenueReadRepository.cs`, and
+`VerificationAdminApiTests.cs`.
+
+**1 finding, fixed on this pass.**
+
+### [x] BOM1 (LOW) — an unintended byte-order mark landed on two edited files
+
+The fix to `VenueReadRepository.cs`/`ArtistReadRepository.cs` was applied via a script using `utf-8-sig`,
+which writes a BOM unconditionally regardless of whether the source file had one. Neither file did on
+`main`. Pure noise in the diff, no functional effect.
+
+**Addressed 2026-08-28:** stripped in `31851a883`; solution rebuilt to 0 errors afterward.
+
+### No other findings
+
+**The repository fix itself (`ArtistReadRepository.cs`/`VenueReadRepository.cs`).** Casting the projected
+struct to `TenantContact?` inside `Select`, before `FirstOrDefaultAsync`, is correct and matches documented
+EF Core practice for exactly this gap — `FirstOrDefaultAsync<T>` on a non-nullable value-type projection
+returns `default(T)` for zero rows, which the method's `Task<TenantContact?>` signature then silently
+promotes to `HasValue = true` via the implicit struct-to-`Nullable<T>` conversion. Verified in an isolated
+LINQ-to-Objects harness before and after: `HasValue=False` for an empty source with the cast, `True` without
+it. Both leaves of `IVerificationNotifier`'s notify-vs-log branch are otherwise unaffected — the bug was one
+layer below the code this PR added, in pre-existing repository code this PR never wrote, only newly exercised
+because COV1's own finding was that the absent-contact path had no test.
+
+**The test rewrite (`VerificationAdminApiTests.cs`).** `GetPending_ShouldReturn200_WhenTwoPendingRowsShareTenantType`
+reverted to its original assertions — its documented purpose (the `///` comment above it) is pinning
+sequential-await concurrency between two pending rows, not contact absence; the earlier COV1 remediation had
+bolted an unrelated assertion onto it, which is what this pass removes. The no-notify test now uses
+`ArtistManagerNoArtist` without creating an artist, provably contactless via the same fixture the adjacent
+`GetPending_ShouldReturn200_WithArtistContactEnrichment` test proves absent by explicitly creating one before
+asserting on it — no inference about seed data, verified within the same file.
+
+**EF Core translation risk of the cast, called out rather than silently assumed.** `.Select(x => (T?)new
+T(...))` before `FirstOrDefaultAsync` cannot be proven against the real SQL Server provider from this
+environment — Testcontainers hit an unrelated Windows path-length DLL-load failure blocking every local
+integration-test attempt. The pattern is well-established EF Core practice for precisely this
+struct-projection gap, and the untouched enrichment tests already prove the underlying `Where`/`Select`
+shape translates and executes correctly for the has-a-row case; only the zero-row path is new. Confidence is
+high, not certain — the remote CI run is the actual proof, and its result stands as the record of that.
 
 Watermark advanced past the frozen head `f125ee9` to cover the two remediation commits for COV1 and
 RT1, which change only test assertions and the route table — no production behaviour.
