@@ -5,7 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `9f571bcbc5d7bc05ed5747999c00da7bc6d7c985`  `(2026-08-28)`
+**Reviewed up to commit:** `7437586dee4c83d8dba01fc6e253f0aac884cac1`  `(2026-08-28)`
+**Security-reviewed up to commit:** `7437586dee4c83d8dba01fc6e253f0aac884cac1`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-28 — full
@@ -53,6 +54,14 @@ Mechanical rename/reorganization, no intended behavior change:
   (receiver types, nullability, visibility), mixed legacy/`extension()` style within one class, unused or
   missing `using`s from the interface moves, completeness of the `Interfaces/` -> `Mappers/` moves, and
   naming-convention consistency. No defects found.
+
+### Security pass
+
+Dispatched a focused security review over the full diff, with special attention on the two flagged
+security-sensitive paths (`ApplicationController.cs`, `OpportunityController.cs`). Confirmed no route,
+authorization attribute (`[HasPermission]`, `[RequiredTenantType]`), method signature, or business-logic
+change beyond the mapper type rename — every mapping expression, conditional, and gated action link is
+byte-identical to before. No vulnerabilities found.
 
 ### Findings
 
