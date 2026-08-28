@@ -4,7 +4,7 @@
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/platform-commission`
 - Worktree: none active. Phases 1 and 1b are terminal on `origin/main`. Phase 2 starts a fresh
-  worktree from the current remote default.
+  worktree — `Feature/launch_platform-commission-phase2` from the current remote default.
 - Branch: none active (Phase 1b delivered on `Feature/PaymentOwnedResultExpansion` via PR #392).
 - PR: [#392 — refactor(payment): own typed operation results](https://github.com/Concertable/concertable/pull/392) (MERGED 2026-08-07) — absorbed and superseded [#296](https://github.com/Concertable/concertable/pull/296).
 - Dependency/package gates: Phase 1b's breaking Payment package published and its generated platform
@@ -35,7 +35,19 @@ There is no uncommitted work and no active worktree for this plan.
 ## Next Steps
 
 **Start Phase 2 — B2B gross ownership and percentage cut-over.** This session deliberately stops
-here (Phase 1b was the gate; it is already through). Phase 2 is a separate delivery slice:
+here (Phase 1b was the gate; it is already through). Phase 2 is a separate delivery slice.
+
+**Delivery-gate status: none. Phase 2 is directly implementable.** The entire producer surface it
+consumes is already published in `Concertable.Payment.Client` at the pinned platform version
+(`0.1.0-alpha.0.1235`, `api/Concertable.B2B/Directory.Packages.props`): `ICommissionPricingClient`
+(`PreviewAsync` / `CreateOrBindAsync` / `ConfirmReviewedGrossAsync` / `CalculateBoundAsync`),
+`IManagerPaymentOperationsClient.PayBoundCommissionAsync` + `CreateBoundCommissionHoldSessionAsync`,
+`IEscrowOperationsClient.DepositBoundCommissionAsync` / `CaptureBoundCommissionAsync` /
+`RefundBoundCommissionByBookingIdAsync`. B2B production code today calls the legacy non-bound
+variants (`PayAsync`, `DepositAsync`, `CaptureAsync`, `CreateHoldSessionAsync`, `RefundByBookingIdAsync`)
+and Payment applies the temporary £10 internally — those call sites are what Phase 2 swaps, adding the
+binding step at each payer commitment point. §10's "do not compile against unpublished Payment source"
+warning does not apply here: the surface is published.
 
 1. Branch a fresh worktree from the current remote default (`main`).
 2. Follow `PLATFORM_COMMISSION_PLAN.md` §10 "Phase 2" steps 1–9: the four keyed pure gross
@@ -53,8 +65,8 @@ Do not touch Phase 3 (removing the temporary £10 seam) until Phase 2 and its pl
 ## Resume prompt
 
 ```
-Read @plans/launch/PLATFORM_COMMISSION_PLAN.md and @plans/launch/PLATFORM_COMMISSION_PROGRESS.md
-and do what its `## Next Steps` says (Phase 2 — start a fresh worktree from main).
+/open-worktree Feature/launch_platform-commission-phase2
+Read @plans/launch/PLATFORM_COMMISSION_PLAN.md and @plans/launch/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
 ```
 
 ## Completed work
