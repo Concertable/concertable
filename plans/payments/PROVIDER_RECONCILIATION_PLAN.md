@@ -50,7 +50,7 @@ The implementation is a Payment producer change. It may add private persistence 
 
 ## Phases
 
-### Phase 1 - Centralize durable provider synchronization (implemented locally)
+### Phase 1 - Centralize durable provider synchronization (shipped in PR #831; platform sync PR #846)
 
 - Extract the session transition-and-persist portion of `PaymentSessionService` into a Payment-internal reconciliation service with an explicit source (`eager`, `webhook`, or `sweep`) and provider event evidence.
 - Keep `IStripeSessionClient` as the PaymentIntent/SetupIntent provider boundary. Its retrieval result supplies the normalized snapshot and restricted diagnostics; Stripe SDK types do not leave Infrastructure.
