@@ -6,6 +6,7 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `5df88875fd3b92d9954bc99f1618e16262466f20`  `(2026-08-28)`
+**Security-reviewed up to commit:** `56a0bdce03964b56cd418b884eb69724716c43a9`  `(2026-08-28)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-27 — full
@@ -74,3 +75,13 @@ click-through is the merge-queue `full-e2e` tier (label applied).
 
 Commits after `bd95f8c38` are docs-only — the ledger reconcile (`5df88875f`) and this file's structural
 flatten — so the watermark advances to `5df88875f` with nothing further to review.
+
+## Security layer — 2026-08-28
+
+Ran on the security-sensitive paths (`VenueController.cs`, `PrivilegedDbContext.cs`, the migration, the
+admin/venue/artist API + route wiring). **Zero findings.** Phase 6's backend diff is overwhelmingly
+deletions that *reduce* attack surface: two `[Admin]` endpoints removed, and the entire
+`VenuePrivilegedDbContext` (an unfiltered cross-tenant *writable* context) removed. The `Approved` field
+is dropped from the wire contract, not added. The admin/venue/artist frontend is client-side wiring over
+`/api/verification/*` endpoints whose `[Admin]` gating is server-side (Phase 4). No injection,
+auth-bypass, privilege-escalation, crypto, or data-exposure issue introduced. Marker → `56a0bdce0`.
