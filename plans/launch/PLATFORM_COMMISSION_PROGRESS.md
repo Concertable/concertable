@@ -12,8 +12,9 @@
   sync migrated the B2B and Customer consumers. `ConcertablePlatformVersion` has since advanced to
   `0.1.0-alpha.0.1235`. No gate outstanding for Phase 2 entry.
 - Last reconciled: 2026-08-28 against `origin/main` `3b7e3e56d`, PR #392, and the Payment proto on main.
-- Phase 2 progress: step 1 committed (`c68878297`). Step 2 (settlement-model foundation) is committed
-  locally and ships as **its own PR** ahead of the payment-journey rewiring. Steps 3–9 remain.
+- Phase 2 progress: steps 1–2 (settlement-model foundation) are the draft
+  [PR #847](https://github.com/Concertable/concertable/pull/847), review-approved, awaiting merge-queue
+  CI. Payment-journey rewiring (step 3+) is a separate PR. Steps 3–9 remain.
 
 ## Current state
 
@@ -73,12 +74,12 @@ next step before the PR merges.
 **Push the step-2 branch and open its PR, then continue with step 3.**
 
 1. ~~Record a formal review of step 2.~~ Done — `reviews/Feature-launch_platform-commission-phase2.md`,
-   approved up to `559595388`; TEST1 + DOC1 closed.
-2. **Open the PR** — `refactor(b2b): revenue-share settlement as its own aggregate`. Contains
-   `c68878297` (step 1) + `bfd511848` + `559595388` (step 2). Zero published-contract impact (all
-   internal B2B). Merge-queue E2E is the gate: the `ToManagerDetails` query + the `OwnsOne` projection
-   cannot run in this worktree (`Microsoft.Data.SqlClient.SNI` — Windows MAX_PATH on the deep worktree
-   path), so the Concert integration suite must confirm them in CI.
+   approved; TEST1 + DOC1 closed.
+2. ~~Open the PR.~~ Done — draft [PR #847](https://github.com/Concertable/concertable/pull/847)
+   (`c68878297` + `bfd511848` + `6ae3c5797`). **Next on it:** let merge-queue CI run — the Concert
+   integration suite must confirm the `ToManagerDetails` query + `OwnsOne` projection (worktree can't
+   run them: `Microsoft.Data.SqlClient.SNI` / Windows MAX_PATH). When exact-head CI is green, mark
+   ready and enqueue (`merge`). Then close this worktree and start step 3 from the updated default.
 3. **Step 3** — bind the rate at each payer commitment point (§3.2: FlatFee at Confirm & Pay / hold;
    VenueHire at Authorise & Apply / setup; DoorSplit + Guarantee Plus at booking acceptance / setup)
    and route all four payment journeys through the binding-aware Payment methods (`CreateOrBindAsync`
