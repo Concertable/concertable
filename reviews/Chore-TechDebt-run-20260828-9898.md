@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `ea537c1a0757d2b70265f88e6f52b487d53aabcf`  _(2026-08-28)_
+**Reviewed up to commit:** `ee3b1505a520c5089a60cfa3fcca09bdeec61363`  _(2026-08-28)_
 
 > Range reviewed: `caa13a0a05aa3d101b884f93eca05aaa5d7ad37a..ea537c1a0757d2b70265f88e6f52b487d53aabcf` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -25,3 +25,12 @@ cover naming, mid-chain isolation between two `WithService` scopes, and the guar
 tests in `Concertable.AppHost.Shared.UnitTests` pass, and `Concertable.AppHost.Shared` builds with zero
 errors. No security-sensitive path is touched. Independent native review (code-reviewer) confirms no
 correctness, duplication, or efficiency issues.
+
+## Incremental review — 2026-08-28 (current-main sync)
+
+> Range reviewed: `ea537c1a0757d2b70265f88e6f52b487d53aabcf..ee3b1505a520c5089a60cfa3fcca09bdeec61363` (merge of `origin/main`).
+
+No issues found. The merge brought in 23 unrelated commits from `origin/main` (the
+`TenantContactResolverStrategy` refactor and a platform-sync version bump) with no conflicts and no
+change to any of the three files this review covers. `Concertable.AppHost.Shared` builds with zero
+errors and `Concertable.AppHost.Shared.UnitTests` passes 10/10 after the merge.
