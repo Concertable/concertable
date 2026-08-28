@@ -1,6 +1,6 @@
 # Percentage platform commission and pricing transparency
 
-> **Next steps live in @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md → `## Next Steps`.**
+> **Next steps live in @plans/launch/PLATFORM_COMMISSION_PROGRESS.md → `## Next Steps`.**
 
 > **Active launch plan.** The temporary flat £10 platform fee is shipped, but it is not the launch
 > pricing model. Replace it before launch with one Payment-owned percentage applied to the final
@@ -389,8 +389,13 @@ unpublished Payment package source.
 - [x] Resolve incremental findings CV1, BUG1, CV2, TEST1, TEST2, and BUG2; verify the combined
   typed-result and refund-reservation state with 188 Payment unit tests, 7 Payment integration tests,
   the solution and standalone Payment carve at 0 errors, and no pending Payment model changes.
-- [ ] **Hard stop:** merge, publish, own platform sync to green and deploy the updated Payment runtime
-  before Phase 2 consumes the corrected binding-owned surface.
+- [x] **Hard stop:** merge, publish, own platform sync to green and deploy the updated Payment runtime
+  before Phase 2 consumes the corrected binding-owned surface. Landed 2026-08-07 via PR #392
+  (`refactor(payment): own typed operation results`), which absorbed and superseded PR #296. The
+  breaking Payment package published and the generated platform sync migrated the B2B and Customer
+  consumers; `ConcertablePlatformVersion` has since advanced to `0.1.0-alpha.0.1235`. Every
+  bound-calculation and money-movement request now reserves `expected_commission_minor` /
+  `expected_payer_total_minor`, and `ConfirmReviewedGross` is the sole reviewed-amount boundary.
 
 ### Phase 2 — B2B gross ownership and percentage cut-over
 
