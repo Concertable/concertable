@@ -38,7 +38,7 @@ Resume when: Current `main` contains the delivered lifecycle split and the lifec
 ## Completed work
 
 - Established the B2B runtime/net10 Contracts compatibility boundary and SDK/Functions risks.
-- Rejected the cross-stage union over DI step implementations after the lifecycle ownership decision.
+- Rejected the cross-stage union over DI operation implementations after the lifecycle ownership decision.
 - Replanned this work as a runtime upgrade with native unions for closed internal values; the downstream
   Deal plan owns direct unions of module-owned heterogeneous method-header interfaces.
 - Reconciled the landing shape against current C# 15 union semantics: direct interface cases replace the

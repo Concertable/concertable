@@ -9,16 +9,17 @@ and Concert ownership refactor has landed, then use native unions for the result
 value models. Preserve net10-compatible published Contracts and independent Customer, Search,
 Payment, and Auth builds.
 
-The former plan to replace `IConcertWorkflow` with a cross-stage union over concrete DI implementations
-is rejected. The approved lifecycle design deletes that workflow and gives each module contextual
-methods. This runtime plan owns small closed internal value unions and enables the shared Deal union
-factory to return a direct native union of module-owned DI method-header interfaces. No union owns
-cross-module workflow state, performs keyed dependency resolution, or crosses a published boundary.
+The former cross-stage workflow and the proposal to replace it with a union over concrete DI
+implementations are rejected. The approved lifecycle design gives Application, Booking, and Concert one
+executable module-local workflow each. This runtime plan owns small closed internal value unions and
+enables the shared Deal union factory to return a direct native union of module-owned DI method-header
+interfaces. No union owns workflow state, performs keyed dependency resolution, or crosses a published
+boundary.
 
 `@plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md` owns the separate Deal decision: a closed record hierarchy,
 direct native interface unions for heterogeneous internal method headers, and invariant module factories
-for the terms, mapper, and updater families that already share one honest interface. Executors and steps
-do not use that common-interface factory. This plan must establish
+for the terms, mapper, and updater families that already share one honest interface. Heterogeneous
+workflow methods use the union factory; homogeneous workflow methods use the strategy factory. This plan must establish
 the native-union runtime/toolchain and whether a C# 15-compiled `Deal.Contracts` can retain net10 assets,
 including which consumers require a compiler/runtime retarget. It does not perform that breaking
 published-package cut-over or reclassify the Deal operations itself.

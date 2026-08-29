@@ -139,13 +139,10 @@ email path. The immutable terms cases supply different data to `ConcertEntity.Cr
 not select different creation behaviour. `IConcertService.CreateAsync(ConfirmedBooking)` therefore
 owns creation.
 
-Cancellation and completion each use their own operation-specific executor. The lifecycle delivery may
-retain its minimum provisional keyed seams, but the downstream Deal dispatch plan classifies them:
-cancellation becomes a direct refund collaborator because every Deal case is identical, while completion
-retains validated keyed release/payout implementations because it is one substantial homogeneous
-operation with materially different effect graphs. There is no multi-operation `IConcertExecutor`:
-established executors own one named lifecycle operation, and combining both operations would create a
-dependency bag rather than a cohesive facade.
+Cancellation and completion are coordinated by the module-local `IConcertWorkflow`. Each method retains
+its own validation, persistence, transaction, IO, and typed failure contract. Deal-varying work remains
+behind operation-specific `ICancel` and `IComplete` implementations selected through the homogeneous
+`IDealStrategyFactory<T>`.
 The pre-commit `BookingConfirmedDomainEventHandler` remains a thin adapter to the service. Creation has
 no expected caller-actionable failure after a confirmed Booking: Application already validated genre
 eligibility, while a missing or mismatched local projection is an invariant violation. Cancel and
@@ -293,19 +290,20 @@ primitive. Payment keeps its provider observation validation, terminal-state pro
 classification, context selection, freshness rules, and transition result types. Reuse is limited to
 the immutable allowed-edge lookup and creates no B2B-to-Payment dependency.
 
-## 6. Deal-type behaviour and step resolution
+## 6. Module workflows and Deal-type behaviour
 
-Delete the runtime `IConcertWorkflow` dependency-holder. No request needs every lifecycle operation at
-once, and no executable workflow spans the module boundary.
+Application, Booking, and Concert each own one executable, module-local workflow. These workflows group
+the named lifecycle operations for one aggregate stage; none spans a module boundary, stores aggregate
+state, or acts as a dependency-holder for an end-to-end process.
 
-Each module owns only the step families that operate on its aggregates. Internal types use contextual
-names rather than repeating the aggregate name:
+Each module owns only the Deal-selected contracts that operate on its aggregates. Internal types use
+the operation name without `Step` or redundant aggregate prefixes:
 
-| Module | Local step contracts |
+| Module | Deal-selected contracts |
 |---|---|
-| Application | `IApplyStep`, `IApplyCheckoutStep`, `IAcceptStep`, `IAcceptCheckoutStep` |
-| Booking | `IConfirmStep`, `ICancelStep` |
-| Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
+| Application | `IApplyStandard`, `IApplyPrepaid`, `IAccept`, `IAcceptPaid` |
+| Booking | `IConfirm`, `ICancel` |
+| Concert | `ICancel`, `IComplete` |
 
 Deal-varying methods are classified by invocation shape. A genuine same-interface family is selected
 through `IDealStrategyFactory<TStrategy>`. A method whose implementations require different parameters,
@@ -363,7 +361,7 @@ Deal Contracts owns `IDealUnionFactory<TUnion>` beside `IDealStrategyFactory<TSt
 runtime implementations live together in shared B2B Infrastructure so Application, Booking, and Concert do
 not reference Deal Infrastructure. On net10 the union factory reads the validated `DealType`-to-case
 catalog, performs one exact keyed lookup, and applies the configured Dunet conversion. It never probes a
-list of candidate services. `IKeyedServiceProvider` must not escape either factory into an executor or other
+list of candidate services. `IKeyedServiceProvider` must not escape either factory into a workflow or other
 consumer. Method-header interfaces remain in the owning module beside the consumer; concrete implementations
 and keyed registrations remain in that module's Infrastructure.
 
@@ -373,7 +371,7 @@ and call-site semantics, but replaces the adapter declaration with a direct nati
 case records, `.Accept` wrappers, or default arm. The upgrade must first prove how the
 generic builder constructs `TUnion` now that the current proposal has no generic union-construction
 interface; an explicit native conversion delegate is the fallback and does not restore wrapper records.
-Neither design contains a resolver, global workflow bundle, candidate-service probing, or four-Deal executor
+Neither design contains a resolver, global workflow bundle, candidate-service probing, or four-Deal workflow
 switch. No concrete implementation may implement more than one header in the same union because that would
 make type-pattern selection ambiguous even though the language permits overlapping cases.
 
@@ -382,11 +380,10 @@ as `IDealTerms`. `IDealUnionFactory<TUnion>` applies only where the method heade
 substitutable invocation. Both are factories because they return selected components; neither consumes the
 component to produce the final domain answer.
 
-Cancel and Complete use separate executors because each is one named Concert lifecycle operation with
-its own validation, persistence, transaction, IO, and typed failure contract. Uniform creation remains
-on `IConcertService`; it neither selects a keyed step nor belongs in either executor. Expected failures
-use typed Results; no design may convert them into explicit exceptions merely to cross an internal
-boundary.
+Cancel and Complete are separate methods on `IConcertWorkflow`; each keeps its own validation,
+persistence, transaction, IO, and typed failure contract. Uniform creation remains on `IConcertService`
+because it performs no Deal selection. Expected failures use typed Results; no design may convert them
+into explicit exceptions merely to cross an internal boundary.
 
 Each module declares exact `DealType` coverage vertically at its own composition root. Repeating the
 closed key in three independent declarations is correct ownership, not duplication. Adding a new
@@ -533,9 +530,9 @@ code.
   repair its DealTerms code into the new implementation.
 - [x] Pin observable acceptance, payment, cancellation, settlement, Contract, Invoice, and
   Concert-creation outcomes at module or API boundaries before moving ownership. Do not add tests for
-  the shared `LifecycleState`, its transition table, executor filenames, source tokens, or other
+  the shared `LifecycleState`, its transition table, coordinator filenames, source tokens, or other
   implementation structure scheduled for deletion.
-- [x] Record the current executors, processors, callbacks, worker, and API/HATEOAS consumers as
+- [x] Record the current coordinators, processors, callbacks, worker, and API/HATEOAS consumers as
   migration inventory in the progress ledger rather than freezing those owners as test expectations.
 
 Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, durable
@@ -635,9 +632,9 @@ transition, and all accept/payment arrival orders pass focused integration cover
 
 ### Phase 4 — give Concert independent operational ownership
 
-- [x] Before changing the Concert application boundary, independently research the candidate
-  `IConcertExecutor`/`ConcertExecutor` and uniform `CreateAsync(ConfirmedBooking)` placement against the
-  final dependency graph, keyed-step conventions, typed-Result semantics, and comparable repository
+- [x] Before changing the Concert application boundary, independently research the module workflow and
+  uniform `CreateAsync(ConfirmedBooking)` placement against the
+  final dependency graph, keyed-strategy conventions, typed-Result semantics, and comparable repository
   code. Record the decision in this plan and ledger before implementation.
 - [ ] Create Concert only from a financially confirmed Booking handoff.
 - [ ] Move draft/posting, post-creation cancellation, completion, settlement recovery, and relevant
@@ -649,9 +646,9 @@ transition, and all accept/payment arrival orders pass focused integration cover
 
 Gate: Concert can validate and complete every operation from its own state plus immutable handoff facts.
 
-### Phase 5 — replace the god workflow with local steps
+### Phase 5 — replace the cross-stage workflow with module workflows
 
-- [x] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
+- [x] Delete the cross-stage workflow dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
 - [x] Deliver the additive Kernel `IStateMachine<TState, TTrigger>`,
   `TransitionError<TState, TTrigger>`, and immutable frozen-table implementation through its shared
@@ -665,9 +662,10 @@ Gate: Concert can validate and complete every operation from its own state plus 
   domain-event raising on the aggregate; remove direct target-state assignment from callers.
 - [ ] Audit Opportunity's Open/Filled/reopen flow. Keep the atomic conditional claim at persistence;
   adopt the shared primitive only for remaining aggregate-owned lifecycle transitions.
-- [ ] Add local `State`, `Trigger`, `StateMachine`, the minimum provisional keyed-selection seams,
-  named operation facades, and contextual step contracts only where each module needs them.
-- [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
+- [ ] Add local `State`, `Trigger`, `StateMachine`, module workflows, and Deal-selected contracts only
+  where each module needs them.
+- [ ] Register exact per-`DealType` strategy or union coverage independently in Application, Booking,
+  and Concert.
 - [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
   mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
   replacement.
@@ -737,12 +735,12 @@ a machine or another module's operations, or requests a whole workflow.
   through their private transition path, and leave state, auxiliary facts, and events unchanged when an
   edge is rejected.
 - The runtime dependency graph is Contracts-only and acyclic, with no backwards command/control flow.
-- There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
-  holder exposing all steps.
-- Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
+- There is no shared workflow module, cross-module strategy registry, umbrella state machine, or dependency-
+  holder exposing the whole lifecycle.
+- Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancel`) are used without redundant
   aggregate prefixes inside their module.
 - Heterogeneous Deal-varying methods resolve once through `IDealUnionFactory<TUnion>` and match by
-  method-header type; each module owns its union and mappings, and no executor repeats a four-Deal switch
+  method-header type; each module owns its union and mappings, and no workflow repeats a four-Deal switch
   or resolves keyed services.
 - Every current `DealDto` case has exact, independently tested net10 factory coverage, with an explicit
   invariant fallback and no false claim of native exhaustiveness.
@@ -766,11 +764,8 @@ a machine or another module's operations, or requests a whole workflow.
 - keeping all post-accept state on Application;
 - moving all post-accept state onto Booking, including real Concert operations;
 - an Engagement/process/lifecycle aggregate or value object spanning the chain;
-- a BookingWorkflow, ConcertWorkflow, or shared Workflow module spanning multiple aggregates;
-- treating `ConcertExecutor` as a replacement umbrella workflow or a dependency bag unrelated to
-  executing Concert-owned step families;
-- combining Cancel and Complete behind one multi-operation `IConcertExecutor` rather than preserving
-  one cohesive executor per named lifecycle operation;
+- a BookingWorkflow, ConcertWorkflow, or shared Workflow object spanning multiple aggregates;
+- treating a module workflow as an umbrella over another aggregate or as a passive dependency bag;
 - one shared configured resolver, registry, workflow definition, state enum, transition table, or
   lifecycle machine for all modules; the stateless generic Kernel lookup algorithm is deliberately
   shared;

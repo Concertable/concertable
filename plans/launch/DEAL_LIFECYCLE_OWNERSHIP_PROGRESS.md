@@ -53,7 +53,9 @@ placement remains recorded Application technical debt in
 
 ## Next Steps
 
-Close IR9-IR10, then run a fresh incremental review over the fix commits from the recorded watermark,
+Commit the module-workflow checkpoint and run the requested Claude CLI incremental review over
+`12273b558..HEAD`, addressing every valid finding. Then close IR9-IR10 and run the canonical fresh
+incremental review over the fix commits from the recorded watermark,
 `python .agents/hooks/plan_graph.py --root <worktree>`, and `git diff --check`; do not run local E2E. Then
 push one stable candidate, prove local,
 remote-tracking, and PR heads match, mark PR #633 ready, and follow it through merge-queue E2E, merge,
@@ -80,6 +82,9 @@ closeout once the lifecycle is terminal.
 - Replaced the four copied Deal strategy builders with the shared generic keyed builder plus the
   Deal-specific `DealStrategyBuilder`; added the generic keyed-union catalog, `DealUnionBuilder<TUnion>`,
   and `IDealUnionFactory<TUnion>`; and moved Application Apply/Accept dispatch out of DealType switches.
+- Replaced operation-specific executors and `*Step` contracts with one executable module-local workflow
+  per Application, Booking, and Concert. Application retains heterogeneous Apply/Accept union dispatch;
+  Booking and Concert retain homogeneous Deal strategy dispatch behind operation-named interfaces.
 
 ## Verification
 
@@ -91,11 +96,15 @@ closeout once the lifecycle is terminal.
   `EnforceServiceBoundary=true`: 0 warnings / 0 errors. Direct Kernel/Reunion ownership and the shared
   `0.1.0-alpha.8` Reunion pin were mechanically confirmed.
 - `ServiceTopologyTests`: 7/7 passed with the lifecycle topic and command-queue inventory.
-- Current Deal-dispatch slice: KeyedStrategies 19/19, Deal 47/47, Application 20/20, Booking 8/8, and
-  Concert 103/103. The full B2B solution build completed with 0 errors; its two warnings came from generated
+- Current Deal/workflow slice: KeyedStrategies 19/19, Deal 47/47, Application 20/20, Booking 8/8, and
+  Concert 96/96. Application, Booking, and Concert Infrastructure builds completed with 0 warnings and
+  0 errors. The full B2B solution build completed with 0 errors; its two warnings came from generated
   temporary UI E2E sources. Architecture composition validation passed outside the sandbox, leaving 21/23
   green; the two remaining failures are in unchanged Reunion package-ownership and Venue fixture-boundary
   paths, not this dispatch diff.
+- A local Concert integration diagnostic reached 38 passing B2B cases before it was stopped after five
+  failures in unchanged HTTP-status and concurrency tests generated nearly 50 MB of captured seed logs. The
+  moved Cancel/Complete bodies match `12273b558`; this run is not recorded as a green integration gate.
 - Local E2E deliberately not run. Standalone carve, complete integration matrices, and exact-head CI remain
   owned by draft-PR CI; PR/remote head equality remains part of final delivery.
 
@@ -125,6 +134,9 @@ closeout once the lifecycle is terminal.
 - Generic keyed builders remain business-agnostic. Shared B2B Infrastructure composes them with DealType,
   `IDealStrategy`, exhaustive Deal coverage, and factory registration; module Infrastructure owns only its
   DealType-to-implementation assignments.
+- A module workflow groups the named lifecycle operations for one aggregate stage. API entry points begin
+  at the module service, while domain-event and background entry points may invoke the workflow directly;
+  no workflow spans modules or owns aggregate state.
 - `ConcertAvailabilityEntity` naming/layer placement is accepted only as recorded Application technical
   debt for this PR; do not expand the current review fix into that refactor.
 - No local E2E. Exact-head PR/merge-queue CI owns the full E2E tier.
