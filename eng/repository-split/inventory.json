@@ -713,7 +713,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 251,
+    "projectCount": 253,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -824,6 +824,20 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Concertable.B2B.KeyedStrategies/Concertable.B2B.KeyedStrategies.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.KeyedStrategies",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Concertable.B2B.RequestContext/Concertable.B2B.RequestContext.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.RequestContext",
         "packable": false,
         "target": "b2b"
       },
@@ -1489,6 +1503,13 @@
         "area": "Concertable.B2B",
         "kind": "fixture",
         "name": "Concertable.B2B.IntegrationTests.Fixtures",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/tests/Concertable.B2B.KeyedStrategies.UnitTests/Concertable.B2B.KeyedStrategies.UnitTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "unit-test",
+        "name": "Concertable.B2B.KeyedStrategies.UnitTests",
         "packable": false,
         "target": "b2b"
       },
