@@ -11,11 +11,19 @@
 
 ## Current state
 
-Phase 2 is implemented in this worktree and focused-green; not yet reviewed or PR'd. Session webhook events are now wake-up evidence: `WebhookProcessor` verifies/deduplicates the Stripe event, then `PaymentSessionResourceReconciler` resolves the tracked attempt by provider object id, retrieves the current PaymentIntent/SetupIntent, and delegates to the Phase 1 reconciliation service with `Source.Webhook` and immutable event evidence. `PaymentSessionAttemptEntity` raises a `PaymentOperationStateChangedDomainEvent` only when the committed observable projection (state/failure/capture) changes; the pre-commit handler publishes `PaymentOperationStateChanged` through the durable outbox, so redelivery, reordering, post-eager delivery, and stale payloads cannot publish a second semantic outcome. Eager and webhook paths now converge on the same publish. Legacy `PaymentSucceededEvent`/`PaymentFailedEvent` financial handlers are preserved. No published `Concertable.*` contract changed; no model change, so no migration re-scaffold.
+Phase 2 is implemented and focused-green (merged to `origin/main` at platform `0.1.0-alpha.0.1248`); not yet reviewed as a whole or PR'd. Three commits on top of the sync:
+
+1. Webhook reconciliation + publish-once (`f23b1708c`): `WebhookProcessor` verifies/deduplicates the Stripe event, `PaymentSessionResourceReconciler` resolves the tracked attempt by provider object id, retrieves the current PaymentIntent/SetupIntent, and delegates to the reconciliation service with `Source.Webhook` and immutable event evidence. `PaymentSessionAttemptEntity` raises `PaymentOperationStateChangedDomainEvent` only on a committed observable change; the pre-commit handler publishes `PaymentOperationStateChanged` through the durable outbox, so redelivery/reordering/post-eager/stale-payload cannot publish a second outcome. Eager and webhook converge on the same publish. Legacy financial handlers preserved.
+2. State-machine + DDD reshape (`6996b3f72`, `b84deeedf`): the session transition graph is the canonical kernel `StateMachine`, edges as data; `PaymentSessionStateMachine.Evaluate(current, observation)` owns the rules (legality/terminal/capture/transition-building); the reconciliation service is the thin transitioner (normalize → freshness → `Evaluate` → apply → save/defer). The bespoke `PaymentOperationTransitionEvaluator`/`StripeOperationTransitionEvaluator`, the validation extensions, and the `Duplicate` disposition are deleted. Retry/expiry evaluators + their `PaymentProviderAttempt` view untouched.
+3. Machine inheritance (`071811d95`): now that #851 published the inheritable kernel base (consumed via platform `0.1.0-alpha.0.1248`), `PaymentSessionStateMachine`/`PaymentRefundStateMachine` derive from `StateMachine<,>` instead of wrapping it.
+
+No published `Concertable.*` contract changed; no persistent-model change, so no migration re-scaffold. Local: 564 unit + 9 architecture + all session/webhook/persistence integration tests green (the full 48-test integration run is Docker-resource-flaky locally; remote CI owns the full matrix).
 
 ## Next Steps
 
-Commit the Phase 2 slice, run the code review, address findings, and open the Payment producer PR. Phase 3 (stale-session/pending-refund sweep worker and Refund webhook routing) and Phase 4 (delivery) remain.
+Run the code review over the whole branch delta (the reshape has not been reviewed), settle the one open decision below, then open the Payment producer PR and take it through the merge queue. Phase 3 (stale-session/pending-refund sweep worker and Refund webhook routing) and Phase 4 (delivery) remain.
+
+Open decision: the "an automatic-capture Payment can never be `Authorized`" guard was dropped — the single session machine carries the `Authorized` edges, relying on Stripe not returning `requires_capture` for an automatic PaymentIntent. Re-add as a one-line invariant in `Evaluate` if belt-and-braces is wanted.
 
 ## Completed work
 
