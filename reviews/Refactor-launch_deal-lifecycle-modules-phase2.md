@@ -296,3 +296,50 @@ commits is part of final closure and is not asserted here.
 ### Findings
 
 No new findings.
+
+## Review pass — 2026-08-29 — test-coverage closeout
+
+**Candidate base:** `04b01f9c90514cacc0b7a362880e0316ef85762e`
+**Candidate head:** `04b01f9c90514cacc0b7a362880e0316ef85762e`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `the six test-coverage findings below (OPP2, DASH2, CAPP2, CTEST1, CTEST2, FOUND3)`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Direct remediation pass (test-coverage findings supplied outside this file), not a dispatched native/lens
+review — no candidate bundle materialized.
+
+### Findings
+
+- [x] **OPP2 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Infrastructure/Events/OpportunityCancellationIntegrationEventHandler.cs`
+  `OpportunityCancellationIntegrationEventHandler` had zero tests for either `IIntegrationEventHandler<BookingCancelledEvent>` or `IIntegrationEventHandler<ConcertCancelledEvent>`.
+  Resolved: `OpportunityCancellationIntegrationEventHandlerTests.cs` (new, `Concertable.B2B.Opportunity.IntegrationTests`) publishes a `BookingCancelledEvent` against a Filled seeded opportunity and asserts it reopens, and separately asserts a replayed `ConcertCancelledEvent` with the same `MessageId` is a no-op (opportunity stays `Filled`).
+
+- [x] **DASH2 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Dashboard/Opportunity/Concertable.B2B.Dashboard.Opportunity.Infrastructure/OpportunityDashboardService.cs:47`
+  `OpportunityDashboardService.GetOpenAsync`'s `OpportunityDashboardError.MissingVenue` branch was untested.
+  Resolved: `OpportunityDashboardServiceTests.GetCurrentForVenue_MissingVenue_ReturnsTypedProblem` (new, `Concertable.B2B.Dashboard.Opportunity.UnitTests`, with a new `InternalsVisibleTo` from `Concertable.B2B.Dashboard.Opportunity.Infrastructure`) drives the service directly with `ITenantContext.TenantId` unset. Note: unlike the Artist path (`GetRecommendedAsync`, which explicitly re-checks `IArtistModule.GetCurrentProfileAsync()`), `GetOpenAsync` only checks `TenantId` nullity — it never re-checks the caller's own Venue profile. A `VenueManagerNoVenue`-style HTTP caller (bare Venue-typed tenant, no `VenueEntity` row) still resolves a non-null `TenantId` and would get a 200 with an empty list rather than `MissingVenue`. That parity gap is a production question, not a test gap — flagging it rather than fixing it here.
+
+- [x] **CAPP2 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/ConcertService.cs` and `Services/Executors/CancelExecutor.cs`
+  Concert's `TrySaveChangesAsync` → `*Error.Superseded` contract was untested for Cancel, Post, Update, and DeclareDoorRevenue.
+  Resolved: `CancelExecutorTests.CancelAsync_SaveRaceLost_ReturnsSuperseded` plus `ConcertServiceTests.{UpdateAsync,PostAsync,DeclareDoorRevenueAsync}_SaveRaceLost_ReturnsSuperseded` (all `Concertable.B2B.Concert.UnitTests`), each forcing `TrySaveChangesAsync` to return false and asserting the matching `Superseded` case.
+
+- [x] **CTEST1 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Executors/CancelExecutorTests.cs`
+  Only covered the cancellation-token rethrow path.
+  Resolved: added concert-not-found, rejected-transition, and successful-path cases, mirroring `CompleteExecutorTests.cs`'s coverage of the sibling executor.
+
+- [x] **CTEST2 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Services/ConcertServiceCreateTests.cs`
+  Never tested the duplicate-Concert guard in `ConcertService.CreateAsync`.
+  Resolved: `CreateAsync_ExistingConcertForBooking_DoesNotAddOrSave` stubs an existing `ConcertEntity` for the booking and asserts `CreateAsync` neither adds nor saves a duplicate.
+
+- [x] **FOUND3 — MEDIUM — test coverage** — `api/Concertable.DataAccess/Concertable.DataAccess.Infrastructure/Data/DomainEventDispatchInterceptor.cs:53`
+  The `SaveChangesFailedAsync` stack-balance fix (`pendingEventsStack.TryPop(out _)`) had no test.
+  Resolved: `DomainEventDispatchInterceptorTests` (new, `Concertable.DataAccess.UnitTests`, SQLite in-memory — no Docker) forces a real `SaveChangesAsync` failure (a unique-constraint `DbUpdateException`, not a concurrency conflict — see note), then a successful retry, and asserts via reflection that `pendingEventsStack.Count` returns to 0 after the failure and again after the retry, and that only the retry's domain events are dispatched. Verified as a genuine regression test by reverting the fix locally and confirming the test fails (stack count 1, not 0).
+  Note: empirically confirmed (EF Core 10, both the InMemory and SQLite providers) that `DbUpdateConcurrencyException` never invokes `SaveChangesFailedAsync` — only a plain `DbUpdateException` does. `ConcurrencyConflictInterceptor`, named in the original finding as the tool to "force exactly this," cannot exercise this code path; production's own concurrency retries go through `DbContextExtensions.TrySaveChangesAsync`'s direct try/catch, which never touches this interceptor's stack at all. The test therefore forces the failure the fix actually guards against instead.
+
+**Unrelated pre-existing defects surfaced while landing this pass** (not fixed here, out of this branch's stated scope):
+- Every B2B integration test failed at host startup on `IDENTITY_INSERT` conflicts for `Applications`, `Bookings`, and `Concerts` (deterministic seed ids stamped via reflection onto SQL Server identity columns with no `SET IDENTITY_INSERT` toggle). Fixed in `ApplicationTestSeeder`, `BookingTestSeeder`, and `ConcertTestSeeder` — each now opens the connection, toggles `IDENTITY_INSERT` around the seed `SaveChangesAsync`, and closes it. Pre-existing, unrelated to the RequestContext/PaymentVerification work; this was blocking the entire integration suite, not just the two findings above that needed it.
+- `Concertable.B2B.Deal.UnitTests.Strategies.DealStrategyArchitectureTests` (`KeyedProviderAllowlist_StillUsesKeyedServiceProvider`, `StrategyFactoryAllowlist_StillOwnsKeyedServiceLookup`) reference `ConcertDealStrategyFactory.cs`, renamed to `ConcertDealStrategyBuilder.cs` in commit `2d14e08db` — predates this session's work, unrelated to the six findings above.
+- `OpportunityDashboardApiTests.GetCurrentForVenue_MapsApplicationCountAndDeadline` fails once the integration suite can actually run: the response never contains `fixture.SeedState.ActiveVenueHireOpportunity`. Likely adjacent to the already-tracked SEED4 (`FreshVenueHireOpportunity` picked by list position).
+- `VenueDashboardApiTests.GetKpis_ReturnsCurrentVenueMetrics` fails once the integration suite can actually run: `VenueDashboardService.GetAsync` throws "A second operation was started on this context instance before a previous operation completed" — concurrent awaits sharing one `DbContext`.
+- Now that the whole suite can boot, `Concertable.B2B.Application.IntegrationTests` shows a stable 6/71 failing (`ApplicationApiTests`, mostly Forbidden/eligibility and Accept-race cases). `Concertable.B2B.Booking.IntegrationTests` shows a stable ~12/21 failing, concentrated almost entirely in `BookingCancellationApiTests` — every cancellation-race, refund, and retry scenario. Not triaged individually; flagged for follow-up rather than investigated further in this pass. The concentration in `BookingCancellationApiTests` matches this file's own NAT8/NAT9/IR4/IR7 history of repeated cancellation-flow defects, so this is plausibly one shared root cause rather than 12 independent bugs — but that is a hypothesis, not a verified finding.
