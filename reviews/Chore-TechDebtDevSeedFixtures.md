@@ -12,8 +12,9 @@
 
 ## Findings
 
-- [ ] **NAT1 — native** — no findings. Layer-1 general review (correctness, reuse, simplification,
-  efficiency, error handling) over `7629c9ae0..33ed717bb` at medium effort surfaced nothing.
+Layer-1 native review (correctness, reuse, simplification, efficiency, error handling) over
+`7629c9ae0..33ed717bb` at medium effort: no findings.
+
 - [x] **CV1 — LOW — test coverage** — `app/shared/src/features/venues/api/venueApi.ts`,
   `app/shared/src/features/artists/api/artistApi.ts`,
   `app/web/b2b/shared/src/features/organizations/api/organizationApi.ts`
