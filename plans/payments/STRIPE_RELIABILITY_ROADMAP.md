@@ -58,7 +58,7 @@ actual `origin/main` baseline. It must not infer current delivery state from thi
 |---|---|---|---|
 | [x] | `payments/provider-contract-baseline` | Lock Stripe product choices, operation vocabulary, transition tables, package contracts, and executable architecture tests | PR #597 merged; platform `0.1.0-alpha.0.1061`; sync PR #645 merged |
 | [x] | `payments/payment-session-state` | Persist and idempotently create/reuse PaymentIntent and SetupIntent sessions; publish an agnostic status-read contract | PR #721 merged; Payment `0.1.0-alpha.0.1195`; sync PR #794 merged |
-| [ ] | `payments/provider-reconciliation` | Complete webhook coverage and reconcile stale PaymentIntent, SetupIntent, and Refund state | payment session state; PR #544 foundation |
+| [ ] | `payments/provider-reconciliation` | Complete webhook coverage and reconcile stale PaymentIntent, SetupIntent, and Refund state | Phase 1 PR #831 merged; Payment `0.1.0-alpha.0.1242`; sync PR #846 merged; PR #544 foundation |
 | [ ] | `payments/customer-ticket-attempt` | Add the Customer-owned durable ticket-purchase attempt and fulfillment status API | published/synced Payment session contracts |
 | [ ] | `payments/frontend-orchestration-core` | Add reusable headless TanStack Query payment orchestration and optional invalidation adapters | provider contract baseline; consumer status shape locked |
 | [ ] | `payments/customer-web-checkout` | Extract the Stripe web adapter and migrate Customer web to durable ticket-attempt state | customer ticket attempt; frontend core |
@@ -461,6 +461,8 @@ for later implementation items.
 ### 2. Provider reconciliation
 
 **Key:** `payments/provider-reconciliation`
+
+Phase 1 centralized eager session reconciliation and shipped through PR #831 and platform sync PR #846. Webhook/outbox reconciliation, scheduled session and refund recovery, and final delivery verification remain.
 
 - Implement pure normalizers/reducers and complete provider event coverage.
 - Route eager results, webhook work, and scheduled sweeps through the same synchronization services.
