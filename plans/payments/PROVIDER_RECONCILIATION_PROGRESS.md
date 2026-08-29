@@ -21,9 +21,7 @@ No published `Concertable.*` contract changed; no persistent-model change, so no
 
 ## Next Steps
 
-Run the code review over the whole branch delta (the reshape has not been reviewed), settle the one open decision below, then open the Payment producer PR and take it through the merge queue. Phase 3 (stale-session/pending-refund sweep worker and Refund webhook routing) and Phase 4 (delivery) remain.
-
-Open decision: the "an automatic-capture Payment can never be `Authorized`" guard was dropped — the single session machine carries the `Authorized` edges, relying on Stripe not returning `requires_capture` for an automatic PaymentIntent. Re-add as a one-line invariant in `Evaluate` if belt-and-braces is wanted.
+Reviewed and green. Open the Payment producer PR and take it through the merge queue (remote exact-head CI owns the full E2E/carve matrix). Phase 3 (stale-session/pending-refund sweep worker and Refund webhook routing) and Phase 4 (delivery) remain.
 
 ## Completed work
 
@@ -38,7 +36,7 @@ Open decision: the "an automatic-capture Payment can never be `Authorized`" guar
 
 ## Reviews
 
-Phase 1 full and incremental review is complete with finding `PAY-REC-001` resolved and no open findings through `557c6d113d9a7e2554bc56f9c1e32598797d860d`. Canonical artifact: `reviews/Feature-payments_provider-reconciliation-phase1.md`.
+Phase 2 review is complete with no open findings through `363c84c8280e170ff5f8eadedafbc92c42676a30` (two passes: webhook slice, and state-machine + DDD reshape). Findings `PAY-REC2-001..007` all resolved or dispositioned; `PAY-REC2-001` (published `PaymentOperationStateChanged.ExpiresAt` always null) is tracked as a pre-existing published-contract field owed to a dedicated producer plan. Canonical artifact: `reviews/Feature-payments_provider-reconciliation-phase2.md`. (Phase 1: `reviews/Feature-payments_provider-reconciliation-phase1.md`.)
 
 ## Decisions, discoveries, blockers, and deviations
 
