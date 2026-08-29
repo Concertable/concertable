@@ -6,6 +6,15 @@
 > in one line, take the safe path, keep going.
 
 **Reviewed up to commit:** `c0bc7d544a0ccc8775e3477796f5a57bac46365b`  _(2026-08-30)_
+**Security-reviewed up to commit:** `c0bc7d544a0ccc8775e3477796f5a57bac46365b`  _(2026-08-30)_
+
+> Security scope: `api/Concertable.Payment/TECH_DEBT.md` and the `ClientSecret`/proto changes matched the
+> generic secret-vocabulary pattern. Traced every touched call site (`payment.proto`, both
+> `Concertable.Payment.Infrastructure/Grpc/*Mappers.cs`, both `Concertable.Payment.Client/Adapters/*Mappers.cs`):
+> the diff changes only how the *absence* of a Stripe client secret is represented on the wire (an
+> ambiguous `""` sentinel → an explicit `HasClientSecret` presence bit via proto3 `optional`). The secret
+> value itself is unchanged in transit (still TLS gRPC), never logged, never weakened, never newly exposed.
+> No findings.
 
 > Range reviewed: `8e74c4eee..c0bc7d544` (7 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
