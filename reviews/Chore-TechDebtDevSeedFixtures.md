@@ -6,6 +6,7 @@
 > in one line, take the safe path, keep going.
 
 **Reviewed up to commit:** `67c4819190472c6e9153830c777843e9745b4a25`  _(2026-08-29)_
+**Security-reviewed up to commit:** `be18b357b657315a82c17fd59bc8ab39b70093c9`  _(2026-08-29)_
 
 > Range reviewed: `7629c9ae0..67c481919` (5 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -23,6 +24,10 @@ Layer-1 native review (correctness, reuse, simplification, efficiency, error han
   earning a unit test, and this diff changes exactly the branch (absent-value handling) that was the live
   bug. Fixed: added `getMyVenue`/`getMyArtist` null-vs-present cases to the existing `venueApi.test.ts` /
   `artistApi.test.ts`, and a new `organizationApi.test.ts` covering the 204→null and 200→data branches.
+
+Security layer (touches `Concertable.Auth`): no findings. The Auth dev-seeder addition follows the
+existing default-password pattern already used for every other seeded credential; the fixture change is
+a hardening (reads back the real persisted user instead of a caller-supplied email).
 
 No Lens B/C/D findings — no service-boundary, module-boundary or seeding-standard issues; the Auth
 credential addition follows the existing direct-write seeding pattern and the B2B fixture change follows
