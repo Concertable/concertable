@@ -53,9 +53,9 @@ const artistApi = {
     return data;
   },
 
-  getMyArtist: async (): Promise<Artist | undefined> => {
+  getMyArtist: async (): Promise<Artist | null> => {
     const { data } = await apiClient.getOptional<Artist>(ORGANIZATION_BASE);
-    return data ?? undefined;
+    return data;
   },
 
   createArtist: async (request: CreateArtistRequest): Promise<Artist> => {
