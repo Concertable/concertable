@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Concertable.B2B.RequestContext;
+namespace Concertable.Kernel.Identity;
 
 public interface IClientContext
 {
