@@ -20,13 +20,11 @@ Application, Booking, and Concert independent state machines and contextual oper
 are selected for small closed internal values, beginning with the read-only combined journey
 projection and extending only to proven case-specific module states, triggers, and operation outcomes.
 
-The separate Deal plan selected a published closed record hierarchy, direct native interface unions for
-heterogeneous method headers, and invariant module factories for the honest same-interface terms,
-mapper, and updater families. Lifecycle executors and steps use dedicated factories plus type-pattern
-matches, not the common-interface strategy factory. This plan
-owns the prerequisite C# 15 native-union/runtime and compiler/target/consumer matrix; the Deal plan owns
-its later internal-value migration, breaking package cut-over, and classification of provisional keyed
-selectors.
+The lifecycle plan now owns the net10 `DealUnionBuilder<TUnion>` over the generic keyed-union builder and
+`IDealUnionFactory<TUnion>` foundation plus Dunet adapter unions for heterogeneous Apply and Accept. This
+runtime plan owns their mechanical replacement with direct native interface unions while preserving the
+factory contract and Deal mappings. Honest same-interface terms, mapper, updater, and completion families
+remain on `IDealStrategyFactory<TStrategy>`.
 
 The B2B typed-result dependency landed in PR #552. The lifecycle plan owns the return path.
 
@@ -42,9 +40,9 @@ Resume when: Current `main` contains the delivered lifecycle split and the lifec
 - Established the B2B runtime/net10 Contracts compatibility boundary and SDK/Functions risks.
 - Rejected the cross-stage union over DI step implementations after the lifecycle ownership decision.
 - Replanned this work as a runtime upgrade with native unions for closed internal values; the downstream
-  Deal plan owns direct unions of module-local heterogeneous method-header interfaces.
+  Deal plan owns direct unions of module-owned heterogeneous method-header interfaces.
 - Reconciled the landing shape against current C# 15 union semantics: direct interface cases replace the
-  net10 marker return without wrapper records, while keyed DI remains confined to the net10 factory.
+  net10 Dunet adapter records, while keyed DI remains confined to `IDealUnionFactory<TUnion>`.
 - Registered the Deal dispatch/representation plan as a downstream consumer of the supported C# 15
   native-union/runtime and target matrix.
 
@@ -63,10 +61,10 @@ a fresh docs review before implementation.
 
 - The runtime upgrade is the platform gate for native union adoption.
 - This plan's native unions model closed values; the journey-stage projection is the first required use.
-- The Deal plan may later use native unions over module-local heterogeneous method-header interfaces;
-  those unions do not restore the rejected cross-module workflow or service location. The net10 factory
-  may use keyed DI internally, while the .NET 11 union is `union Accept(IStandardAccept, IPrepaidAccept)`
-  rather than a union of wrapper records or concrete implementations.
+- The net10 lifecycle foundation uses operation-owned Dunet adapter unions because C# 14 cannot express
+  direct interface unions. The .NET 11 replacement is
+  `union Accept(IAccept, IAcceptPaid)`, never a union of wrapper records or concrete
+  implementations.
 - Required invocation input is narrowed with an ordinary `when ... is not null` pattern arm. Its missing
   arm returns the typed Result failure; it does not use a throwing requirement helper or weaken a method
   header to accept nullable input.
@@ -75,10 +73,10 @@ a fresh docs review before implementation.
   or data. The later public dispatch package may replace their internal keyed implementation.
 - The current [C# union reference](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/union)
   permits interfaces as union cases and defines unions over types, not raw method declarations. Therefore
-  the .NET 11 boundary can directly use `IStandardAccept` and `IPrepaidAccept` without adapter records.
-- [Dunet](https://github.com/domn1995/dunet) requires nested partial-record variants. It remains suitable
-  for data/error unions but is rejected for this net10 DI boundary because it would add the wrapper cases
-  and `.Value` access that the native interface union later removes.
+  the .NET 11 boundary can directly use `IAccept` and `IAcceptPaid` without adapter records.
+- [Dunet](https://github.com/domn1995/dunet) requires nested partial-record variants. Those adapters are the
+  explicit net10 compatibility boundary for Apply and Accept and are deleted when native interface unions
+  become available.
 - Published Contracts and persisted/wire models remain union-free in this runtime PR.
 - The Deal contract's later closed hierarchy is not a native union and is outside this runtime PR.
 

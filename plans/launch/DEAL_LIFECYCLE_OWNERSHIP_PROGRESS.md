@@ -13,7 +13,7 @@
   `Concertable.Kernel 0.1.0-alpha.0.1133`, and platform sync PR #730 produced the B2B platform pin
   `0.1.0-alpha.0.1158`. B2B consumes the Kernel state machine directly and every consumer directly pins
   `Reunion 0.1.0-alpha.8` rather than relying on Kernel's transitive reference. No producer gate remains.
-- Last reconciled: 2026-08-25 from local Git, GitHub PR #633, the active review work order, and focused
+- Last reconciled: 2026-08-29 from local Git, GitHub PR #633, the active review work order, and focused
   module lifecycle verification.
 
 ## Current state
@@ -32,6 +32,14 @@ helper that assigns `State` only from the success value, then mutates auxiliary 
 a rejected edge leaves state, auxiliary facts, and events untouched. Operation errors carry
 `InvalidTransition(TransitionError<State, Trigger>)`. The old combined `LifecycleState`, per-`DealType`
 `LifecycleStateMachine`, `IConcertStateMachineRegistry`, and `ILifecycleTransitioner` are gone from source.
+
+Deal-varying dispatch now has one shared Deal-specific composition layer. `DealStrategyBuilder` composes
+the generic keyed-strategy builder and automatically requires full `DealType` coverage for every registered
+same-interface family. `DealUnionBuilder<TUnion>` composes the generic keyed-union builder and enforces one
+method-header case per DealType. Application Apply and Accept use operation-owned Dunet unions; Accept maps
+FlatFee and VenueHire to `IAccept`, DoorSplit and Versus to `IAcceptPaid`, and the consumer matches those
+interfaces rather than DealType. The .NET 11 plan records the direct native `union Accept(IAccept,
+IAcceptPaid)` replacement, which removes only the Dunet wrappers.
 
 The final security review added IR7-IR10. IR7 is closed: verify-payment handlers now resolve only the
 Booking id before entering the repository's serialized financial transition, and deterministic overlap
@@ -69,6 +77,9 @@ closeout once the lifecycle is terminal.
   (serialized Booking financial transitions).
 - IR6 completed the production message topology by provisioning the three lifecycle topics and the durable
   Concert-notification command queue in the Aspire composition layer.
+- Replaced the four copied Deal strategy builders with the shared generic keyed builder plus the
+  Deal-specific `DealStrategyBuilder`; added the generic keyed-union catalog, `DealUnionBuilder<TUnion>`,
+  and `IDealUnionFactory<TUnion>`; and moved Application Apply/Accept dispatch out of DealType switches.
 
 ## Verification
 
@@ -80,6 +91,11 @@ closeout once the lifecycle is terminal.
   `EnforceServiceBoundary=true`: 0 warnings / 0 errors. Direct Kernel/Reunion ownership and the shared
   `0.1.0-alpha.8` Reunion pin were mechanically confirmed.
 - `ServiceTopologyTests`: 7/7 passed with the lifecycle topic and command-queue inventory.
+- Current Deal-dispatch slice: KeyedStrategies 19/19, Deal 47/47, Application 20/20, Booking 8/8, and
+  Concert 103/103. The full B2B solution build completed with 0 errors; its two warnings came from generated
+  temporary UI E2E sources. Architecture composition validation passed outside the sandbox, leaving 21/23
+  green; the two remaining failures are in unchanged Reunion package-ownership and Venue fixture-boundary
+  paths, not this dispatch diff.
 - Local E2E deliberately not run. Standalone carve, complete integration matrices, and exact-head CI remain
   owned by draft-PR CI; PR/remote head equality remains part of final delivery.
 
@@ -106,6 +122,9 @@ closeout once the lifecycle is terminal.
   they may not invoke foreign domain behaviour or query foreign module persistence.
 - Runtime orchestration belongs in integration tests. Unit tests retain pure state, value, transition,
   calculation, and other deterministic logic.
+- Generic keyed builders remain business-agnostic. Shared B2B Infrastructure composes them with DealType,
+  `IDealStrategy`, exhaustive Deal coverage, and factory registration; module Infrastructure owns only its
+  DealType-to-implementation assignments.
 - `ConcertAvailabilityEntity` naming/layer placement is accepted only as recorded Application technical
   debt for this PR; do not expand the current review fix into that refactor.
 - No local E2E. Exact-head PR/merge-queue CI owns the full E2E tier.

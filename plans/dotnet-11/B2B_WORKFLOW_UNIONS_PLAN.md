@@ -11,8 +11,8 @@ Payment, and Auth builds.
 
 The former plan to replace `IConcertWorkflow` with a cross-stage union over concrete DI implementations
 is rejected. The approved lifecycle design deletes that workflow and gives each module contextual
-methods. This runtime plan owns small closed internal value unions and enables a module-local method
-factory to return a direct native union of existing DI method-header interfaces. No union owns
+methods. This runtime plan owns small closed internal value unions and enables the shared Deal union
+factory to return a direct native union of module-owned DI method-header interfaces. No union owns
 cross-module workflow state, performs keyed dependency resolution, or crosses a published boundary.
 
 `@plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md` owns the separate Deal decision: a closed record hierarchy,
@@ -74,9 +74,8 @@ contract.
 
 Do not use native unions in this runtime plan for:
 
-- concrete step implementations or keyed service resolution; the downstream Deal plan owns changing a
-  module-local factory return type from its net10 marker interface to a direct union of method-header
-  interfaces after this plan proves the compiler/runtime matrix;
+- concrete implementation cases or keyed service resolution. The union cases are capability interfaces;
+  the Deal union factory remains responsible for the one configured keyed lookup;
 - database columns or persistence DTOs in place of an explicit module-owned discriminator;
 - a replacement workflow/process aggregate;
 - integration events, protobuf, persistence, HTTP contracts, or published packages;
@@ -87,17 +86,20 @@ Do not use native unions in this runtime plan for:
 The published Deal sum uses a closed hierarchy instead of a native union because it has genuine shared
 members, ordinary reference identity, TPT/class-polymorphism alignment, and an established tagged
 `$type` JSON contract. A heterogeneous Deal-varying method uses a direct native union of its existing
-method-header interfaces, for example `union Accept(IStandardAccept, IPrepaidAccept)`. Its consumer uses
+method-header interfaces, for example `union Accept(IAccept, IAcceptPaid)`. Its consumer uses
 ordinary exhaustive type-pattern matching; a `when` guard may narrow required request input, with the
 unguarded arm returning the typed validation Result. The proven uniform terms, mapper, and updater
 operations remain named calls selected through invariant module factories; their selection switches and
 registrations are never repeated in application source.
 
-The native union has no Dunet case records, `.Value` wrappers, or service-bearing adapter records. Each
-header may retain multiple DI implementations. No concrete implementation may implement more than one
-header in the same union, because C# permits overlapping interface cases but that overlap would make
-dispatch order-sensitive. A later compile-time switch-dispatch package may replace the net10 keyed
-factory internals without changing the method interfaces, native union, or consumer shape.
+The native union has no Dunet case records, `.Accept` wrappers, or service-bearing adapter records. The
+net10 `DealUnionBuilder<TUnion>` mapping and `IDealUnionFactory<TUnion>` consumption contract stay
+stable. Registration replaces each Dunet wrapper projection with a native conversion; prefer a zero-lambda
+`Case<TCapability>()` only if the final compiler/runtime exposes a safe generic construction mechanism.
+Otherwise retain an explicit `static value => (Accept)value` conversion at composition. Each header may
+retain multiple DI implementations. No concrete implementation may implement more than one header in the
+same union, because C# permits overlapping interface cases but that overlap would make dispatch
+order-sensitive.
 
 Do not manufacture unions for types that are already honestly represented by an enum or ordinary
 value object. The selected .NET 11 direction requires native unions for the closed journey projection
@@ -148,7 +150,10 @@ inspection proves published B2B contracts still carry net10 assets.
 4. Keep module-owned state machines and aggregate ownership unchanged. Replace keyed resolution outside
    factories, but preserve the method-header interfaces and their DI implementations. Do not convert the
    downstream Deal plan's same-interface terms, mapper, or updater families into unions.
-5. Delete superseded value abstractions in the same checkpoint; do not retain parallel models.
+5. Replace the net10 Application `Apply` and `Accept` Dunet adapter unions with direct native interface
+   unions. Keep the Deal mappings and `IDealUnionFactory<TUnion>` unchanged, switch directly on capability
+   interfaces, and remove wrapper access and default arms.
+6. Delete superseded value abstractions in the same checkpoint; do not retain parallel models.
 
 Gate: this plan's unions remain internal value models, and no module/runtime dependency direction
 changes.
@@ -167,8 +172,8 @@ changes.
 
 - B2B runtime and every required reverse consumer compile on a supported .NET 11 SDK.
 - Published B2B Contracts remain net10-compatible and other services build independently.
-- This runtime plan's value unions contain values. The downstream Deal plan separately owns direct native
-  unions of module-local DI method-header interfaces; those unions never resolve services themselves.
+- This runtime plan's value unions contain values or module-owned method-header interfaces. Method unions
+  never resolve services themselves; `IDealUnionFactory<TUnion>` remains the selection boundary.
 - Application, Booking, and Concert retain independent state machines and contextual operations.
 - Native unions model the internal combined journey projection and every proven case-specific module
   state, trigger, or operation outcome with exhaustive coverage.
