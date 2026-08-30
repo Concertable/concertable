@@ -686,6 +686,59 @@ jobs:
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveCustomer.slnx" --configuration Release -p:MinVerSkip=true
 
+  container-images:
+    # Gate: every deployable that opts into a container image with <ContainerRepository> must actually
+    # produce one. publish-images.yml only runs after merge, so without this a project that cannot be
+    # imaged (a missing base image, a Functions app whose host contract is wrong, a Worker that forgot
+    # EnableSdkContainerSupport) would break main rather than the PR that broke it.
+    #
+    # Builds to a local OCI archive instead of pushing: the PR needs to know the image BUILDS, and a PR
+    # must never write to the registry. Goes through local-platform.ps1 like every other build job, so a
+    # PR that changes platform source images against that source and not the stale feed.
+    #
+    # The matrix is derived from <ContainerRepository>, identically to publish-images.yml, so the gate
+    # and the publish can never cover different sets.
+    runs-on: ubuntu-latest
+    needs: [local-platform-pack, changes]
+    if: needs.changes.outputs.run_code == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Build every opted-in deployable as an image
+        shell: bash
+        run: |
+          projects=$(grep -rl '<ContainerRepository>' api --include='*.csproj' | sort)
+          test -n "$projects" || { echo "No <ContainerRepository> projects found — refusing to pass"; exit 1; }
+          echo "Deployables to image:"
+          echo "$projects"
+          mkdir -p "$RUNNER_TEMP/images"
+          while IFS= read -r project; do
+            echo "::group::$project"
+            pwsh ./scripts/local-platform.ps1 publish "$project" --configuration Release \
+              /t:PublishContainer \
+              -p:ContainerImageTag=ci \
+              -p:ContainerArchiveOutputPath="$RUNNER_TEMP/images/$(basename "$project" .csproj).tar.gz"
+            echo "::endgroup::"
+          done <<< "$projects"
+          ls -l "$RUNNER_TEMP/images"
+
   fe-boundaries:
     runs-on: ubuntu-latest
     needs: [changes]
@@ -1226,6 +1279,7 @@ jobs:
       - carve-search
       - carve-b2b
       - carve-customer
+      - container-images
       - fe-boundaries
       - carve-fe
       - unit-tests
