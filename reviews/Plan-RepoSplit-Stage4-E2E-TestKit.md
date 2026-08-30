@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `85b9499bbb8ed280d4103b6786431ee57d028132`  _(2026-08-30)_
+**Reviewed up to commit:** `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174`  _(2026-08-30)_
 
-**Security-reviewed up to commit:** `85b9499bbb8ed280d4103b6786431ee57d028132`  _(2026-08-30)_
+**Security-reviewed up to commit:** `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174`  _(2026-08-30)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -99,3 +99,15 @@ No new findings. Native review confirmed the explicit `Aspire.Hosting.NodeJs` an
 Range reviewed: `12f331daa..85b9499bb` (1 commit).
 
 No high- or medium-confidence findings. The centrally pinned packages use the existing hosting-project versions and recorded NuGet integrity hashes, add no production execution path, and do not weaken the AppHost dependency-containment or E2E trust boundaries.
+
+## Incremental review — 2026-08-30 (platform .1273 sync)
+
+Merge reviewed: `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174` relative to both parents.
+
+No new findings. Native review confirmed the first-parent delta is exactly the seven coordinated platform-version bumps from `.1271` to `.1273`, matching `main`; the private AppHost references and explicit Aspire runtime extensions are preserved unchanged, with no conflict artifacts or package-boundary regression.
+
+## Security review — 2026-08-30 (platform .1273 sync)
+
+Merge reviewed: `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174` relative to both parents.
+
+No high- or medium-confidence findings. The sync changes only centrally managed platform versions and introduces no source, provenance, package-ID, secret, listener, or trust-boundary change. The runtime-extension pins still match their owning hosting project and remain limited to the non-packable source provider.
