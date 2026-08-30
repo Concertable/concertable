@@ -13,8 +13,8 @@ interface Props {
   links: NavLink[];
   profileItems: ProfileMenuItem[];
   headerSlot?: ReactNode;
-  /** Injected only by apps whose backend actually serves messaging (venue, artist) — see
-   * `app/web/TECH_DEBT.md`'s Mailbox entry for why this can't be a default. */
+  /** Injected only by apps whose backend actually serves messaging (venue, artist) — the
+   * customer app's backend has no `MessageController`, so it must not default to one. */
   messagingSlot?: ReactNode;
 }
 
