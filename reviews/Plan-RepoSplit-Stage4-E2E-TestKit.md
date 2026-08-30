@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `21b290ead87f6ab2786e5d3d8ac0333862e38239`  _(2026-08-30)_
+**Reviewed up to commit:** `abed0218d97668521c51e9cb5689e653a25ad586`  _(2026-08-30)_
 
-**Security-reviewed up to commit:** `21b290ead87f6ab2786e5d3d8ac0333862e38239`  _(2026-08-30)_
+**Security-reviewed up to commit:** `abed0218d97668521c51e9cb5689e653a25ad586`  _(2026-08-30)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -75,3 +75,15 @@ No new findings. Native merge-resolution review confirmed the merged solution pr
 Merge reviewed: `21b290e` relative to both parents.
 
 No high- or medium-confidence findings. E2E admin routes remain non-packable, E2E-environment-only, fail-closed, fixed-time key protected, and absent from production hosts. The merged Auth/AppHost composition does not bypass those boundaries, and the source provider remains non-packable with private executable AppHost references.
+
+## Incremental review — 2026-08-30 (hosting-abstraction sync)
+
+Merge reviewed: `abed0218d97668521c51e9cb5689e653a25ad586` relative to both parents.
+
+No new findings. Native review confirmed the sole conflict resolution preserves `main`'s serialized reset gate while retaining the TestKit reset and seed-state refresh. The server-side reset reseeds before returning, the widened hosting resource abstractions remain compatible with fleet composition, package pins resolve consistently to `0.1.0-alpha.0.1271`, and both parent-relative diffs are clean.
+
+## Security review — 2026-08-30 (hosting-abstraction sync)
+
+Merge reviewed: `abed0218d97668521c51e9cb5689e653a25ad586` relative to both parents.
+
+No high- or medium-confidence findings. E2E admin routes remain E2E-environment-only, fail-closed, fixed-time key protected, non-packable, and absent from production project references. The hosting abstraction changes preserve resource references and waits; source/package mode remains intact, including private non-resource AppHost references.
