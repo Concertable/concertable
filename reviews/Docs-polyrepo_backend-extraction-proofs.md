@@ -5,13 +5,13 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `<this-commit>`  `(2026-08-30)`
+**Reviewed up to commit:** `182b165a7024bbee38bf1c233811cfef3e837614`  `(2026-08-30)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — docs
 
 **Candidate base:** `2575cfdf14d36cba0967dca5532248dc09178735`
-**Candidate head:** `<this-commit>`
+**Candidate head:** `182b165a7024bbee38bf1c233811cfef3e837614`
 **Candidate branch:** `Docs/polyrepo_backend-extraction-proofs`
 **Candidate scope:** `all`
 **Work-order path:** `reviews/Docs-polyrepo_backend-extraction-proofs.md`
