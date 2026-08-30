@@ -53,7 +53,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Pack publishable projects
-        run: dotnet pack api/Concertable.slnx --configuration Release --output ${{ runner.temp }}/nupkgs
+        run: dotnet pack api/Concertable.slnx --configuration Release --output ${{ runner.temp }}/nupkgs -p:UseLocalPlatformSources=true
 
       - name: List packages
         run: ls -l ${{ runner.temp }}/nupkgs
