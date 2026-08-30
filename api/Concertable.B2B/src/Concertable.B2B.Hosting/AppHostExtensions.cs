@@ -20,7 +20,7 @@ public static class AppHostExtensions
         IResourceBuilder<ProjectResource> paymentWeb)
     {
         var b2bSecret = builder.Configuration["ServiceAuth:B2BClientSecret"];
-        return builder.AddContainerImage(B2BConstants.WebResource, image, digest)
+        return builder.AddContainer(B2BConstants.WebResource, image, digest)
                       .WithReference(sql)
                       .WaitFor(sql)
                       .WithReference(auth)
@@ -109,7 +109,7 @@ public static class AppHostExtensions
         IResourceBuilder<ProjectResource>? paymentWeb = null,
         IResourceBuilder<ProjectResource>? auth = null)
     {
-        var workers = builder.AddContainerImage(B2BConstants.WorkersResource, image, digest)
+        var workers = builder.AddContainer(B2BConstants.WorkersResource, image, digest)
                              .WithReference(sql)
                              .WaitFor(sql);
 
@@ -132,7 +132,7 @@ public static class AppHostExtensions
         string digest,
         IResourceBuilder<AzureServiceBusResource> asb)
     {
-        return builder.AddContainerImage(B2BConstants.SeedingSimulatorResource, image, digest)
+        return builder.AddContainer(B2BConstants.SeedingSimulatorResource, image, digest)
                       .WithReference(asb)
                       .WaitFor(asb);
     }

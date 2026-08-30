@@ -14,7 +14,7 @@ public static class AppHostExtensions
         IResourceBuilder<ProjectResource> auth,
         IResourceBuilder<SqlServerDatabaseResource> searchDb)
     {
-        return builder.AddContainerImage(SearchConstants.WebResource, image, digest)
+        return builder.AddContainer(SearchConstants.WebResource, image, digest)
                       .WithReference(auth)
                       .WaitFor(auth)
                       .WithReference(searchDb)
@@ -57,7 +57,7 @@ public static class AppHostExtensions
         IResourceBuilder<SqlServerDatabaseResource> searchDb,
         IResourceBuilder<AzureServiceBusResource> asb)
     {
-        return builder.AddContainerImage(SearchConstants.WorkersResource, image, digest)
+        return builder.AddContainer(SearchConstants.WorkersResource, image, digest)
                       .WithReference(searchDb)
                       .WaitFor(searchDb)
                       .WithReference(asb)

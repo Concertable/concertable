@@ -19,7 +19,7 @@ public static class AppHostExtensions
         IResourceBuilder<SqlServerDatabaseResource> paymentDb,
         IResourceBuilder<AzureServiceBusResource> asb)
     {
-        return builder.AddContainerImage(PaymentConstants.WebResource, image, digest)
+        return builder.AddContainer(PaymentConstants.WebResource, image, digest)
                       .WithReference(paymentDb)
                       .WaitFor(paymentDb)
                       .WithReference(auth)
@@ -28,7 +28,7 @@ public static class AppHostExtensions
                       .WaitFor(asb)
                       .WithEnvironment("Auth__Authority", auth.GetEndpoint("https"))
                       .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, PaymentConstants.ServiceName)
-                      .AddSecrets(builder, "Stripe:SecretKey", "Stripe:WebhookSecret", "ExternalServices:UseRealStripe");
+                      .WithConfiguredSecrets(builder, "Stripe:SecretKey", "Stripe:WebhookSecret", "ExternalServices:UseRealStripe");
     }
 
     public static IResourceBuilder<ProjectResource> AddPaymentWeb<TProject>(
@@ -72,13 +72,28 @@ public static class AppHostExtensions
         IResourceBuilder<SqlServerDatabaseResource> paymentDb,
         IResourceBuilder<AzureServiceBusResource> asb)
     {
-        return builder.AddContainerImage(PaymentConstants.WorkersResource, image, digest)
+        return builder.AddContainer(PaymentConstants.WorkersResource, image, digest)
                       .WithReference(paymentDb)
                       .WaitFor(paymentDb)
                       .WithReference(asb)
                       .WaitFor(asb)
                       .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, PaymentConstants.ServiceName)
-                      .AddSecrets(builder, "Stripe:SecretKey", "ExternalServices:UseRealStripe");
+                      .WithConfiguredSecrets(builder, "Stripe:SecretKey", "ExternalServices:UseRealStripe");
+    }
+
+    private static IResourceBuilder<ContainerResource> WithConfiguredSecrets(
+        this IResourceBuilder<ContainerResource> resource,
+        IDistributedApplicationBuilder builder,
+        params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var value = builder.Configuration[key];
+            if (!string.IsNullOrEmpty(value))
+                resource = resource.WithEnvironment(key.Replace(":", "__"), value);
+        }
+
+        return resource;
     }
 
     public static void AddStripeCli(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> paymentWeb)

@@ -15,13 +15,13 @@ public static class AppHostExtensions
         IResourceBuilder<SqlServerDatabaseResource> b2bDb,
         IResourceBuilder<AzureServiceBusResource> asb)
     {
-        var auth = builder.AddContainerImage(AuthConstants.Resource, image, digest)
+        var auth = builder.AddContainer(AuthConstants.Resource, image, digest)
                           .WithReference(authDb)
                           .WaitFor(authDb)
                           .WithReference(b2bDb)
                           .WithReference(asb)
                           .WaitFor(asb)
-                          .AddSecrets(builder, "ServiceAuth:B2BClientSecret", "ServiceAuth:CustomerClientSecret", "ServiceAuth:AuthClientSecret");
+                          .WithConfiguredSecrets(builder, "ServiceAuth:B2BClientSecret", "ServiceAuth:CustomerClientSecret", "ServiceAuth:AuthClientSecret");
 
         auth.WithEnvironment("Auth__Authority", auth.GetEndpoint("https"));
         foreach (var client in LocalSpaSurfaces.Authenticated)
@@ -64,6 +64,21 @@ public static class AppHostExtensions
         }
 
         return auth;
+    }
+
+    private static IResourceBuilder<ContainerResource> WithConfiguredSecrets(
+        this IResourceBuilder<ContainerResource> resource,
+        IDistributedApplicationBuilder builder,
+        params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var value = builder.Configuration[key];
+            if (!string.IsNullOrEmpty(value))
+                resource = resource.WithEnvironment(key.Replace(":", "__"), value);
+        }
+
+        return resource;
     }
 
     extension<T>(IResourceBuilder<T> auth)

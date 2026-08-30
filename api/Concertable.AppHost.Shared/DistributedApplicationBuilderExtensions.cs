@@ -8,15 +8,6 @@ using Microsoft.Extensions.Configuration;
 
 public static class DistributedApplicationBuilderExtensions
 {
-    extension(IDistributedApplicationBuilder builder)
-    {
-        public IResourceBuilder<ContainerResource> AddContainerImage(
-            string name,
-            string image,
-            string digest) =>
-            builder.AddContainer(name, image, digest);
-    }
-
     /// <summary>Suffixes <paramref name="dataVolumeName"/> with a short hash of the AppHost assembly's own
     /// build output path, so every git worktree gets its own SQL data volume automatically. Without this,
     /// two worktrees running the same service's AppHost at once share one Docker volume — a fresh
@@ -65,11 +56,10 @@ public static class DistributedApplicationBuilderExtensions
         return resource;
     }
 
-    public static IResourceBuilder<T> AddSecrets<T>(
-        this IResourceBuilder<T> resource,
+    public static IResourceBuilder<ProjectResource> AddSecrets(
+        this IResourceBuilder<ProjectResource> resource,
         IDistributedApplicationBuilder builder,
         params string[] keys)
-        where T : IResourceWithEnvironment
     {
         foreach (var key in keys)
         {

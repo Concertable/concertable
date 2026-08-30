@@ -18,7 +18,7 @@ public static class AppHostExtensions
         IResourceBuilder<ProjectResource> paymentWeb)
     {
         var customerSecret = builder.Configuration["ServiceAuth:CustomerClientSecret"];
-        return builder.AddContainerImage(CustomerConstants.WebResource, image, digest)
+        return builder.AddContainer(CustomerConstants.WebResource, image, digest)
                       .WithReference(auth)
                       .WaitFor(auth)
                       .WithReference(customerDb)
