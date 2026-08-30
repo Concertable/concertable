@@ -52,6 +52,27 @@ internal sealed class OpportunityReadRepository : IOpportunityReadRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<OpportunityApplicationProjection>> GetOpenWithApplicationCountsByVenueTenantIdAsync(
+        Guid venueTenantId) =>
+        await context.Opportunities
+            .Include(o => o.Venue)
+            .Where(o => o.Venue.TenantId == venueTenantId)
+            .WhereActive(timeProvider.GetUtcNow())
+            .OrderBy(o => o.Period.Start)
+            .Take(5)
+            .Select(o => new OpportunityApplicationProjection
+            {
+                Id = o.Id,
+                VenueId = o.VenueId,
+                VenueName = o.Venue.Name,
+                StartDate = o.Period.Start,
+                EndDate = o.Period.End,
+                Genres = o.Genres,
+                DealId = o.DealId,
+                ApplicationCount = o.Applications.Count
+            })
+            .ToListAsync();
+
     private IQueryable<OpportunityEntity> ActiveForVenue(int venueId) =>
         context.Opportunities
             .Include(o => o.Venue)

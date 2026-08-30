@@ -68,22 +68,6 @@ under-provisioned relative to the other.
 
 ---
 
-### Venue opportunity counts are exposed by the write repository
-
-`IOpportunityRepository.GetOpenWithApplicationCountsByVenueTenantIdAsync` is a read-only dashboard
-projection, but it currently lives on the write repository and queries `ConcertDbContext` with
-`AsNoTracking`. That is behaviourally safe, but it blurs the repository permission boundary and makes
-`OpportunityDashboardService` depend on the write surface for a query. The projection belongs on
-`IOpportunityReadRepository`, implemented by `OpportunityReadRepository` against
-`IConcertReadDbContext`; the read context already provides the correct no-tracking stance, so this
-should not be solved by restoring a general-purpose `Query` escape hatch.
-
-**Resolves when:** the projection and its tests move to `IOpportunityReadRepository` /
-`OpportunityReadRepository`, `OpportunityDashboardService` reads it through that interface, and
-`IOpportunityRepository` no longer exposes the query.
-
----
-
 ### `DELETE api/organization` is a local hard-delete with no cross-module / cross-service teardown
 
 `TenantService.DeleteAsync` deletes the tenant row and cascades only the Tenant module's own children (memberships, invitations). It emits **no `TenantDeletedEvent`** and touches nothing outside the `tenant` schema, so deleting an organization silently **orphans** everything provisioned off it: the Payment Stripe payout account (provisioned by `CredentialRegisteredHandler`), the venues/artists/concerts owned by the tenant (separate modules/contexts, no cross-schema FK — so no error, just dangling rows), and downstream Search projections. The create path deliberately re-raises `TenantCreatedDomainEvent` via `Announce()`, which `TenantCreatedDomainEventHandler` turns into the integration `PayoutOwnerRegisteredEvent`, for exactly this cross-service reason; delete has no symmetric path. Landed as a simple synchronous endpoint in the member-management phase (Phase 6.2); the full teardown is its own design (a new integration event + a Payment consumer that deactivates the connected account + module-owned cleanup of venue/artist/concert data).

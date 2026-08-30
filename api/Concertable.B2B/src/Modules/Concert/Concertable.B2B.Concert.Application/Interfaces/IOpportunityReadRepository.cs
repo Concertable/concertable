@@ -5,11 +5,12 @@ using Concertable.Contracts;
 namespace Concertable.B2B.Concert.Application.Interfaces;
 
 /// <summary>
-/// The public marketplace surface over opportunities — anonymous browse, no private contents.
-/// Reads run on the read-only <c>ConcertReadDbContext</c>, which composes no tenant filters,
-/// so the open/active check sees <b>all</b> parties' applications — an opportunity already booked
-/// by another tenant correctly stops showing as open. Management reads live on
-/// <see cref="IOpportunityRepository"/>, which is tenant-scoped.
+/// Read-only projections over opportunities, run on the read-only <c>ConcertReadDbContext</c>. That
+/// context composes no tenant filters, so the open/active check sees <b>all</b> parties' applications —
+/// an opportunity already booked by another tenant correctly stops showing as open — and a caller
+/// wanting one tenant's opportunities passes that tenant key explicitly. Covers both the anonymous
+/// marketplace browse and a venue's own dashboard projections. Tracked reads that feed a mutation
+/// live on <see cref="IOpportunityRepository"/>.
 /// </summary>
 internal interface IOpportunityReadRepository
 {
@@ -18,4 +19,6 @@ internal interface IOpportunityReadRepository
     Task<IReadOnlyList<OpportunityMatchProjection>> GetMatchCandidatesAsync(
         int artistId,
         IReadOnlySet<Genre> genres);
+    Task<IReadOnlyList<OpportunityApplicationProjection>> GetOpenWithApplicationCountsByVenueTenantIdAsync(
+        Guid venueTenantId);
 }

@@ -9,7 +9,6 @@ namespace Concertable.B2B.Concert.Infrastructure.Services;
 
 internal sealed class OpportunityDashboardService : IOpportunityDashboardService
 {
-    private readonly IOpportunityRepository repository;
     private readonly IOpportunityReadRepository readRepository;
     private readonly IArtistReadModelRepository artistRepository;
     private readonly ITenantContext tenantContext;
@@ -17,14 +16,12 @@ internal sealed class OpportunityDashboardService : IOpportunityDashboardService
     private readonly TimeProvider timeProvider;
 
     public OpportunityDashboardService(
-        IOpportunityRepository repository,
         IOpportunityReadRepository readRepository,
         IArtistReadModelRepository artistRepository,
         ITenantContext tenantContext,
         IDealModule dealModule,
         TimeProvider timeProvider)
     {
-        this.repository = repository;
         this.readRepository = readRepository;
         this.artistRepository = artistRepository;
         this.tenantContext = tenantContext;
@@ -35,7 +32,7 @@ internal sealed class OpportunityDashboardService : IOpportunityDashboardService
     public async Task<Result<IReadOnlyList<OpportunityApplicationMetrics>, OpportunityError>>
         GetApplicationMetricsForCurrentVenueAsync()
     {
-        var projections = await repository.GetOpenWithApplicationCountsByVenueTenantIdAsync(
+        var projections = await readRepository.GetOpenWithApplicationCountsByVenueTenantIdAsync(
             tenantContext.GetTenantId());
         var deals = await GetDealsAsync(projections.Select(projection => projection.DealId));
         var today = timeProvider.GetUtcNow().UtcDateTime.Date;

@@ -1,4 +1,3 @@
-using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Infrastructure.Data;
 using Concertable.B2B.Concert.Infrastructure.Extensions;
@@ -28,28 +27,6 @@ internal sealed class OpportunityRepository : TenantScopedRepository<Opportunity
         context.Opportunities
             .Include(o => o.Venue)
             .FirstOrDefaultAsync(o => o.Id == id, ct);
-
-    public async Task<IReadOnlyList<OpportunityApplicationProjection>> GetOpenWithApplicationCountsByVenueTenantIdAsync(
-        Guid venueTenantId) =>
-        await context.Opportunities
-            .AsNoTracking()
-            .Include(o => o.Venue)
-            .Where(o => o.Venue.TenantId == venueTenantId)
-            .WhereActive(timeProvider.GetUtcNow())
-            .OrderBy(o => o.Period.Start)
-            .Take(5)
-            .Select(o => new OpportunityApplicationProjection
-            {
-                Id = o.Id,
-                VenueId = o.VenueId,
-                VenueName = o.Venue.Name,
-                StartDate = o.Period.Start,
-                EndDate = o.Period.End,
-                Genres = o.Genres,
-                DealId = o.DealId,
-                ApplicationCount = o.Applications.Count
-            })
-            .ToListAsync();
 
     public async Task<Guid?> GetOwnerByIdAsync(int opportunityId) =>
         await context.Opportunities

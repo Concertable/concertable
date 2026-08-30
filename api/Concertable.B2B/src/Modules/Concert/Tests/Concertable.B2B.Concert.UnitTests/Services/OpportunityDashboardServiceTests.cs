@@ -13,7 +13,6 @@ namespace Concertable.B2B.Concert.UnitTests.Services;
 
 public sealed class OpportunityDashboardServiceTests
 {
-    private readonly Mock<IOpportunityRepository> repository;
     private readonly Mock<IOpportunityReadRepository> readRepository;
     private readonly Mock<IArtistReadModelRepository> artistRepository;
     private readonly Mock<ITenantContext> tenantContext;
@@ -24,7 +23,6 @@ public sealed class OpportunityDashboardServiceTests
 
     public OpportunityDashboardServiceTests()
     {
-        this.repository = new Mock<IOpportunityRepository>();
         this.readRepository = new Mock<IOpportunityReadRepository>();
         this.artistRepository = new Mock<IArtistReadModelRepository>();
         this.tenantContext = new Mock<ITenantContext>();
@@ -33,7 +31,6 @@ public sealed class OpportunityDashboardServiceTests
             new DateTimeOffset(2026, 8, 16, 12, 0, 0, TimeSpan.Zero));
         this.tenantContext.SetupGet(value => value.TenantId).Returns(this.tenantId);
         this.service = new OpportunityDashboardService(
-            this.repository.Object,
             this.readRepository.Object,
             this.artistRepository.Object,
             this.tenantContext.Object,
@@ -58,7 +55,7 @@ public sealed class OpportunityDashboardServiceTests
             ApplicationCount = 4
         };
         var deal = new FlatFeeDealDto { Id = 7, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
-        this.repository
+        this.readRepository
             .Setup(value => value.GetOpenWithApplicationCountsByVenueTenantIdAsync(this.tenantId))
             .ReturnsAsync([projection]);
         this.dealModule

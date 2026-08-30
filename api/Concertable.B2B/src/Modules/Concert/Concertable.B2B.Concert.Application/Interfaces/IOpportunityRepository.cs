@@ -1,4 +1,3 @@
-using Concertable.B2B.Concert.Application.Projections;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.Contracts;
 using Concertable.B2B.DataAccess.Application;
@@ -10,7 +9,7 @@ internal interface IOpportunityRepository : ITenantScopedRepository<OpportunityE
     /// <summary>
     /// Active opportunities for a venue, read <b>tracked</b> through the writing context — the
     /// management/sync path mutates these entities, so they must be change-tracked (unlike the
-    /// read-only <see cref="IOpportunityReadRepository"/> projection).
+    /// read-only <see cref="IOpportunityReadRepository"/> projections).
     /// </summary>
     Task<IEnumerable<OpportunityEntity>> GetActiveByVenueIdAsync(int venueId);
     Task<OpportunityEntity?> GetByApplicationIdAsync(int id);
@@ -18,6 +17,4 @@ internal interface IOpportunityRepository : ITenantScopedRepository<OpportunityE
     Task<int?> GetDealIdByIdAsync(int opportunityId);
     Task<DateRange?> GetPeriodByIdAsync(int opportunityId);
     Task<(string Name, Guid UserId)?> GetVenueSummaryByIdAsync(int opportunityId);
-    Task<IReadOnlyList<OpportunityApplicationProjection>> GetOpenWithApplicationCountsByVenueTenantIdAsync(
-        Guid venueTenantId);
 }
