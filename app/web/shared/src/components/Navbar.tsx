@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProfileMenu, type ProfileMenuItem } from "@/components/ProfileMenu";
 import {
@@ -10,6 +10,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Mailbox } from "@/features/messaging";
+import { NavbarSearch } from "@/features/search";
+import { useMeQuery } from "@/features/user";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 
 export interface NavLink {
@@ -48,8 +51,11 @@ interface Props {
   /** Replaces the default `ProfileMenu` — for a surface where its hardcoded
    * `/settings`/`/settings/payment` links don't apply. */
   profileSlot?: ReactNode;
-  /** App-injected content between `headerSlot` and the theme toggle — e.g. search, messaging. */
+  /** App-injected content between `headerSlot` and the theme toggle — e.g. messaging. Additive
+   * seam for a future minimal-shell `Navbar`; see `app/web/shared/TECH_DEBT.md`. */
   endSlot?: ReactNode;
+  showSearch?: boolean;
+  showMailbox?: boolean;
   onHeightChange?: (height: number) => void;
 }
 
@@ -59,8 +65,11 @@ export function Navbar({
   headerSlot,
   profileSlot,
   endSlot,
+  showSearch = true,
+  showMailbox = true,
   onHeightChange,
 }: Readonly<Props>) {
+  const { data: user } = useMeQuery();
   const ref = useRef<HTMLElement>(null);
 
   useMountLayoutEffect(() => {
@@ -115,6 +124,21 @@ export function Navbar({
 
       <div className="text-primary-foreground flex min-w-0 items-center gap-1 sm:gap-2 [&_button]:hover:bg-white/10">
         {headerSlot}
+        {showSearch && (
+          <>
+            <div className="hidden lg:block">
+              <NavbarSearch />
+            </div>
+            <Link
+              to="/find"
+              aria-label="Search"
+              className="hover:bg-white/10 rounded-md p-2 lg:hidden"
+            >
+              <Search className="size-5" />
+            </Link>
+          </>
+        )}
+        {showMailbox && user && <Mailbox />}
         {endSlot}
         <ThemeToggle />
         {profileSlot ?? <ProfileMenu items={profileItems ?? []} />}

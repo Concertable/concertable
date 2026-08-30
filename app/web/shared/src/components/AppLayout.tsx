@@ -1,20 +1,18 @@
 import { useState, useCallback, type ReactNode } from "react";
-import { Outlet, Link } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { Outlet } from "@tanstack/react-router";
 import { Navbar, type NavLink } from "@/components/Navbar";
 import type { ProfileMenuItem } from "@/components/ProfileMenu";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Footer } from "@/components/Footer";
 import { NavbarHeightContext } from "@/context/NavbarHeightContext";
-import { NavbarSearch } from "@/features/search";
 import { useMeQuery } from "@/features/user";
 
 interface Props {
   links: NavLink[];
   profileItems: ProfileMenuItem[];
   headerSlot?: ReactNode;
-  /** Injected only by apps whose backend actually serves messaging (venue, artist) — the
-   * customer app's backend has no `MessageController`, so it must not default to one. */
+  /** Additive seam for a future migration onto `Navbar`'s `endSlot` — not yet wired to any
+   * caller. See `app/web/TECH_DEBT.md`'s Mailbox entry. */
   messagingSlot?: ReactNode;
 }
 
@@ -46,21 +44,7 @@ export function AppLayout({
           profileItems={profileItems}
           headerSlot={headerSlot}
           onHeightChange={setNavbarHeight}
-          endSlot={
-            <>
-              <div className="hidden lg:block">
-                <NavbarSearch />
-              </div>
-              <Link
-                to="/find"
-                aria-label="Search"
-                className="hover:bg-white/10 rounded-md p-2 lg:hidden"
-              >
-                <Search className="size-5" />
-              </Link>
-              {user && messagingSlot}
-            </>
-          }
+          endSlot={user && messagingSlot}
         />
         <Breadcrumbs />
         <main className="flex flex-1 flex-col">
