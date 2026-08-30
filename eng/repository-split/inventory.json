@@ -715,7 +715,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 253,
+    "projectCount": 252,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -833,13 +833,6 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.KeyedStrategies",
-        "packable": false,
-        "target": "b2b"
-      },
-      "api/Concertable.B2B/src/Concertable.B2B.RequestContext/Concertable.B2B.RequestContext.csproj": {
-        "area": "Concertable.B2B",
-        "kind": "runtime",
-        "name": "Concertable.B2B.RequestContext",
         "packable": false,
         "target": "b2b"
       },
