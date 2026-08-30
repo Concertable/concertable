@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
+**Reviewed up to commit:** `755f3a1b409ceb7ca21d7a431180f6a5cb2f38d1`  _(2026-08-30)_
 
 **Security-reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
 
@@ -45,3 +45,9 @@ No new findings. Native correctness and security coverage were both clean; the d
 Range reviewed: `3c4255e..5fa21cb` (23 commits, including the current `origin/main` merge).
 
 No new findings. Native correctness, repository boundary/convention, and security review were clean. The sole merge conflict was regenerated inventory; source-mode and package-only carve builds both passed against platform version `0.1.0-alpha.0.1267`.
+
+## Incremental review — 2026-08-30 (CI verifier repair)
+
+Range reviewed: `3bf078f..755f3a1` (1 commit).
+
+No new findings. Native correctness, error handling, boundary, convention, and test-coverage lenses were clean. The change preserves the exact-one and version checks for projects that resolve `Concertable.DataAccess.Infrastructure` while allowing host-only integration projects to omit that package. No security-sensitive path changed, so the security layer was not required for this range.
