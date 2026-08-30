@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174`  _(2026-08-30)_
+**Reviewed up to commit:** `c8f95947ba5a7f09101322ed555285b59c64871b`  _(2026-08-31)_
 
-**Security-reviewed up to commit:** `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174`  _(2026-08-30)_
+**Security-reviewed up to commit:** `c8f95947ba5a7f09101322ed555285b59c64871b`  _(2026-08-31)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -111,3 +111,15 @@ No new findings. Native review confirmed the first-parent delta is exactly the s
 Merge reviewed: `f7da6dfcb0ad645a5ed9db2f7ec3df913ed78174` relative to both parents.
 
 No high- or medium-confidence findings. The sync changes only centrally managed platform versions and introduces no source, provenance, package-ID, secret, listener, or trust-boundary change. The runtime-extension pins still match their owning hosting project and remain limited to the non-packable source provider.
+
+## Incremental review — 2026-08-31 (merge-queue B2B reset repair)
+
+Range reviewed: `380d6cda221d3d3f292923df58ea64e691bece25..c8f95947ba5a7f09101322ed555285b59c64871b` (1 commit).
+
+No new findings. Native review confirmed the reset's temporary host context is scoped and restored in `finally`, the existing fixture gate serializes reset plus seed-state refresh, the fresh scoped seed catalog resolves generated application identities from persisted rows, and booking-to-concert mapping no longer depends on EF navigation fixup. The B2B E2E admin integration suite passed 7/7, Docker health passed, and the targeted door-split B2B API E2E passed against the full Aspire fleet.
+
+## Security review — 2026-08-31 (merge-queue B2B reset repair)
+
+Range reviewed: `380d6cda221d3d3f292923df58ea64e691bece25..c8f95947ba5a7f09101322ed555285b59c64871b` (1 commit).
+
+No high- or medium-confidence findings. The host-mode tenant bypass remains confined to the authenticated reset handler in the E2E-only executable, `HttpContext` is restored in `finally`, the admin key remains required and fixed-time compared, the identity lookups are parameterized, and no production project references the E2E admin server. Separate `IHttpContextAccessor` async-local holders prevent a cross-request privilege leak.
