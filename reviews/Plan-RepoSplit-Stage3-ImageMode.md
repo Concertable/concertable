@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `cf4107eae0aa6ad0a57f086a8968866818545685`  `(2026-08-30)`
+**Reviewed up to commit:** `134ec1b69ae4bee84d72299703ad0dda8b9b8b34`  `(2026-08-30)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -84,3 +84,26 @@ violation of any loaded rule, and our own images are pinned downstream by digest
 **Not covered by this pass.** That the published images actually *run* — `container-images` proves only that
 they build. The standalone-host boot smoke in image mode is stage 3 rt4, recorded in the plan ledger's
 `## Next Steps`.
+
+## Review pass — 2026-08-30 — incremental
+
+**Candidate base:** `cf4107eae0aa6ad0a57f086a8968866818545685`
+**Candidate head:** `134ec1b69ae4bee84d72299703ad0dda8b9b8b34`
+**Candidate branch:** `Plan/RepoSplit-Stage3-ImageMode`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:62ed34cd416dc6118d48b8dd5c5cb93793eb03153a1889ed4f38a5840e3ff6b5` `(3 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable\ea4d65d6-d40c-457e-9b5d-c6f60719cb43\scratchpad\review-bundle-862`
+**Candidate bundle identity:** `sha256:735e9f8ee56b377b8c304a95fdd2f2b88a92f7b583a01a25ff2f6bd924b91dae`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-ImageMode.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Exists because the full pass's own F2 remediation was a code change, and remediation must return through a
+fresh watermark rather than leave the marker behind HEAD. The delta is exactly that remediation
+(`continue-on-error` on a reporting-only step, already stated as F2's concrete fix and re-read here as
+applied) plus this work order and the ledger's `## Reviews` entry. No new rule is routed by the three paths
+beyond those already in the manifest above.
+
+### Findings
+
+No findings. The watermark moves to `134ec1b69`.
