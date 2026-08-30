@@ -41,4 +41,7 @@ The inventory is regenerated. `local-platform prepare` now enables the existing 
 its own restore/pack cycle and maps AppHost.Shared, leaving ordinary consumers and carves on package
 references. No AppHost composition changes are introduced.
 
+The first remediation swapped the entire platform source set and caused unrelated restore downgrades. The
+prepare-only swap is now limited to AppHost.Shared; test-tier swaps retain their existing behavior.
+
 No findings.

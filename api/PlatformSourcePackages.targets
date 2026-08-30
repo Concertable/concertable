@@ -9,7 +9,7 @@
        - A carve must NOT copy this file. Its absence is the cut-over to feed packages. -->
 
   <PropertyGroup>
-    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and ($([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]')) or '$(UseLocalPlatformSources)' == 'true')">true</_SwapPlatformSourcePackages>
+    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]'))">true</_SwapPlatformSourcePackages>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
@@ -20,18 +20,21 @@
     <PlatformSourcePackage Include="Concertable.Seed.Infrastructure"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Infrastructure\Concertable.Seed.Infrastructure.csproj" />
     <PlatformSourcePackage Include="Concertable.Messaging.Domain"         Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
     <PlatformSourcePackage Include="Concertable.Messaging.Infrastructure" Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
-    <PlatformSourcePackage Include="Concertable.AppHost.Shared"          Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
     <PlatformSourcePackage Include="Concertable.Auth.Hosting"             Project="$(MSBuildThisFileDirectory)Concertable.Auth\src\Concertable.Auth.Hosting\Concertable.Auth.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.B2B.Hosting"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.Hosting\Concertable.B2B.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.Customer.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.Hosting\Concertable.Customer.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.Payment.Hosting"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.Hosting\Concertable.Payment.Hosting.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+  <ItemGroup Condition="'$(UseLocalPlatformSources)' == 'true'">
+    <PlatformSourcePackage Include="Concertable.AppHost.Shared" Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
     <PackageReference Update="@(PlatformSourcePackage)" PlatformSourceProject="%(PlatformSourcePackage.Project)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
     <!-- The transform emits a ProjectReference only for the ids this project actually references
          (the rest transform to an empty Include and are skipped); the Remove drops the same ids. -->
     <ProjectReference Include="@(PackageReference->'%(PlatformSourceProject)')" />
