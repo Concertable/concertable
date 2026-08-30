@@ -26,11 +26,15 @@
     <PlatformSourcePackage Include="Concertable.Payment.Hosting"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.Hosting\Concertable.Payment.Hosting.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+  <ItemGroup Condition="'$(UseLocalPlatformSources)' == 'true'">
+    <PlatformSourcePackage Include="Concertable.AppHost.Shared" Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
     <PackageReference Update="@(PlatformSourcePackage)" PlatformSourceProject="%(PlatformSourcePackage.Project)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
     <!-- The transform emits a ProjectReference only for the ids this project actually references
          (the rest transform to an empty Include and are skipped); the Remove drops the same ids. -->
     <ProjectReference Include="@(PackageReference->'%(PlatformSourceProject)')" />
