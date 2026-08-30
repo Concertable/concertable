@@ -17,6 +17,7 @@
     <Project Path="Concertable.Auth/tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj" />
     <Project Path="Concertable.Auth/tests/Concertable.Auth.ArchitectureTests/Concertable.Auth.ArchitectureTests.csproj" />
+    <Project Path="Concertable.Auth/tools/Concertable.Auth.OperationalStoreMigration/Concertable.Auth.OperationalStoreMigration.csproj" />
     <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
   </Folder>
   <Folder Name="/B2B/">

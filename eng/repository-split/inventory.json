@@ -14,16 +14,16 @@
       }
     ],
     "blockingTestEdges": [],
-    "crossAreaEdgeCount": 84,
+    "crossAreaEdgeCount": 82,
     "crossAreaEdgesByKind": {
-      "apphost": 44,
+      "apphost": 42,
       "apphost-support": 1,
       "architecture-test": 1,
       "e2e": 22,
       "runtime": 13,
       "unit-test": 3
     },
-    "crossTargetEdgeCount": 51,
+    "crossTargetEdgeCount": 49,
     "crossTargetEdges": [
       {
         "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
@@ -179,15 +179,6 @@
         "toTarget": "platform-dotnet"
       },
       {
-        "from": "api/Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj",
-        "fromArea": "Concertable.Auth",
-        "fromKind": "apphost",
-        "fromTarget": "auth",
-        "to": "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
-        "toArea": "Concertable.B2B",
-        "toTarget": "b2b"
-      },
-      {
         "from": "api/Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj",
         "fromArea": "Concertable.B2B",
         "fromKind": "apphost",
@@ -375,15 +366,6 @@
         "to": "api/Concertable.Auth/src/Concertable.Auth/Concertable.Auth.csproj",
         "toArea": "Concertable.Auth",
         "toTarget": "auth"
-      },
-      {
-        "from": "api/Concertable.Payment/src/Concertable.Payment.AppHost/Concertable.Payment.AppHost.csproj",
-        "fromArea": "Concertable.Payment",
-        "fromKind": "apphost",
-        "fromTarget": "payment",
-        "to": "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
-        "toArea": "Concertable.B2B",
-        "toTarget": "b2b"
       },
       {
         "from": "api/Concertable.Search/src/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj",
@@ -486,7 +468,7 @@
       }
     ],
     "crossTargetEdgesByKind": {
-      "apphost": 44,
+      "apphost": 42,
       "e2e": 6,
       "runtime": 1
     },
@@ -548,7 +530,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 232,
+    "projectCount": 233,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -617,6 +599,13 @@
         "area": "Concertable.Auth",
         "kind": "unit-test",
         "name": "Concertable.Auth.UnitTests",
+        "packable": false,
+        "target": "auth"
+      },
+      "api/Concertable.Auth/tools/Concertable.Auth.OperationalStoreMigration/Concertable.Auth.OperationalStoreMigration.csproj": {
+        "area": "Concertable.Auth",
+        "kind": "runtime",
+        "name": "Concertable.Auth.OperationalStoreMigration",
         "packable": false,
         "target": "auth"
       },
