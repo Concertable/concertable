@@ -510,6 +510,7 @@
       "api/Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Contracts/Concertable.Customer.Ticket.Contracts.csproj",
       "api/Concertable.DataAccess/Concertable.DataAccess.Application/Concertable.DataAccess.Application.csproj",
       "api/Concertable.DataAccess/Concertable.DataAccess.Infrastructure/Concertable.DataAccess.Infrastructure.csproj",
+      "api/Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj",
       "api/Concertable.Messaging/Concertable.Messaging.Application/Concertable.Messaging.Application.csproj",
       "api/Concertable.Messaging/Concertable.Messaging.AzureServiceBus/Concertable.Messaging.AzureServiceBus.csproj",
       "api/Concertable.Messaging/Concertable.Messaging.Contracts/Concertable.Messaging.Contracts.csproj",
@@ -519,6 +520,7 @@
       "api/Concertable.Payment/src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj",
       "api/Concertable.Payment/src/Concertable.Payment.Hosting/Concertable.Payment.Hosting.csproj",
       "api/Concertable.Payment/src/Concertable.Payment.TestKit/Concertable.Payment.TestKit.csproj",
+      "api/Concertable.Search/src/Concertable.Search.Hosting/Concertable.Search.Hosting.csproj",
       "api/Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj",
       "api/Concertable.Shared/src/Concertable.Contracts/Concertable.Contracts.csproj",
       "api/Concertable.Shared/src/Concertable.Grpc/Concertable.Grpc.csproj",
@@ -1609,7 +1611,7 @@
         "area": "Concertable.Frontend.Hosting",
         "kind": "runtime",
         "name": "Concertable.Frontend.Hosting",
-        "packable": false,
+        "packable": true,
         "target": "platform-dotnet"
       },
       "api/Concertable.Messaging/Concertable.Messaging.Application/Concertable.Messaging.Application.csproj": {
@@ -1854,7 +1856,7 @@
         "area": "Concertable.Search",
         "kind": "runtime",
         "name": "Concertable.Search.Hosting",
-        "packable": false,
+        "packable": true,
         "target": "search"
       },
       "api/Concertable.Search/src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj": {
