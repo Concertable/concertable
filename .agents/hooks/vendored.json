@@ -1,62 +1,4 @@
 {
-  "hooks": {
-    "docs_reachability.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/docs_reachability.py",
-      "delivery": "invoked",
-      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
-      "sha256": "sha256:5a79595faaf4fe21c63b5af9defffe39ba1969747987002fad7297ed47bcc3d8"
-    },
-    "hook_runtime.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/hook_runtime.py",
-      "delivery": "invoked",
-      "commit": "d35c923757600b17933a23d39f849c882becbeb7",
-      "sha256": "sha256:81b264d0e31041861d590de94e758be3ac083a454cf4bf1b226ccd65f2fae5cd"
-    },
-    "merge_review_gate.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/merge_review_gate.py",
-      "delivery": "hook",
-      "commit": "5c0d4339ce5c4e61c30ef8f0e1ef2aa4e750f209",
-      "sha256": "sha256:6d5ed307efbf1a6522cd52535ecb078b7d492a81e8f59aaa9daba59454a5b527"
-    },
-    "plan_graph.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/plan_graph.py",
-      "delivery": "invoked",
-      "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
-      "sha256": "sha256:cfa58050e17da0711f72f2469359056be532a291faeb99fbdac990140f24d3d8"
-    },
-    "plan_handoff_stop_launcher.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/plan_handoff_stop_launcher.py",
-      "delivery": "hook",
-      "commit": "8291f69d28b1606e0d21866a63266014a48bd08d",
-      "sha256": "sha256:2db295f838a140eeca96cf16644d735ccffbb9b0c83799fe9a1f1942b868174d"
-    },
-    "plan_handoff_stop.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/plan_handoff_stop.py",
-      "delivery": "invoked",
-      "commit": "c62e1b75c4e8e2bba65b0599ad64c08a62d12486",
-      "sha256": "sha256:6827d21233a257a64420ee0c1bbc1b9f15269391d3d1a15169ab2d5d310d18b1"
-    },
-    "session_floor.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/session_floor.py",
-      "delivery": "hook",
-      "commit": "8b9d5e52da24a772529926d40268f0a3858278a3",
-      "sha256": "sha256:5270c70f369cb0377cfa11f13a60429eaf22662e2a25a616af01e8d197ca7f2a"
-    },
-    "skill_router.py": {
-      "source": "Concertable/agent-standards",
-      "path": ".agents/hooks/skill_router.py",
-      "delivery": "hook",
-      "commit": "501332aa0273aee16d2d813c21aefb732b981883",
-      "sha256": "sha256:18eea4ff8f3bf7aac2711c4155763fbf32d412f0e5904d80016eb680b375b53e"
-    }
-  },
   "scripts": {
     "docker-health.ps1": {
       "source": "Concertable/agent-standards",
@@ -67,14 +9,20 @@
     "provision-agent-standards.ps1": {
       "source": "Concertable/agent-standards",
       "path": "scripts/provision-agent-standards.ps1",
-      "commit": "31ddc0c32919d800c2ceae8e62accda281d83d4f",
-      "sha256": "sha256:11412aa9a2b4137a8d42792bbbd245ec595b67cb2efb069c34d49066da487109"
+      "commit": "87176f1edd3136f429e7484535603a9d2bca68fd",
+      "sha256": "sha256:9319f3478ffc318aa09a1c73f8fe6f43a9ee0fb4b579ff6d6ac5b9db71d97d5b"
+    },
+    "start-concertable-agent.ps1": {
+      "source": "Concertable/agent-standards",
+      "path": "scripts/start-concertable-agent.ps1",
+      "commit": "6bb518e9dbfdabc77d201bfbb5e04ac506a10ddb",
+      "sha256": "sha256:0e843c43eca82a4cc8c1520f4bf4fcbc8b8b016e8c8371a8a626f405cb0b151a"
     },
     "worktrees.ps1": {
       "source": "Concertable/agent-standards",
       "path": "scripts/worktrees.ps1",
-      "commit": "06405a3a3b4cd5e3cdc6c103953f6bb6ece0945d",
-      "sha256": "sha256:37334f7117b8d0fce88e5d391e34e10605e2a1de0bbac9c73b61ea67e5fd7b1f"
+      "commit": "bf713cb62451c38d8deeeee6077be5523b28c7cd",
+      "sha256": "sha256:159d82bc79e8f8e42efdd25f207367facc5fa043e497d8a77dea1c265e3d00ed"
     }
   }
 }
