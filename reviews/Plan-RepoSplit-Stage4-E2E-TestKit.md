@@ -17,5 +17,5 @@
 - [x] **SEC1 — MEDIUM — security** — `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Server/E2EAdminExtensions.cs:25`
   Admin-key validation fails open when `E2E:AdminKey` is blank: an absent request header is also an empty byte sequence, so `FixedTimeEquals` succeeds and exposes the destructive reset endpoint. The same defect exists in the Customer and Payment E2E admin modules. Reject blank keys at startup, reject missing/blank headers before comparison, require the E2E host environment before registering or mapping the endpoints, and add regression coverage for blank configuration and an absent header.
 
-- [ ] **MB1 — HIGH — module boundary** — `api/Concertable.Shared/tests/Concertable.Testing.E2E/FleetProfile.cs:5`
+- [x] **MB1 — HIGH — module boundary** — `api/Concertable.Shared/tests/Concertable.Testing.E2E/FleetProfile.cs:5`
   `FleetSurface`, `FleetProfile`, and `IFleetProjectProvider` name B2B and Customer inside `Concertable.Testing.E2E`, violating that project's rule: “This project is SERVICE-AGNOSTIC. Nothing service-specific goes here. Ever.” Move the fleet-specific composition contracts and source-provider factory into a fleet-owned project, and keep the shared harness APIs generic over endpoint values and project metadata.

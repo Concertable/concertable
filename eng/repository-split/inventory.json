@@ -14,12 +14,12 @@
       }
     ],
     "blockingTestEdges": [],
-    "crossAreaEdgeCount": 82,
+    "crossAreaEdgeCount": 84,
     "crossAreaEdgesByKind": {
       "apphost": 44,
       "apphost-support": 1,
       "architecture-test": 1,
-      "e2e": 20,
+      "e2e": 22,
       "runtime": 13,
       "unit-test": 3
     },
@@ -546,7 +546,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 231,
+    "projectCount": 232,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -2162,6 +2162,13 @@
         "area": "tests",
         "kind": "e2e",
         "name": "Concertable.Fleet.E2E.Source",
+        "packable": false,
+        "target": "fleet"
+      },
+      "api/tests/Concertable.Fleet.E2E/Concertable.Fleet.E2E.csproj": {
+        "area": "tests",
+        "kind": "e2e",
+        "name": "Concertable.Fleet.E2E",
         "packable": false,
         "target": "fleet"
       }
