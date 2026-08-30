@@ -53,3 +53,10 @@ Found while adding the Online Safety Act report control to the same component; i
 Navbar (matching how `app/web/shared/AGENTS.md` says app-specific affordances are composed — a slot the
 owning app fills), or messaging genuinely ships on the customer side. A role check inside shared code is
 explicitly not the fix — that is the disease that doc warns about.
+
+**Progress — PR1 (`Chore/TechDebtNavbarSlots`) landed the additive half:** `AppLayout` gained an unwired
+`messagingSlot` prop and `Navbar` gained the `endSlot` it will render through — see the paired entry in
+`app/web/shared/TECH_DEBT.md` for why this had to be its own PR (the `carve-fe` CI gate always resolves
+`@concertable/web` from the published feed, so a route-file consumer can only reference a new prop once a
+publish carrying it has landed). **Remaining — PR2:** venue and artist inject `messagingSlot={<Mailbox
+/>}`; customer injects nothing, closing the 404 — then delete this entry.
