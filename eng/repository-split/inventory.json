@@ -1101,10 +1101,10 @@
         "packable": false,
         "target": "b2b"
       },
-      "api/Concertable.B2B/tests/Concertable.B2B.E2EAdmin.UnitTests/Concertable.B2B.E2EAdmin.UnitTests.csproj": {
+      "api/Concertable.B2B/tests/Concertable.B2B.E2EAdmin.IntegrationTests/Concertable.B2B.E2EAdmin.IntegrationTests.csproj": {
         "area": "Concertable.B2B",
-        "kind": "unit-test",
-        "name": "Concertable.B2B.E2EAdmin.UnitTests",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.E2EAdmin.IntegrationTests",
         "packable": false,
         "target": "b2b"
       },
@@ -1535,10 +1535,10 @@
         "packable": false,
         "target": "customer"
       },
-      "api/Concertable.Customer/tests/Concertable.Customer.E2EAdmin.UnitTests/Concertable.Customer.E2EAdmin.UnitTests.csproj": {
+      "api/Concertable.Customer/tests/Concertable.Customer.E2EAdmin.IntegrationTests/Concertable.Customer.E2EAdmin.IntegrationTests.csproj": {
         "area": "Concertable.Customer",
-        "kind": "unit-test",
-        "name": "Concertable.Customer.E2EAdmin.UnitTests",
+        "kind": "integration-test",
+        "name": "Concertable.Customer.E2EAdmin.IntegrationTests",
         "packable": false,
         "target": "customer"
       },
@@ -1752,10 +1752,10 @@
         "packable": false,
         "target": "payment"
       },
-      "api/Concertable.Payment/tests/Concertable.Payment.E2EAdmin.UnitTests/Concertable.Payment.E2EAdmin.UnitTests.csproj": {
+      "api/Concertable.Payment/tests/Concertable.Payment.E2EAdmin.IntegrationTests/Concertable.Payment.E2EAdmin.IntegrationTests.csproj": {
         "area": "Concertable.Payment",
-        "kind": "unit-test",
-        "name": "Concertable.Payment.E2EAdmin.UnitTests",
+        "kind": "integration-test",
+        "name": "Concertable.Payment.E2EAdmin.IntegrationTests",
         "packable": false,
         "target": "payment"
       },

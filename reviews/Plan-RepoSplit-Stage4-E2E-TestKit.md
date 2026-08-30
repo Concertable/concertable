@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `89f4962b5d4d99394cd9cf44bc5d805028d3c44d`  _(2026-08-30)_
+**Reviewed up to commit:** `abf045ad259f61774ab07fdc404c18b0ad35239f`  _(2026-08-30)_
 
-**Security-reviewed up to commit:** `89f4962b5d4d99394cd9cf44bc5d805028d3c44d`  _(2026-08-30)_
+**Security-reviewed up to commit:** `abf045ad259f61774ab07fdc404c18b0ad35239f`  _(2026-08-30)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -19,3 +19,10 @@
 
 - [x] **MB1 — HIGH — module boundary** — `api/Concertable.Shared/tests/Concertable.Testing.E2E/FleetProfile.cs:5`
   `FleetSurface`, `FleetProfile`, and `IFleetProjectProvider` name B2B and Customer inside `Concertable.Testing.E2E`, violating that project's rule: “This project is SERVICE-AGNOSTIC. Nothing service-specific goes here. Ever.” Move the fleet-specific composition contracts and source-provider factory into a fleet-owned project, and keep the shared harness APIs generic over endpoint values and project metadata.
+
+## Incremental review — 2026-08-30
+
+Range reviewed: `89f4962..abf045a` (2 commits).
+
+- [x] **CV1 — MEDIUM — test convention** — `api/Concertable.B2B/tests/Concertable.B2B.E2EAdmin.UnitTests/E2EAdminSecurityTests.cs:10`
+  The three new `E2EAdmin.UnitTests` suites directly exercise guard clauses and internal authorization helpers, contrary to the unit-testing rule “Do not add a unit test merely to cover a guard clause” and its requirement that endpoint/host wiring use the integration tier. Replace them with service-local integration coverage that boots the E2E admin route on a test host, proves missing/blank keys fail closed over HTTP/startup, and remove the internal-only unit-test exposure.
