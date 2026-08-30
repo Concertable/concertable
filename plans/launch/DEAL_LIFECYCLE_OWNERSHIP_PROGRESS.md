@@ -53,14 +53,73 @@ placement remains recorded Application technical debt in
 
 ## Next Steps
 
-Commit the module-workflow checkpoint and run the requested Claude CLI incremental review over
-`12273b558..HEAD`, addressing every valid finding. Then close IR9-IR10 and run the canonical fresh
-incremental review over the fix commits from the recorded watermark,
-`python .agents/hooks/plan_graph.py --root <worktree>`, and `git diff --check`; do not run local E2E. Then
-push one stable candidate, prove local,
-remote-tracking, and PR heads match, mark PR #633 ready, and follow it through merge-queue E2E, merge,
-publication, and platform sync to terminal. Delete this ledger, the plan, and the review artifact in the
-closeout once the lifecycle is terminal.
+Finish the MM_BOUNDARY_HARDENING pass (see "Boundary hardening" below): land A3's architecture rules once
+the Kernel package build blocker clears, get A4's concurrency proof back, finish the Part B sweep write-up,
+then decide the Conversations cross-context follow-up (log tech debt or fix now). After that, commit the
+module-workflow checkpoint and run the requested Claude CLI incremental review over `12273b558..HEAD`,
+addressing every valid finding. Then close IR9-IR10 and run the canonical fresh incremental review over the
+fix commits from the recorded watermark, `python .agents/hooks/plan_graph.py --root <worktree>`, and
+`git diff --check`; do not run local E2E. Then push one stable candidate, prove local, remote-tracking, and
+PR heads match, mark PR #633 ready, and follow it through merge-queue E2E, merge, publication, and platform
+sync to terminal. Delete this ledger, the plan, and the review artifact in the closeout once the lifecycle
+is terminal.
+
+## Boundary hardening (MM_BOUNDARY_HARDENING_PROMPT.md)
+
+An external audit found the module boundary enforced encapsulation but not direction. Working this to
+close before PR #633 leaves draft.
+
+- **A1 (fixed)** — `IOpportunityModule.FillAsync`/`TryFillAsync`/`FillOpportunityError` deleted;
+  `IOpportunityModule` is now query-only. The "one Accepted Application per Opportunity" invariant moved
+  to a unique filtered index (`Application(OpportunityId) WHERE State = Accepted`); the loser's
+  `SaveChangesAsync` duplicate-key conflict maps to `AcceptApplicationError.AlreadyAccepted`
+  (`application.accept.duplicate`, replacing the deleted `OpportunityUnavailable`). Opportunity's `Filled`
+  is now an ordinary aggregate transition (`MarkFilled`, guarded like `Reopen`) reached asynchronously via
+  the new `ApplicationAcceptedEvent` integration event (published by
+  `Application.Infrastructure.Events.ApplicationAcceptedDomainEventHandler`, consumed by
+  `Opportunity.Infrastructure.Events.ApplicationAcceptedIntegrationEventHandler`), mirroring the existing
+  `Reopen` reaction to Booking/Concert cancellation. The plan's Section 8 self-contradiction (synchronous
+  claim vs. no-backward-synchronous-calls) is resolved in the plan text itself.
+- **A2 (fixed)** — `PaymentVerificationRecordedDomainEvent`/`...Handler` deleted (Application commanding
+  Booking directly); `IBookingModule.RecordPaymentVerificationAsync` and its `BookingPaymentVerification`
+  family deleted from Booking.Contracts. `ApplicationEntity.RecordPaymentVerification` now raises the
+  already-contracted `VerifyPaymentSucceeded`/`VerifyPaymentFailed` directly, which the previously-dead
+  `VerifyPaymentSucceededHandler`/`VerifyPaymentFailedHandler` in Booking now actually receive (they were
+  registered but the events were never raised before this fix).
+- **A3 (blocked on an unrelated build break)** — added to `ModuleBoundaryTests.cs`: a cycle rule
+  (`Slices().Matching("Concertable.B2B.(*).").Should().BeFreeOfCycles()`), a lifecycle-direction rule
+  (no later stage's namespace calls a non-`Get`-prefixed member of an earlier stage's `I*Module`), and a
+  facade query-only rule (every member of `IOpportunityModule`/`IApplicationModule`/`IBookingModule`/
+  `IConcertModule` must start with `Get` — true for all four after A1/A2). `LifecycleStateOwnershipTests`'s
+  bulk-state-write scan now includes Opportunity (the one violation it would have caught was A1's
+  `TryFillAsync`, already deleted). **Cannot yet build-verify**: `Concertable.B2B.Infrastructure` fails
+  with `CS0246: IClientContext could not be found` — commit `880cef5ff` moved `IClientContext` into the
+  `Concertable.Kernel` package but no locally-cached Kernel package version (checked through
+  `0.1.0-alpha.0.1252`) actually contains it. Pre-existing, unrelated to this hardening pass; user is
+  looking into the Kernel publish. Once it clears: verify the cycle-rule slice pattern is meaningful, and
+  prove both new rules fail-before/pass-after per this PR's own verification convention.
+- **A4 (in progress)** — concurrency test for two applications racing to accept on one Opportunity,
+  dispatched to a background agent; not yet returned (also blocked on the same Kernel build issue for its
+  own verification).
+- **Part B sweep** — 14 `I*Module` contracts across B2B (+3 Customer) enumerated; after A1/A2, all four
+  lifecycle contracts are query-only, and only 3 of 14 total carry any command member
+  (`IAdminModule.EnsureCurrentUserAdminGrantedIfEligibleAsync`, `IConversationsModule.SendAsync`/
+  `SendAndNotifyAsync`, `IDealModule.CreateAsync`/`UpdateAsync`/`Validate` — none is a downstream-to-upstream
+  lifecycle call; `IDealModule`'s dead `DeleteAsync` was found and deleted). Every registered
+  `IDomainEventHandler<T>`/`IIntegrationEventHandler<T>` in B2B has a confirmed live raise/publish site (no
+  dead handlers remain; A2 removed the one that was dead). `ApplicationEntity.BeginAcceptance()` (the
+  no-arg overload) is production-dead, test-only — minor, not fixed yet. Cross-context transaction
+  enlistment: Application's accept transaction enlists Booking's DbContext twice more (Contract/Booking
+  formation via `ApplicationAcceptedDomainEvent`, and payment verification via
+  `VerifyPaymentSucceeded`/`Failed`) plus Conversations' via `ApplicationNotifier` — all three forward and
+  deliberate; the Conversations one is flagged as a plausible future async-conversion candidate, not fixed
+  here (see Decisions below). Booking -> Concert confirmation is *not* a cross-context enlistment — it's
+  the durable async `BookingConfirmedEvent` path, correcting an earlier wrong claim in this ledger. No
+  contract-leaking-internals found across the 14 `I*Module`s. `PayoutAccountEntity.MarkVerified()` (Payment
+  service) found production-dead, logged as tech debt there rather than fixed blind. Plan DoD checkboxes
+  reconciled for Phases 3/6 against actual code state; the plan's Section 8 contradiction resolved. Not yet
+  done: scaffolding-debt project sweep (item 8) beyond a light spot-check, and a full pass over Customer/
+  Payment/Auth's own domain-event rosters for item 2 (B2B's is complete).
 
 ## Completed work
 
@@ -120,9 +179,20 @@ closeout once the lifecycle is terminal.
 
 - The refactor remains one complete draft PR. Its phases are recovery checkpoints, not independently
   mergeable partial architectures.
-- Application acceptance synchronously forms Booking/Contract pre-commit; Booking financial confirmation
-  synchronously forms Concert pre-commit. Outbound notification/email effects must remain durable and
-  transactionally staged, never escape before commit.
+- Application acceptance synchronously forms Booking/Contract pre-commit, and the same accept
+  transaction also synchronously records `VerifyPaymentSucceeded`/`VerifyPaymentFailed` into Booking's
+  financial state via `VerifyPaymentSucceededHandler`/`VerifyPaymentFailedHandler`, and synchronously
+  sends the counterparty conversation message via `IConversationsModule.SendAsync`/`SendAndNotifyAsync`
+  (`ApplicationNotifier`) -- all three are cross-context enlistments, forward (Application -> Booking,
+  Application -> Conversations), all deliberate. Booking's financial confirmation reaching Concert is NOT
+  a synchronous pre-commit enlistment -- correcting an earlier wrong claim here -- it is the durable async
+  `BookingConfirmedEvent` -> `BookingConfirmedIntegrationEventHandler` integration-event path in Concert's
+  own transaction, the same pattern Opportunity's `Filled` reaction now also uses. The Conversations call
+  is a plausible future candidate to convert to the same async pattern (Application already has an
+  event-driven counterparty-notification path for email via `ApplicationCounterpartyNotifiedDomainEvent`;
+  the in-app conversation message uses a different, synchronous mechanism for the same moment) -- not
+  fixed here, flagged for a future consistency pass. Outbound notification/email effects must remain
+  durable and transactionally staged, never escape before commit.
 - A module integration project owns only its resource/API and local persistence assertions. Full journeys
   belong in B2B Process tests and cross boundaries through HTTP or Contracts.
 - The shared host integration fixture directly reuses the one B2B `SeedState`; namespace separation is

@@ -264,10 +264,13 @@ required payment evidence, provider references, terms, timestamps, financial met
 and event payload construction stay in the owning aggregate operation. The machine decides only
 whether the requested state edge exists.
 
-Opportunity's `Open -> Filled` claim must be audited separately. Its concurrency invariant is an
-atomic conditional persistence write and cannot be replaced by loading an entity and consulting an
-in-memory machine. Opportunity should use the shared primitive only for genuine aggregate-owned
-transitions that remain after that claim/reopen design is final, never merely for symmetry.
+Opportunity's `Open -> Filled` claim is decided: it is not a synchronous conditional write participating
+in the accept transaction, but an ordinary aggregate-owned transition (`MarkFilled`), triggered
+asynchronously by the `ApplicationAcceptedEvent` integration event after the winning accept commits,
+mirroring the existing `Reopen` reaction to Booking/Concert cancellation. The concurrency invariant
+("only one Accepted Application per Opportunity") is enforced entirely inside the Application module by
+a unique filtered index, not by an Opportunity-side conditional write. Opportunity may use the shared
+state-machine primitive for `Filled`/`Withdrawn`/`Reopen` like any other aggregate-owned transition.
 
 The old per-`DealType` Concert `LifecycleStateMachine` is not restored. It combined stage ownership
 and selected four configured machines by `DealType`; the new design has one configured machine per
@@ -444,21 +447,31 @@ Rules:
 ### Accept
 
 Preserve the current invariant that accepting an Application forms its Booking and Contract atomically.
-Within B2B, the Application, Opportunity, and Booking module DbContexts join one ambient SQL
-transaction. `ApplicationAcceptedDomainEvent` is dispatched synchronously pre-commit so Booking and
-Contract formation either commits with Application acceptance or all participating writes roll back.
-That coordinator is an application-boundary operation with no persisted identity or state; it is not
-an umbrella aggregate.
+Within B2B, the Application and Booking module DbContexts join one ambient SQL transaction.
+`ApplicationAcceptedDomainEvent` is dispatched synchronously pre-commit so Booking and Contract
+formation either commits with Application acceptance or all participating writes roll back. That
+coordinator is an application-boundary operation with no persisted identity or state; it is not an
+umbrella aggregate. Opportunity's DbContext never joins this transaction: Opportunity is upstream, and
+the one-way lifecycle forbids a downstream commit from synchronously enlisting an upstream aggregate,
+even to claim it.
 
 The transaction must stage all resulting outbox work before commit. A failure creating Booking or
 Contract leaves Application `Applied`.
 
-Acceptance must first claim the Opportunity atomically with an `Open` to `Filled` conditional write.
-A zero-row claim is an expected typed conflict Result. The claim, Application acceptance, sibling
-rejection, Booking and Contract creation, and staged outbox writes share the transaction. Concurrent
-Applications for one Opportunity must therefore produce exactly one Accepted Application, Booking,
-and Contract; all siblings become Rejected. No `AcceptedPendingBooking` state or reconciliation process
-is introduced.
+The "only one Accepted Application per Opportunity" invariant is enforced entirely inside the
+Application module, with no synchronous cross-module call. A unique filtered index on
+`Application(OpportunityId) WHERE State = Accepted` makes two concurrent accepts for the same
+Opportunity collide at the database; the loser's `SaveChangesAsync` raises a duplicate-key
+`DbUpdateException`, caught and mapped to a typed `AcceptApplicationError.AlreadyAccepted` conflict — an
+expected typed conflict Result, not an exception surfaced to the caller. Opportunity's own `Filled`
+transition is a downstream reaction, not a claim participating in the accept transaction: the winning
+accept publishes `ApplicationAcceptedEvent` (a durable, outbox-staged integration event) after its own
+commit, and Opportunity's integration-event handler marks itself `Filled` in its own transaction —
+mirroring the already-correct Reopen reaction to Booking/Concert cancellation. Concurrent Applications
+for one Opportunity therefore still produce exactly one Accepted Application, Booking, and Contract,
+with every sibling Rejected by the winning accept's own `RejectAllExceptAsync`; no `AcceptedPendingBooking`
+state or reconciliation process is introduced, and reaching that outcome never requires a backward
+synchronous call.
 
 ### Payment webhook before Accept
 
@@ -614,18 +627,20 @@ Implementation checkpoints, in order:
 
 ### Phase 3 — split Application and Booking ownership atomically
 
-- [ ] Move Application persistence, services, repository, API mapping, actions, and local lifecycle
+- [x] Move Application persistence, services, repository, API mapping, actions, and local lifecycle
   state to Application.
-- [ ] Move Booking, Contract, acceptance payment/recovery, and pre-Concert cancellation to Booking.
+- [x] Move Booking, Contract, acceptance payment/recovery, and pre-Concert cancellation to Booking.
 - [x] Replace the combined `LifecycleState` with independent Application and Booking state.
 - [ ] Preserve the Accept transaction, immutable Contract snapshot, operation IDs, early-verification
   join, late-callback compensation, retry, and idempotency invariants.
-- [ ] Make Opportunity acceptance an atomic `Open` to `Filled` claim and prove concurrent acceptance
-  yields exactly one Accepted Application, Booking, and Contract while rejecting every sibling.
+- [ ] Enforce `only one Accepted Application per Opportunity` with a unique filtered index inside
+  Application, react to it in Opportunity as an async `Filled` transition, and prove concurrent
+  acceptance yields exactly one Accepted Application, Booking, and Contract while rejecting every
+  sibling.
 - [x] Require accepted-application provenance for Booking creation and explicit correlated financial
   success/failure facts for later outcomes; remove identifier-only confirmation and nullable outcome
   payloads.
-- [ ] Re-home Standard/Prepaid Application and Standard/Deferred Booking without nullable flattening.
+- [x] Re-home Standard/Prepaid Application and Standard/Deferred Booking without nullable flattening.
 
 Gate: Application is terminal after its decision, Booking owns every post-accept/pre-Concert
 transition, and all accept/payment arrival orders pass focused integration coverage.
@@ -636,12 +651,12 @@ transition, and all accept/payment arrival orders pass focused integration cover
   uniform `CreateAsync(ConfirmedBooking)` placement against the
   final dependency graph, keyed-strategy conventions, typed-Result semantics, and comparable repository
   code. Record the decision in this plan and ledger before implementation.
-- [ ] Create Concert only from a financially confirmed Booking handoff.
-- [ ] Move draft/posting, post-creation cancellation, completion, settlement recovery, and relevant
+- [x] Create Concert only from a financially confirmed Booking handoff.
+- [x] Move draft/posting, post-creation cancellation, completion, settlement recovery, and relevant
   financial operation facts onto Concert or justified Concert-owned children.
-- [ ] Remove every Concert query or command that interprets `Application.State` or loads upstream
+- [x] Remove every Concert query or command that interprets `Application.State` or loads upstream
   entities to determine a Concert transition.
-- [ ] Decide Invoice/settlement/ticket-transaction placement from their identity and transaction
+- [x] Decide Invoice/settlement/ticket-transaction placement from their identity and transaction
   evidence; create a separate financial module only if it owns an independent lifecycle.
 
 Gate: Concert can validate and complete every operation from its own state plus immutable handoff facts.
@@ -660,8 +675,9 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [x] Route every aggregate lifecycle operation through one private transition helper. Keep semantic
   public/internal methods, operation-specific validation, state mutation, auxiliary data mutation, and
   domain-event raising on the aggregate; remove direct target-state assignment from callers.
-- [ ] Audit Opportunity's Open/Filled/reopen flow. Keep the atomic conditional claim at persistence;
-  adopt the shared primitive only for remaining aggregate-owned lifecycle transitions.
+- [x] Audit Opportunity's Open/Filled/reopen flow. `Filled` is an ordinary aggregate-owned transition
+  reached asynchronously via `ApplicationAcceptedEvent`, not a conditional persistence claim; adopt the
+  shared state-machine primitive for `Filled`/`Withdrawn`/`Reopen` like any other module.
 - [ ] Add local `State`, `Trigger`, `StateMachine`, module workflows, and Deal-selected contracts only
   where each module needs them.
 - [ ] Register exact per-`DealType` strategy or union coverage independently in Application, Booking,
