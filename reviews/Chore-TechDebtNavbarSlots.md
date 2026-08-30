@@ -5,24 +5,42 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f79517409cceeaea57d301cf35f0de3ba5aa0270`  _(2026-08-30)_
+**Reviewed up to commit:** `de9ba8d04`  _(2026-08-30)_
 
-> Range reviewed: `c4451509f..f795174` (2 commits).
+> Range reviewed: `c4451509f..de9ba8d04` (4 commits — supersedes the prior scope; see note below).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
+
+> **Scope note:** the branch was rescoped mid-review after `carve-fe` proved the original single-PR
+> design (Navbar/AppLayout decomposition + consumer migration in one PR) cannot pass CI — `carve-fe`
+> always restores `@concertable/*` from the published feed's `alpha` tag, never workspace source, so a
+> consumer route file can never reference a shared-package prop in the same PR that adds it. The final
+> diff is now PR1 of a two-PR publish-first cutover: a purely additive `Navbar`/`AppLayout` API change,
+> with the consumer migration and cleanup deferred to PR2. This review judges the final diff only.
 
 ## Findings
 
-- [x] **NAT1 — LOW — native** — `app/web/shared/src/components/AppLayout.tsx:16`
-  The `messagingSlot` doc comment cited `app/web/TECH_DEBT.md`'s Mailbox entry for rationale, but this
-  same commit deletes that entry (now resolved). Fixed: comment states the rationale inline (customer's
-  backend has no `MessageController`) instead of pointing at a doc section that no longer exists.
+No findings above the confidence bar. Lenses checked:
 
-No other findings above the confidence bar. Lenses checked: A (correctness — none), B (service isolation
-— N/A, frontend-only), C (module boundaries — N/A), D (seeding — N/A), E (language/framework conventions
-— `app-tiers`, `tiered-shared-code`, `typescript-style`, `routing`, `docs-and-debt` all invoked; the
-`Navbar`→`endSlot` decomposition and the venue/artist-only `messagingSlot` injection match
-`tiered-shared-code`'s slot rule and the identity rule in `app/web/shared/AGENTS.md` — none violated), F
-(test coverage — none: the diff is pure JSX composition wiring with no branching worth a rendering test,
-and `react-standards:frontend-testing`'s `TESTING.md` states this repo deliberately has no
-component-rendering test setup; UI composition is covered by the existing browser/E2E tier, and no
-existing test exercises the changed paths).
+- **A (correctness)** — none. `endSlot`/`messagingSlot` are optional and unused by every current
+  caller; `onHeightChange` changing from required to optional is a backward-compatible narrowing: every
+  existing caller (which all pass it) stays valid. Verified `git diff origin/main..HEAD -- app/web/shared/src/components/Navbar.tsx app/web/shared/src/components/AppLayout.tsx`
+  is a pure superset of origin/main's behavior — confirmed by all five web builds passing unchanged
+  (`npm -w @concertable/web-{customer,venue,artist,business,admin} run build`) and `@concertable/web`'s
+  own 31/31 unit tests passing.
+- **B (service isolation)** — N/A, frontend-only, no backend crossing.
+- **C (module boundaries)** — N/A.
+- **D (seeding)** — N/A.
+- **E (language/framework conventions)** — `app-tiers`, `tiered-shared-code`, `typescript-style`,
+  `docs-and-debt` invoked. `tiered-shared-code`'s slot rule is satisfied: `endSlot`/`messagingSlot` are
+  declared but injected by no caller yet — consistent with "shared code declares a slot, the app injects
+  the variation," since nothing here forces a caller to decide anything. `docs-and-debt`: both
+  `TECH_DEBT.md` progress notes name the concrete PR2 follow-up and the reason for the split, matching
+  the repo's own precedent for a publish-first cutover recorded mid-flight (e.g. the `AsbTopology`
+  progress note in `api/Concertable.Messaging/TECH_DEBT.md`).
+- **F (test coverage)** — none. Pure additive prop/type surface with no branching logic; per
+  `react-standards:frontend-testing`'s `TESTING.md`, this repo deliberately has no component-rendering
+  test setup, and a rendering test is explicitly not the fix for UI composition.
+
+`fe-boundaries` (`test:boundaries` + `lint:boundaries`) run clean locally; the three `carve-fe` failures
+from the original (superseded) diff are resolved by the rescope — no consumer route file changed in the
+final diff, so `carve-fe` never exercises `@concertable/web`'s new (unpublished) shape.
