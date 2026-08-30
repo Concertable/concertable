@@ -6,7 +6,17 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `4e1fd82c52e9a6c0aa90dd0a8a890727cc4b5d3c`  `(2026-08-30)`
+**Security-reviewed up to commit:** `4e1fd82c52e9a6c0aa90dd0a8a890727cc4b5d3c`  `(2026-08-30)`
 **Judgment:** `approved`
+
+**Security layer — no HIGH or MEDIUM findings.** Triggered by `.github/workflows/publish-images.yml`, which
+holds `packages: write` and a registry credential. It has no `pull_request_target` trigger and checks out no
+untrusted ref — it fires only on `push` to `main` and `workflow_dispatch` — so it never runs fork code with a
+write-scoped token. `${{ matrix.project }}` is interpolated into a `run:` block, but its value is a `grep`
+over the repository's own tracked csproj files evaluated on `main` after merge, so influencing it already
+requires write access to `main`. The PR-time `container-images` job builds untrusted PR code with
+`GITHUB_PACKAGES_TOKEN`, identical to the pre-existing `build` and `carve-*` jobs, holds only
+`packages: read`, and never pushes; `basename` strips directories so its archive path cannot traverse.
 
 ## Review pass — 2026-08-30 — full
 
