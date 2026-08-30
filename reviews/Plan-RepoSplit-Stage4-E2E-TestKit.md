@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `3c4255efd284fe0ef0f6f818bc783c1f73859fb8`  _(2026-08-30)_
+**Reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
 
-**Security-reviewed up to commit:** `3c4255efd284fe0ef0f6f818bc783c1f73859fb8`  _(2026-08-30)_
+**Security-reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -39,3 +39,9 @@ Range reviewed: `abf045a..a3a8548` (1 commit).
 Range reviewed: `a3a8548..3c4255e` (1 commit).
 
 No new findings. Native correctness and security coverage were both clean; the deletion retained equivalent Payment integration coverage and left no stale `E2EAdmin.UnitTests` paths.
+
+## Incremental review — 2026-08-30 (main sync)
+
+Range reviewed: `3c4255e..5fa21cb` (23 commits, including the current `origin/main` merge).
+
+No new findings. Native correctness, repository boundary/convention, and security review were clean. The sole merge conflict was regenerated inventory; source-mode and package-only carve builds both passed against platform version `0.1.0-alpha.0.1267`.
