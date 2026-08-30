@@ -9,14 +9,14 @@
     "provision-agent-standards.ps1": {
       "source": "Concertable/agent-standards",
       "path": "scripts/provision-agent-standards.ps1",
-      "commit": "87176f1edd3136f429e7484535603a9d2bca68fd",
-      "sha256": "sha256:9319f3478ffc318aa09a1c73f8fe6f43a9ee0fb4b579ff6d6ac5b9db71d97d5b"
+      "commit": "bf2871af528b63f6148716c49e59ed23e366484a",
+      "sha256": "sha256:8308bf41c2cb9470dc58847f57e31cd7d9b4fd7d24bce443761bd4bd89227f79"
     },
     "start-concertable-agent.ps1": {
       "source": "Concertable/agent-standards",
       "path": "scripts/start-concertable-agent.ps1",
-      "commit": "6bb518e9dbfdabc77d201bfbb5e04ac506a10ddb",
-      "sha256": "sha256:0e843c43eca82a4cc8c1520f4bf4fcbc8b8b016e8c8371a8a626f405cb0b151a"
+      "commit": "bf2871af528b63f6148716c49e59ed23e366484a",
+      "sha256": "sha256:3a3dd50c8ecbd48d47a2b1710ae88b5bc994a51b6e7d936f37883eb0799f9469"
     },
     "worktrees.ps1": {
       "source": "Concertable/agent-standards",
