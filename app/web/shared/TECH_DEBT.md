@@ -21,3 +21,14 @@ way to ask for just that.
 composes into the full version (adding `NavbarSearch`, `Mailbox`, and `onHeightChange` wiring itself),
 so a bare consumer imports the shell directly instead of the full component with three concerns switched
 off. `showSearch`/`showMailbox`/`onHeightChange` fall away entirely once nothing needs to negate them.
+
+**Progress — PR1 (`Chore/TechDebtNavbarSlots`) landed the additive half:** `Navbar` gained an `endSlot`
+prop and `onHeightChange` became optional — both purely additive, so every existing caller (admin,
+`AppLayout`) is unaffected until the published `@concertable/web` alpha carries them (the `carve-fe` CI
+gate resolves every `@concertable/*` intra-dependency from the published feed, never from workspace
+source, so a consumer PR touching both the shared shape and a route file can never pass in the same PR —
+this must land as two). **Remaining — PR2 (delivery-gated on that publish):** admin drops
+`showSearch`/`showMailbox`/`onHeightChange`, `AppLayout` stops relying on `Navbar`'s internal
+`showSearch`/`showMailbox` and instead owns `NavbarSearch` + the messaging slot itself via `endSlot`, and
+`showSearch`/`showMailbox`/the internal `Mailbox` render finally come out of `Navbar` — then delete this
+entry.

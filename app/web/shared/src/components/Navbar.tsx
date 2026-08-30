@@ -51,9 +51,12 @@ interface Props {
   /** Replaces the default `ProfileMenu` — for a surface where its hardcoded
    * `/settings`/`/settings/payment` links don't apply. */
   profileSlot?: ReactNode;
+  /** App-injected content between `headerSlot` and the theme toggle — e.g. messaging. Additive
+   * seam for a future minimal-shell `Navbar`; see `app/web/shared/TECH_DEBT.md`. */
+  endSlot?: ReactNode;
   showSearch?: boolean;
   showMailbox?: boolean;
-  onHeightChange: (height: number) => void;
+  onHeightChange?: (height: number) => void;
 }
 
 export function Navbar({
@@ -61,6 +64,7 @@ export function Navbar({
   profileItems,
   headerSlot,
   profileSlot,
+  endSlot,
   showSearch = true,
   showMailbox = true,
   onHeightChange,
@@ -69,7 +73,7 @@ export function Navbar({
   const ref = useRef<HTMLElement>(null);
 
   useMountLayoutEffect(() => {
-    if (ref.current) onHeightChange(ref.current.offsetHeight);
+    if (ref.current) onHeightChange?.(ref.current.offsetHeight);
   });
 
   return (
@@ -135,6 +139,7 @@ export function Navbar({
           </>
         )}
         {showMailbox && user && <Mailbox />}
+        {endSlot}
         <ThemeToggle />
         {profileSlot ?? <ProfileMenu items={profileItems ?? []} />}
       </div>
