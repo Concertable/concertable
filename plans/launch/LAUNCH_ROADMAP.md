@@ -65,6 +65,13 @@ table-stakes items were resolved in the same pass.
   union performs service resolution or restores the global workflow. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 
+- [ ] 🟡 **Lifecycle reporting read projections** `launch/lifecycle-read-projections` — deferred until
+  the lifecycle ownership refactor is terminal. Replace the Application dashboard's transitive
+  Opportunity query with a narrow Application-owned, event-fed availability projection while keeping
+  Apply, Accept, checkout, and invariant decisions on authoritative synchronous reads. This is a
+  selective reporting boundary, not a Dashboard-wide database or a rule to denormalize every reverse
+  read. See [LIFECYCLE_READ_PROJECTIONS_PLAN.md](LIFECYCLE_READ_PROJECTIONS_PLAN.md).
+
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**
 
 - **B2B reviews/reputation** `launch/b2b-reviews` — `IVenueReviewService`/`IArtistReviewService` in B2B are read-only projections over *fan* reviews (rows keyed by `Email`). There is no venue↔artist post-gig review submission anywhere.
