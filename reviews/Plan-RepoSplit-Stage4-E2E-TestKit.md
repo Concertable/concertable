@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `755f3a1b409ceb7ca21d7a431180f6a5cb2f38d1`  _(2026-08-30)_
+**Reviewed up to commit:** `3c910eab93743db6eafb5bcde2c701f3093f412e`  _(2026-08-30)_
 
 **Security-reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
 
@@ -51,3 +51,9 @@ No new findings. Native correctness, repository boundary/convention, and securit
 Range reviewed: `3bf078f..755f3a1` (1 commit).
 
 No new findings. Native correctness, error handling, boundary, convention, and test-coverage lenses were clean. The change preserves the exact-one and version checks for projects that resolve `Concertable.DataAccess.Infrastructure` while allowing host-only integration projects to omit that package. No security-sensitive path changed, so the security layer was not required for this range.
+
+## Incremental review — 2026-08-30 (merge-queue AppHost repair)
+
+Range reviewed: `fe9f443..3c910ea` (1 commit).
+
+No new findings. Native correctness, Aspire project-metadata behavior, service-boundary policy, and package-only isolation were clean. Marking the two AppHost references as non-resource compiler references prevents the fleet source provider from generating shadow `Projects.*_AppHost` markers, so startup resolves the markers from the executable AppHost assemblies instead.
