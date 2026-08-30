@@ -102,6 +102,10 @@ namespace Concertable.B2B.Application.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasFilter("[AcceptanceOperationId] IS NOT NULL");
 
+                    b.HasIndex("OpportunityId")
+                        .IsUnique()
+                        .HasFilter("[State] = 1");
+
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
 
