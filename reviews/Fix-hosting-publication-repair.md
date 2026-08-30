@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `8a344102303eefbbeae09b1ff23ae4e1bcb3c6ed`  _(2026-08-30)_
+**Reviewed up to commit:** `da4b4f6f55d5996bdf1ef01aa596042170d98be6`  _(2026-08-30)_
 **Security-reviewed up to commit:** `8a344102303eefbbeae09b1ff23ae4e1bcb3c6ed`  _(2026-08-30)_
 
 > Range reviewed: `3afbf0bc8..8a3441023` (2 commits).
@@ -26,3 +26,12 @@ high-confidence issues.
 - The solution-wide publication pack completed with all 51 packages; Payment.Hosting compiled past the
   failure from main's publication workflow.
 - `git diff --check` passed.
+
+## Incremental review — 2026-08-30
+
+> Range reviewed: `8a3441023..da4b4f6f5` (5 commits).
+
+No new findings. The merge from current `origin/main` contains no conflict-resolution hunks, leaves the
+publication-repair paths byte-identical to its first parent, and introduces only PR #874's already-landed
+DataAccess changes. The three Hosting packages re-packed successfully at the same MinVer prerelease
+(`0.1.0-alpha.0.1269`) with the AppHost.Shared source swap; `git diff --check` passed.
