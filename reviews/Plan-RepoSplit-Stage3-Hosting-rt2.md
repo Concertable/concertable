@@ -32,3 +32,13 @@ persisted-grant behavior changed.
 ### Findings
 
 No findings.
+
+## Incremental review — 2026-08-30 — CI remediation
+
+The first CI run found generated inventory drift from the two newly packable projects and a local-platform
+pack failure: hosting projects restored the released AppHost.Shared package, which lacks the new primitive.
+The inventory is regenerated. `local-platform prepare` now enables the existing source-swap mechanism for
+its own restore/pack cycle and maps AppHost.Shared, leaving ordinary consumers and carves on package
+references. No AppHost composition changes are introduced.
+
+No findings.
