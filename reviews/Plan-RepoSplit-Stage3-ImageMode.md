@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `134ec1b69ae4bee84d72299703ad0dda8b9b8b34`  `(2026-08-30)`
+**Reviewed up to commit:** `dd5aa27769e982a1543f867c1ab98229aff1a571`  `(2026-08-30)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -107,3 +107,38 @@ beyond those already in the manifest above.
 ### Findings
 
 No findings. The watermark moves to `134ec1b69`.
+
+## Review pass — 2026-08-30 — incremental
+
+**Candidate base:** `a466680f64e1eaba7101c6b3fb8fe38482088277`
+**Candidate head:** `dd5aa27769e982a1543f867c1ab98229aff1a571`
+**Candidate branch:** `Plan/RepoSplit-Stage3-ImageMode`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:9516aa5bda47be417840d44b4a081613e22dd1b37bb36c8d0c61b95cc3831620` `(13 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable\ea4d65d6-d40c-457e-9b5d-c6f60719cb43\scratchpad\review-bundle-862`
+**Candidate bundle identity:** `sha256:735e9f8ee56b377b8c304a95fdd2f2b88a92f7b583a01a25ff2f6bd924b91dae`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-ImageMode.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Merge of `origin/main` (`c4451509f`) plus its conflict resolution. `#858` re-baselined the
+published-contract snapshot to `0.1.0-alpha.0.1254` while this branch was doing the same to `1255`, so the
+two collided on four baseline files, the test, the generator, and `TECH_DEBT.md`.
+
+Resolution reviewed as a change in its own right, since a mis-resolution here is silent:
+
+- **The four `1254` baseline files are byte-identical to `origin/main`.** Verified by comparing the staged
+  blob hashes against `origin/main`'s, because Git reported them as *renames from this branch's `1255`
+  files* — similarity detection, which would look the same had the resolution kept this branch's content
+  under main's folder name. That would have produced a baseline claiming to be `1254` while holding `1255`'s
+  snapshot. It did not.
+- The redundant `1255` folder is gone and `1009` stays deleted, so exactly one baseline folder remains.
+- `TECH_DEBT.md` needed nothing: main had already removed the same entry.
+- The single-source-of-truth indirection is kept, because main still carries the duplicate literal this
+  branch removes. Both projects resolve `0.1.0-alpha.0.1254` from `PublishedBaseline.props`, and the four
+  compatibility tests pass against main's baseline through it.
+- The remaining paths are `#858`'s own `ConcertablePlatformVersion` pin bumps, arriving unmodified.
+
+### Findings
+
+No findings. The watermark moves to `dd5aa2776`.
