@@ -3,14 +3,17 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-RepoSplit-Stage3-ImageMode`
-- Branch: `Plan/RepoSplit-Stage3-ImageMode`
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Docs-polyrepo_backend-extraction-proofs`
+- Branch: `Docs/polyrepo_backend-extraction-proofs`
 - PR: not opened
-- Dependency/package gates: none active. Stage 3 rt1 publishes container images, not packages, so it
-  needs no publish-before-consume round-trip and opens no `platform-sync` PR beyond the automatic one
-  every `main` push already produces.
-- Last reconciled: **2026-08-30** — stage 3 rt1 (the container-image bridge) implemented on this
-  branch; ledger compacted to the `plan-checkpoint` budget in the same commit.
+- Dependency/package gates: none active. This is a docs-only ledger update; stage 3 rt1 (container images,
+  no publish-before-consume round-trip) already landed via PR #862 and its own worktree, now closed.
+- Last reconciled: **2026-08-30** — all five backend service extraction-and-build proofs complete and
+  pushed to private staging repos (see `## Completed work`); this docs-only commit records it.
+- **Standing authorization — parallel execution.** Tommy explicitly overrode the plan's default
+  "one checkpoint per session": stages 5–7's five service extractions are independent
+  (`blockingRuntimeEdges` is 1, Auth-owned, unrelated to the others) and are to be worked **concurrently**,
+  not serially. Do not silently revert to serial-only execution in a future session.
 
 ## Current state
 
@@ -27,10 +30,18 @@ Stages 1 and 2 are closed. Stage 3 is in flight.
    Round-trips in `## Next Steps`.
 4. **Move cross-service E2E to `fleet`** — 21 E2E cross-repository edges, no TestKit exists yet. The
    largest stage; gates `fleet`, customer and b2b, but not auth or payment.
-5. **Extract `payment`** — mechanism proven end to end: a real `git-filter-repo` run produced a coherent
-   standalone repo whose entire `src/` runtime compiled clean against the live feed.
-6. **Extract `auth`** — needs Duende persisted grants moved from `B2BDb` to `AuthDb` first.
-7. **Extract `search`, then `customer`, then `b2b`** — b2b last, widest contract and seed fan-out.
+5. **Extract `payment`** — ~~mechanism proven end to end~~ **done: pushed to private `Concertable/payment-next`.**
+6. **Extract `auth`** — extraction-and-build proof **done: pushed to private `Concertable/auth-next`.**
+   Still needs Duende persisted grants moved from `B2BDb` to `AuthDb` before this can become *canonical*
+   (a separate, unstarted piece of work — the private repo is a proof, not yet the real cutover target).
+7. **Extract `search`, then `customer`, then `b2b`** — b2b last (canonical-cutover ordering only, not a
+   proof-order constraint) is unaffected: all three extraction-and-build proofs are **done**, pushed to
+   private `Concertable/search-next`, `Concertable/customer-next`, `Concertable/b2b-next`. **Customer and
+   B2B are backend-only in these private repos** — their frontend surfaces
+   (`app/web/customer`+mobile+shared for Customer; `app/web/b2b`+`app/web/admin`+mobile+shared for B2B)
+   are deliberately not yet folded in; no proven precedent exists for combining an `api/` .NET root with
+   multiple `app/` npm-workspace roots in one `git-filter-repo` pass. That is the next real gap in stages
+   5–7, not the canonical-rename step.
 8. **Extract `platform-dotnet`, `platform-web`, `fleet`.**
 9. **Archive the monorepo.** Checked read-only 2026-08-27 and **not executable**: no extraction target
    repo exists, every service is still monorepo source, and the monorepo still publishes.
@@ -55,7 +66,8 @@ B2B.Seed.Simulator). The other five exist for the umbrella host, which becomes `
 
 ## Next Steps
 
-**Review, then open and land the PR for stage 3 rt1 (the container-image bridge) on this branch.**
+**Stage 3 rt1 is merged (PR #862). Next: either stage 3 rt2, or fold Customer/B2B's frontend into their
+private extraction proofs — both are unblocked and independent; work either or both concurrently.**
 
 Stage 3's remaining round-trips, in order — publish-before-consume forces the split:
 
@@ -78,7 +90,12 @@ Stage 3's remaining round-trips, in order — publish-before-consume forces the 
 | Per-service CI test scoping | `b0bbbdb06` |
 | Stage 1 — test-tier package boundary (41 refs across 31 projects) | PR #798 |
 | Stage 2 — `*.Hosting` packable + published; last 4 refs swapped; mirror workflows deleted | PRs #805, #809 |
-| Stage 3 rt1 — container-image bridge | this commit |
+| Stage 3 rt1 — container-image bridge | PR #862 |
+| Stage 5 — Payment extraction: 907 commits, 473 files, 0-error build, pushed | `Concertable/payment-next` |
+| Stage 6 — Auth extraction (2 roots: `Auth`, `Auth.Contracts`): 682 commits, 0-error build, pushed | `Concertable/auth-next` |
+| Stage 7 — Search extraction: 585 commits, 0-error build, pushed | `Concertable/search-next` |
+| Stage 7 — Customer extraction (backend only): 849 commits, 0-error build, pushed | `Concertable/customer-next` |
+| Stage 7 — B2B extraction (backend only): 1345 commits, 68-project closure, 0-error build, pushed | `Concertable/b2b-next` |
 
 ## Verification
 
@@ -152,6 +169,18 @@ findings as unknown beyond that.
   `EnableSdkContainerSupport` and `ContainerRepository`.
 - **The six generated mirrors no longer exist** (verified twice, 2026-08-27), so stage 9's mirror-rename
   sub-task is **void**, not pending, and the canonical names are already free.
+- **All five backend extraction proofs ran concurrently, in disposable clones outside any repo worktree**
+  (fresh `git -c core.longpaths=true clone` from `origin`, `git-filter-repo`'s module script — not
+  installed as a git subcommand here — then a build-verify matching each service's own `carve-*` CI job
+  scope exactly, B2B/Customer via the same dynamic `find`-based discovery CI uses rather than a hand-typed
+  list). Each ran in its own Windows Terminal tab via `handoff-claude`, never touching this ledger or the
+  monorepo's own git state, to avoid two writers racing on one file. **The `*-next` repos are private
+  proofs, not canonical targets** — no rename, mirror, or production action was taken.
+- **Auth.Contracts needs its own rename target, not nesting under Auth's `src/`.** It lives at
+  `api/Concertable.Auth.Contracts/`, outside `api/Concertable.Auth/`, and already carries its own
+  self-contained `Directory.Build.props`/`Directory.Packages.props`/`nuget.config` — nesting it under
+  Auth's `src/` would create two conflicting build-config chains. It renames to a sibling top-level
+  `Concertable.Auth.Contracts/` folder instead, preserving its independent build unit unchanged.
 - **Lockstep `ConcertablePlatformVersion` + the platform-sync PR are retired** at the split, in favour of
   independently versioned producer trains plus Renovate; breaking contracts use
   expand/publish/migrate/contract, never a repo-wide forced bump.
