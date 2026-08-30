@@ -26,3 +26,10 @@ Range reviewed: `89f4962..abf045a` (2 commits).
 
 - [x] **CV1 — MEDIUM — test convention** — `api/Concertable.B2B/tests/Concertable.B2B.E2EAdmin.UnitTests/E2EAdminSecurityTests.cs:10`
   The three new `E2EAdmin.UnitTests` suites directly exercise guard clauses and internal authorization helpers, contrary to the unit-testing rule “Do not add a unit test merely to cover a guard clause” and its requirement that endpoint/host wiring use the integration tier. Replace them with service-local integration coverage that boots the E2E admin route on a test host, proves missing/blank keys fail closed over HTTP/startup, and remove the internal-only unit-test exposure.
+
+## Incremental review — 2026-08-30 (final fix pass)
+
+Range reviewed: `abf045a..a3a8548` (1 commit).
+
+- [x] **NAT1 — MEDIUM — native** — `api/Concertable.Payment/tests/Concertable.Payment.E2EAdmin.UnitTests/E2EAdminSecurityTests.cs:1`
+  The Payment unit-test source was left orphaned when its project moved to `E2EAdmin.IntegrationTests`, so the obsolete internal-helper tests silently stopped compiling instead of being removed as CV1 required. Delete the stale file and now-empty unit-test directory, then verify no `E2EAdmin.UnitTests` paths remain.
