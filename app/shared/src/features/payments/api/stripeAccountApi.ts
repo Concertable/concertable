@@ -21,8 +21,8 @@ const stripeAccountApi = {
     return data;
   },
 
-  getPaymentMethod: async (): Promise<PaymentMethod | undefined> => {
-    const { data } = await paymentClient.get<PaymentMethod | undefined>(
+  getPaymentMethod: async (): Promise<PaymentMethod | null> => {
+    const { data } = await paymentClient.get<PaymentMethod | null>(
       `${BASE}/payment-method`,
     );
     return data;

@@ -1,0 +1,112 @@
+name: Publish images
+
+# Container rails for the repository split: build every opted-in deployable as an OCI image with the
+# .NET SDK container support (no Dockerfiles anywhere) and push it to GHCR.
+#
+# What publishes is gated by ONE thing: <ContainerRepository> on a project — the same one-line
+# csproj opt-in shape as <IsPackable>true</IsPackable> for packages. The matrix below is DERIVED from
+# that property, so there is no second list that can drift from what actually ships.
+#
+# These images are the temporary monorepo bridge that lets a standalone AppHost stop compiling a
+# sibling service from source: a foreign service becomes AddContainer(<pinned digest>) instead of
+# AddProject. See plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md (stage 3) and
+# plans/platform/DEPLOYMENT.md.
+#
+# TAGS: the commit SHA, and nothing else. AppHosts and the fleet manifest pin image DIGESTS, never a
+# mutable tag, so one immutable tag is all that is needed and there is no mutable tag sitting around
+# to be pinned by mistake. A SemVer tag is deliberately absent: deriving one here would mean either
+# recomputing MinVer (which has produced phantom versions in this repo before — see
+# platform-sync.yml) or reading the NuGet feed, whose train is the platform packages' and not these
+# images'. Each service gets its own real release train when it is extracted to its own repository.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.find.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive the image matrix from <ContainerRepository>
+        id: find
+        # Same single-source-of-truth trick as publish-packages.yml's verify-restore job: the set of
+        # things that ship is read off the csproj property that makes them ship. The empty-list guard
+        # fails loudly rather than silently publishing nothing if the grep ever stops matching.
+        run: |
+          projects=$(grep -rl '<ContainerRepository>' api --include='*.csproj' | sort)
+          test -n "$projects" || { echo "No <ContainerRepository> projects found — refusing to pass"; exit 1; }
+          echo "Deployables to image:"
+          echo "$projects"
+          echo "projects=$(echo "$projects" | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.discover.outputs.projects) }}
+
+    env:
+      # Every deployable consumes the shared platform from the feed at its pinned
+      # ConcertablePlatformVersion, so the publish restore needs the same credential the carve jobs use.
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Log in to GHCR
+        # The SDK container push reads the credential from the Docker config this writes.
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push the image
+        # Registry and repository come from the project's own build config, so this step carries no
+        # per-service knowledge and a new deployable needs no edit here.
+        run: |
+          dotnet publish "${{ matrix.project }}" \
+            --configuration Release \
+            /t:PublishContainer \
+            -p:ContainerImageTag=${{ github.sha }}
+
+      - name: Report the published digest
+        # The digest is what AppHosts and the fleet manifest actually pin, so print it where a human
+        # (and, later, the manifest-updating automation) can read it off the run.
+        #
+        # Reporting only. The push above already succeeded and its image is immutable at this SHA tag, so a
+        # transient registry read must not repaint that success as a failed publish on main.
+        continue-on-error: true
+        run: |
+          repository=$(dotnet msbuild "${{ matrix.project }}" -getProperty:ContainerRepository | tr -d '[:space:]')
+          image="ghcr.io/$repository:${{ github.sha }}"
+          digest=$(docker buildx imagetools inspect "$image" --format '{{.Manifest.Digest}}')
+          echo "$image -> $digest"
+          echo "### $repository" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`ghcr.io/$repository@$digest\`" >> "$GITHUB_STEP_SUMMARY"

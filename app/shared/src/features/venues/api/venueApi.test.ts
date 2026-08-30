@@ -4,12 +4,14 @@ import venueApi from "./venueApi";
 const mocks = vi.hoisted(() => ({
   post: vi.fn(),
   put: vi.fn(),
+  getOptional: vi.fn(),
 }));
 
 vi.mock("../../../lib/apiClient", () => ({
   apiClient: {
     post: mocks.post,
     put: mocks.put,
+    getOptional: mocks.getOptional,
   },
 }));
 
@@ -76,5 +78,22 @@ describe("venueApi", () => {
       ["Longitude", "-0.1"],
       ["Banner", banner],
     ]);
+  });
+
+  it("returns null, not undefined, when the caller has no venue yet", async () => {
+    mocks.getOptional.mockResolvedValue({ data: null });
+
+    const venue = await venueApi.getMyVenue();
+
+    expect(mocks.getOptional).toHaveBeenCalledWith("/organization/venue");
+    expect(venue).toBeNull();
+  });
+
+  it("returns the venue when the caller has one", async () => {
+    mocks.getOptional.mockResolvedValue({ data: { id: 42 } });
+
+    const venue = await venueApi.getMyVenue();
+
+    expect(venue).toEqual({ id: 42 });
   });
 });

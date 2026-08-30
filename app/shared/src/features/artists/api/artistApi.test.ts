@@ -4,12 +4,14 @@ import artistApi from "./artistApi";
 const mocks = vi.hoisted(() => ({
   post: vi.fn(),
   put: vi.fn(),
+  getOptional: vi.fn(),
 }));
 
 vi.mock("../../../lib/apiClient", () => ({
   apiClient: {
     post: mocks.post,
     put: mocks.put,
+    getOptional: mocks.getOptional,
   },
 }));
 
@@ -81,5 +83,22 @@ describe("artistApi", () => {
       ["Genres[0]", "rock"],
       ["Banner", banner],
     ]);
+  });
+
+  it("returns null, not undefined, when the caller has no artist yet", async () => {
+    mocks.getOptional.mockResolvedValue({ data: null });
+
+    const artist = await artistApi.getMyArtist();
+
+    expect(mocks.getOptional).toHaveBeenCalledWith("/organization/artist");
+    expect(artist).toBeNull();
+  });
+
+  it("returns the artist when the caller has one", async () => {
+    mocks.getOptional.mockResolvedValue({ data: { id: 42 } });
+
+    const artist = await artistApi.getMyArtist();
+
+    expect(artist).toEqual({ id: 42 });
   });
 });
