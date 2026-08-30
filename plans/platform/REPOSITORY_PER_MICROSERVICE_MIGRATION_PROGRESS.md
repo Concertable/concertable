@@ -98,7 +98,10 @@ mechanism was proven by three `git archive` carves building at 0 errors against 
 
 ## Reviews
 
-No review artifact for this branch yet — rt1 is committed but not yet reviewed at this checkpoint.
+`reviews/Plan-RepoSplit-Stage3-ImageMode.md` — full pass complete at `cf4107eae`, judgment **approved**,
+both findings resolved, none open. **Caveat recorded in the artifact:** it was a self-review with no
+independent lens, and both defects were caught by CI and by reading vendor targets rather than by the read.
+
 The plan's own design review is recorded only as "blockers resolved" in `3f8cb3494`; treat its specific
 findings as unknown beyond that.
 

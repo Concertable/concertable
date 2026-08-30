@@ -1,0 +1,86 @@
+# Code review — Plan/RepoSplit-Stage3-ImageMode
+
+> **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
+> findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
+> irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
+
+**Review status:** `complete`
+**Reviewed up to commit:** `cf4107eae0aa6ad0a57f086a8968866818545685`  `(2026-08-30)`
+**Judgment:** `approved`
+
+## Review pass — 2026-08-30 — full
+
+**Candidate base:** `bf15c221cb3365406fc7246106cce63a13588389`
+**Candidate head:** `cf4107eae0aa6ad0a57f086a8968866818545685`
+**Candidate branch:** `Plan/RepoSplit-Stage3-ImageMode`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:038f1993d4a89b6a0ab896d970e0e1776cffb1cb550d397e5d583799161a836c` `(29 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable\ea4d65d6-d40c-457e-9b5d-c6f60719cb43\scratchpad\review-bundle-862`
+**Candidate bundle identity:** `sha256:735e9f8ee56b377b8c304a95fdd2f2b88a92f7b583a01a25ff2f6bd924b91dae`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-ImageMode.md`
+**Work-order mode:** `new`
+**Pass judgment:** `approved`
+
+**Reviewer independence — read this before trusting the judgment.** This pass had no independent lens
+or native-review layer: subagent dispatch was withheld for this session, so the author reviewed their own
+change. That is materially weaker than the canonical shape and it is the reason the two defects found in
+this candidate were both caught by **CI and by reading vendor targets**, not by the human-style read. Treat
+the `approved` judgment as "no further defect found by the author plus the repository's own gates", not as
+independent confirmation. A second opinion on the two workflow files would still be worth having.
+
+**Rules manifest** (resolved mechanically by `skill_router.py --skills-for` over the frozen path set, then
+re-read and re-checked against the diff rather than assumed from earlier use in the session): `packages`,
+`plans`, `docs-and-debt`, `csharp-style`, `csharp-naming`, `dotnet-standards:unit-testing`,
+`dotnet:unit-testing`, `dotnet-standards:integration-testing`, `dotnet:integration-testing`.
+
+Rule checks that mattered, with their evidence:
+
+- **`packages` — per-folder build config, never repo-root.** `ContainerRegistry` is added to each of the
+  five service `Directory.Build.props` rather than a shared `api/`-root file, which is what a carve requires.
+  No nested `Directory.Build.props` was introduced, so nothing shadows an outer file. Verified empirically:
+  `dotnet msbuild -getProperty:` resolves `ghcr.io/concertable/<name>` on all nine opted-in projects.
+- **`packages` — a carve must not lose an import.** `api/Concertable.Payment/PublishedBaseline.props` sits
+  *inside* the service folder and both importers (`tests/…UnitTests`, `tools/…Generator`) reach it as
+  `..\..\`, so it survives the Payment carve. Deliberately **not** `Exists()`-guarded: unlike `api/`-root
+  infra, a missing copy here means a broken tree and should fail loudly rather than silently yield an empty
+  version.
+- **`dotnet:unit-testing` — the tier gate.** Project name still ends `.UnitTests`; no host package added
+  (the new item is an `AssemblyAttribute`, not a `PackageReference`); assertions remain xUnit.
+- **`docs-and-debt` — debt is deleted when fixed.** The `TECH_DEBT.md` entry describing the expected-red
+  baseline was removed in the same commit that satisfied its "Resolves when", rather than kept as an archive.
+- **`plans`.** Ledger keeps its required headers, names review before merge in `## Next Steps`, and was
+  compacted from 558 to ~150 lines against the 200-line/16 KB budget. `plan_graph.py`: 0 errors, 0 warnings.
+
+### Findings
+
+- [x] **F1 — HIGH — correctness (build)** — `api/Concertable.B2B/src/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj:9`
+  The hand-written Azure Functions container contract (`ContainerBaseImage`, `ContainerWorkingDirectory`,
+  `ContainerAppCommandInstruction=None`, two `ContainerEnvironmentVariable` items) both duplicated and
+  conflicted with the Functions SDK's own. `Microsoft.Azure.Functions.Worker.Sdk.targets:280` imports its
+  Publish targets unconditionally, and `AssignFunctionsBaseImage` already sets the base image (derived from
+  `AzureFunctionsVersion` + the TFM), `/home/site/wwwroot`, `linux-x64`, both `AzureWebJobs*` variables, and
+  the real entrypoint `/opt/startup/start_nonappservice.sh`. Because
+  `Microsoft.NET.Build.Containers.targets:211` skips its own `ContainerAppCommand` assignment when the
+  instruction is `None`, the SDK-set entrypoint remained and tripped
+  `error CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty`. Failure scenario:
+  every `B2B.Workers` image build fails, so `main` publishes eight of nine images and the Functions image
+  never exists. **Fixed** in `b74be666b` by deleting all of it and keeping only `EnableSdkContainerSupport`
+  and `ContainerRepository` — also strictly better, since the SDK derives the base-image tag from the TFM
+  where the hardcoded `4-dotnet-isolated10.0` would rot at the next framework bump.
+
+- [x] **F2 — LOW — error handling** — `.github/workflows/publish-images.yml:99`
+  The digest-reporting step could fail a publish job whose push had already succeeded. Failure scenario: a
+  transient GHCR read or unexpected `dotnet msbuild -getProperty` output makes `imagetools inspect` exit
+  non-zero, and a `main` run is reported red even though the image is pushed and immutable at its SHA tag —
+  sending someone to investigate a publish that actually worked. **Fixed** in this pass: the step is
+  `continue-on-error: true`, since it is reporting only.
+
+**Considered and deliberately not raised.** `ContainerRegistry` duplicated across five files is required by
+the carve, not duplication to remove. The nine sequential image builds in `container-images` are one job
+rather than a matrix on purpose — they share the workspace `obj/`, so a matrix would rebuild the shared
+closure nine times on nine cold runners. Neither the base-image tag pinning nor a `concurrency` group is a
+violation of any loaded rule, and our own images are pinned downstream by digest.
+
+**Not covered by this pass.** That the published images actually *run* — `container-images` proves only that
+they build. The standalone-host boot smoke in image mode is stage 3 rt4, recorded in the plan ledger's
+`## Next Steps`.

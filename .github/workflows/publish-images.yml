@@ -99,6 +99,10 @@ jobs:
       - name: Report the published digest
         # The digest is what AppHosts and the fleet manifest actually pin, so print it where a human
         # (and, later, the manifest-updating automation) can read it off the run.
+        #
+        # Reporting only. The push above already succeeded and its image is immutable at this SHA tag, so a
+        # transient registry read must not repaint that success as a failed publish on main.
+        continue-on-error: true
         run: |
           repository=$(dotnet msbuild "${{ matrix.project }}" -getProperty:ContainerRepository | tr -d '[:space:]')
           image="ghcr.io/$repository:${{ github.sha }}"
