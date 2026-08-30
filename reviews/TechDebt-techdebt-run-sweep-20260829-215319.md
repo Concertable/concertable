@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `bf1533719d9e2af52ac4f64321e3a9e39a8a97d2`  `(2026-08-30)`
-**Security-reviewed up to commit:** `bf1533719d9e2af52ac4f64321e3a9e39a8a97d2`  `(2026-08-30)`
+**Reviewed up to commit:** `3d9e58686c0938d365807db037b4b6e843157534`  `(2026-08-30)`
+**Security-reviewed up to commit:** `3d9e58686c0938d365807db037b4b6e843157534`  `(2026-08-30)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -80,3 +80,87 @@ auth/authz, no crypto, no new data exposure (`CommissionConfigurationEntity` car
 ### Findings
 
 None.
+
+## Review pass — 2026-08-30 — incremental
+
+**Candidate base:** `bf1533719d9e2af52ac4f64321e3a9e39a8a97d2`
+**Candidate head:** `3d9e58686c0938d365807db037b4b6e843157534`
+**Candidate branch:** `TechDebt/techdebt-run-sweep-20260829-215319`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:7c900647b6fe3fe031ac0b0602aef98821c1392915c59b9506fa31ab01277f3c` `(17 paths)`
+**Work-order path:** `reviews/TechDebt-techdebt-run-sweep-20260829-215319.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Context
+
+The first pass's "deferred to platform-sync" call was wrong: CI's `build` job runs
+`./scripts/local-platform.ps1 build api/Concertable.slnx` (project references, not the published package),
+so it exercised the local, now-sealed `DataAccess` source directly and failed immediately on the four
+un-migrated overrides, rather than waiting for a future platform-sync PR. This pass migrates all four —
+`PreferenceRepository` (Customer) gets `AutoInclude()` on `GenrePreferences` (owned, always loaded
+elsewhere in the class); `OpportunityRepository`'s `Venue` include is dropped outright at first (no caller
+appeared to need it) then restored as an explicit `GetWithVenueByIdAsync` once a real caller was found (see
+below); `ApplicationRepository` and `BookingRepository` get explicit named methods
+(`GetWithArtistAndOpportunityByIdAsync`, `GetWithApplicationAndConcertByIdAsync`) for their one
+eager-loading caller each. Also renames `BookingRepository.GetForSettlementByConcertIdAsync` (named for
+its use case, not what it fetches) to `GetWithApplicationByConcertIdAsync`, and adds a `csharp-naming`
+standard rule (in `dotagents`, `Docs/naming-agent-noun-suffixes`) codifying "name the real joined relation,
+never a bucket noun or a use case."
+
+**Two further sub-passes found and fixed real regressions this candidate's own build could not catch,
+because none of them failed to compile:**
+
+- Sub-pass 1 (native review + a from-scratch caller audit across the whole `api/` tree): `OpportunityService.GetByIdAsync`
+  (backs `GET /api/Opportunity/{id}`) fed the now-bare `GetByIdAsync` result to a mapper needing
+  `opportunity.Venue.Name` — a guaranteed `NullReferenceException`, missed by the first sweep because this
+  caller injects the repository as `repository`, not `opportunityRepository`. Fixed with the restored
+  `GetWithVenueByIdAsync`. Also `AcceptExecutor.VerifyTermsUnchanged` read `app.Opportunity.Period`,
+  which only "worked" via EF's incidental relationship-fixup (another call in the same request loads the
+  Opportunity into the same scoped `DbContext` first) — fixed by fetching the period explicitly via
+  `IOpportunityRepository.GetPeriodByIdAsync`. Also caught by CI itself, independently:
+  `CommissionConfigurationPersistenceTests.cs` (an *integration* test, outside the unit-test-only
+  verification the first pass ran) called `CommissionBindingRepository` by its old `GetByIdAsync` name.
+- Sub-pass 2 (native review over sub-pass 1's diff): `ContractIssuer.IssueAsync` read
+  `application.Opportunity.Period` the same fixup-dependent way (made to "work" by its own
+  `GetArtistAndVenueByIdAsync` call moments earlier) — same fix, explicit `GetPeriodByIdAsync`. Also
+  flagged that the new "opportunity must exist" guards in `AcceptExecutor`/`ContractIssuer` should use this
+  module's established `.OrNotFound(DisplayNames.X)` idiom rather than a raw `InvalidOperationException`;
+  fixed in `ContractIssuer` (matches its own sibling lookup one line above); left as-is in `AcceptExecutor`,
+  which already had a raw `InvalidOperationException` for an equivalent "booking must exist" case a few
+  lines below, so it's internally consistent with that class's own pre-existing convention.
+
+### Rules manifest
+
+Same set as the first pass, all already loaded; no new routed skill beyond `dotnet-standards:integration-testing`
+/ `dotnet:integration-testing` (routed by the `CommissionConfigurationPersistenceTests.cs` fix).
+
+### Native/general review
+
+Three dispatches against successive frozen diffs (`bf1533719..28b8a650d`, `28b8a650d..da1428f92`,
+`da1428f92..3d9e58686`), each independently re-deriving the claimed fixes rather than trusting the prior
+commit's description. Findings folded into Context above; all resolved in this candidate.
+
+### Security review
+
+`da1428f92..3d9e58686` again touches `api/Concertable.Payment/**` (the integration-test fix), so the
+security layer re-ran over the cumulative branch diff. No findings — same reasoning as the first pass, plus:
+the new `GetWithVenueByIdAsync`/`GetWithArtistAndOpportunityByIdAsync`/`GetWithApplicationAndConcertByIdAsync`
+methods query through the same tenant-scoped context every sibling method in these classes already uses, so
+no tenant-filter bypass is introduced.
+
+### Verification
+
+- `./scripts/local-platform.ps1 build` (project-reference mode, reproducing CI's `build` job) green for:
+  `Concertable.B2B.Web`, `Concertable.Customer.Web`, `Concertable.Payment.Web`,
+  `Concertable.B2B.Concert.Infrastructure`, `Concertable.Customer.Preference.Infrastructure`.
+- `dotnet test` green: `Concertable.B2B.Concert.UnitTests` 234/234, `Concertable.Customer.Preference.UnitTests`
+  19/19, `Concertable.Payment.UnitTests` 569/569, `Concertable.Payment.IntegrationTests` 49/49 (includes the
+  regression this pass fixed, run against a real containerized SQL instance).
+- `Concertable.B2B.Concert.IntegrationTests` and `Concertable.Customer.Preference.IntegrationTests` could not
+  run locally (Windows path-length limit on this worktree's `SNI.dll` load, and an unrelated Docker Desktop
+  instability) — left to CI, whose Linux runners don't hit either issue.
+
+### Findings
+
+None open — all findings from both native-review sub-passes were fixed within this same pass.
