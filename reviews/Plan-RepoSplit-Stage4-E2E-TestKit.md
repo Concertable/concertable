@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `3c910eab93743db6eafb5bcde2c701f3093f412e`  _(2026-08-30)_
+**Reviewed up to commit:** `b4e358cd7ebc3ffa55dc226f849fa759294735b2`  _(2026-08-30)_
 
 **Security-reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
 
@@ -57,3 +57,9 @@ No new findings. Native correctness, error handling, boundary, convention, and t
 Range reviewed: `fe9f443..3c910ea` (1 commit).
 
 No new findings. Native correctness, Aspire project-metadata behavior, service-boundary policy, and package-only isolation were clean. Marking the two AppHost references as non-resource compiler references prevents the fleet source provider from generating shadow `Projects.*_AppHost` markers, so startup resolves the markers from the executable AppHost assemblies instead.
+
+## Incremental review — 2026-08-30 (AppHost dependency containment)
+
+Range reviewed: `d91df05..b4e358c` (1 commit).
+
+No new findings. Native correctness, NuGet transitivity, Aspire marker resolution, service-boundary policy, and package-only isolation were clean. `PrivateAssets="all"` contains both AppHost dependency closures inside the source provider while retaining ordinary compile/runtime references; artifact inspection confirmed the executable AppHost assemblies and runtime files still reach the E2E output.
