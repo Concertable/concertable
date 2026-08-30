@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `abed0218d97668521c51e9cb5689e653a25ad586`  _(2026-08-30)_
+**Reviewed up to commit:** `85b9499bbb8ed280d4103b6786431ee57d028132`  _(2026-08-30)_
 
-**Security-reviewed up to commit:** `abed0218d97668521c51e9cb5689e653a25ad586`  _(2026-08-30)_
+**Security-reviewed up to commit:** `85b9499bbb8ed280d4103b6786431ee57d028132`  _(2026-08-30)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -87,3 +87,15 @@ No new findings. Native review confirmed the sole conflict resolution preserves 
 Merge reviewed: `abed0218d97668521c51e9cb5689e653a25ad586` relative to both parents.
 
 No high- or medium-confidence findings. E2E admin routes remain E2E-environment-only, fail-closed, fixed-time key protected, non-packable, and absent from production project references. The hosting abstraction changes preserve resource references and waits; source/package mode remains intact, including private non-resource AppHost references.
+
+## Incremental review — 2026-08-30 (AppHost runtime extensions)
+
+Range reviewed: `12f331daa..85b9499bb` (1 commit).
+
+No new findings. Native review confirmed the explicit `Aspire.Hosting.NodeJs` and `Aspire.Hosting.DevTunnels` references match the versions owned by `Concertable.Frontend.Hosting`, remain confined to the non-packable source provider, flow into both B2B and Customer E2E runtime outputs, and preserve `PrivateAssets="all"` isolation on the executable AppHost references.
+
+## Security review — 2026-08-30 (AppHost runtime extensions)
+
+Range reviewed: `12f331daa..85b9499bb` (1 commit).
+
+No high- or medium-confidence findings. The centrally pinned packages use the existing hosting-project versions and recorded NuGet integrity hashes, add no production execution path, and do not weaken the AppHost dependency-containment or E2E trust boundaries.
