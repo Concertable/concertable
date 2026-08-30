@@ -696,8 +696,10 @@ jobs:
     # must never write to the registry. Goes through local-platform.ps1 like every other build job, so a
     # PR that changes platform source images against that source and not the stale feed.
     #
-    # The matrix is derived from <ContainerRepository>, identically to publish-images.yml, so the gate
-    # and the publish can never cover different sets.
+    # The set is derived from <ContainerRepository>, identically to publish-images.yml, so the gate and
+    # the publish can never cover different sets. One sequential job rather than a matrix on purpose:
+    # the nine publishes share this workspace's obj/, so each reuses what the previous ones compiled,
+    # where a matrix would rebuild the shared closure nine times on nine cold runners.
     runs-on: ubuntu-latest
     needs: [local-platform-pack, changes]
     if: needs.changes.outputs.run_code == 'true'
