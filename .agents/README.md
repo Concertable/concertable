@@ -3,9 +3,21 @@
 This folder holds Concertable's repo-local agent skills. They are written against `AGENTS.md` and
 should stay agent-agnostic: no Claude-specific tool names and no missing workflow surfaces.
 
+Codex discovers the committed payload at `.agents/skills`, with generic standards under `.agents/standards`.
+The copies supply the Concertable,
+generic .NET, and generic React standards under distinct names where their upstream plugin names
+would otherwise collide. They are runtime artifacts only: update their source in the shared
+standards repositories, then refresh this committed payload deliberately. Codex never needs a
+global Agent Standards marketplace, plugin cache, hook registration, or user skill catalogue.
+
+Run `scripts/verify-agent-standards.ps1` to prove the local payload, workflow agents, hook, and
+Agent Workboard isolation. Add `-VerifyFreshCodexSession -CodexExecutable <path>` to launch Codex
+with `--ignore-user-config` and prove the project payload is sufficient on its own.
+
 ## Adding or updating skills
 
-The canonical skill always lives under `.agents/skills/<name>/SKILL.md`.
+The shared canonical skills remain in their owning standards repositories. Do not hand-edit the
+committed delivery copies under `.agents/skills`; refresh them together from their sources.
 
 If Claude Code also needs to discover the skill, add only a compatibility stub at
 `.claude/skills/<name>/SKILL.md` that points back to the matching `.agents` skill. Do not duplicate

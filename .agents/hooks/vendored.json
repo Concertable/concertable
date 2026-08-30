@@ -64,12 +64,6 @@
       "commit": "76758be8ae5973ebca29bf6c28814e697ccdd9c6",
       "sha256": "sha256:985ce6ca8e4f82dc4e707f5d88aac100857404c56b08bf87a20fddafe224083f"
     },
-    "provision-agent-standards.ps1": {
-      "source": "Concertable/agent-standards",
-      "path": "scripts/provision-agent-standards.ps1",
-      "commit": "31ddc0c32919d800c2ceae8e62accda281d83d4f",
-      "sha256": "sha256:11412aa9a2b4137a8d42792bbbd245ec595b67cb2efb069c34d49066da487109"
-    },
     "worktrees.ps1": {
       "source": "Concertable/agent-standards",
       "path": "scripts/worktrees.ps1",
