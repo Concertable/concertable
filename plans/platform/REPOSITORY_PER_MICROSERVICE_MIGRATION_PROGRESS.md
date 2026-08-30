@@ -140,8 +140,13 @@ findings as unknown beyond that.
   so the failure appears only in a fresh clone).
 - **Auth's Duende persisted grants live in `B2BDb`** and must move to `AuthDb` before Auth extraction.
 - **B2B Workers ships as a container on native Azure Functions on Container Apps**, not Functions
-  Consumption, which cannot run a custom container at all. Its image therefore uses the Functions base
-  image, puts the payload at `/home/site/wwwroot`, and preserves that image's own entrypoint.
+  Consumption, which cannot run a custom container at all. **Write none of that contract by hand.**
+  `Microsoft.Azure.Functions.Worker.Sdk`'s `AssignFunctionsBaseImage` target already sets the base image
+  (derived from the TFM, so it tracks a framework bump), `/home/site/wwwroot`, `linux-x64`, both
+  `AzureWebJobs*` env vars, and the real entrypoint `/opt/startup/start_nonappservice.sh`. Hand-written
+  overrides are redundant, and `ContainerAppCommandInstruction=None` actively fails the build with
+  `CONTAINER2026` by conflicting with the `ContainerAppCommand` that target sets. The project needs only
+  `EnableSdkContainerSupport` and `ContainerRepository`.
 - **The six generated mirrors no longer exist** (verified twice, 2026-08-27), so stage 9's mirror-rename
   sub-task is **void**, not pending, and the canonical names are already free.
 - **Lockstep `ConcertablePlatformVersion` + the platform-sync PR are retired** at the split, in favour of
