@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b4e358cd7ebc3ffa55dc226f849fa759294735b2`  _(2026-08-30)_
+**Reviewed up to commit:** `21b290ead87f6ab2786e5d3d8ac0333862e38239`  _(2026-08-30)_
 
-**Security-reviewed up to commit:** `5fa21cb71da77607e553738b4d6111353d00c638`  _(2026-08-30)_
+**Security-reviewed up to commit:** `21b290ead87f6ab2786e5d3d8ac0333862e38239`  _(2026-08-30)_
 
 > Range reviewed: `037a9ec..89f4962` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -63,3 +63,15 @@ No new findings. Native correctness, Aspire project-metadata behavior, service-b
 Range reviewed: `d91df05..b4e358c` (1 commit).
 
 No new findings. Native correctness, NuGet transitivity, Aspire marker resolution, service-boundary policy, and package-only isolation were clean. `PrivateAssets="all"` contains both AppHost dependency closures inside the source provider while retaining ordinary compile/runtime references; artifact inspection confirmed the executable AppHost assemblies and runtime files still reach the E2E output.
+
+## Incremental review — 2026-08-30 (final main sync)
+
+Merge reviewed: `21b290e` relative to both parents.
+
+No new findings. Native merge-resolution review confirmed the merged solution preserves both the Auth migration tool from `main` and the fleet/TestKit projects from this branch. The regenerated inventory is current with 233 projects, six approved source-mode E2E edges, no blocking E2E edges, and no forbidden runtime-tooling edges; the full synced solution builds with zero errors.
+
+## Security review — 2026-08-30 (final main sync)
+
+Merge reviewed: `21b290e` relative to both parents.
+
+No high- or medium-confidence findings. E2E admin routes remain non-packable, E2E-environment-only, fail-closed, fixed-time key protected, and absent from production hosts. The merged Auth/AppHost composition does not bypass those boundaries, and the source provider remains non-packable with private executable AppHost references.
