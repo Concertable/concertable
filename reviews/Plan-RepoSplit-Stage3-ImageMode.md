@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `dd5aa27769e982a1543f867c1ab98229aff1a571`  `(2026-08-30)`
+**Reviewed up to commit:** `4e1fd82c52e9a6c0aa90dd0a8a890727cc4b5d3c`  `(2026-08-30)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -142,3 +142,30 @@ Resolution reviewed as a change in its own right, since a mis-resolution here is
 ### Findings
 
 No findings. The watermark moves to `dd5aa2776`.
+
+## Review pass — 2026-08-30 — incremental
+
+**Candidate base:** `dd5aa27769e982a1543f867c1ab98229aff1a571`
+**Candidate head:** `4e1fd82c52e9a6c0aa90dd0a8a890727cc4b5d3c`
+**Candidate branch:** `Plan/RepoSplit-Stage3-ImageMode`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:5f82442a65a6a14e3da6a105e6f2de021ad111faa7ec7b7e6fa05d0837d3c91e` `(6 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable\ea4d65d6-d40c-457e-9b5d-c6f60719cb43\scratchpad\review-bundle-862`
+**Candidate bundle identity:** `sha256:735e9f8ee56b377b8c304a95fdd2f2b88a92f7b583a01a25ff2f6bd924b91dae`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-ImageMode.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The prior pass's own work-order commit, plus a second merge of `origin/main` (`7e2c3498c`, PR #863 —
+navbar slots). The merge was conflict-free and touches no file this branch touches, verified by intersecting
+the two merge-base diffs: the overlap is empty.
+
+The only non-documentation paths in this delta — `app/web/shared/src/components/{Navbar,AppLayout}.tsx` —
+arrive unmodified from `main`, where they were reviewed and merged under their own work order
+(`reviews/Chore-TechDebtNavbarSlots.md`). They are **not** in this PR's diff, because merging `main` moved
+the base with them; `git diff origin/main...HEAD` is 24 paths and contains none of them. Nothing here is this
+branch's change to review.
+
+### Findings
+
+No findings. The watermark moves to `4e1fd82c5`.
