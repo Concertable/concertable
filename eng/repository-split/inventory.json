@@ -546,7 +546,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 228,
+    "projectCount": 231,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -1101,6 +1101,13 @@
         "packable": false,
         "target": "b2b"
       },
+      "api/Concertable.B2B/tests/Concertable.B2B.E2EAdmin.UnitTests/Concertable.B2B.E2EAdmin.UnitTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "unit-test",
+        "name": "Concertable.B2B.E2EAdmin.UnitTests",
+        "packable": false,
+        "target": "b2b"
+      },
       "api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj": {
         "area": "Concertable.B2B",
         "kind": "fixture",
@@ -1528,6 +1535,13 @@
         "packable": false,
         "target": "customer"
       },
+      "api/Concertable.Customer/tests/Concertable.Customer.E2EAdmin.UnitTests/Concertable.Customer.E2EAdmin.UnitTests.csproj": {
+        "area": "Concertable.Customer",
+        "kind": "unit-test",
+        "name": "Concertable.Customer.E2EAdmin.UnitTests",
+        "packable": false,
+        "target": "customer"
+      },
       "api/Concertable.Customer/tests/Concertable.Customer.IntegrationTests.Fixtures/Concertable.Customer.IntegrationTests.Fixtures.csproj": {
         "area": "Concertable.Customer",
         "kind": "fixture",
@@ -1735,6 +1749,13 @@
         "area": "Concertable.Payment",
         "kind": "architecture-test",
         "name": "Concertable.Payment.ArchitectureTests",
+        "packable": false,
+        "target": "payment"
+      },
+      "api/Concertable.Payment/tests/Concertable.Payment.E2EAdmin.UnitTests/Concertable.Payment.E2EAdmin.UnitTests.csproj": {
+        "area": "Concertable.Payment",
+        "kind": "unit-test",
+        "name": "Concertable.Payment.E2EAdmin.UnitTests",
         "packable": false,
         "target": "payment"
       },
