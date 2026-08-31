@@ -5,13 +5,13 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0`
-- Dependency/package gates: the recorded NuGet and npm Actions-access closure, including `Concertable.AppHost.Shared`, is granted; final checkpoint 13 publication and delivery remain gated on explicit authorization and the plan's platform/system prerequisites
-- Last reconciled: **2026-08-31** from repository ID `1351337130`, exact remote/PR head equality, CI run `33442759487`, and the completed Customer seed-contract/simulator slice
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `5555ac82b314384685a7a003fa5bc82e18fa8298`
+- Dependency/package gates: package access is granted; Actions artifact retention is blocked by the organization storage quota; final publication and delivery remain unauthorized
+- Last reconciled: **2026-09-01** from exact remote/PR head equality, local artifact-integrity validation, and CI run `33448642947`
 
 ## Current state
 
-State: **repository preparation active; package gate cleared**. GitHub repository `Concertable/customer-next`
+State: **repository preparation active; artifact retention blocked by organization quota**. GitHub repository `Concertable/customer-next`
 was renamed in place to canonical `Concertable/customer`; repository ID `1351337130`, PR #1, branches, and
 history were preserved. The inactive local checkout moved from `customer-next` to `customer`, and its origin
 now uses `https://github.com/Concertable/customer.git`.
@@ -20,11 +20,11 @@ The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the 
 web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 validates the owned
 build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
 candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
-Exact-head CI run [`33442759487`](https://github.com/Concertable/customer/actions/runs/33442759487) is fully
-green at `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0`: Frontend completed in 2m17s and Backend in 6m00s. The
-backend job builds and tests the carve, validates migration snapshots, restores a clean consumer from all four
-Customer package candidates, builds Web/Migrations/Seed Simulator OCI candidates, loads and runs the real
-simulator image, and proves the migration job against an empty database. No package or image was published.
+Exact-head CI run [`33448642947`](https://github.com/Concertable/customer/actions/runs/33448642947) ran at
+`5555ac82b314384685a7a003fa5bc82e18fa8298`. Frontend passed. Backend passed every prior build, test,
+package, image, migration, and real simulator-smoke gate, plus the new Linux artifact-integrity scan; only
+`actions/upload-artifact` failed because the organization Actions artifact storage quota is full. No package
+or image was published or pushed.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
@@ -32,14 +32,10 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Continue draft PR #1 from exact head `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0` with one Customer-only
-artifact-integrity slice. For the four NuGet and three OCI candidates, generate one deterministic manifest of
-artifact names and SHA-256 hashes, create SBOM evidence, and scan each OCI archive for vulnerabilities and
-embedded secrets using pinned tool/action versions. Retain the manifest, SBOMs, and scan reports as CI run
-artifacts with an explicit retention period, and fail CI on a missing candidate, hash mismatch, embedded
-secret, or High/Critical vulnerability. Do not add an ignore or allowlist mechanism in this slice. Do not grant
-write/package/attestation permissions and do not publish or push any candidate. This slice must not edit
-standalone AppHost, TestKit/fleet E2E, or another service's source.
+Blocked: exact-head CI run `33448642947` cannot retain the completed Customer integrity evidence because the organization Actions artifact storage quota is full.
+Blocked by: GitHub package/organization administrator; this quota is outside Customer ownership.
+Unblock action: clear or raise the organization Actions artifact storage allowance without deleting caches from this stream, then allow GitHub's documented 6–12-hour usage recalculation window if storage was cleared.
+Resume when: rerun failed exact-head run `33448642947` at `5555ac82b314384685a7a003fa5bc82e18fa8298` and require a retained 30-day `customer-candidate-integrity-<sha>` artifact containing `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability reports, and three all-severity secret reports. Only after that exact gate is green may Customer continue. Do not publish or push packages or images.
 
 ## Completed work
 
@@ -63,20 +59,19 @@ standalone AppHost, TestKit/fleet E2E, or another service's source.
 - `1b6e49f` adds the downward-only `Concertable.Customer.Seed.Contracts` package and deterministic Customer
   seed simulator, drives Customer seed state and the simulator from one review spec, and adds parity,
   idempotency, clean-consumer, and real OCI load/run gates without publishing artifacts.
+- `5555ac8` adds deterministic integrity evidence for the exact four NuGet and three OCI candidates: one
+  `SHA256SUMS`, seven CycloneDX SBOMs, and pinned vulnerability and secret scans, without publication.
 
 ## Verification
 
-- Exact-head remote CI run `33442759487`: Frontend 2m17s and Backend 6m00s, fully green at
-  `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0`; all four package and three OCI outputs were candidates only.
-- Backend verification covered the zero-warning build, full tests, seven migration snapshots, four-package
-  isolated clean-consumer restore/build, real Seed Simulator OCI load/run, and the Development-mode
-  empty-database migration job. The simulator container exited successfully.
-- Frontend verification covered clean install, shared package tests/build, web test/build, and mobile
-  typecheck/export.
+- Exact-head remote CI run `33448642947`: Frontend passed. Backend passed the prior build/test/package/image,
+  migration, and simulator-smoke closure and the new Linux integrity scan; only the final artifact-retention
+  step failed on the organization storage quota.
+- Local full gate at `5555ac82b314384685a7a003fa5bc82e18fa8298` passed for exactly four NuGet and
+  three OCI candidates, deterministic `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability
+  reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
 - Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
   web 1/1 and production build; mobile typecheck and Android export — all green.
-- Local validation at `1b6e49f` covered a zero-warning carve build, all prior full tests plus focused seed
-  tests 4/4, the four-package clean consumer, and a real local simulator OCI load/run with exit code 0.
 
 ## Reviews
 
@@ -85,8 +80,9 @@ standalone AppHost, TestKit/fleet E2E, or another service's source.
 - Repository-preparation review completed through `39ca980f375b5661ed7da114297f45b909915851` with no open findings.
 - Independent artifact-gate review through `2ecc33cb533a95b3baa209dcdc259c6e27e81105` has no open findings
   after reconciling the current and final Customer package rosters.
-- Independent re-review through `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0` found no issues. Draft PR #1
-  still owns the cumulative delivery gate before any merge.
+- Independent artifact-integrity review through `5555ac82b314384685a7a003fa5bc82e18fa8298` fixed
+  OS-aware path containment and exact artifact-name casing, then found no remaining issues. Draft PR #1 still
+  owns the cumulative delivery gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -122,6 +118,10 @@ standalone AppHost, TestKit/fleet E2E, or another service's source.
   substitute. Runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost invokes the
   migration resource. No package, image, canonical release, visibility change, deployment, or system-consumer
   update was authorized or performed.
+- Customer currently stores zero Actions artifacts and one 164,423,819-byte cache. Organization cache usage
+  is 12,671,970,938 bytes, concentrated in five approximately 2.5-GB NuGet caches in
+  `Concertable/concertable`; this Customer stream must not delete them. The failed upload found all 14 expected
+  integrity files and requested 30-day retention before GitHub rejected artifact creation on quota.
 - Vitest invokes Vite with `command = serve` and `mode = test`; development-only configuration must consider
   both values rather than treating every `serve` configuration load as a live dev server.
 - A multi-path fold must include support files outside selected app subtrees: Customer's relocated Vite app
