@@ -36,12 +36,12 @@ Stages 1 and 2 are closed. Stage 3 is in flight.
    (a separate, unstarted piece of work — the private repo is a proof, not yet the real cutover target).
 7. **Extract `search`, then `customer`, then `b2b`** — b2b last (canonical-cutover ordering only, not a
    proof-order constraint) is unaffected: all three extraction-and-build proofs are **done**, pushed to
-   private `Concertable/search-next`, `Concertable/customer-next`, `Concertable/b2b-next`. **Customer and
-   B2B are backend-only in these private repos** — their frontend surfaces
-   (`app/web/customer`+mobile+shared for Customer; `app/web/b2b`+`app/web/admin`+mobile+shared for B2B)
-   are deliberately not yet folded in; no proven precedent exists for combining an `api/` .NET root with
-   multiple `app/` npm-workspace roots in one `git-filter-repo` pass. That is the next real gap in stages
-   5–7, not the canonical-rename step.
+   private `Concertable/search-next`, `Concertable/customer-next`, `Concertable/b2b-next`. **Customer's
+   frontend fold is also complete** at private `customer-next` head
+   `e21ae9079ca2fdd3a0063a252f05499159d608ff`; the dedicated
+   [Customer frontend-fold ledger](./REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md)
+   owns its evidence. B2B remains backend-only, with its web, admin, mobile, and shared frontend surfaces
+   not yet folded. That is the remaining frontend-fold gap in stages 5–7, not the canonical-rename step.
 8. **Extract `platform-dotnet`, `platform-web`, `fleet`.**
 9. **Archive the monorepo.** Checked read-only 2026-08-27 and **not executable**: no extraction target
    repo exists, every service is still monorepo source, and the monorepo still publishes.
@@ -66,8 +66,9 @@ B2B.Seed.Simulator). The other five exist for the umbrella host, which becomes `
 
 ## Next Steps
 
-**Stage 3 rt1 is merged (PR #862). Next: either stage 3 rt2, or fold Customer/B2B's frontend into their
-private extraction proofs — both are unblocked and independent; work either or both concurrently.**
+**Stage 3 rt1 is merged (PR #862), and Customer's frontend fold is complete. Next: either stage 3 rt2,
+or fold B2B's frontend into its private extraction proof — both are unblocked and independent; work
+either or both concurrently.**
 
 Stage 3's remaining round-trips, in order — publish-before-consume forces the split:
 
