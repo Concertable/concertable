@@ -2,6 +2,7 @@
      Use this when you need to browse, refactor, or search the entire repo at once.
      Each microservice also has its own .slnx (e.g. Concertable.B2B/Concertable.B2B.slnx) for focused work. -->
 <Solution>
+  <Project Path="tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj" />
   <Project Path="Concertable.AppHost/Concertable.AppHost.csproj" />
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
   <Project Path="Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj" />
@@ -22,6 +23,7 @@
   <Folder Name="/B2B/">
     <Project Path="Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj" />
+    <Project Path="Concertable.B2B/src/Concertable.B2B.TestKit/Concertable.B2B.TestKit.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Infrastructure/Concertable.B2B.Infrastructure.csproj" />
@@ -110,6 +112,7 @@
   <Folder Name="/Customer/">
     <Project Path="Concertable.Customer/src/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
     <Project Path="Concertable.Customer/src/Concertable.Customer.Hosting/Concertable.Customer.Hosting.csproj" />
+    <Project Path="Concertable.Customer/src/Concertable.Customer.TestKit/Concertable.Customer.TestKit.csproj" />
     <Project Path="Concertable.Customer/src/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
   </Folder>
   <Folder Name="/Customer/DataAccess/">
@@ -197,6 +200,7 @@
   <Folder Name="/Payment/">
     <Project Path="Concertable.Payment/src/Concertable.Payment.AppHost/Concertable.Payment.AppHost.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Hosting/Concertable.Payment.Hosting.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.TestKit/Concertable.Payment.TestKit.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Api/Concertable.Payment.Api.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Application/Concertable.Payment.Application.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj" />
@@ -209,10 +213,13 @@
     <Project Path="Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
     <Project Path="Concertable.Payment/tests/Concertable.Payment.ArchitectureTests/Concertable.Payment.ArchitectureTests.csproj" />
   </Folder>
-  <Folder Name="/Payment/Tests/" />
+  <Folder Name="/Payment/Tests/">
+    <Project Path="Concertable.Payment/tests/Concertable.Payment.E2EAdmin.IntegrationTests/Concertable.Payment.E2EAdmin.IntegrationTests.csproj" />
+  </Folder>
   <Folder Name="/Payment/Tests/E2ETests/">
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers.UnitTests/Concertable.Payment.E2ETests.Helpers.UnitTests.csproj" />
+    <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Server/Concertable.Payment.E2ETests.Server.csproj" />
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Stripe/Concertable.Payment.E2ETests.Stripe.csproj" />
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Web/Concertable.Payment.E2ETests.Web.csproj" />
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Workers/Concertable.Payment.E2ETests.Workers.csproj" />
@@ -270,20 +277,26 @@
   </Folder>
   <Folder Name="/B2B/Tests/">
     <Project Path="Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj" />
+    <Project Path="Concertable.B2B/tests/Concertable.B2B.E2EAdmin.IntegrationTests/Concertable.B2B.E2EAdmin.IntegrationTests.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/E2ETests/">
     <Project Path="Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj" />
+    <Project Path="Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Server/Concertable.B2B.E2ETests.Server.csproj" />
     <Project Path="Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj" />
+    <Project Path="Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Web/Concertable.B2B.E2ETests.Web.csproj" />
   </Folder>
   <Folder Name="/Customer/Tests/">
     <Project Path="Concertable.Customer/tests/Concertable.Customer.ArchitectureTests/Concertable.Customer.ArchitectureTests.csproj" />
+    <Project Path="Concertable.Customer/tests/Concertable.Customer.E2EAdmin.IntegrationTests/Concertable.Customer.E2EAdmin.IntegrationTests.csproj" />
     <Project Path="Concertable.Customer/tests/Concertable.Customer.IntegrationTests.Fixtures/Concertable.Customer.IntegrationTests.Fixtures.csproj" />
   </Folder>
   <Folder Name="/Customer/Tests/E2ETests/">
     <Project Path="Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj" />
     <Project Path="Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile/Concertable.Customer.E2ETests.Mobile.csproj" />
+    <Project Path="Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Server/Concertable.Customer.E2ETests.Server.csproj" />
     <Project Path="Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj" />
+    <Project Path="Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Web/Concertable.Customer.E2ETests.Web.csproj" />
   </Folder>
 </Solution>
