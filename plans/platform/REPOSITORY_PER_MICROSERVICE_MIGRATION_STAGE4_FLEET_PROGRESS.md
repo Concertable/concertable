@@ -29,8 +29,8 @@ ledger. It may read those ledgers to respect dependencies but must record only S
 
 ## Next Steps
 
-Complete incremental review of the two fixing commits, rerun the final preflight, and deliver this slice's
-own PR. After that slice merges, the next smallest independently shippable fleet slice
+Run the final read-only PR preflight, push the exact reviewed candidate, and deliver this slice's own PR.
+After that slice merges, the next smallest independently shippable fleet slice
 is the Payment pair: replace the fleet source provider's Payment Web and Workers implementation references
 with service-owned package/image composition, reducing the eight remaining temporary source-mode edges to six
 without moving service behavior or duplicating TestKit contracts.
@@ -64,8 +64,8 @@ Current candidate:
 ## Reviews
 
 PR #882's review is recorded in `reviews/Plan-RepoSplit-Stage4-E2E-TestKit.md`. This candidate's full review is
-recorded in `reviews/Plan-RepoSplit-Stage4-Fleet-E2E.md` at `83c97871a`; both findings are resolved and the
-required incremental pass is next.
+recorded in `reviews/Plan-RepoSplit-Stage4-Fleet-E2E.md`: the full pass at `83c97871a` raised two findings,
+both are resolved, and the incremental pass through `80f6da637` is approved with no new findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
