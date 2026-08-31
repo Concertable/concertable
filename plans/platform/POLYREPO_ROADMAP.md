@@ -18,9 +18,9 @@
 > (deployment, DNS, pipeline redesign, E2E strategy) are separate concerns and are **not** tracked here.
 >
 > **The cut itself — "repository per microservice" — is §6, and its plan is
-> [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) with its
-> ledger [`..._PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md).** It is named for the target
-> shape rather than for this epic, so a search for "polyrepo" does not find it — start at §6.
+> [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md), with its
+> exclusive active-stream ledgers listed in §6.** It is named for the target shape rather than for this epic,
+> so a search for "polyrepo" does not find it — start at §6.
 >
 > **Companion / standing docs:**
 > [`../../api/docs/MICROSERVICES_ARCHITECTURE.md`](../../api/docs/MICROSERVICES_ARCHITECTURE.md).

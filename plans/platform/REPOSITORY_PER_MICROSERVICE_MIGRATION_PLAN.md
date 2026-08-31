@@ -1,11 +1,11 @@
 # Repository-per-microservice migration
 
-**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state, the verified 2026-08-26
-rescope, and next steps live in `REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`; that ledger
-overrides any status or inventory figure in this document.
+**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state and next steps live in the
+exclusive stream ledgers named by the `platform/polyrepo-cut` active-owner table in
+`POLYREPO_ROADMAP.md`; those ledgers override any status or inventory figure in this document.
 
 **This document's inventory is a 2026-08-02 snapshot and has drifted.** Four audits re-verified every
-checkpoint against current `main` on 2026-08-26 — see the ledger's rescope table. Known corrections:
+checkpoint against current `main` on 2026-08-26; Git history retains that rescope evidence. Known corrections:
 checkpoint 5 is ~85% delivered and its "keep b2b/customer local" constraint is superseded; the
 `*.Hosting` projects of checkpoint 2 already exist; the `system` repository is renamed `fleet`.
 
