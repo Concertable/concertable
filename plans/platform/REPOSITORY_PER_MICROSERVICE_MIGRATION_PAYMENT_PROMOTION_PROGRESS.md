@@ -3,15 +3,15 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: reserved `C:\Users\tommy\source\repos\payment-next`; verify absence before cloning exactly once
-- Branch: next proposed `Chore/payment-promotion-preparation`
-- PR: none; no open `Concertable/payment-next` PR exists
-- Dependency/package gates: implementation is unblocked from private `payment-next` `main` `e4da6e23f79bed9105e4a82f828c0608feee68a5`; final checkpoint 11 delivery is ordered and requires explicit authorization
-- Last reconciled: **2026-08-31** from GitHub repository and PR state
+- Worktree: `C:\Users\tommy\source\repos\payment-next`
+- Branch: `Chore/payment-promotion-preparation`
+- PR: draft [`Concertable/payment-next#1`](https://github.com/Concertable/payment-next/pull/1), exact head `157cbb7891c85595b34f77f1551a19d3a481fc1d`
+- Dependency/package gates: remote validation is blocked on GitHub Packages access for repository id `1351093176`; final checkpoint 11 delivery is ordered and requires explicit authorization
+- Last reconciled: **2026-08-31** from Payment commit, review, PR, and Actions run `33415887059`
 
 ## Current state
 
-Private `Concertable/payment-next` exists with its extraction proof and no open PR. This reserved stream owns
+Private `Concertable/payment-next` exists with its extraction proof and draft PR #1. This reserved stream owns
 only checkpoint-11 Payment repository preparation: Web, Workers, Contracts, Client, migrations, Stripe
 tooling, images, Hosting/TestKit, AppHost, CI, publication setup, and repository evidence. It must not edit
 RT3, Stage 4, Auth-next, Customer-next, Search-next, or shared execution ledgers.
@@ -21,40 +21,49 @@ Client, and Hosting are package-clean; the whole solution is not. AppHost/Archit
 Auth/B2B/AppHost.Shared source and database composition, and E2E Helpers retain foreign test source. The
 README, root guidance inheritance, and package repository URLs still describe the old monorepo mirror.
 
-State: **reserved to one Payment preparation owner; implementable, delivery-gated**. This merged ledger is
+The first repository-owned CI/metadata slice is committed and independently reviewed. Exact-head CI proved
+that `GITHUB_TOKEN` with `packages: read` receives `403 Forbidden` for the private Concertable package feed,
+so no remote build or test has started. This is an external package-ACL blocker, not a code/test failure.
+
+State: **implementation-blocked on package access; delivery-gated**. This merged ledger is
 the atomic ownership claim for the exact checkout and branch above. Agents not explicitly dispatched to this
 ledger treat the stream as owned and must not create a checkout or branch. No canonical rename, visibility change,
 canonical publication, production deployment, or monorepo source removal is authorized.
 
 ## Next Steps
 
-The one agent explicitly dispatched to this ledger claims the reserved stream by verifying the exact checkout
-path is still absent, cloning there exactly once, and recording the resulting worktree/branch in its first
-substantive checkpoint. Fetch `origin/main`, verify exact head `e4da6e23f79bed9105e4a82f828c0608feee68a5`, and
-create `Chore/payment-promotion-preparation`.
-
-First land repository metadata/guidance corrections plus CI that supplies approved package-read credentials,
-Release-builds Web and Workers, runs UnitTests and Docker-backed IntegrationTests, and packs Contracts,
-Client, and Payment.Hosting. Do not claim whole-solution, AppHost, ArchitectureTests, or E2E closure. Later
-slices own candidate-package consumer restore/publication; Web/Workers/migration images; owner-local migration
-job/bundle and runtime-migration removal; RT3/Auth absorption for the standalone AppHost; package-clean
-Hosting/TestKit and Stripe tooling; and repository settings/clean-clone evidence. Stage 4 alone moves system
-E2E composition.
+Blocked: Payment PR #1 exact-head CI cannot restore the required private `Concertable.*` packages; both jobs receive `403 Forbidden` with the repository `GITHUB_TOKEN`.
+Blocked by: a GitHub Packages administrator or approved package-read credential owner.
+Unblock action: grant `Concertable/payment-next` (repository id `1351093176`) Actions read access to its exact package closure, or provision an approved repository secret with `read:packages` and name it for the Payment workflow.
+Resume when: rerun PR #1 CI and confirm private restore succeeds far enough for the build/unit/pack and Docker-backed integration jobs to execute; diagnose any subsequent executable failure and drive the exact head green.
 
 ## Completed work
 
 - Payment extraction mechanism was proven and pushed to private `Concertable/payment-next`.
+- Repository metadata/guidance and first CI are committed at `157cbb7891c85595b34f77f1551a19d3a481fc1d`; the
+  workflow Release-builds Web/Workers, runs UnitTests and IntegrationTests, and packs Contracts, Client, and
+  Payment.Hosting without publishing them.
 
 ## Verification
 
-No promotion-preparation candidate has been verified in the target repository yet.
+- Local `dotnet build src/Concertable.Payment.Web/Concertable.Payment.Web.csproj --configuration Release`:
+  zero errors, with 523 pre-existing analyzer warnings.
+- PR CI run [`33415887059`](https://github.com/Concertable/payment-next/actions/runs/33415887059): restore
+  blocked in both executable jobs by confirmed GitHub Packages `403 Forbidden`; no build or test ran.
 
 ## Reviews
 
-No promotion candidate exists. Review the first committed preparation slice before opening its PR.
+Independent focused review of `e4da6e23f79bed9105e4a82f828c0608feee68a5..157cbb7891c85595b34f77f1551a19d3a481fc1d`
+completed clean with no actionable findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
 - Payment is an adapter service and owns the only live internal gRPC surface plus its Stripe HTTP webhook.
 - Delivery ordering does not prevent repository-local preparation against exact current artifacts.
 - The target currently has no configured repository secret/variable names and package ACL is unproven; CI must prove private package restore without recording secret values.
+- The ACL action is least-privilege access to: `Concertable.AppHost.Shared`, `Concertable.Auth.Contracts`,
+  `Concertable.B2B.Concert.Contracts`, `Concertable.B2B.Tenant.Contracts`, `Concertable.Contracts`,
+  `Concertable.DataAccess.Application`, `Concertable.DataAccess.Infrastructure`, `Concertable.Grpc`,
+  `Concertable.Kernel`, all five `Concertable.Messaging.*` packages, `Concertable.Seed.Identity`,
+  `Concertable.Seed.Shared`, `Concertable.ServiceDefaults`, `Concertable.Shared.Api`, the Email/Geocoding/
+  Imaging shared Application packages, `Concertable.Testing`, and `Concertable.Testing.Integration`.
