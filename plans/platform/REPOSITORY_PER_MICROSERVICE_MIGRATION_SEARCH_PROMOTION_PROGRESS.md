@@ -32,11 +32,9 @@ rename, visibility change, canonical publication, production deployment, or mono
 
 ## Next Steps
 
-Blocked: Search PR #1 exact-head `ci-complete` cannot restore the private NuGet closure because the
-repo-scoped `GITHUB_TOKEN` receives `403 Forbidden`.
+Blocked: Search PR #1 exact-head `ci-complete` cannot restore the private NuGet closure because the repo-scoped `GITHUB_TOKEN` receives `403 Forbidden`.
 Blocked by: Tommy or a GitHub package administrator with authority over the packages below.
-Unblock action: grant repository `Concertable/search-next` (repository id `1351099165`) GitHub Actions read
-access to the exact private NuGet closure below, then re-run Search PR #1 `ci-complete`.
+Unblock action: grant repository `Concertable/search-next` (repository id `1351099165`) GitHub Actions read access to the exact private NuGet closure below, then re-run Search PR #1 `ci-complete`.
 Resume when: the repo-scoped `GITHUB_TOKEN` restores successfully and exact-head `ci-complete` is green.
 
 Required package access: `Concertable.B2B.Artist.Contracts`, `Concertable.B2B.Concert.Contracts`,
