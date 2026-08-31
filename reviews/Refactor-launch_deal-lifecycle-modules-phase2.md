@@ -343,3 +343,116 @@ review — no candidate bundle materialized.
 - `OpportunityDashboardApiTests.GetCurrentForVenue_MapsApplicationCountAndDeadline` fails once the integration suite can actually run: the response never contains `fixture.SeedState.ActiveVenueHireOpportunity`. Likely adjacent to the already-tracked SEED4 (`FreshVenueHireOpportunity` picked by list position).
 - `VenueDashboardApiTests.GetKpis_ReturnsCurrentVenueMetrics` fails once the integration suite can actually run: `VenueDashboardService.GetAsync` throws "A second operation was started on this context instance before a previous operation completed" — concurrent awaits sharing one `DbContext`.
 - Now that the whole suite can boot, `Concertable.B2B.Application.IntegrationTests` shows a stable 6/71 failing (`ApplicationApiTests`, mostly Forbidden/eligibility and Accept-race cases). `Concertable.B2B.Booking.IntegrationTests` shows a stable ~12/21 failing, concentrated almost entirely in `BookingCancellationApiTests` — every cancellation-race, refund, and retry scenario. Not triaged individually; flagged for follow-up rather than investigated further in this pass. The concentration in `BookingCancellationApiTests` matches this file's own NAT8/NAT9/IR4/IR7 history of repeated cancellation-flow defects, so this is plausibly one shared root cause rather than 12 independent bugs — but that is a hypothesis, not a verified finding.
+
+## Review pass — 2026-08-31 — save-failure classification
+
+**Candidate base:** `3f6d85aaa53914a9de56ecb05245ccb1e1f1507e`
+**Candidate head:** `e396b21645b92afb2ec050144f49f0004dd4d592`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** branch-authored source only — 297 non-test `.cs` files of the 462-path delta; the commits merged in from `origin/main` (including #891) are out of scope
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+Triggered by main's #891 landing `TrySaveChangesAsync(Func<DbUpdateException,bool>, ct)` and requiring an
+explicit predicate. Three layers ran: native/general, a module-boundary lens, and a changed-behaviour
+test-impact lens. Remediation landed in `44b8be344`, `b2fb2d71d`, `b398f3e46` and `08e55af43`, so the
+top-level watermark is deliberately **not** advanced — those commits are post-anchor and owe a fresh
+incremental pass.
+
+### Findings — resolved in this pass
+
+- [x] **SAVE1 — HIGH — correctness** — `.../Application.Infrastructure/Services/ApplicationService.cs`
+  Withdraw, Reject and Cancel each passed `exception.IsDuplicateKey()`, but `Applications` carries a
+  rowversion and marks `State` a concurrency token, and none of those paths inserts a row. No write they
+  make can raise a duplicate key, so their `Superseded` branch was unreachable and a genuine concurrent
+  transition escaped as a 500. Now expect `DbUpdateConcurrencyException`.
+- [x] **SAVE2 — HIGH — correctness** — `.../Application.Infrastructure/Services/ApplicationWorkflow.cs:228`
+  Accept expects two failures — the filtered unique index on `OpportunityId WHERE State = Accepted` when a
+  competing accept wins, and the rowversion check when a competing withdraw/reject/cancel wins. Only the
+  first was classified; the second reached the `InvalidOperationException` thrown when no accepted
+  application exists. Added `AcceptApplicationError.Superseded`, matching the sibling unions.
+- [x] **NAT1 — HIGH — correctness / cross-module transactionality** — `UnitOfWorkBehavior.cs:12-16`
+  The root defect, and the reason SAVE1/SAVE2 could not be fixed at the save. `ExecuteAsync` calls
+  `scope.Complete()` unconditionally once the delegate returns, so a failure classified *inside* the
+  ambient scope still commits it. For Accept the pre-commit `ApplicationAcceptedDomainEventHandler` runs
+  `BookingWorkflow.ConfirmAsync` first, which inserts and saves `Bookings` + `Contracts` and stages the
+  escrow command — so a lost race committed a Booking and Contract for an unaccepted application and
+  dispatched real money movement. `Bookings.ApplicationId` being unique then made every retry fail on that
+  duplicate key, which the same predicate accepted, leaving the application permanently unacceptable.
+  Resolved by `IUnitOfWorkBehavior.TryExecuteAsync`, which classifies at the transaction boundary: an
+  expected `DbUpdateException` disposes the scope without `Complete`, rolling back every enlisted context,
+  and only then runs the classification callback.
+- [x] **NAT2 — MEDIUM — error handling** — the predicates were not scoped to the owning aggregate, so a
+  foreign module's concurrency or duplicate-key failure would be reported as this operation's conflict.
+  Each module now owns a `DbUpdateExceptionExtensions` that requires its own entity in `exception.Entries`.
+- [x] **NAT3 / NAT4 — MEDIUM — cross-module transactionality** — `BookingWorkflow.cs:73` and
+  `ConcertWorkflow.cs:53` had the same escape, with in-process pre-commit fan-out writing
+  `ApplicationDbContext` inside the same scope. Both moved onto `TryExecuteAsync`.
+- [x] **NAT5 — LOW — error handling** — `Concert/.../Payment/FinancialOperationOutcomeProcessor.cs:44`
+  The `RefundEscrowRejected` guard covered only `CancellationFailed`, so a rejection arriving after the
+  concert was already `Cancelled` threw and dead-lettered. Booking's sibling guards both; Concert now does.
+- [x] **NAT6 — LOW — dead code** — `AcceptApplicationError.UnsupportedDeal` was never constructed anywhere
+  in the repo and the `Accept` union covers every `DealType`. Deleted with its `Definition` arm.
+- [x] **MB1 — HIGH — multitenancy** — `VenueArtistTenantInterceptor` was registered only on Concert's and
+  Conversations' contexts, though `ApplicationDbContext` and `BookingDbContext` host only two-party rows.
+  The write guard — both tenant ids stamped on insert, pair immutable after creation — was absent for
+  Applications, Bookings and Contracts, and `ContractEntity` has no constructor guard either. Registered on
+  both; verified the integration host still boots and seeds.
+- [x] **DUP1 — MEDIUM — simplification** — `TenantScopedDbContext` and `VenueArtistTenantScopedDbContext`
+  were identical apart from doc comments; the stance is carried by which helper `ApplyTenantFilters` calls.
+  Deleted the duplicate and moved Booking/Concert/Conversations onto the survivor. The **repository** pair
+  is a real distinction and stays.
+- [x] **CARVE1 — HIGH — build** — `E2EAdminExtensions.cs` still named `Concert.Domain.Entities` for
+  `ApplicationEntity`/`BookingEntity` and queried `concert.*` for tables now in `application.*`,
+  `booking.*` and `opportunity.*`. Failed the solution build with CS0234.
+- [x] **CARVE2 — HIGH — build** — `ConcertFor` exists only on the server-side seed state, not the TestKit
+  wire contract, and `FreshVenueHireOpportunity` had been renamed `ActiveVenueHireOpportunity` everywhere
+  except TestKit. Both E2E projects failed to compile.
+
+### Findings — open
+
+- [ ] **OPEN1 — HIGH — API semantics** — the suites contradict each other on an already-accepted
+  application: `ApplicationFlatFeeApiTests` and `ApplicationVenueHireApiTests` assert
+  `Accept_ShouldReturn400_WhenAlreadyAccepted`, while `ApplicationDoorSplitApiTests` and
+  `ApplicationVersusApiTests` assert `Accept_ShouldReturn409_WhenAlreadyAccepted`. The cause is ordering in
+  `AcceptCoreAsync`: the eligibility gate (which requires an *open* opportunity) runs before
+  `ValidateAccept()`, so a second accept reports "this concert opportunity is no longer open" (400) rather
+  than the lifecycle conflict (409). Reordering was tried and reverted — it merely swaps which pair fails
+  and additionally broke `ApplicationCancelApiTests.Cancel_ShouldMarkCancelledAndNotifyArtist`. Needs a
+  product decision on which status is correct, then one consistent set of assertions.
+- [ ] **OPEN2 — MEDIUM — test validity** — `Accept_WhenTwoApplicationsRaceForOneOpportunity` runs the
+  competing venue's full accept request from inside the first request's armed save interception, so the
+  second request's opportunity read blocks on the first's uncommitted write and times out after 30s, giving
+  a 500. Verified byte-identical before and after this pass. The overlap must be forced on a separate
+  connection or suppressed transaction, as the simpler conflict tests do, rather than by nesting a live HTTP
+  request inside an open transaction.
+- [ ] **OPEN3 — MEDIUM — pre-existing failures** — measured with and without this pass's changes and found
+  identical, so none of these is caused by it: `Concertable.B2B.Booking.IntegrationTests` 11/21 failing
+  (concentrated in `BookingCancellationApiTests`), `Concertable.B2B.Concert.IntegrationTests` 19/69 failing
+  (settlement, payout-compliance and self-billing gates). `Concertable.B2B.Application.IntegrationTests`
+  improved from 10/72 to 4/72; the remaining four are OPEN1 (two of them) and OPEN2, plus
+  `Accept_WhenPaymentVerificationWinsTheRace_StillConfirmsTheBooking` returning 404.
+- [ ] **OPEN4 — MEDIUM — test coverage** — no `ApplicationServiceTests` or `ApplicationWorkflowTests` class
+  exists, so Withdraw/Reject/Cancel/Accept conflict classification has no unit coverage, and
+  `Concertable.B2B.Application.UnitTests` has no `Moq` reference. Every existing save-failure test passes
+  `It.IsAny<Func<DbUpdateException, bool>>()`, so *which* failure each site treats as expected is untested —
+  reverting a predicate leaves the suite green. The `*.superseded` error codes are asserted nowhere except
+  `concert.update.superseded`. `ConcertWorkflowTests`'s new conflict cases drive the behaviour double rather
+  than the real predicate, because fabricating a `DbUpdateException` with populated `Entries` needs a live
+  EF context; the predicates themselves are therefore only covered by the integration race tests.
+- [ ] **OPEN5 — LOW — work-order accuracy** — this file's 2026-08-29 pass credits
+  `CancelExecutorTests.CancelAsync_SaveRaceLost_ReturnsSuperseded`, but that class no longer exists; the
+  surviving assertion is in `Concert.UnitTests/Services/ConcertWorkflowTests.cs`. Repoint the note.
+
+### Considered and rejected
+
+- Concert injecting `IBookingModule` for `GetContractPdfByBookingIdAsync` was raised as a backward runtime
+  call against the Concert module's "reaches back into none of the others" rule. Not a violation: it
+  resolves through Booking's Contracts facade to the frozen `ContractEntity` snapshot, never a live
+  `BookingEntity`, and cross-module traffic through a module facade is exactly what `module-structure`
+  permits. Recorded rather than changed.
+- Renaming `IVenueArtistTenantScoped` to a generic `ISharedTenantScoped` so it could move to Kernel. Its
+  members are `VenueTenantId`/`ArtistTenantId`, and the repository and filter built on it name the same
+  sides, so a generic type name over domain-specific members is a worse mismatch and still could not move.
+  Revisit only when a second service needs two-party rows.
