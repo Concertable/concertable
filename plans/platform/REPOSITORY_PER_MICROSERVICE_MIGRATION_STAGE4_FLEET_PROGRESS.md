@@ -29,8 +29,8 @@ ledger. It may read those ledgers to respect dependencies but must record only S
 
 ## Next Steps
 
-Complete full review of this Search provider-boundary candidate, resolve every finding, rerun the affected
-checks, and deliver its own PR. After that slice merges, the next smallest independently shippable fleet slice
+Complete incremental review of the two fixing commits, rerun the final preflight, and deliver this slice's
+own PR. After that slice merges, the next smallest independently shippable fleet slice
 is the Payment pair: replace the fleet source provider's Payment Web and Workers implementation references
 with service-owned package/image composition, reducing the eight remaining temporary source-mode edges to six
 without moving service behavior or duplicating TestKit contracts.
@@ -43,6 +43,8 @@ without moving service behavior or duplicating TestKit contracts.
 - Regenerated and classified the split inventory: eight temporary fleet source-provider E2E edges, zero blocking E2E edges, and zero blocking test edges.
 - Moved Search Web and Workers project metadata behind `IFleetProjectProvider`; the carve-retained Search helper no longer knows repository-relative service project paths.
 - Added the two Search implementation references only to the non-packable, carve-excluded fleet source provider and regenerated `inventory.json`.
+- Full review identified and resolved two findings: migrate the touched Search extension container to C# 14 syntax and add explicit metadata-routing coverage.
+- Added a source-free Search helper model test plus source-provider path tests; both remain in their owning Search/fleet targets and introduce no blocking test edge.
 
 ## Verification
 
@@ -54,13 +56,16 @@ Current candidate:
 - `pwsh -NoProfile -File eng/repository-split/carve-e2e.ps1 ...` — generated the package-only carve.
 - Package-only `dotnet build api/tests/Concertable.Fleet.E2E.slnx --no-restore -p:UseLocalPlatformPackages=true -p:UseFleetSourceProjects=false ...` — passed with zero errors; existing MessagePack vulnerability and generated nullable warnings remain.
 - Package-only Payment E2E helper unit tests — passed 6/6.
+- Search E2E helper metadata-routing unit tests — passed 1/1 in source mode and 1/1 in the package-only carve.
+- Fleet source-provider Search path unit tests — passed 2/2.
 - The successful carve contains no B2B, Customer, Payment, or Search service `src` directory and no `Concertable.Fleet.E2E.Source` directory.
 - Local browser/service E2E was not run; repository policy reserves it for merge-queue diagnosis.
 
 ## Reviews
 
-PR #882's review is recorded in `reviews/Plan-RepoSplit-Stage4-E2E-TestKit.md`. Full review of this candidate is
-the next action and is not yet recorded.
+PR #882's review is recorded in `reviews/Plan-RepoSplit-Stage4-E2E-TestKit.md`. This candidate's full review is
+recorded in `reviews/Plan-RepoSplit-Stage4-Fleet-E2E.md` at `83c97871a`; both findings are resolved and the
+required incremental pass is next.
 
 ## Decisions, discoveries, blockers, and deviations
 

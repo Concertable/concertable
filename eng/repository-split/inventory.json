@@ -548,7 +548,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 233,
+    "projectCount": 235,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -1922,6 +1922,13 @@
         "packable": false,
         "target": "search"
       },
+      "api/Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers.UnitTests/Concertable.Search.E2ETests.Helpers.UnitTests.csproj": {
+        "area": "Concertable.Search",
+        "kind": "e2e",
+        "name": "Concertable.Search.E2ETests.Helpers.UnitTests",
+        "packable": false,
+        "target": "fleet"
+      },
       "api/Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj": {
         "area": "Concertable.Search",
         "kind": "e2e",
@@ -2164,6 +2171,13 @@
         "area": "tests",
         "kind": "architecture-test",
         "name": "Concertable.AppHost.ArchitectureTests",
+        "packable": false,
+        "target": "fleet"
+      },
+      "api/tests/Concertable.Fleet.E2E.Source.UnitTests/Concertable.Fleet.E2E.Source.UnitTests.csproj": {
+        "area": "tests",
+        "kind": "e2e",
+        "name": "Concertable.Fleet.E2E.Source.UnitTests",
         "packable": false,
         "target": "fleet"
       },
