@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\tommy\source\repos\auth-next`
 - Branch: `main`; create one repository-local preparation branch from fetched `origin/main`
 - PR: none
-- Dependency/package gates: implementation is unblocked from verified proof `198ca1e481dd056e008a0b5e6adb37651a072c1d`; final checkpoint 10 delivery remains explicitly authorized and ordered
+- Dependency/package gates: implementation is unblocked from verified proof `198ca1e481dd056e008a0b5e6adb37651a072c1d`; final checkpoint 10 delivery remains ordered and requires explicit authorization
 - Last reconciled: **2026-08-31** from the verified private Auth proof and merged monorepo PR #877
 
 ## Current state

@@ -143,24 +143,23 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
 
 - [ ] 🟡 **The cut itself** `platform/polyrepo-cut` — owned by
   [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) /
-  the active-stream records below. The historical umbrella
-  [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md)
-  is context only and does not own execution.
+  the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
+  execution.
   Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
   `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
   **Stages 1–2 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages).
   Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
   parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
-  remain ordered and explicitly authorized.
+  remain ordered and require explicit authorization.
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
-  | Stage 3 RT3 | In flight only on `Plan/RepoSplit-Stage3-Hosting-rt3`; no sibling may edit its AppHosts, composition tests, review work order, or stream state. | The RT3 owner must add `REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md` to its candidate before opening its PR. |
+  | Stage 3 RT3 | In flight only on `Plan/RepoSplit-Stage3-Hosting-rt3`; no sibling may edit its AppHosts, composition tests, review work order, or stream state. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md) |
   | Customer promotion | Active in the existing private `customer-next` checkout; owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_PROMOTION_PROGRESS.md) |
   | Stage 4 Fleet E2E | Paused on draft [PR #896](https://github.com/Concertable/concertable/pull/896); owns only fleet/TestKit/E2E source-boundary removal. | PR #896 carries `REPOSITORY_PER_MICROSERVICE_MIGRATION_STAGE4_FLEET_PROGRESS.md`. |
   | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
-  | Payment-next | Ready and reserved for one new owner; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
-  | Search-next | Ready and reserved for one new owner; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
+  | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
+  | Search-next | Reserved exclusively to the Search preparation stream at `C:\Users\tommy\source\repos\search-next` / `Chore/search-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
 
   Agents read this table and the named ledger before acting. One stream never edits a sibling ledger or
   worktree. B2B-next preparation remains unassigned until its existing

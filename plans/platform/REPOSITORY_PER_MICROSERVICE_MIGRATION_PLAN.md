@@ -376,7 +376,7 @@ Expected foreign image composition after the Auth DB correction:
 |---|---|
 | Auth | none |
 | Payment | Auth, Stripe CLI |
-| Search | Auth, B2B Seed Simulator, Customer Seed Simulator where rating data is required |
+| Search | Auth, B2B Seed Simulator, including B2B-owned rating events |
 | Customer | Auth, Payment Web/Workers, B2B Seed Simulator, Stripe CLI |
 | B2B | Auth, Payment Web/Workers, Customer Seed Simulator where review data is required, Stripe CLI |
 
@@ -727,8 +727,10 @@ images, and AppHost. Update B2B/Customer/system independently through published 
 
 ### 12. Promote Search
 
-Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B/Customer simulator images and published
-Contracts; no producer source or database.
+Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B simulator images and published
+Contracts; no producer source or database. Search's rating inputs are B2B-owned events, so the B2B simulator
+must replay them; do not add a direct Customer simulator dependency unless a separately approved contract
+change makes Customer the producer Search actually consumes.
 
 - Verification: Search build/unit/integration/AppHost/migrations and seed convergence; system search
   projection API/UI flows.
