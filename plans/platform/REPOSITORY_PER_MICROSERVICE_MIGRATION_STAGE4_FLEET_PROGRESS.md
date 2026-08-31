@@ -7,7 +7,7 @@
 - Branch: `Plan/RepoSplit-Stage4-Fleet-E2E`
 - PR: not opened
 - Dependency/package gates: service TestKit and fleet source-provider boundary landed in PR #882
-- Last reconciled: **2026-08-31** from `origin/main` `76a7e0f1e`, PR #882 merge `b1a754ef9`, and the current branch inventory candidate
+- Last reconciled: **2026-08-31** from `origin/main` `67a7c7d85`, PR #882 merge `b1a754ef9`, and the current branch inventory candidate
 
 ## Current state
 
@@ -40,7 +40,7 @@ without moving service behavior or duplicating TestKit contracts.
 - PR #882 merged as `b1a754ef9`, establishing service-owned TestKits, E2E admin hosts, fleet composition contracts, and `carve-e2e.ps1`.
 - The fleet source and package-mode provider seam is present on current main.
 - Created the owning isolated worktree and branch from `origin/main` `cf0da4c9b`.
-- Merged current `origin/main` `76a7e0f1e` without conflicts before final validation; the upstream delta is disjoint from this Search fleet slice.
+- Merged current `origin/main` `67a7c7d85` without conflicts before final validation; the upstream delta is disjoint from this Search fleet slice.
 - Regenerated and classified the split inventory: eight temporary fleet source-provider E2E edges, zero blocking E2E edges, and zero blocking test edges.
 - Moved Search Web and Workers project metadata behind `IFleetProjectProvider`; the carve-retained Search helper no longer knows repository-relative service project paths.
 - Added the two Search implementation references only to the non-packable, carve-excluded fleet source provider and regenerated `inventory.json`.
