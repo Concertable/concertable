@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `67d399eaad397fe91c65ae60b6908cf7f743a180`  `(2026-08-31)`
-**Security-reviewed up to commit:** `67d399eaad397fe91c65ae60b6908cf7f743a180`  `(2026-08-31)`
+**Reviewed up to commit:** `3c701561573d912339c0c337be97e5eb685c0243`  `(2026-08-31)`
+**Security-reviewed up to commit:** `3c701561573d912339c0c337be97e5eb685c0243`  `(2026-08-31)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-31 — full
@@ -105,3 +105,33 @@ predicate constant so the breadth stays visible at the call site. The XML summar
 
 Re-verified on the full local-platform build: `Concertable.DataAccess.UnitTests` 22/22,
 `Concertable.Payment.UnitTests` 568/568, `Concertable.Payment.IntegrationTests` 49/49.
+
+## Review pass — 2026-08-31 — incremental (base merge)
+
+**Candidate base:** `67d399eaad397fe91c65ae60b6908cf7f743a180`
+**Candidate head:** `3c701561573d912339c0c337be97e5eb685c0243`
+**Candidate branch:** `Fix/unitofwork-trysavechanges-predicate`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:71998ecc5a59eb965e70ea59abc25cc7a478457ef9870a7a346083743d62c8f6` `(11 paths)`
+**Work-order path:** `reviews/Fix-unitofwork-trysavechanges-predicate.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+None. The range authors no new change: it is the prior pass's review commit plus a merge of `origin/main`,
+which the branch was 5 behind after `#893` bumped `ConcertablePlatformVersion` to `0.1.0-alpha.0.1279`.
+`git diff-tree --cc` on the merge commit is empty, so every path came through from one side verbatim — no
+conflict resolution and no hand edit to attribute to this branch. The incoming paths are the eight
+`Directory.Packages.props` pin bumps, `DistributedApplicationBuilderExtensions.cs` and
+`ContainerImageResourceTests.cs` from `#892`, and that PR's own review artifact, all reviewed and landed on
+their own PRs. `git diff origin/main...HEAD` confirms this branch's own contribution is unchanged at the 16
+paths the earlier passes reviewed.
+
+Security: re-stamped rather than re-argued. The only Payment-matching path in this range is
+`api/Concertable.Payment/Directory.Packages.props`, a one-line version-pin bump, and this branch's own
+security-sensitive surface is byte-identical to what the prior pass cleared.
+
+Re-verified against the merged base on a fresh local platform (`0.1.0-local.1788183172639`):
+`Concertable.DataAccess.UnitTests` 22/22, `Concertable.Payment.UnitTests` 568/568,
+`Concertable.Payment.IntegrationTests` 49/49.
