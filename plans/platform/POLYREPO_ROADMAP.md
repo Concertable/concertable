@@ -166,6 +166,15 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   `wip/b2b-frontend-fold-handoff` checkout is reconciled; system/fleet extraction remains with Stage 4 until
   that composition boundary lands.
 
+  **Post-cut development-fixture terminology.** Keep the current `SeedCatalog`, `Seed.Contracts`,
+  `SeedState`, and `Seed.Simulator` names stable while repository ownership and publication boundaries are
+  moving. After the polyrepo cut is complete, run a dedicated cross-repository naming redesign around the
+  `DevFixture` vocabulary. That follow-up may rename types, packages, and simulator images, but it must
+  preserve the architecture: owners seed only canonical state, reaction-only projections are populated by
+  production-shaped events, and standalone consumers use producer-owned lightweight event publishers rather
+  than another data service's runtime. Decide the exact name mapping in that follow-up instead of spreading
+  opportunistic renames across promotion PRs.
+
 **The launch gate below is WITHDRAWN (2026-08-26.)** It is kept for the reasoning it records, but it
 inverted the trade-off: the monorepo taxes every launch PR — full E2E, full checkout, full migration,
 blast radius over untouched services — so the cut accelerates launch rather than delaying it. The
@@ -205,6 +214,10 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
 
 ## Decision log
 
+- **2026-08-31 — Defer seed vocabulary redesign until after the cut.** The current behaviour remains
+  load-bearing, but the `SeedCatalog`/`Seed.Contracts`/`SeedState`/`Seed.Simulator` terminology will be
+  redesigned around `DevFixture` once all repository and publication boundaries are stable. Promotion
+  streams must not mix that naming migration into the polyrepo cut.
 - **2026-08-05 — Roadmap created.** The polyrepo epic existed as a roadmap-less cluster
   (`MICROSERVICE_STEPS`, backend carve, `POLYREPO_FULLSTACK`, deferred mirroring); this roadmap unifies it
   and adds per-service doc & guidance locality (§4) as a tracked stream. Anchor for the doc-locality work
