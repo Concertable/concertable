@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `8a04d4b4ca4dc1c132f12b4f3e9e3c34f8936728`  `(2026-08-31)`
-**Security-reviewed up to commit:** `8a04d4b4ca4dc1c132f12b4f3e9e3c34f8936728`  `(2026-08-31)`
+**Reviewed up to commit:** `67d399eaad397fe91c65ae60b6908cf7f743a180`  `(2026-08-31)`
+**Security-reviewed up to commit:** `67d399eaad397fe91c65ae60b6908cf7f743a180`  `(2026-08-31)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-31 — full
@@ -59,3 +59,49 @@ four tests that failed on the prior pushed head (`UnitOfWorkTransactionTests.Sav
 `PaymentSessionServiceTests.RetryAsync_ConcurrentDuplicateRetries_ConvergeAfterCancellationRace`,
 `PaymentSessionServiceTests.ReconcileAsync_ConcurrentObservation_ConvergesOnOneAppliedTransition`), now
 all passing.
+
+## Review pass — 2026-08-31 — incremental
+
+**Candidate base:** `8a04d4b4ca4dc1c132f12b4f3e9e3c34f8936728`
+**Candidate head:** `67d399eaad397fe91c65ae60b6908cf7f743a180`
+**Candidate branch:** `Fix/unitofwork-trysavechanges-predicate`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:0a83030184be4641dafcfb311505527bb79e9b6c1789c4d5ab2ae7bef348b3b3` `(7 paths)`
+**Work-order path:** `reviews/Fix-unitofwork-trysavechanges-predicate.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+None open. The delta adds one parameterless `TrySaveChangesAsync(CancellationToken)` overload beside the
+required-predicate one, delegating to `static _ => true`, plus the matching member on the four other
+implementers. `grep -rn ": IUnitOfWork\b\|: IUnitOfWork<"` over `api/` confirms the enumerated set is
+complete: `Concertable.Payment.Infrastructure.IUnitOfWork` and
+`Concertable.Customer.Ticket.Infrastructure.IUnitOfWork` are bare marker interfaces over
+`IUnitOfWork<TContext>` declaring no members, so the base declaration reaches every production
+implementation, and the two hand-written test doubles are the only other classes needing the member.
+
+Routed skills re-opened and checked against the changed files (`csharp-style`, `csharp-naming`,
+`persistence` both plugins, `dependency-injection`, `module-structure` both plugins, `result-carriers`,
+`unit-testing` and `integration-testing` both plugins): the new extension member is declared inside the
+existing `extension(DbContext context)` block as `csharp-style` requires, `CancellationToken` is present
+on every added async signature, no registration or repository shape changed, and no test-tier rule is
+touched. Overload resolution is unambiguous — the predicate overload has no default for `isExpected`, so
+a bare `TrySaveChangesAsync()` or `TrySaveChangesAsync(ct)` binds only to the new member.
+
+Security: the frozen delta adds no input path, no query construction, no auth or authz change, no crypto,
+and no data exposure; the two changed files under `Concertable.Payment` are a pass-through delegation and
+a test double. Assessed by the parent over the frozen delta — the host security-review harness resolved
+its diff against the primary checkout rather than this worktree and returned an empty candidate.
+
+Noted, not opened as a finding — `dotnet-standards:result-carriers` bans "a bool or enum that collapses
+caller-actionable outcomes", and this overload maps every `DbUpdateException` (concurrency, duplicate key,
+FK, check constraint) onto one indistinguishable `false`. It is a tension rather than a violation here:
+the `Task<bool>` shape is pre-existing on the predicate overload, and the catch-all has zero production
+callers, so there is no caller action being collapsed today. The alternative, if a caller ever appears
+and the collapse starts to matter, is to drop the naked overload and expose the catch-all as a named
+predicate constant so the breadth stays visible at the call site. The XML summary names
+`DbUpdateConcurrencyException` explicitly and steers callers to the predicate overload.
+
+Re-verified on the full local-platform build: `Concertable.DataAccess.UnitTests` 22/22,
+`Concertable.Payment.UnitTests` 568/568, `Concertable.Payment.IntegrationTests` 49/49.
