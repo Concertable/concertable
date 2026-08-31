@@ -2,14 +2,14 @@
      Use this when you need to browse, refactor, or search the entire repo at once.
      Each microservice also has its own .slnx (e.g. Concertable.B2B/Concertable.B2B.slnx) for focused work. -->
 <Solution>
-  <Project Path="tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj" />
-  <Project Path="tests/Concertable.Fleet.E2E.Source.UnitTests/Concertable.Fleet.E2E.Source.UnitTests.csproj" />
-  <Project Path="Concertable.AppHost/Concertable.AppHost.csproj" />
+  <Project Path="tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj" />
+  <Project Path="tests/Concertable.System.E2E.Source.UnitTests/Concertable.System.E2E.Source.UnitTests.csproj" />
+  <Project Path="Concertable.System.AppHost/Concertable.System.AppHost.csproj" />
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
   <Project Path="Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj" />
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Project Path="Concertable.ServiceDefaults/tests/Concertable.ServiceDefaults.UnitTests/Concertable.ServiceDefaults.UnitTests.csproj" />
-  <Project Path="tests/Concertable.AppHost.ArchitectureTests/Concertable.AppHost.ArchitectureTests.csproj" />
+  <Project Path="tests/Concertable.System.AppHost.ArchitectureTests/Concertable.System.AppHost.ArchitectureTests.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
     <Project Path="Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj" />

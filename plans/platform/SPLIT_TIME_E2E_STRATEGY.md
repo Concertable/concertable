@@ -26,7 +26,7 @@ A service's repo must contain only tests that need only *its own* runtime. So:
 
 - **Move full-fleet E2E out of the service test folders** (`B2B/Tests/E2ETests`,
   `Customer/Tests/E2ETests`) into a **system-level E2E project** that boots the umbrella
-  `Concertable.AppHost`. At split time that project lifts wholesale into its own system/deployment repo.
+  `Concertable.System.AppHost`. At split time that project lifts wholesale into its own system/deployment repo.
 - **Each service keeps integration tests only**, with adapter services faked behind their contracts —
   Payment via the existing `MockManagerPaymentClient` / `MockEscrowClient` / `MockCustomerPaymentClient`
   against `Payment.Contracts`. No other service's source or runtime required.
@@ -66,7 +66,7 @@ provided for free — worth adding when you want off the compiler crutch, low ma
 ## Steps
 
 **Now (discipline):**
-1. Create a system-level E2E project (boots the umbrella `Concertable.AppHost`); move the B2B and
+1. Create a system-level E2E project (boots the umbrella `Concertable.System.AppHost`); move the B2B and
    Customer full-fleet E2E suites into it; share the existing `api/Shared/Tests/Concertable.Testing.E2E`
    infra.
 2. Reduce each service's own test footprint to integration tests with the `Mock*Client` fakes; ensure
