@@ -741,7 +741,7 @@ change makes Customer the producer Search actually consumes.
 Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Seed Contracts,
 simulator, and all Customer migrations. B2B remains compatible with the published Customer contract train.
 
-Customer preparation starts from the reviewed private `customer-next` extraction proof and runs in parallel
+Customer preparation starts from the reviewed private `customer` extraction proof and runs in parallel
 with RT3, Stage 4, and the earlier service promotions. Final 13A–13E delivery remains gated on the canonical
 platform/system baselines and the preceding service cutovers; those gates do not prevent Customer-owned CI,
 publication setup, migration/simulator closure, or standalone verification from being completed beforehand.
