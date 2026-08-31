@@ -54,7 +54,7 @@ Current candidate:
 
 - `python eng/repository-split/inventory.py --check` — passed; inventory current, with no test-tier cross-repository `ProjectReference`.
 - `dotnet build api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj --nologo` — passed with zero errors and two pre-existing sealed-constructor warnings.
-- `scripts/local-platform.ps1 prepare` — generated 55 exact-head local packages at version `0.1.0-local.1788187646321`.
+- `scripts/local-platform.ps1 prepare` — generated 55 exact-head local packages at version `0.1.0-local.1788198957447`.
 - `pwsh -NoProfile -File eng/repository-split/carve-e2e.ps1 ...` — generated the package-only carve.
 - Package-only `dotnet build api/tests/Concertable.Fleet.E2E.slnx --no-restore -p:UseLocalPlatformPackages=true -p:UseFleetSourceProjects=false ...` — passed with zero errors; existing MessagePack vulnerability and generated nullable warnings remain.
 - Package-only Payment E2E helper unit tests — passed 6/6.
