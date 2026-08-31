@@ -565,6 +565,19 @@ Every numbered checkpoint is a separate PR/merge boundary. Complete its verifica
 update the PR, and stop. Cross-repository letters within a checkpoint are also ordered merge boundaries;
 never merge a later letter before the earlier one is green. Tommy must explicitly instruct every merge.
 
+**Checkpoint numbering is final delivery order, not permission to idle.** Preparation for checkpoints
+10–14 runs in parallel whenever the target repository and exact producer artifacts exist. Each `*-next`
+owner may independently land repository-local CI, build/test entry points, package and image publication
+setup, migrations, Hosting/TestKit, seed contracts/simulators, documentation, and repository-settings
+evidence. Record implementation dependencies separately from delivery gates and keep the result
+`implementable, delivery-gated` until its published-baseline revalidation is possible.
+
+The irreversible cutover letters remain ordered: do not freeze or remove monorepo source, rename or change
+repository/package/image visibility, publish a canonical release, change system consumption, migrate live
+data, or deploy production before the preceding checkpoint gates and explicit authorization are satisfied.
+RT3 and Stage 4 are verification/cutover dependencies; they do not block repository-local preparation in a
+private extraction proof.
+
 ### 0. Baseline, permissions, and reproducible inventory (`concertable`)
 
 - Commit a machine-readable project/package/workspace/AppHost/E2E/migration/seed graph and a drift-checking
@@ -725,6 +738,11 @@ Contracts; no producer source or database.
 
 Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Seed Contracts,
 simulator, and all Customer migrations. B2B remains compatible with the published Customer contract train.
+
+Customer preparation starts from the reviewed private `customer-next` extraction proof and runs in parallel
+with RT3, Stage 4, and the earlier service promotions. Final 13A–13E delivery remains gated on the canonical
+platform/system baselines and the preceding service cutovers; those gates do not prevent Customer-owned CI,
+publication setup, migration/simulator closure, or standalone verification from being completed beforehand.
 
 - Verification: Customer backend/frontend/mobile build and unit/integration; standalone AppHost; migration
   and simulator tests; system customer purchase/review API/UI/mobile flows.

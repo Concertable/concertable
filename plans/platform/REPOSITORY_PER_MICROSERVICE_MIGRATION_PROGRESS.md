@@ -1,5 +1,10 @@
 # Repository-per-microservice migration progress
 
+> **Historical umbrella snapshot — do not execute from this file.** Active ownership, parallel-stream
+> boundaries, and durable records live in the `platform/polyrepo-cut` table in
+> [`POLYREPO_ROADMAP.md`](./POLYREPO_ROADMAP.md). Read that table and the named exclusive ledger before
+> touching any migration worktree or target repository.
+
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
@@ -66,21 +71,9 @@ B2B.Seed.Simulator). The other five exist for the umbrella host, which becomes `
 
 ## Next Steps
 
-**Stage 3 rt1 is merged (PR #862), and Customer's frontend fold is complete. Next: either stage 3 rt2,
-or fold B2B's frontend into its private extraction proof — both are unblocked and independent; work
-either or both concurrently.**
-
-Stage 3's remaining round-trips, in order — publish-before-consume forces the split:
-
-- **rt2 — the hosting seam.** `AppHost.Shared` gains the container-resource primitive; each `*.Hosting`
-  gains an image-mode overload beside its existing `AddX<TProject>`; `Search.Hosting` and
-  `Frontend.Hosting` become packable. Publishes packages; nothing consumes them yet.
-- **rt3 — flip the hosts.** AppHost csprojs consume `*.Hosting` as packages (extend
-  `api/PlatformSourcePackages.targets` from the test tier to the AppHost tier — `EnforceServiceBoundary`'s
-  exemption set is already exactly `.AppHost` + tests, so the condition is the one to mirror); foreign
-  deployables become `AddContainer` on pinned digests. This is what closes the 44 edges.
-- **rt4 — the gate.** Add `*.ArchitectureTests` to the five carve jobs, plus a standalone-host boot smoke
-  in image mode. Stage 3's closeout evidence.
+Do not resume from this historical snapshot. Select the intended stream from the active-owner table in
+`POLYREPO_ROADMAP.md`, then follow only that stream's named ledger. Unassigned Payment-next and Search-next
+preparation are the only new service-promotion lanes currently available for assignment.
 
 ## Completed work
 
