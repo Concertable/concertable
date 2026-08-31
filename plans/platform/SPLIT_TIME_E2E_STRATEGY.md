@@ -11,7 +11,7 @@ exists.
 service's Aspire AppHost via `DistributedApplicationTestingBuilder.CreateAsync<Projects.Concertable_X_AppHost>()`,
 which composes **real** Payment + Auth + Search through `Projects.Concertable_*` **source** references.
 
-That is full-fleet E2E living *inside one service's repo*. A B2B developer in a standalone B2B repo
+That is full-system E2E living *inside one service's repo*. A B2B developer in a standalone B2B repo
 could not run it — it needs the rest of the world's source. That violates behave-as-separate, and it
 won't compile once the services split.
 
@@ -24,7 +24,7 @@ discipline, or is it deployment plumbing with no function until a second repo ex
 
 A service's repo must contain only tests that need only *its own* runtime. So:
 
-- **Move full-fleet E2E out of the service test folders** (`B2B/Tests/E2ETests`,
+- **Move full-system E2E out of the service test folders** (`B2B/Tests/E2ETests`,
   `Customer/Tests/E2ETests`) into a **system-level E2E project** that boots the umbrella
   `Concertable.System.AppHost`. At split time that project lifts wholesale into its own system/deployment repo.
 - **Each service keeps integration tests only**, with adapter services faked behind their contracts —
@@ -38,7 +38,7 @@ This needs no second repo. It is the same "folder layout previews the split" pri
 - A CI pipeline publishing container images to a registry — nothing consumes them yet.
 - `Payment.Contracts` (etc.) `ProjectReference` → `PackageReference` — there is one solution.
 - `AddProject<Projects.Concertable_Payment_Web>()` → `AddContainer("payment", "<registry>/payment:<v>")`
-  for the system-E2E fleet — the source is right here; swap it the day the registry image exists.
+  for the system-E2E composition — the source is right here; swap it the day the registry image exists.
 
 ### Grey area — consumer-driven contract tests
 
@@ -51,7 +51,7 @@ provided for free — worth adding when you want off the compiler crutch, low ma
 
 - **Tier 1 — per service repo, every PR:** unit + integration (adapter services faked behind contracts)
   + (eventually) contract tests. Fast, hermetic, no other service's runtime. What a lone developer runs.
-- **Tier 2 — full-fleet system E2E, rare / pre-release, centralised:** the real fleet, run against real
+- **Tier 2 — full-system E2E, rare / pre-release, centralised:** the real system, run against real
   services. In the monorepo today: the system-E2E project booting the umbrella. Post-split: a system
   pipeline composing each service from its published **container image**. Real B2B ↔ real Payment ↔
   real Auth ↔ real Stripe — never stubbed.
@@ -67,7 +67,7 @@ provided for free — worth adding when you want off the compiler crutch, low ma
 
 **Now (discipline):**
 1. Create a system-level E2E project (boots the umbrella `Concertable.System.AppHost`); move the B2B and
-   Customer full-fleet E2E suites into it; share the existing `api/Shared/Tests/Concertable.Testing.E2E`
+   Customer full-system E2E suites into it; share the existing `api/Shared/Tests/Concertable.Testing.E2E`
    infra.
 2. Reduce each service's own test footprint to integration tests with the `Mock*Client` fakes; ensure
    coverage that the relocated E2E used to provide at the service level is met by integration tests.
