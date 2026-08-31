@@ -5,9 +5,9 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `97aec2bd7bbbfeeb89fed1aa66eed0c77bd9375b`
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0`
 - Dependency/package gates: the recorded NuGet and npm Actions-access closure, including `Concertable.AppHost.Shared`, is granted; final checkpoint 13 publication and delivery remain gated on explicit authorization and the plan's platform/system prerequisites
-- Last reconciled: **2026-08-31** from repository ID `1351337130`, exact remote/PR head equality, CI run `33437025680`, and the completed owner-local migration slice
+- Last reconciled: **2026-08-31** from repository ID `1351337130`, exact remote/PR head equality, CI run `33442759487`, and the completed Customer seed-contract/simulator slice
 
 ## Current state
 
@@ -20,10 +20,11 @@ The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the 
 web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 validates the owned
 build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
 candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
-Exact-head CI run [`33437025680`](https://github.com/Concertable/customer/actions/runs/33437025680) is fully
-green at `97aec2bd7bbbfeeb89fed1aa66eed0c77bd9375b`. The dedicated `customer-migrations` candidate applies
-Outbox, Inbox, and all seven Customer module contexts in Development mode; CI proved two idempotent passes
-against an empty SQL database. Neither OCI candidate nor the current package candidates were published.
+Exact-head CI run [`33442759487`](https://github.com/Concertable/customer/actions/runs/33442759487) is fully
+green at `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0`: Frontend completed in 2m17s and Backend in 6m00s. The
+backend job builds and tests the carve, validates migration snapshots, restores a clean consumer from all four
+Customer package candidates, builds Web/Migrations/Seed Simulator OCI candidates, loads and runs the real
+simulator image, and proves the migration job against an empty database. No package or image was published.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
@@ -31,14 +32,14 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Continue draft PR #1 from exact head `97aec2bd7bbbfeeb89fed1aa66eed0c77bd9375b` with the Customer-owned
-seed-contract/simulator slice. Add `Concertable.Customer.Seed.Contracts` as the downward-only deterministic
-catalog for Customer-origin review data, and add a `Concertable.Customer.Seed.Simulator` candidate that
-publishes the existing `CustomerReviewSubmittedEvent` through the bus and exits. Drive Customer's own seeders
-and the simulator from the same specs, add parity and repeat-run/idempotency tests, and extend CI to pack the
-contract and build/smoke an OCI candidate without publishing either artifact. Do not add Search consumption:
-B2B is the existing consumer of this Customer-owned event, and any new Search dependency requires a separate
-approved contract change.
+Continue draft PR #1 from exact head `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0` with one Customer-only
+artifact-integrity slice. For the four NuGet and three OCI candidates, generate one deterministic manifest of
+artifact names and SHA-256 hashes, create SBOM evidence, and scan each OCI archive for vulnerabilities and
+embedded secrets using pinned tool/action versions. Retain the manifest, SBOMs, and scan reports as CI run
+artifacts with an explicit retention period, and fail CI on a missing candidate, hash mismatch, embedded
+secret, or High/Critical vulnerability. Do not add an ignore or allowlist mechanism in this slice. Do not grant
+write/package/attestation permissions and do not publish or push any candidate. This slice must not edit
+standalone AppHost, TestKit/fleet E2E, or another service's source.
 
 ## Completed work
 
@@ -59,19 +60,23 @@ approved contract change.
 - `97aec2b` adds the dedicated `customer-migrations` job/image candidate, isolates migration-only service
   registration from runtime startup, and keeps the runtime fallback until AppHost orchestration invokes the
   migration resource.
+- `1b6e49f` adds the downward-only `Concertable.Customer.Seed.Contracts` package and deterministic Customer
+  seed simulator, drives Customer seed state and the simulator from one review spec, and adds parity,
+  idempotency, clean-consumer, and real OCI load/run gates without publishing artifacts.
 
 ## Verification
 
-- Exact-head remote CI run `33437025680`: Backend/tests/packages/images and Frontend jobs are fully green at
-  `97aec2bd7bbbfeeb89fed1aa66eed0c77bd9375b`; all package and OCI outputs were candidates only.
-- Backend verification covered restore/build, serialized tests, seven migration snapshots, the three-package
-  isolated clean-consumer restore/build, non-empty Customer Web and migrations OCI archives, and a
-  Development-mode empty-database migration smoke that completed twice across Outbox, Inbox, Concert,
-  Ticket, Review, User, Preference, Venue, and Artist contexts.
+- Exact-head remote CI run `33442759487`: Frontend 2m17s and Backend 6m00s, fully green at
+  `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0`; all four package and three OCI outputs were candidates only.
+- Backend verification covered the zero-warning build, full tests, seven migration snapshots, four-package
+  isolated clean-consumer restore/build, real Seed Simulator OCI load/run, and the Development-mode
+  empty-database migration job. The simulator container exited successfully.
 - Frontend verification covered clean install, shared package tests/build, web test/build, and mobile
   typecheck/export.
 - Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
   web 1/1 and production build; mobile typecheck and Android export — all green.
+- Local validation at `1b6e49f` covered a zero-warning carve build, all prior full tests plus focused seed
+  tests 4/4, the four-package clean consumer, and a real local simulator OCI load/run with exit code 0.
 
 ## Reviews
 
@@ -80,8 +85,8 @@ approved contract change.
 - Repository-preparation review completed through `39ca980f375b5661ed7da114297f45b909915851` with no open findings.
 - Independent artifact-gate review through `2ecc33cb533a95b3baa209dcdc259c6e27e81105` has no open findings
   after reconciling the current and final Customer package rosters.
-- The migration slice at `97aec2bd7bbbfeeb89fed1aa66eed0c77bd9375b` is exact-head CI-green; draft PR #1
-  still owns the cumulative review and delivery gate before any merge.
+- Independent re-review through `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0` found no issues. Draft PR #1
+  still owns the cumulative delivery gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -107,15 +112,16 @@ approved contract change.
   - `Concertable.Shared.QrCode.Application`, `Concertable.Shared.QrCode.Infrastructure`
   - `Concertable.Testing`, `Concertable.Testing.Integration`
 - Exact npm package ACL closure: `@concertable/mobile`, `@concertable/shared`, `@concertable/web`.
-- Current package candidate set: `Concertable.Customer.Hosting`,
-  `Concertable.Customer.Review.Contracts`, and `Concertable.Customer.Ticket.Contracts`. The final Customer
-  train also requires new `Concertable.Customer.Seed.Contracts` and a black-box Customer TestKit; those two
-  artifacts remain outstanding. Ticket Contracts are intentional because Hosting directly uses
+- Current package candidate set: `Concertable.Customer.Hosting`, `Concertable.Customer.Review.Contracts`,
+  `Concertable.Customer.Ticket.Contracts`, and `Concertable.Customer.Seed.Contracts`. The final Customer
+  train still requires a black-box Customer TestKit, which remains outstanding. Ticket Contracts are
+  intentional because Hosting directly uses
   `TicketPurchasedEvent` and `SendTicketEmailCommand`.
-- Exact-head CI now creates local Customer Web and `customer-migrations` archives only. The migrations image
-  is not published, and runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost
-  invokes the migration resource. No package, image, canonical release, visibility change, deployment, or
-  system-consumer update was authorized or performed.
+- Exact-head CI now creates local Customer Web, `customer-migrations`, and `customer-seed-simulator` archives.
+  The simulator smoke uses `docker load` and `docker run --rm` against the built archive; it is not a source-only
+  substitute. Runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost invokes the
+  migration resource. No package, image, canonical release, visibility change, deployment, or system-consumer
+  update was authorized or performed.
 - Vitest invokes Vite with `command = serve` and `mode = test`; development-only configuration must consider
   both values rather than treating every `serve` configuration load as a live dev server.
 - A multi-path fold must include support files outside selected app subtrees: Customer's relocated Vite app
