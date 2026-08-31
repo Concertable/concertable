@@ -22,9 +22,10 @@ change production, or make customer-next canonical.
 
 ## Next Steps
 
-No Customer frontend-fold work remains. The umbrella migration owner should consume the exact remote head
-and gates recorded here at its next material checkpoint without reopening this stream unless
-`Concertable/customer-next` `main` or one of these gates objectively drifts.
+No Customer frontend-fold work remains. This terminal ledger is the evidence record for private
+`customer-next` head `e21ae9079ca2fdd3a0063a252f05499159d608ff`; reopen it only if that head or a recorded
+gate objectively drifts. Canonical rename, deployment, and production cutover begin only under their own
+explicitly authorized checkpoint.
 
 ## Completed work
 
@@ -35,8 +36,6 @@ and gates recorded here at its next material checkpoint without reopening this s
   state, production environment seam, Vite helper, route tree, and canonical `CarveCustomer.slnx`.
 - `b484496` restored the complete production URL closure and all four Expo assets; `e21ae90` retired the
   obsolete force-push handoff so this ledger remains the exclusive durable stream record.
-- `origin/main`, its remote-tracking ref, and `git ls-remote origin refs/heads/main` all equal
-  `e21ae9079ca2fdd3a0063a252f05499159d608ff`.
 
 ## Verification
 
@@ -52,12 +51,8 @@ and gates recorded here at its next material checkpoint without reopening this s
 
 ## Reviews
 
-Full review of `b22c5bab4445b438c98fe9569e9e85fc6fbf675b..b63a3111166a9791590afa8260db3d9c7937e848`
-found three issues: incomplete production environment closure, omitted Expo assets, and the stale handoff.
-All were resolved. Incremental review of
-`b63a3111166a9791590afa8260db3d9c7937e848..e21ae9079ca2fdd3a0063a252f05499159d608ff`
-completed with no findings and approved the pushed head. Its temporary work order was retired after the
-reviewed head landed on private `main`.
+Full and incremental review completed at `e21ae9079ca2fdd3a0063a252f05499159d608ff`; all findings were
+resolved and the pushed head was approved with no open findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
