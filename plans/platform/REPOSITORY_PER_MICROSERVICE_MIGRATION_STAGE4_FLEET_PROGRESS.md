@@ -5,7 +5,7 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Plan-RepoSplit-Stage4-Fleet-E2E`
 - Branch: `Plan/RepoSplit-Stage4-Fleet-E2E`
-- PR: not opened
+- PR: [#896](https://github.com/Concertable/concertable/pull/896) — draft; exact-head CI running
 - Dependency/package gates: service TestKit and fleet source-provider boundary landed in PR #882
 - Last reconciled: **2026-08-31** from `origin/main` `67a7c7d85`, PR #882 merge `b1a754ef9`, and the current branch inventory candidate
 
@@ -29,8 +29,8 @@ ledger. It may read those ledgers to respect dependencies but must record only S
 
 ## Next Steps
 
-Run the final read-only PR preflight, push the exact reviewed candidate, and deliver this slice's own PR.
-After that slice merges, the next smallest independently shippable fleet slice
+Await exact-head PR CI and reviewer feedback; do not enqueue or merge without explicit authorization.
+After this slice merges, the next smallest independently shippable fleet slice
 is the Payment pair: replace the fleet source provider's Payment Web and Workers implementation references
 with service-owned package/image composition, reducing the eight remaining temporary source-mode edges to six
 without moving service behavior or duplicating TestKit contracts.
@@ -46,6 +46,7 @@ without moving service behavior or duplicating TestKit contracts.
 - Added the two Search implementation references only to the non-packable, carve-excluded fleet source provider and regenerated `inventory.json`.
 - Full review identified and resolved two findings: migrate the touched Search extension container to C# 14 syntax and add explicit metadata-routing coverage.
 - Added a source-free Search helper model test plus source-provider path tests; both remain in their owning Search/fleet targets and introduce no blocking test edge.
+- Renamed the Search E2E extension and test containers for their `IDistributedApplicationBuilder` receiver; the pre-existing cross-backend extension-container naming sweep is recorded in `api/TECH_DEBT.md`.
 
 ## Verification
 

@@ -151,6 +151,20 @@ receiver-owned members grouped in `XExtensions` and related mapping receivers gr
 Every touched container migrates completely; new extension members use `extension()` from the start
 (see the `csharp-style` skill). Signature-bound generator/framework declarations are excluded.
 
+### Extension-container names do not consistently identify their receiver
+
+Backend extension containers use mixed naming: receiver-aligned names such as
+`DistributedApplicationBuilderExtensions` and `ServiceCollectionExtensions` coexist with concern-aligned
+names such as `AppHostExtensions`, `HostExtensions`, and `E2EAdminExtensions`, even when those types extend
+the same framework builders or service collection. A reader therefore cannot reliably infer the extended
+type from the container or filename, and equivalent extensions are harder to discover together.
+
+**Resolves when:** inventory every backend extension container, rename receiver-owned containers and files
+to `<Receiver>Extensions` (using the shortest unambiguous receiver name), keep mapping families in
+`<Target>Mappers`, and add a practical architecture or source check for new public/internal extension
+containers whose name does not match their receiver. Concern names remain on the methods that describe the
+operation being added; declaration-contract exceptions remain excluded.
+
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
 `Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`csharp-style` skill) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
