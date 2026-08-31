@@ -47,10 +47,10 @@ runs, and a genuinely independent pass over the specification contract would sti
   value, nullable value) now each bind exactly one overload. Regression test
   `GetByIdAsync_NullableValueProjection_ProjectsTheColumn`.
 
-- [ ] **2 — A specification instance is mutable, so sharing one is unsafe.** `Specification<TEntity>.Include`
+- [x] **2 — A specification instance is mutable, so sharing one is unsafe.** `Specification<TEntity>.Include`
   appends to the instance's own list, so a `static readonly` or DI-registered `SpecificationBuilder` would
   accumulate includes across every caller. Inherent to the builder shape rather than a defect in it, and no
-  current code shares an instance. Disposition: leave as is; a named reusable projection must be an
+  current code shares an instance. Disposition: **no change needed** — a named reusable projection must be an
   expression-bodied member (`=> new XSpecification().Select(...)`), never a field initializer. Revisit only
   if instance sharing appears.
 
