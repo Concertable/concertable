@@ -14,16 +14,16 @@
       }
     ],
     "blockingTestEdges": [],
-    "crossAreaEdgeCount": 82,
+    "crossAreaEdgeCount": 84,
     "crossAreaEdgesByKind": {
       "apphost": 42,
       "apphost-support": 1,
       "architecture-test": 1,
-      "e2e": 22,
+      "e2e": 24,
       "runtime": 13,
       "unit-test": 3
     },
-    "crossTargetEdgeCount": 49,
+    "crossTargetEdgeCount": 51,
     "crossTargetEdges": [
       {
         "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
@@ -465,11 +465,29 @@
         "to": "api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Workers/Concertable.Payment.E2ETests.Workers.csproj",
         "toArea": "Concertable.Payment",
         "toTarget": "payment"
+      },
+      {
+        "from": "api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj",
+        "fromArea": "tests",
+        "fromKind": "e2e",
+        "fromTarget": "fleet",
+        "to": "api/Concertable.Search/src/Concertable.Search.Web/Concertable.Search.Web.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
+      },
+      {
+        "from": "api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj",
+        "fromArea": "tests",
+        "fromKind": "e2e",
+        "fromTarget": "fleet",
+        "to": "api/Concertable.Search/src/Concertable.Search.Workers/Concertable.Search.Workers.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
       }
     ],
     "crossTargetEdgesByKind": {
       "apphost": 42,
-      "e2e": 6,
+      "e2e": 8,
       "runtime": 1
     },
     "forbiddenRuntimeToolingEdges": [],
@@ -2218,6 +2236,24 @@
         "to": "api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Workers/Concertable.Payment.E2ETests.Workers.csproj",
         "toArea": "Concertable.Payment",
         "toTarget": "payment"
+      },
+      {
+        "from": "api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj",
+        "fromArea": "tests",
+        "fromKind": "e2e",
+        "fromTarget": "fleet",
+        "to": "api/Concertable.Search/src/Concertable.Search.Web/Concertable.Search.Web.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
+      },
+      {
+        "from": "api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj",
+        "fromArea": "tests",
+        "fromKind": "e2e",
+        "fromTarget": "fleet",
+        "to": "api/Concertable.Search/src/Concertable.Search.Workers/Concertable.Search.Workers.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
       }
     ]
   },
