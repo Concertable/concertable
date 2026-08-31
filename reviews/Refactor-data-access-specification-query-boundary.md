@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `fa0d4bb4daeafccaf2497776a02b08f79a25dbc1`  `(2026-08-31)`
+**Reviewed up to commit:** `f0eae9ddd408`  `(2026-08-31)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -26,13 +26,18 @@ No findings.
 ## Review pass — 2026-08-31 — incremental
 
 **Candidate base:** `5394617a0be92bfd0f9b9866068df0fc9108bbde`
-**Candidate head:** `fa0d4bb4daeafccaf2497776a02b08f79a25dbc1`
+**Candidate head:** `f0eae9ddd408`
 **Candidate branch:** `Refactor/data-access-specification-query-boundary`
 **Candidate scope:** `branch-authored delta vs origin/main`
 **Candidate path-set:** `sha256:8f6259b620d07765` `(79 paths)`
 **Work-order path:** `reviews/Refactor-data-access-specification-query-boundary.md`
 **Work-order mode:** `append`
 **Pass judgment:** `approved`
+
+**Docs in scope:** the pass also covers the plan reconciliation in `f0eae9ddd` — the rejected `With...`
+vocabulary section replaced with the delivered `Include`/`Select` form, and Phase 3 rewritten from
+future-tense to what shipped, including what is still owed (no architecture rules, no PR/CI/review on the
+adoption branch). `plan_graph.py` validates 0 errors, 0 warnings.
 
 **Reviewer independence:** this pass was performed by the same session that authored the change, because
 subagent review lenses were unavailable. It is weaker than the isolated multi-lens pass `review` normally
