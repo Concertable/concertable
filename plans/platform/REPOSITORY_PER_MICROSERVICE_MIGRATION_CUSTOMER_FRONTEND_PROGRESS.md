@@ -1,64 +1,98 @@
-# Repository-per-microservice migration — Customer frontend fold progress
+# Repository-per-microservice migration — Customer progress
 
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\customer-next`
-- Branch: `main` at `e21ae9079ca2fdd3a0063a252f05499159d608ff`
-- PR: none; the private extraction proof is pushed directly to `main`
-- Dependency/package gates: none; this extraction proof is independent of the monorepo Stage 3 and Stage 4 deliveries
-- Last reconciled: **2026-08-31** from fetched `origin/main`, exact `ls-remote` equality, local validation, and completed review
+- Worktree: `C:\Users\tommy\source\repos\customer`
+- Branch: `Chore/customer-promotion-preparation`
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `9e23956120f5e8c0ca6599c963f758648b42c366`
+- Dependency/package gates: the recorded NuGet and npm Actions-access closure is granted; final checkpoint 13 delivery remains gated on its explicit platform/system prerequisites and authorization
+- Last reconciled: **2026-08-31** from repository ID `1351337130`, exact remote/PR head equality, CI run `33426383173`, and completed incremental review
 
 ## Current state
 
-This stream is terminal. The private `Concertable/customer-next` proof now contains the Customer backend,
-web, mobile, and customer-only shared package plus the standalone workspace, lockfile, package-feed,
-environment, ignore, tooling, and mobile-asset support closure. `origin/main` exactly equals the reviewed
-head `e21ae9079ca2fdd3a0063a252f05499159d608ff`.
+State: **repository preparation active; package gate cleared**. GitHub repository `Concertable/customer-next`
+was renamed in place to canonical `Concertable/customer`; repository ID `1351337130`, PR #1, branches, and
+history were preserved. The inactive local checkout moved from `customer-next` to `customer`, and its origin
+now uses `https://github.com/Concertable/customer.git`.
 
-No agent following this ledger may monitor or edit rt3, Stage 4 fleet E2E, Auth-next, or any monorepo
-migration ledger other than this file. The private proof is not authorization to rename repositories,
-change production, or make customer-next canonical.
+The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the Customer backend,
+web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 adds the repository
+CI and migration-validation preparation. Package-level Actions read access is now granted for the exact
+NuGet and npm closures recorded below. Exact-head CI run
+[`33426383173`](https://github.com/Concertable/customer/actions/runs/33426383173) is green at
+`9e23956120f5e8c0ca6599c963f758648b42c366`.
+
+No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
+stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
+ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-No Customer frontend-fold work remains. This terminal ledger is the evidence record for private
-`customer-next` head `e21ae9079ca2fdd3a0063a252f05499159d608ff`; reopen it only if that head or a recorded
-gate objectively drifts. Canonical rename, deployment, and production cutover begin only under their own
-explicitly authorized checkpoint.
+Continue draft PR #1 from exact head `9e23956120f5e8c0ca6599c963f758648b42c366` with the next
+checkpoint-13 Customer-owned repository-preparation slice. Prefer work that is independent of sibling
+streams: repository settings/evidence, Customer-owned publication and images, Hosting/TestKit and
+Review/Seed contract closure, and the Customer simulator. Defer only a gate that names the exact missing
+sibling artifact or required authorization; do not wait on another stream merely because the overall
+checkpoint is ordered.
 
 ## Completed work
 
-- The Customer backend, web, mobile, and `@concertable/customer` histories were folded into private
-  `Concertable/customer-next`; local Customer workspaces use `file:` linkage and external
+- Customer backend, web, mobile, and `@concertable/customer` histories were folded into the private
+  repository; local Customer workspaces use `file:` linkage and external
   `@concertable/{shared,web,mobile}` dependencies use the published `alpha` channel.
 - `b63a311` made the extracted workspace standalone with its root manifest, lockfile, package feed, ignore
   state, production environment seam, Vite helper, route tree, and canonical `CarveCustomer.slnx`.
-- `b484496` restored the complete production URL closure and all four Expo assets; `e21ae90` retired the
-  obsolete force-push handoff so this ledger remains the exclusive durable stream record.
+- `b484496` restored the production URL closure and Expo assets; `e21ae90` retired the obsolete force-push
+  handoff; `39ca980` configured repository-scoped package authentication in CI.
+- The repository and local checkout now use the canonical `customer` name.
+- The package administrator granted `Concertable/customer` Actions read access to all 38 recorded NuGet
+  packages and `@concertable/{mobile,shared,web}`.
+- `9e23956` prevents Vitest's `serve`/`test` configuration load from invoking the trusted development-certificate
+  requirement while preserving HTTPS for the real Vite development server.
 
 ## Verification
 
-- `npm ci`: 1,237 packages restored from the committed lockfile.
-- `npm run build:shared`: 3/3 Vitest tests passed and the customer-only package built.
-- `npm -w @concertable/web-customer test`: 1/1 Vitest test passed.
-- `npm run build:web`: shared package, `tsc -b`, and Vite production build passed; the emitted artifact was
-  checked for both `https://auth.concertable.co.uk` and `https://business.concertable.co.uk`.
-- `npm run build:mobile`: shared build/tests, Customer mobile `tsc --noEmit`, and Android Expo export passed.
-- `dotnet build CarveCustomer.slnx --configuration Release`: 51 projects restored and built with 0 errors
-  (existing analyzer warnings remain). The earlier `--no-restore` probe was invalid because test-project
-  assets were absent; the canonical standalone gate includes restore.
+- Focused local regression at `9e23956`: `npm -w @concertable/web-customer test` — 1/1 passed.
+- Exact-head remote CI run `33426383173`: Backend and migrations green; Frontend green.
+- The preceding rerun proved the package repair directly: backend restore/build/migration validation became
+  green and frontend `npm ci` completed before exposing the separate Vitest certificate defect.
+- Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
+  web 1/1 and production build; mobile typecheck and Android export — all green.
 
 ## Reviews
 
-Full and incremental review completed at `e21ae9079ca2fdd3a0063a252f05499159d608ff`; all findings were
-resolved and the pushed head was approved with no open findings.
+- Full and incremental extraction review completed through `e21ae9079ca2fdd3a0063a252f05499159d608ff`
+  with all findings resolved.
+- Repository-preparation review completed through `39ca980f375b5661ed7da114297f45b909915851` with no open findings.
+- Independent incremental review of `39ca980f375b5661ed7da114297f45b909915851..9e23956120f5e8c0ca6599c963f758648b42c366`
+  found no issues and confirmed test mode is excluded while real development HTTPS remains enabled.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- A multi-path fold must include support files outside the selected app subtrees. Customer's relocated Vite
-  app uses `app/.env.production`, and Expo's unchanged `../assets/*` references require `app/assets/`.
-- B2B established the support-file categories but its local proof did not contain the shared mobile assets;
-  compare referenced paths against the extracted tree rather than copying its inventory blindly.
-- This is an extraction proof only. Canonical rename, deployment, and production cutover remain separately authorized work.
-- This ledger has no write ownership over the Concertable monorepo's rt3 or fleet branches.
+- Repository ID `1351337130` survived the canonical rename. Reuse
+  `C:\Users\tommy\source\repos\customer`; do not create another clone or rewrite private `main`.
+- Exact NuGet package ACL closure:
+  - `Concertable.Auth.Contracts`
+  - `Concertable.B2B.Artist.Contracts`, `Concertable.B2B.Concert.Contracts`, `Concertable.B2B.Seed.Contracts`, `Concertable.B2B.Tenant.Contracts`, `Concertable.B2B.User.Contracts`, `Concertable.B2B.Venue.Contracts`
+  - `Concertable.Contracts`
+  - `Concertable.DataAccess.Application`, `Concertable.DataAccess.Infrastructure`
+  - `Concertable.Grpc`, `Concertable.Kernel`
+  - `Concertable.Messaging.Application`, `Concertable.Messaging.AzureServiceBus`, `Concertable.Messaging.Contracts`, `Concertable.Messaging.Domain`, `Concertable.Messaging.Infrastructure`
+  - `Concertable.Payment.Client`, `Concertable.Payment.Contracts`
+  - `Concertable.Seed.Identity`, `Concertable.Seed.Shared`, `Concertable.ServiceDefaults`
+  - `Concertable.Shared.Api`
+  - `Concertable.Shared.Blob.Application`, `Concertable.Shared.Blob.Infrastructure`
+  - `Concertable.Shared.Email.Application`, `Concertable.Shared.Email.Infrastructure`
+  - `Concertable.Shared.Geocoding.Application`, `Concertable.Shared.Geocoding.Infrastructure`
+  - `Concertable.Shared.Imaging.Application`, `Concertable.Shared.Imaging.Infrastructure`
+  - `Concertable.Shared.Notification.Infrastructure`
+  - `Concertable.Shared.Pdf.Application`, `Concertable.Shared.Pdf.Infrastructure`
+  - `Concertable.Shared.QrCode.Application`, `Concertable.Shared.QrCode.Infrastructure`
+  - `Concertable.Testing`, `Concertable.Testing.Integration`
+- Exact npm package ACL closure: `@concertable/mobile`, `@concertable/shared`, `@concertable/web`.
+- Vitest invokes Vite with `command = serve` and `mode = test`; development-only configuration must consider
+  both values rather than treating every `serve` configuration load as a live dev server.
+- A multi-path fold must include support files outside selected app subtrees: Customer's relocated Vite app
+  uses `app/.env.production`, and Expo's unchanged `../assets/*` references require `app/assets/`.
+- This ledger has no write ownership over the monorepo RT3 or fleet branches.
