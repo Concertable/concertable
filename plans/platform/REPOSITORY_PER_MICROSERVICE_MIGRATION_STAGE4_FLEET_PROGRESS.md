@@ -7,7 +7,7 @@
 - Branch: `Plan/RepoSplit-Stage4-Fleet-E2E`
 - PR: not opened
 - Dependency/package gates: service TestKit and fleet source-provider boundary landed in PR #882
-- Last reconciled: **2026-08-31** from `origin/main` `cf0da4c9b`, PR #882 merge `b1a754ef9`, and the current branch inventory candidate
+- Last reconciled: **2026-08-31** from `origin/main` `76a7e0f1e`, PR #882 merge `b1a754ef9`, and the current branch inventory candidate
 
 ## Current state
 
@@ -40,6 +40,7 @@ without moving service behavior or duplicating TestKit contracts.
 - PR #882 merged as `b1a754ef9`, establishing service-owned TestKits, E2E admin hosts, fleet composition contracts, and `carve-e2e.ps1`.
 - The fleet source and package-mode provider seam is present on current main.
 - Created the owning isolated worktree and branch from `origin/main` `cf0da4c9b`.
+- Merged current `origin/main` `76a7e0f1e` without conflicts before final validation; the upstream delta is disjoint from this Search fleet slice.
 - Regenerated and classified the split inventory: eight temporary fleet source-provider E2E edges, zero blocking E2E edges, and zero blocking test edges.
 - Moved Search Web and Workers project metadata behind `IFleetProjectProvider`; the carve-retained Search helper no longer knows repository-relative service project paths.
 - Added the two Search implementation references only to the non-packable, carve-excluded fleet source provider and regenerated `inventory.json`.
@@ -52,12 +53,12 @@ Current candidate:
 
 - `python eng/repository-split/inventory.py --check` — passed; inventory current, with no test-tier cross-repository `ProjectReference`.
 - `dotnet build api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj --nologo` — passed with zero errors and two pre-existing sealed-constructor warnings.
-- `scripts/local-platform.ps1 prepare` — generated 55 local packages at version `0.1.0-local.1788183322404`.
+- `scripts/local-platform.ps1 prepare` — generated 55 exact-head local packages at version `0.1.0-local.1788187646321`.
 - `pwsh -NoProfile -File eng/repository-split/carve-e2e.ps1 ...` — generated the package-only carve.
 - Package-only `dotnet build api/tests/Concertable.Fleet.E2E.slnx --no-restore -p:UseLocalPlatformPackages=true -p:UseFleetSourceProjects=false ...` — passed with zero errors; existing MessagePack vulnerability and generated nullable warnings remain.
 - Package-only Payment E2E helper unit tests — passed 6/6.
-- Search E2E helper metadata-routing unit tests — passed 1/1 in source mode and 1/1 in the package-only carve.
-- Fleet source-provider Search path unit tests — passed 2/2.
+- Search E2E helper metadata-routing unit tests — passed 1/1 in source mode and 1/1 in the exact-head package-only carve.
+- Fleet source-provider Search path unit tests — passed 2/2 against the exact-head local package feed.
 - The successful carve contains no B2B, Customer, Payment, or Search service `src` directory and no `Concertable.Fleet.E2E.Source` directory.
 - Local browser/service E2E was not run; repository policy reserves it for merge-queue diagnosis.
 
