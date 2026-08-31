@@ -79,12 +79,20 @@ def area_of(rel_path: str) -> str | None:
 
 
 TEST_KINDS = {"unit-test", "integration-test", "architecture-test", "fixture", "composition-test"}
+SERVICE_OWNED_E2E_SUFFIXES = (".E2ETests.Server", ".E2ETests.Web", ".E2ETests.Workers", ".E2ETests.Stripe")
+SOURCE_MODE_E2E_PROVIDER = "api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj"
+
+
+def is_e2e_name(name: str) -> bool:
+    return ".E2ETests" in name or ".E2E." in name or name.endswith(".E2E")
 
 
 def classify(rel_path: str) -> str:
     name = Path(rel_path).stem
-    if ".E2ETests" in name:
+    if is_e2e_name(name):
         return "e2e"
+    if name.endswith(".TestKit"):
+        return "testkit"
     if name.endswith(("Fixtures", ".IntegrationTests.Fixtures")):
         return "fixture"
     if name.endswith(".IntegrationTests"):
@@ -102,6 +110,15 @@ def classify(rel_path: str) -> str:
     return "runtime"
 
 
+def target_of(rel_path: str, area: str | None) -> str | None:
+    name = Path(rel_path).stem
+    if is_e2e_name(name):
+        if name.endswith(SERVICE_OWNED_E2E_SUFFIXES):
+            return AREA_TARGETS.get(area) if area else None
+        return "fleet"
+    return AREA_TARGETS.get(area) if area else None
+
+
 def read(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8-sig")
@@ -113,6 +130,7 @@ def build_dotnet(files: list[str]) -> dict:
     csprojs = sorted(f for f in files if f.endswith(".csproj"))
     projects: dict[str, dict] = {}
     edges: list[dict] = []
+    project_edges: list[dict] = []
 
     for rel in csprojs:
         text = read(REPO_ROOT / rel)
@@ -121,7 +139,7 @@ def build_dotnet(files: list[str]) -> dict:
         projects[rel] = {
             "name": Path(rel).stem,
             "area": area,
-            "target": AREA_TARGETS.get(area) if area else None,
+            "target": target_of(rel, area),
             "kind": classify(rel),
             "packable": packable,
         }
@@ -134,18 +152,19 @@ def build_dotnet(files: list[str]) -> dict:
             except ValueError:
                 continue
             src_area, dst_area = area, area_of(target_rel)
-            if src_area and dst_area and src_area != dst_area:
-                edges.append(
-                    {
-                        "from": rel,
-                        "fromArea": src_area,
-                        "fromTarget": AREA_TARGETS.get(src_area),
-                        "to": target_rel,
-                        "toArea": dst_area,
-                        "toTarget": AREA_TARGETS.get(dst_area),
-                        "fromKind": classify(rel),
-                    }
-                )
+            if src_area and dst_area:
+                edge = {
+                    "from": rel,
+                    "fromArea": src_area,
+                    "fromTarget": target_of(rel, src_area),
+                    "to": target_rel,
+                    "toArea": dst_area,
+                    "toTarget": target_of(target_rel, dst_area),
+                    "fromKind": classify(rel),
+                }
+                project_edges.append(edge)
+                if src_area != dst_area:
+                    edges.append(edge)
 
     cross_area_by_kind: dict[str, int] = defaultdict(int)
     for e in edges:
@@ -154,10 +173,10 @@ def build_dotnet(files: list[str]) -> dict:
     # Only an edge crossing a future REPOSITORY boundary matters. An edge between two
     # areas that land in the same target repo (DataAccess -> Kernel, both
     # platform-dotnet) survives the split untouched.
-    cross_target = [e for e in edges if e["fromTarget"] != e["toTarget"]]
+    cross_target = [e for e in project_edges if e["fromTarget"] != e["toTarget"]]
 
     # Composition-time (*.Hosting) and test-tree edges are resolved by their own
-    # checkpoints (Hosting packages; moving full-stack E2E to `system`). A cross-target
+    # checkpoints (Hosting packages; moving full-stack E2E to `fleet`). A cross-target
     # edge from a production runtime project is the hard blocker: that deployable
     # closure would not compile once the repos are separate.
     def is_runtime_closure(rel: str) -> bool:
@@ -172,6 +191,19 @@ def build_dotnet(files: list[str]) -> dict:
     for e in cross_target:
         cross_target_by_kind[e["fromKind"]] += 1
 
+    source_mode_e2e = sorted(
+        (e for e in cross_target if e["from"] == SOURCE_MODE_E2E_PROVIDER),
+        key=lambda e: (e["from"], e["to"]),
+    )
+    blocking_e2e = sorted(
+        (
+            e
+            for e in cross_target
+            if e["fromKind"] == "e2e" and e["from"] != SOURCE_MODE_E2E_PROVIDER
+        ),
+        key=lambda e: (e["from"], e["to"]),
+    )
+
     # EnforceServiceBoundary exempts the test tier, so this is the only check that sees such an edge.
     # A *.Hosting target waits on the packable-Hosting stage and E2E on the E2E-to-fleet stage, so
     # neither counts yet.
@@ -180,6 +212,20 @@ def build_dotnet(files: list[str]) -> dict:
             e
             for e in cross_target
             if e["fromKind"] in TEST_KINDS and not Path(e["to"]).stem.endswith(".Hosting")
+        ),
+        key=lambda e: (e["from"], e["to"]),
+    )
+
+    forbidden_runtime_tooling = sorted(
+        (
+            e
+            for e in project_edges
+            if classify(e["from"]) == "runtime"
+            and is_runtime_closure(e["from"])
+            and (
+                Path(e["to"]).stem.endswith(".Hosting")
+                or Path(e["to"]).stem.endswith(".TestKit")
+            )
         ),
         key=lambda e: (e["from"], e["to"]),
     )
@@ -194,6 +240,9 @@ def build_dotnet(files: list[str]) -> dict:
         "crossTargetEdges": sorted(cross_target, key=lambda e: (e["from"], e["to"])),
         "blockingRuntimeEdges": blocking,
         "blockingTestEdges": blocking_test,
+        "blockingE2EEdges": blocking_e2e,
+        "sourceModeE2EEdges": source_mode_e2e,
+        "forbiddenRuntimeToolingEdges": forbidden_runtime_tooling,
         "packableProjects": sorted(p for p, v in projects.items() if v["packable"]),
     }
 
@@ -292,6 +341,24 @@ def main() -> int:
                 file=sys.stderr,
             )
             for e in regressed:
+                print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
+            return 1
+        blocking_e2e = inventory["dotnet"]["blockingE2EEdges"]
+        if blocking_e2e:
+            print(
+                "E2E CROSS-REPOSITORY ProjectReference(s) OUTSIDE THE SOURCE-MODE PROVIDER:",
+                file=sys.stderr,
+            )
+            for e in blocking_e2e:
+                print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
+            return 1
+        forbidden_tooling = inventory["dotnet"]["forbiddenRuntimeToolingEdges"]
+        if forbidden_tooling:
+            print(
+                "RUNTIME CLOSURE REFERENCES HOSTING/TESTKIT TOOLING:",
+                file=sys.stderr,
+            )
+            for e in forbidden_tooling:
                 print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
             return 1
         print("inventory.json is current; no test-tier cross-repository ProjectReference")

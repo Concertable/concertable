@@ -18,12 +18,17 @@
     <PlatformSourcePackage Include="Concertable.Testing.Integration"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing.Integration\Concertable.Testing.Integration.csproj" />
     <PlatformSourcePackage Include="Concertable.Seed.Shared"              Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Shared\Concertable.Seed.Shared.csproj" />
     <PlatformSourcePackage Include="Concertable.Seed.Infrastructure"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Infrastructure\Concertable.Seed.Infrastructure.csproj" />
+    <PlatformSourcePackage Include="Concertable.Seed.Identity"            Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Identity\Concertable.Seed.Identity.csproj" />
     <PlatformSourcePackage Include="Concertable.Messaging.Domain"         Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
     <PlatformSourcePackage Include="Concertable.Messaging.Infrastructure" Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
+    <PlatformSourcePackage Include="Concertable.AppHost.Shared"            Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
     <PlatformSourcePackage Include="Concertable.Auth.Hosting"             Project="$(MSBuildThisFileDirectory)Concertable.Auth\src\Concertable.Auth.Hosting\Concertable.Auth.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.B2B.Hosting"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.Hosting\Concertable.B2B.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.Customer.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.Hosting\Concertable.Customer.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.Payment.Hosting"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.Hosting\Concertable.Payment.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.B2B.TestKit"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.TestKit\Concertable.B2B.TestKit.csproj" />
+    <PlatformSourcePackage Include="Concertable.Customer.TestKit"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.TestKit\Concertable.Customer.TestKit.csproj" />
+    <PlatformSourcePackage Include="Concertable.Payment.TestKit"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.TestKit\Concertable.Payment.TestKit.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseLocalPlatformSources)' == 'true'">
@@ -37,7 +42,7 @@
   <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
     <!-- The transform emits a ProjectReference only for the ids this project actually references
          (the rest transform to an empty Include and are skipped); the Remove drops the same ids. -->
-    <ProjectReference Include="@(PackageReference->'%(PlatformSourceProject)')" />
+    <ProjectReference Include="@(PackageReference->'%(PlatformSourceProject)')" IsAspireProjectResource="false" />
     <PackageReference Remove="@(PlatformSourcePackage)" />
   </ItemGroup>
 
