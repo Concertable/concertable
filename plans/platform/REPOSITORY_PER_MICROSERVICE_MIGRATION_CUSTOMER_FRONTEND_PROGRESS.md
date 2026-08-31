@@ -36,9 +36,10 @@ Continue draft PR #1 from exact head `1b6e49f7460ac61795ffe3767591af7f0bfdbdd0` 
 artifact-integrity slice. For the four NuGet and three OCI candidates, generate one deterministic manifest of
 artifact names and SHA-256 hashes, create SBOM evidence, and scan each OCI archive for vulnerabilities and
 embedded secrets using pinned tool/action versions. Retain the manifest, SBOMs, and scan reports as CI run
-artifacts with an explicit retention period, and fail CI on a missing candidate, hash mismatch, secret, or
-policy-disallowed vulnerability. Do not grant write/package/attestation permissions and do not publish or push
-any candidate. This slice must not edit standalone AppHost, TestKit/fleet E2E, or another service's source.
+artifacts with an explicit retention period, and fail CI on a missing candidate, hash mismatch, embedded
+secret, or High/Critical vulnerability. Do not add an ignore or allowlist mechanism in this slice. Do not grant
+write/package/attestation permissions and do not publish or push any candidate. This slice must not edit
+standalone AppHost, TestKit/fleet E2E, or another service's source.
 
 ## Completed work
 
