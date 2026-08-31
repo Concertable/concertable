@@ -36,11 +36,12 @@ targets:
     include:
       - api/Concertable.Payment
     exclude:
-      - api/Concertable.Payment/tests/E2ETests
+      - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers
+      - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers.UnitTests
     rename:
       api/Concertable.Payment/: ""
     notes:
-      - Cross-service E2E (Web, Workers, Stripe, Helpers) moves to fleet.
+      - Payment owns its TestKit, E2E hosts, and Stripe adapter; fleet owns the cross-service helpers.
 
   search:
     repo: Concertable/search
@@ -61,7 +62,9 @@ targets:
       - app/mobile/customer
       - app/customer/shared
     exclude:
-      - api/Concertable.Customer/tests/E2ETests
+      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests
+      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile
+      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui
     rename:
       api/Concertable.Customer/: ""
       app/web/customer/: "app/web/"
@@ -77,7 +80,8 @@ targets:
       - app/mobile/b2b
       - app/b2b/shared
     exclude:
-      - api/Concertable.B2B/tests/E2ETests
+      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests
+      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui
     rename:
       api/Concertable.B2B/: ""
       app/web/b2b/: "app/web/"
@@ -124,10 +128,15 @@ targets:
       - api/Concertable.AppHost
       - api/tests
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
-      - api/Concertable.B2B/tests/E2ETests
-      - api/Concertable.Customer/tests/E2ETests
-      - api/Concertable.Payment/tests/E2ETests
+      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests
+      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui
+      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests
+      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile
+      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui
+      - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers
+      - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers.UnitTests
       - api/Concertable.Search/tests/E2ETests
+      - eng/repository-split/carve-e2e.ps1
       - scripts
     rename:
       api/Concertable.AppHost/: "apphost/"

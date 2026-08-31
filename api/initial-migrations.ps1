@@ -2,6 +2,7 @@
 # never real credentials (no user/password). Applying migrations to a real DB is a separate Aspire job
 # that resolves the live string from config/Key Vault; it never runs this script.
 $env:ConnectionStrings__B2BDb = "Server=localhost;Database=concertable-b2b;Trusted_Connection=True;TrustServerCertificate=True"
+$env:ConnectionStrings__AuthDb = "Server=localhost;Database=concertable-auth;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__CustomerDb = "Server=localhost;Database=concertable-customer;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__PaymentDb = "Server=localhost;Database=concertable-payment;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__SearchDb = "Server=localhost;Database=concertable-search;Trusted_Connection=True;TrustServerCertificate=True"
