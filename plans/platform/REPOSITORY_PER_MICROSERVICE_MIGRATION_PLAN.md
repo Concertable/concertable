@@ -117,7 +117,8 @@ Current packable ownership is:
 
 - Auth: `Concertable.Auth.Contracts`.
 - B2B: Artist, Concert, Tenant, User, and Venue Contracts plus `Concertable.B2B.Seed.Contracts`.
-- Customer: `Concertable.Customer.Review.Contracts`.
+- Customer: `Concertable.Customer.Review.Contracts`, `Concertable.Customer.Ticket.Contracts`, and
+  `Concertable.Customer.Hosting`.
 - Payment: `Concertable.Payment.Contracts` and `Concertable.Payment.Client`.
 - Platform: `Concertable.Contracts`, Kernel, DataAccess Application/Infrastructure, all five Messaging
   layers, ServiceDefaults, shared API/capability Application and Infrastructure packages, seed primitives,
@@ -225,7 +226,7 @@ system repo so desired images, infrastructure, migrations, and E2E promotion sta
 | Repository | Owns | Must not own | Code owner |
 |---|---|---|---|
 | `Concertable/b2b` | B2B backend, modules, migrations, B2B Contracts, B2B seed catalog/simulator, B2B web/mobile surfaces, standalone AppHost | Customer runtime/projections by direct source, shared platform implementations | `@Concertable/b2b-maintainers` |
-| `Concertable/customer` | Customer backend, migrations, Review/Seed Contracts, Customer simulator, customer web/mobile and `@customer/shared`, standalone AppHost | B2B runtime/source | `@Concertable/customer-maintainers` |
+| `Concertable/customer` | Customer backend, migrations, Review/Ticket/Seed Contracts, Customer simulator, customer web/mobile and `@customer/shared`, standalone AppHost | B2B runtime/source | `@Concertable/customer-maintainers` |
 | `Concertable/payment` | Payment Web/Workers, Payment DB migrations, Contracts, Client, Stripe test tooling, standalone AppHost | B2B business logic or database | `@Concertable/payment-maintainers` |
 | `Concertable/search` | Search Web/Workers, projections, Search DB migrations, standalone AppHost | producer write models/databases | `@Concertable/search-maintainers` |
 | `Concertable/auth` | Auth runtime, `Auth.Contracts`, Auth DB and both Auth/Duende migrations, standalone AppHost | B2B DB or tenant/business persistence | `@Concertable/auth-maintainers` |
@@ -284,7 +285,9 @@ scripts/
   E2E, `Concertable.Auth.TestKit`.
 - B2B publishes its existing module Contracts and Seed Contracts, plus `Concertable.B2B.Hosting` and a
   black-box TestKit.
-- Customer publishes Review Contracts, new Customer Seed Contracts, Hosting, and a black-box TestKit.
+- Customer publishes Review Contracts, Ticket Contracts, new Customer Seed Contracts, Hosting, and a
+  black-box TestKit. Ticket Contracts remain in the train because Customer Hosting directly uses
+  `TicketPurchasedEvent` and `SendTicketEmailCommand` in its topology metadata.
 - Payment publishes Contracts, Client, Hosting, and Stripe/E2E TestKit artifacts.
 - Search publishes Hosting and a TestKit. It gets a Search Contracts package only when a real external
   compile-time consumer exists; no empty symmetry package is created.
@@ -738,7 +741,7 @@ change makes Customer the producer Search actually consumes.
 
 ### 13. Promote Customer
 
-Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Seed Contracts,
+Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Ticket/Seed Contracts,
 simulator, and all Customer migrations. B2B remains compatible with the published Customer contract train.
 
 Customer preparation starts from the reviewed private `customer` extraction proof and runs in parallel
