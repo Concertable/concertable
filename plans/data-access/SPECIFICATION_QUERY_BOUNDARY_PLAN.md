@@ -123,36 +123,44 @@ The evaluator applies only the capability named by the overload. It must never i
 type and opportunistically apply `IPredicateSpecification<TEntity>` when the accepted parameter is
 `ISpecification<TEntity>`.
 
-## B2B shape vocabulary
+## Module shape vocabulary
 
-`BookingSpecification` and `ApplicationSpecification` live in the owning module's Application project and
-depend on no EF Core type. Their methods describe navigation paths rather than use cases or combinations:
-
-- `BookingSpecification.WithApplication()`
-- `BookingSpecification.WithApplicationArtist()`
-- `BookingSpecification.WithApplicationArtistGenres()`
-- `BookingSpecification.WithApplicationOpportunity()`
-- `BookingSpecification.WithApplicationOpportunityVenue()`
-- `BookingSpecification.WithConcert()`
-- `ApplicationSpecification.WithArtist()`
-- `ApplicationSpecification.WithArtistGenres()`
-- `ApplicationSpecification.WithOpportunity()`
-- `ApplicationSpecification.WithOpportunityVenue()`
-
-A caller can request a variable graph without creating a class or repository method per combination:
+A module Specification is an empty subclass of `SpecificationBuilder<TEntity>`. It declares no methods at
+all — the vocabulary is the fluent `Include`/`ThenInclude`/`OrderBy`/`Select` surface on the builder:
 
 ```csharp
-var bookingSpec = new BookingSpecification()
-    .WithApplicationArtistGenres()
-    .WithApplicationOpportunityVenue()
-    .WithConcert();
-
-var booking = await bookingRepository.GetByIdAsync(id, bookingSpec, ct);
+internal sealed class BookingSpecification : SpecificationBuilder<BookingEntity>;
 ```
 
-Fixed-filter methods such as `GetByConcertIdAsync` remain repository methods. They may reuse the same named
-include registrations internally or accept a shape Spec when a real caller-selected variation exists. Data
-access predicates, joins, tenant restrictions, and business-rule filtering do not move into services.
+A caller composes the graph it needs without a class or a repository method per combination:
+
+```csharp
+var booking = await bookingRepository.GetByIdAsync(
+    id,
+    new BookingSpecification()
+        .Include(booking => booking.Application.Artist.Genres)
+        .Include(booking => booking.Application.Opportunity.Venue)
+        .Include(booking => booking.Concert),
+    ct);
+```
+
+An earlier draft of this plan specified a named per-graph vocabulary — `WithApplicationArtistGenres()`,
+`WithApplicationOpportunityVenue()`, `WithConcert()` and the rest. That was rejected in implementation: it
+needs a method per graph combination, which is the very duplication the Specification was introduced to
+remove. `Include` expresses the same graphs with nothing to maintain. A named member is warranted only for a
+projection genuinely reused by more than one lookup, and then it is an expression-bodied static on the module
+Specification — never a field, because a builder instance is mutable and a shared one would accumulate
+includes across callers.
+
+`ThenInclude` continues the current path and is what a chain crossing a collection needs; a single
+member-chain lambda covers a chain of reference navigations.
+
+Fixed-filter methods such as `GetByConcertIdAsync` remain repository methods, and take a shape Specification
+when a real caller-selected variation exists — as `GetByConcertIdAsync` and `GetSettlementByBookingIdAsync`
+now do. Data access predicates, joins, tenant restrictions, and business-rule filtering do not move into
+services. A fixed projection whose shape the repository owns — `GetOwnerByIdAsync`, the `ManagerConcertCard`
+and `MonthlyPaymentTotal` projections, the aggregate queries — stays a named repository method; pushing its
+navigation path out to a caller would leak schema knowledge into the service layer.
 
 ## Predicate algebra
 
@@ -336,17 +344,26 @@ Verification gate:
 - Search and every predicate consumer build against the published packages with service-boundary
   enforcement enabled.
 
-### Phase 3 — B2B Concert proving ground
+### Phase 3 — Concert and Payment adoption
 
-- Rebase on the terminal source from [PR #633](https://github.com/Concertable/concertable/pull/633) before
-  editing Concert module repository paths.
-- Add `BookingSpecification` and `ApplicationSpecification` with the named vocabulary above.
-- Use inherited `GetByIdAsync(id, spec, ct)` where callers genuinely choose graph shape; remove the migrated
-  graph-named ID methods and their mocks.
-- Reuse the same include vocabulary inside fixed-filter repository methods without moving their predicates
-  into services. Do not convert stable projections or one-off fixed queries merely to demonstrate the API.
-- Add architecture rules that prohibit predicate and Query Object dependencies from service-facing
-  namespaces.
+Delivered on `Refactor/RepositoryFinderSpecifications`, which stacks on the producer branch. It did not wait
+for [PR #633](https://github.com/Concertable/concertable/pull/633): that PR touches the same Concert
+repository files, so the adoption will need a merge from terminal main once #633 lands, but blocking on a
+953-file refactor was a worse trade than resolving that merge.
+
+- Module Specifications as empty `SpecificationBuilder<TEntity>` subclasses: `ConcertSpecification`,
+  `BookingSpecification`, `ApplicationSpecification`, `OpportunitySpecification`, plus `EscrowSpecification`,
+  `CommissionBindingSpecification` and `SettlementTransactionSpecification` in Payment.
+- Every graph-named repository method removed — all eleven. `GetByIdWithArtistAndVenueAsync`,
+  `GetByIdWithVenueAsync` and `GetByIdWithBookingAsync` collapse into the inherited
+  `GetByIdAsync(id, spec, ct)`; `GetByConcertIdAsync` and `GetWithApplicationByConcertIdAsync` collapse into
+  one spec-taking `GetByConcertIdAsync`; `GetSettlementWithRefundsByBookingIdAsync` becomes
+  `GetSettlementByBookingIdAsync(bookingId, spec, ct)`.
+- The nine interim class-per-graph Specifications from the branch's first pass are deleted; the fluent
+  builder replaced them.
+- Fixed repository projections stay where they are, per the rule above.
+- Architecture rules prohibiting predicate and Query Object dependencies from service-facing namespaces are
+  **not** written yet.
 
 Consumption contract: a service may create only a module-owned shape/projection Specification and pass it to
 an existing ID- or repository-owned-filter operation; it receives a materialized entity/result and cannot
@@ -354,12 +371,14 @@ supply a predicate.
 
 Verification gate:
 
-- B2B unit tests prove fluent include methods are additive and idempotent.
-- Concert integration tests prove requested Booking/Application graphs load, omitted graphs remain unloaded,
-  projection works, and repository-owned filters remain unchanged.
-- Architecture tests include negative fixtures for a service using `IPredicateSpecification` or `IQuery`
-  and a positive fixture for `BookingSpecification`.
-- B2B builds in published-package mode and relevant integration suites pass.
+- Kernel unit tests prove include chains are additive, cross a collection through `ThenInclude`, and that
+  `Select` carries orders while dropping includes.
+- DataAccess integration tests against a relational provider prove the graph loads, an unrequested navigation
+  stays unloaded, repeated includes are idempotent, a value projection returns null rather than default for a
+  missing row, and a nullable column projects.
+- Concert and Payment unit suites pass; the container-backed Concert, Payment and Search integration suites
+  and the architecture tests have **not** run — the branch has no PR yet, so CI has never seen it.
+- Still owed: a PR, its CI, and a review. The branch has 25 authored commits and no review work order at all.
 
 ### Phase 4 — known follow-up adoption
 
