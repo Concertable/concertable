@@ -6,12 +6,12 @@
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
 - PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `5555ac82b314384685a7a003fa5bc82e18fa8298`
-- Dependency/package gates: package access is granted; Actions artifact retention is blocked by the organization storage quota; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-01** from exact remote/PR head equality and failed-job rerun attempt 2 of CI run `33448642947`
+- Dependency/package gates: package access and Actions artifact retention are green; final publication and delivery remain unauthorized
+- Last reconciled: **2026-09-01** from exact remote/PR head equality and successful failed-job rerun attempt 3 of CI run `33448642947`
 
 ## Current state
 
-State: **repository preparation active; artifact retention blocked by organization quota**. GitHub repository `Concertable/customer-next`
+State: **repository preparation active; retained artifact-integrity gate green**. GitHub repository `Concertable/customer-next`
 was renamed in place to canonical `Concertable/customer`; repository ID `1351337130`, PR #1, branches, and
 history were preserved. The inactive local checkout moved from `customer-next` to `customer`, and its origin
 now uses `https://github.com/Concertable/customer.git`.
@@ -21,12 +21,12 @@ web, mobile, customer-only shared package, and standalone support closure. Draft
 build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
 candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
 Exact-head CI run [`33448642947`](https://github.com/Concertable/customer/actions/runs/33448642947) ran at
-`5555ac82b314384685a7a003fa5bc82e18fa8298`. Failed-job rerun attempt 2 restarted Backend job
-`99686369441`; Frontend job `99686370507` remained green. Backend again passed every build, test, package,
-image, migration, simulator-smoke, and Linux artifact-integrity step before the final retention action found
-all 14 expected files and requested `customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca`
-for 30 days. GitHub again rejected artifact creation because organization storage quota usage had not
-recalculated. The Customer repository still has zero stored artifacts. No package or image was published or
+`5555ac82b314384685a7a003fa5bc82e18fa8298`. Failed-job rerun attempt 3 restarted Backend job
+`100007086492`; Frontend job `100007089026` remained green. Backend passed every build, test, package, image,
+migration, simulator-smoke, Linux artifact-integrity, and retention step. Artifact `9818452253`, named
+`customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca`, is retained through
+2026-10-01 with digest `sha256:edb44e3c5334c2b2a2e4ab1ad775270bf84198d3be834c4b5c842deadcf2989b`.
+Its downloaded contents contain exactly the required 14 evidence files. No package or image was published or
 pushed.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
@@ -35,7 +35,7 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Paused: GitHub Actions storage provider — do not rerun while quota state is unchanged; wait for GitHub's documented 6–12-hour recalculation after the administrator's cleanup or storage increase, without deleting caches from this stream. Then rerun only the failed job of exact-head run `33448642947` at `5555ac82b314384685a7a003fa5bc82e18fa8298` and require a nonexpired 30-day `customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca` artifact containing `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability reports, and three all-severity secret reports. Only after that retained artifact is inspected and the exact gate is green may Customer advance. Do not publish or push packages or images.
+Implement the smallest independent Customer-owned promotion-preparation slice: add repository-local package and OCI publication workflow/configuration with explicit manual/release gating and validation that proves the exact four NuGet and three OCI candidates would be selected. The preparation must remain inert in this checkpoint: do not publish or push any package or image, change visibility, attest a remote artifact, or touch Customer TestKit, foreign service inputs, or standalone AppHost composition. Re-run local workflow/configuration checks, independently review the frozen diff, push one stable head to draft PR #1, and require exact-head CI green before the next ledger checkpoint.
 
 ## Completed work
 
@@ -64,13 +64,14 @@ Paused: GitHub Actions storage provider — do not rerun while quota state is un
 
 ## Verification
 
-- Exact-head remote CI run `33448642947`, attempt 2: Frontend job `99686370507` passed in 2m18s. Backend job
-  `99686369441` ran 7m35s and passed restore, build, tests, migration snapshots, four-package clean consumer,
-  three OCI builds, real simulator smoke, empty-database migration, and Linux integrity inventory; only
-  `Retain candidate integrity evidence` failed.
-- The failed upload found 14 files, validated the requested artifact name and root path, requested 30-day
-  retention, then returned `Artifact storage quota has been hit` with a 6–12-hour recalculation notice.
-  Customer's artifact inventory remained empty, so retained-content inspection was not possible.
+- Exact-head remote CI run `33448642947`, attempt 3: Frontend job `100007089026` passed in 2m18s. Backend job
+  `100007086492` ran 6m55s and passed restore, build, tests, migration snapshots, four-package clean consumer,
+  three OCI builds, real simulator smoke, empty-database migration, Linux integrity inventory, and evidence
+  retention.
+- The retained 30-day artifact has exactly `SHA256SUMS`, seven CycloneDX 1.7 SBOMs, three High/Critical
+  vulnerability reports, and three all-severity secret reports. All JSON parsed; the vulnerability and secret
+  reports contain zero findings; `SHA256SUMS` contains seven unique, valid SHA-256 entries covering the four
+  NuGet and three OCI candidates.
 - Local full gate at `5555ac82b314384685a7a003fa5bc82e18fa8298` passed for exactly four NuGet and
   three OCI candidates, deterministic `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability
   reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
@@ -122,10 +123,12 @@ Paused: GitHub Actions storage provider — do not rerun while quota state is un
   substitute. Runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost invokes the
   migration resource. No package, image, canonical release, visibility change, deployment, or system-consumer
   update was authorized or performed.
-- After rerun attempt 2, Customer still stores zero Actions artifacts and one 164,423,819-byte cache. Organization cache usage
-  is 12,671,970,938 bytes, concentrated in five approximately 2.5-GB NuGet caches in
-  `Concertable/concertable`; this Customer stream must not delete them. Repeating a seven-minute failed-job
-  rerun before provider quota recalculation would only repeat the same terminal upload failure.
+- The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
+  attempt 3 created the required retained artifact, so the quota blocker is closed.
+- The extracted `Concertable.Customer.AppHost` remains excluded from `CarveCustomer.slnx` and has ten foreign
+  monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
+  `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
+  available. Do not fake that gate or widen this stream into RT3, Stage 4, Auth, Payment, Search, or B2B.
 - Vitest invokes Vite with `command = serve` and `mode = test`; development-only configuration must consider
   both values rather than treating every `serve` configuration load as a live dev server.
 - A multi-path fold must include support files outside selected app subtrees: Customer's relocated Vite app
