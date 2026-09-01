@@ -5,9 +5,13 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `070247795927ec6045b138c3225fbed99e5a2eb5`
-- Dependency/package gates: package access, artifact retention, CODEOWNERS, immutable action refs, and repository SHA enforcement are green; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-01** from reviewed Customer head `070247795927ec6045b138c3225fbed99e5a2eb5`, successful CI run `33566459131`, and Actions-permissions readback
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head
+  `08ddbd812fd037544be47da2530098c49b278e86`
+- Dependency/package gates: package access, artifact retention, TestKit, CODEOWNERS, immutable action refs,
+  and repository SHA enforcement are green; final publication and delivery remain unauthorized
+- Last reconciled: **2026-09-02** from reviewed Customer head
+  `08ddbd812fd037544be47da2530098c49b278e86`, successful CI run `33570252885`, and Actions-permissions
+  readback
 
 ## Current state
 
@@ -29,14 +33,24 @@ migration, simulator-smoke, Linux artifact-integrity, and retention step. Artifa
 Its downloaded contents contain exactly the required 14 evidence files. No package or image was published or
 pushed.
 
-At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer now owns a machine-readable
+At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer gained a machine-readable
 promotion manifest for exactly four NuGet and three OCI candidates. CI validates actual NuGet metadata and
 each Docker archive's embedded repository, selected SHA tag, and config-digest shape. Manual dispatch remains
 read-only and requires an existing annotated v-prefixed tag that resolves to the exact selected commit; its
 NuGet versions and OCI tags must match that release tag. The workflow contains no package/image publish or
 push operation and has only `contents: read` and `packages: read` permissions.
 
-Customer PR #1 now carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five action invocations. Exact-head CI run [`33566459131`](https://github.com/Concertable/customer/actions/runs/33566459131) is green, and the repository Actions policy reads back `sha_pinning_required: true` while preserving `allowed_actions: all`, default read-only workflow permissions, and disabled PR approvals.
+At exact head `08ddbd812fd037544be47da2530098c49b278e86`, the manifest and every package and
+integrity gate now cover five NuGet candidates, adding the black-box `Concertable.Customer.TestKit`.
+The package exposes an injected-`HttpClient` client and Customer-owned ticket purchase/upcoming-ticket wire
+models only; it has no runtime implementation, DbContext, entity, Hosting, or foreign-service reference.
+Its focused contract tests, clean-consumer closure, and the complete Customer CI gate are green without any
+package or image publication.
+
+Customer PR #1 carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five
+action invocations. Exact-head CI run [`33570252885`](https://github.com/Concertable/customer/actions/runs/33570252885)
+is green, and the repository Actions policy reads back `sha_pinning_required: true` while preserving
+`allowed_actions: all`, default read-only workflow permissions, and disabled PR approvals.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
@@ -44,7 +58,11 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Implement the next independent Customer-owned preparation slice: add a black-box `Concertable.Customer.TestKit` package that exposes only the Customer-owned test-admin seams required by future system E2E, with no runtime implementation, DbContext, entity, Hosting, or foreign-service references. Validate its focused tests and clean-consumer package closure without publishing it. Keep AppHost migration orchestration blocked on its named foreign container-hosting inputs; do not publish or push candidates, create tags, change visibility, retry the private-plan protection `403`, or enter another stream.
+No further Customer-only preparation slice is independently implementable. Keep Customer PR #1 draft and
+hold final 13A–13E delivery until the owning plan's canonical platform/system baselines and preceding service
+cutovers are green. Resume standalone AppHost work only when its named foreign container-hosting inputs are
+available; resume rules/main-protection work only when the private-plan capability changes. Do not publish or
+push candidates, create tags, change visibility, retry or bypass the protection `403`, or enter another stream.
 
 ## Completed work
 
@@ -74,6 +92,9 @@ Implement the next independent Customer-owned preparation slice: add a black-box
   `c83169d` binds every built OCI archive to its configured repository and selected SHA/release tag. The
   promotion path remains a read-only preflight with no publication command or permission.
 - `0702477` adds repository-wide bootstrap `CODEOWNERS` for `@tomjseery` and pins every Customer CI action to the verified immutable commit behind its recorded `v4` channel.
+- `01bc246` adds the black-box `Concertable.Customer.TestKit`, focused HTTP contract tests, and the fifth
+  NuGet promotion candidate; `08ddbd8` aligns the integrity-evidence gate with eight package/image SBOMs and
+  six Trivy reports.
 
 ## Verification
 
@@ -91,6 +112,16 @@ Implement the next independent Customer-owned preparation slice: add a black-box
 - Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
   web 1/1 and production build; mobile typecheck and Android export — all green.
 - Exact-head CI run `33566459131` at `070247795927ec6045b138c3225fbed99e5a2eb5`: Frontend job `100050657740` passed in 2m19s and Backend job `100050657995` passed in 7m23s, including the complete package/image/migration/simulator/integrity/retention gate.
+- Exact-head CI run `33570252885` at `08ddbd812fd037544be47da2530098c49b278e86`:
+  Frontend job `100062440903` passed in 2m25s and Backend job `100062440740` passed in 7m24s, including
+  TestKit's focused tests, five-package packing and clean-consumer restore/build, all three OCI candidates,
+  migration/simulator gates, eight SBOMs, six Trivy reports, and retained integrity evidence.
+- Retained artifact `9824844924`, `customer-candidate-integrity-39a769bc914f1ffbf4854474f02cd91010fe1095`,
+  expires 2026-10-01 and has digest
+  `sha256:824d572595749d3141f94ff9792ca5489a0f39e96a4416c6fdf3fa6ab8e2bf10`.
+- Local TestKit verification passed 3/3 focused contract tests, the complete Release solution build,
+  promotion selection for five NuGet and three OCI candidates, and a temporary five-package clean-consumer
+  restore/build with zero errors; no candidate was published.
 - Actions policy readback: `enabled: true`, `allowed_actions: all`, `sha_pinning_required: true`; default workflow permissions remain `read` and PR approvals remain disabled.
 - Local promotion validation passed against the existing four NuGet and three OCI outputs. A temporary local
   annotated `v0.1.0-alpha.0.329` tag then built all three OCI candidates and proved exact tag-to-commit,
@@ -106,7 +137,15 @@ Implement the next independent Customer-owned preparation slice: add a black-box
   after reconciling the current and final Customer package rosters.
 - Independent artifact-integrity review through `5555ac82b314384685a7a003fa5bc82e18fa8298` fixed
   OS-aware path containment and exact artifact-name casing, then found no remaining issues.
-- Independent repository-policy review approved `c83169dd2a3d172d765425b12e032e704fcdc4fa..070247795927ec6045b138c3225fbed99e5a2eb5` with no findings after verifying CODEOWNERS precedence, official signed action commits, exact `v4` ref equality, immutable-reference closure, and read-only permissions. Draft PR #1 still owns the cumulative delivery gate before any merge.
+- Independent repository-policy review approved
+  `c83169dd2a3d172d765425b12e032e704fcdc4fa..070247795927ec6045b138c3225fbed99e5a2eb5`
+  with no findings after verifying CODEOWNERS precedence, official signed action commits, exact `v4` ref
+  equality, immutable-reference closure, and read-only permissions. Draft PR #1 still owns the cumulative
+  delivery gate before any merge.
+- Independent TestKit review approved
+  `070247795927ec6045b138c3225fbed99e5a2eb5..08ddbd812fd037544be47da2530098c49b278e86`
+  after finding and correcting the stale 13-file/seven-SBOM integrity count; no findings remain. Draft PR #1
+  still owns the cumulative delivery gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -133,9 +172,9 @@ Implement the next independent Customer-owned preparation slice: add a black-box
   - `Concertable.Testing`, `Concertable.Testing.Integration`
 - Exact npm package ACL closure: `@concertable/mobile`, `@concertable/shared`, `@concertable/web`.
 - Current package candidate set: `Concertable.Customer.Hosting`, `Concertable.Customer.Review.Contracts`,
-  `Concertable.Customer.Ticket.Contracts`, and `Concertable.Customer.Seed.Contracts`. The final Customer
-  train still requires a black-box Customer TestKit, which remains outstanding. Ticket Contracts are
-  intentional because Hosting directly uses
+  `Concertable.Customer.Seed.Contracts`, `Concertable.Customer.TestKit`, and
+  `Concertable.Customer.Ticket.Contracts`. The Customer-owned candidate roster is complete. Ticket Contracts
+  are intentional because Hosting directly uses
   `TicketPurchasedEvent` and `SendTicketEmailCommand`.
 - Exact-head CI now creates local Customer Web, `customer-migrations`, and `customer-seed-simulator` archives.
   The simulator smoke uses `docker load` and `docker run --rm` against the built archive; it is not a source-only
