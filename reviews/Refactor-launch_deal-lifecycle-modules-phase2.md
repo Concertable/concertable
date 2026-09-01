@@ -512,3 +512,20 @@ questions, both needing a product decision rather than a code fix.
   OPEN2: the armed-conflict harness runs a full competing HTTP request from inside the first request's
   save interception. Verified pre-existing — this test was in the original 19 both with and without the
   `TryExecuteAsync` work.
+
+## Review pass — 2026-09-01 — remediation incremental
+
+**Candidate base:** `e396b21645b92afb2ec050144f49f0004dd4d592`
+**Candidate head:** `726a270023a5f167bd70a585152aa3dba2bd1761`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all` — 52 paths, 13 non-merge commits
+**Candidate path-set digest:** `sha256:b87be622a0be43a9…`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `in-progress`
+
+Covers the remediation for the two prior passes: the `TryExecuteAsync` transaction boundary on both the
+unit-of-work behaviour and the boundary, the mapper disambiguation, the E2E seed-contract carve, the
+duplicate context-base deletion, and the Concert integration assertion corrections. The prior pass reviewed
+`3f6d85aaa..e396b2164`; this pass closes the gap from that head, so completing it advances the single
+top-level watermark to this head.
