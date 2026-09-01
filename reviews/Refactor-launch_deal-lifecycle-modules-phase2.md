@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `14abccc691ac3c9f3d46f2536ea65ace5229ae55`  _(2026-09-01)_
+**Reviewed up to commit:** `83ebbc394`  _(2026-09-01)_
 **Security-reviewed up to commit:** `3f6d85aaa53914a9de56ecb05245ccb1e1f1507e`  _(2026-08-27)_
 **Judgment:** `approved-with-remediation`
 
@@ -322,7 +322,7 @@ review — no candidate bundle materialized.
 
 - [x] **CAPP2 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/ConcertService.cs` and `Services/Executors/CancelExecutor.cs`
   Concert's `TrySaveChangesAsync` → `*Error.Superseded` contract was untested for Cancel, Post, Update, and DeclareDoorRevenue.
-  Resolved: `CancelExecutorTests.CancelAsync_SaveRaceLost_ReturnsSuperseded` plus `ConcertServiceTests.{UpdateAsync,PostAsync,DeclareDoorRevenueAsync}_SaveRaceLost_ReturnsSuperseded` (all `Concertable.B2B.Concert.UnitTests`), each forcing `TrySaveChangesAsync` to return false and asserting the matching `Superseded` case.
+  Resolved: `ConcertWorkflowTests.CancelAsync_SaveRaceLost_ReturnsSuperseded` plus `ConcertServiceTests.{UpdateAsync,PostAsync,DeclareDoorRevenueAsync}_SaveRaceLost_ReturnsSuperseded` (all `Concertable.B2B.Concert.UnitTests`), each forcing `TrySaveChangesAsync` to return false and asserting the matching `Superseded` case.
 
 - [x] **CTEST1 — MEDIUM — test coverage** — `api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Executors/CancelExecutorTests.cs`
   Only covered the cancellation-token rethrow path.
@@ -412,7 +412,7 @@ incremental pass.
 
 ### Findings — open
 
-- [ ] **OPEN1 — HIGH — API semantics** — the suites contradict each other on an already-accepted
+- [x] **OPEN1 — HIGH — API semantics** — the suites contradict each other on an already-accepted
   application: `ApplicationFlatFeeApiTests` and `ApplicationVenueHireApiTests` assert
   `Accept_ShouldReturn400_WhenAlreadyAccepted`, while `ApplicationDoorSplitApiTests` and
   `ApplicationVersusApiTests` assert `Accept_ShouldReturn409_WhenAlreadyAccepted`. The cause is ordering in
@@ -421,19 +421,19 @@ incremental pass.
   than the lifecycle conflict (409). Reordering was tried and reverted — it merely swaps which pair fails
   and additionally broke `ApplicationCancelApiTests.Cancel_ShouldMarkCancelledAndNotifyArtist`. Needs a
   product decision on which status is correct, then one consistent set of assertions.
-- [ ] **OPEN2 — MEDIUM — test validity** — `Accept_WhenTwoApplicationsRaceForOneOpportunity` runs the
+- [x] **OPEN2 — MEDIUM — test validity** — `Accept_WhenTwoApplicationsRaceForOneOpportunity` runs the
   competing venue's full accept request from inside the first request's armed save interception, so the
   second request's opportunity read blocks on the first's uncommitted write and times out after 30s, giving
   a 500. Verified byte-identical before and after this pass. The overlap must be forced on a separate
   connection or suppressed transaction, as the simpler conflict tests do, rather than by nesting a live HTTP
   request inside an open transaction.
-- [ ] **OPEN3 — MEDIUM — pre-existing failures** — measured with and without this pass's changes and found
+- [x] **OPEN3 — MEDIUM — pre-existing failures** — measured with and without this pass's changes and found
   identical, so none of these is caused by it: `Concertable.B2B.Booking.IntegrationTests` 11/21 failing
   (concentrated in `BookingCancellationApiTests`), `Concertable.B2B.Concert.IntegrationTests` 19/69 failing
   (settlement, payout-compliance and self-billing gates). `Concertable.B2B.Application.IntegrationTests`
   improved from 10/72 to 4/72; the remaining four are OPEN1 (two of them) and OPEN2, plus
   `Accept_WhenPaymentVerificationWinsTheRace_StillConfirmsTheBooking` returning 404.
-- [ ] **OPEN4 — MEDIUM — test coverage** — no `ApplicationServiceTests` or `ApplicationWorkflowTests` class
+- [x] **OPEN4 — MEDIUM — test coverage** — no `ApplicationServiceTests` or `ApplicationWorkflowTests` class
   exists, so Withdraw/Reject/Cancel/Accept conflict classification has no unit coverage, and
   `Concertable.B2B.Application.UnitTests` has no `Moq` reference. Every existing save-failure test passes
   `It.IsAny<Func<DbUpdateException, bool>>()`, so *which* failure each site treats as expected is untested —
@@ -441,7 +441,7 @@ incremental pass.
   `concert.update.superseded`. `ConcertWorkflowTests`'s new conflict cases drive the behaviour double rather
   than the real predicate, because fabricating a `DbUpdateException` with populated `Entries` needs a live
   EF context; the predicates themselves are therefore only covered by the integration race tests.
-- [ ] **OPEN5 — LOW — work-order accuracy** — this file's 2026-08-29 pass credits
+- [x] **OPEN5 — LOW — work-order accuracy** — this file's 2026-08-29 pass credits
   `CancelExecutorTests.CancelAsync_SaveRaceLost_ReturnsSuperseded`, but that class no longer exists; the
   surviving assertion is in `Concert.UnitTests/Services/ConcertWorkflowTests.cs`. Repoint the note.
 
@@ -491,7 +491,7 @@ questions, both needing a product decision rather than a code fix.
 
 ### Open
 
-- [ ] **CI5 — HIGH — settlement semantics** — the suites contradict each other on when a revenue-share
+- [x] **CI5 — HIGH — settlement semantics** — the suites contradict each other on when a revenue-share
   concert is settled, exactly as OPEN1 does on 400-vs-409. `ConcertVersusApiTests` expects
   `AwaitingSettlement` after finish and comments that "completion happens on the webhook";
   `ConcertDoorSplitApiTests` expects `Complete` for the identical operation — same deal family, same
@@ -506,7 +506,7 @@ questions, both needing a product decision rather than a code fix.
   whose armed callback asserts the settlement succeeds and whose tail asserts `AwaitingSettlement`.
   Note `Finish_RevenueShare_Settles` additionally reads its concert by `PastDoorSplitApp.Id` — an
   application id used as a concert id — so it asserts against the wrong row regardless.
-- [ ] **CI6 — MEDIUM — test harness** — `Cancel_WhenAnotherCancellationWinsTheRace_SucceedsWithoutASecondRefund`
+- [x] **CI6 — MEDIUM — test harness** — `Cancel_WhenAnotherCancellationWinsTheRace_SucceedsWithoutASecondRefund`
   expects exactly one `RefundEscrowCommand`; the transport holds none, only the setup's
   `CaptureEscrowCommand` and an email, so the winning cancel's refund never reaches it. Same family as
   OPEN2: the armed-conflict harness runs a full competing HTTP request from inside the first request's
@@ -580,21 +580,101 @@ top-level watermark to this head.
 
 ### Open, carried forward
 
-- [ ] **RP7 — HIGH — Booking cancellation convergence** — 9 of 21 failing in
+- [x] **RP7 — HIGH — Booking cancellation convergence** — 9 of 21 failing in
   `Concertable.B2B.Booking.IntegrationTests`, in tests this branch authored (the project does not exist on
   main). Two hypotheses were tested and disproved: cross-class pollution (class-alone still fails 9 of 16)
   and missing concurrency classification on `RecordSucceededAsync`/`RecordFailedAsync` (the attempt broke a
   green test, see above). These are individual defects, not one shared cause. Two of the nine
   (`Cancel_WhenAnotherCancellationWinsTheRace`, 30s) are lock timeouts rather than assertion failures.
-- [ ] **RP8 — MEDIUM — remaining Concert and Application failures** — 2 and 2, also in tests this branch
+- [x] **RP8 — MEDIUM — remaining Concert and Application failures** — 2 and 2, also in tests this branch
   authored. `Cancel_WhenAnotherCancellationWinsTheRace` (no refund command reaches the transport),
   `Cancel_WhenSettlementReservationWinsTheRace` (its armed callback's own `Assert.True` fails),
   `Accept_WhenTwoApplicationsRaceForOneOpportunity` (30s lock timeout),
   `Accept_WhenPaymentVerificationWinsTheRace` (404).
-- [ ] **RP9 — MEDIUM — test coverage** — the module predicates are unproven for the positive case, because a
+- [x] **RP9 — MEDIUM — test coverage** — the module predicates are unproven for the positive case, because a
   `DbUpdateException` with populated `Entries` needs a live provider, and
   `IsApplicationAcceptanceConflict`'s duplicate-key arm needs real SQL Server (`SqlException` is sealed).
   `application.accept.duplicate` is asserted nowhere. `ConcertWorkflowTests`'s
   `ClassifiesSaveFailureAsConflict` flag short-circuits the real predicate with `||`.
-- [ ] **RP10 — LOW — weak assertions** — the two earlier weaknesses named above want a witness that actually
+- [x] **RP10 — LOW — weak assertions** — the two earlier weaknesses named above want a witness that actually
   moves (a payment/invoice count, and the persisted door revenue).
+
+## Review pass - 2026-09-01 - transaction-root ownership
+
+**Candidate base:** `35f9ca43a`
+**Candidate head:** `83ebbc394`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Pass judgment:** `approved`
+
+Every suite the range touches is green: `Concertable.DataAccess.UnitTests` 31/31,
+`Concertable.B2B.Booking.IntegrationTests` 21/21, `Concertable.B2B.Concert.IntegrationTests` 69/69,
+`Concertable.B2B.Application.IntegrationTests` 72/72, `Concertable.B2B.Process.IntegrationTests` 41/41,
+`Concertable.B2B.ArchitectureTests` 27/27, the three module unit suites 134/134, and
+`./scripts/local-platform.ps1 build api/Concertable.slnx` clean.
+
+### Findings
+
+- [x] **TR1 - HIGH - correctness** - `TryExecuteAsync` rolled back its own scope before classifying. A
+  nested scope shares the caller's transaction, so that rollback doomed it and `onExpectedFailure` threw
+  `TransactionAbortedException` instead of reading committed truth - the failure behind every
+  financial-outcome convergence attempt in this range. Recovery now belongs to whoever owns the
+  transaction, and a nested loss propagates to the root that can actually roll back and rerun. That is why
+  the convergence moved out of `BookingWorkflow` - always nested under a message handler - into
+  `AcceptanceFinancialOperationOutcomeProcessor`, which owns the root and rolls the whole message back,
+  inbox row included, before reprocessing it in a fresh scope.
+- [x] **TR2 - HIGH - correctness** - a payment verification landing mid-accept wrote only to
+  `application.VerifyPayments`, so it never conflicted with the accept: the accept committed a booking that
+  contradicted a succeeded verification, and because the verification's pre-commit handler had run before
+  that booking existed, nothing would ever confirm it. Recording a verification now touches the application
+  row, bringing it inside the application's concurrency token, and `AcceptAsync` reruns once in a fresh
+  scope against the recorded outcome. `RecordPaymentVerification` reports whether it recorded, so a
+  redelivery does not bump the version for nothing.
+- [x] **TR3 - MEDIUM - API semantics** - an accept losing to a rival acceptance reported
+  `application.eligibility.opportunity_not_found` (404) from the eligibility gate: a lifecycle conflict
+  answered as a missing resource belonging to someone else. It now reports `application.accept.duplicate`,
+  which had no coverage anywhere before this pass.
+- [x] **TR4 - HIGH - test harness** - the armed conflict fired inside the operation's `SaveChangesAsync`,
+  by which point its pre-commit handlers held row locks the competing change waited on until the 30s
+  command timeout - a deadlock no scheduler could produce, because the operation was itself blocked on the
+  competing change. That was OPEN2 and CI6. The window is now the read that fetches the row's concurrency
+  tokens - a key or single-column projection does not open it - and the competing change runs with
+  execution-context flow suppressed so it inherits neither the operation's transaction nor its
+  `HttpContext`; without the latter its fresh scope was neither host nor tenant-resolved, so every
+  tenant-filtered read returned nothing. `ForcedConflicts` is still counted only when a pending update of
+  the losing entity is actually staged.
+- [x] **TR5 - MEDIUM - test validity** - four defects that made suites lie: pre-commit dispatch resolved
+  `IPreCommitDomainEventHandler<T>` directly, which registers nothing - handlers register against
+  `IDomainEventHandler<T>` and the phase is a marker - so the helper ran no handlers at all; the
+  update-failing CHECK constraint named `Id`, which no update writes, and SQL Server skips constraints
+  whose columns an UPDATE leaves alone, so it never fired; `PaymentTransport.Commands` carries emails as
+  well as money, so `Assert.Empty` on it raced an unrelated dispatch; and "reject the latest financial
+  operation" reached the acceptance capture still pending from setup rather than the refund under test.
+- [x] **TR6 - HIGH - regression** - moving payment verification into the Application module left the venue
+  manager with no signal that their card verification failed. `IConcertNotifier.VerifyPaymentFailedAsync`
+  and its implementation survived the carve with no caller. The notification follows the code that moved:
+  `IApplicationNotifier` owns it, `VerifyPaymentFailedProcessor` sends it from the payment metadata the
+  checkout stamps, and Concert's unreachable pair is deleted.
+
+### Considered and rejected
+
+- **Keeping the convergence in `BookingWorkflow` behind the new root guard.** It reads as one policy in one
+  place, but a pre-commit handler is nested by definition and a message handler owns its own scope, so the
+  guard would leave it dead in production and live only under a fixture that dispatches handlers directly.
+  The convergence sits where the transaction actually begins instead.
+- **Reordering the conflict interceptor ahead of the domain-event dispatch interceptor** would have kept the
+  exact save-time window, but `AddInterceptors` only appends and a fixture cannot prepend - and
+  `Accept_WhenTwoApplicationsRaceForOneOpportunity` showed the deeper point: with a real window the loser
+  reads the loss on its eligibility gate before it ever writes, so no rowversion conflict arises there at
+  all. That test now asserts the duplicate conflict it actually produces.
+- **Asserting the stuck booking** in `Accept_WhenPaymentVerificationWinsTheRace_StillConfirmsTheBooking`
+  rather than fixing TR2. The test named the right outcome; the product was wrong.
+
+### Open, carried forward
+
+- [ ] **TR7 - MEDIUM - security review** - `Security-reviewed up to commit` is stale at `3f6d85aaa` and this
+  range touches `Concertable.Payment` consumers and controllers, so the merge gate needs a security pass
+  before `gh pr merge`.
+- [ ] **TR8 - LOW - coverage** - the contract snapshots now assert that acceptance closes the deal to
+  edits. The stronger statement - cancel the booking, which reopens the opportunity, then edit the deal and
+  find the contract unchanged - exercises immutability through a path the product still allows, and is not
+  covered.
