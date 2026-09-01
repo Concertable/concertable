@@ -5,13 +5,13 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `5555ac82b314384685a7a003fa5bc82e18fa8298`
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`
 - Dependency/package gates: package access and Actions artifact retention are green; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-01** from exact remote/PR head equality and successful failed-job rerun attempt 3 of CI run `33448642947`
+- Last reconciled: **2026-09-01** from exact local/remote/PR head equality and successful CI run `33556564632`
 
 ## Current state
 
-State: **repository preparation active; retained artifact-integrity gate green**. GitHub repository `Concertable/customer-next`
+State: **repository preparation active; inert promotion preflight green**. GitHub repository `Concertable/customer-next`
 was renamed in place to canonical `Concertable/customer`; repository ID `1351337130`, PR #1, branches, and
 history were preserved. The inactive local checkout moved from `customer-next` to `customer`, and its origin
 now uses `https://github.com/Concertable/customer.git`.
@@ -29,13 +29,20 @@ migration, simulator-smoke, Linux artifact-integrity, and retention step. Artifa
 Its downloaded contents contain exactly the required 14 evidence files. No package or image was published or
 pushed.
 
+At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer now owns a machine-readable
+promotion manifest for exactly four NuGet and three OCI candidates. CI validates actual NuGet metadata and
+each Docker archive's embedded repository, selected SHA tag, and config-digest shape. Manual dispatch remains
+read-only and requires an existing annotated v-prefixed tag that resolves to the exact selected commit; its
+NuGet versions and OCI tags must match that release tag. The workflow contains no package/image publish or
+push operation and has only `contents: read` and `packages: read` permissions.
+
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
 ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Implement the smallest independent Customer-owned promotion-preparation slice: add repository-local package and OCI publication workflow/configuration with explicit manual/release gating and validation that proves the exact four NuGet and three OCI candidates would be selected. The preparation must remain inert in this checkpoint: do not publish or push any package or image, change visibility, attest a remote artifact, or touch Customer TestKit, foreign service inputs, or standalone AppHost composition. Re-run local workflow/configuration checks, independently review the frozen diff, push one stable head to draft PR #1, and require exact-head CI green before the next ledger checkpoint.
+Implement the next independent Customer-owned repository-policy slice: add bootstrap `CODEOWNERS` assigning the whole Customer repository and `.github/**` to `@TommySeery`, pin every action used by Customer CI to an immutable commit SHA, validate the workflow, and only then enable Customer's repository-level `sha_pinning_required` setting. Keep the workflow's default token read-only and do not add publish permissions, create a release tag, publish or push candidates, change repository visibility, or touch TestKit/foreign AppHost inputs. Record GitHub's current private-plan `403` for rulesets and branch protection as a delivery-time capability dependency; do not attempt to bypass it.
 
 ## Completed work
 
@@ -61,6 +68,9 @@ Implement the smallest independent Customer-owned promotion-preparation slice: a
   idempotency, clean-consumer, and real OCI load/run gates without publishing artifacts.
 - `5555ac8` adds deterministic integrity evidence for the exact four NuGet and three OCI candidates: one
   `SHA256SUMS`, seven CycloneDX SBOMs, and pinned vulnerability and secret scans, without publication.
+- `4d1a1ef` adds the exact promotion manifest, repository metadata validator, and manual annotated-tag gate;
+  `c83169d` binds every built OCI archive to its configured repository and selected SHA/release tag. The
+  promotion path remains a read-only preflight with no publication command or permission.
 
 ## Verification
 
@@ -77,6 +87,14 @@ Implement the smallest independent Customer-owned promotion-preparation slice: a
   reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
 - Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
   web 1/1 and production build; mobile typecheck and Android export — all green.
+- Exact-head CI run `33556564632`: Frontend job `100018718799` passed in 2m12s; Backend job `100018719160`
+  passed in 7m43s, including every prior build/test/package/image/migration/simulator/integrity/retention gate
+  plus `Validate promotion candidate selection`. Retained artifact `9819824696` is nonexpired through
+  2026-10-01 with digest `sha256:117f49aaf830a499bb8e776a74ca7d1d199c91f2f1b08579ea7cfaa45b781382`.
+- Local promotion validation passed against the existing four NuGet and three OCI outputs. A temporary local
+  annotated `v0.1.0-alpha.0.329` tag then built all three OCI candidates and proved exact tag-to-commit,
+  NuGet-version, embedded repository/tag, and config-digest validation; the tag and dedicated outputs were
+  removed afterward.
 
 ## Reviews
 
@@ -125,6 +143,11 @@ Implement the smallest independent Customer-owned promotion-preparation slice: a
   update was authorized or performed.
 - The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
   attempt 3 created the required retained artifact, so the quota blocker is closed.
+- Customer currently has no `CODEOWNERS` and no environments; Actions allow all actions, do not require SHA
+  pinning, use default read-only workflow permissions, and cannot approve pull requests. GitHub returns the
+  private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and
+  `main` branch protection. Repository-local ownership/action pinning can proceed independently; merge-queue
+  enforcement waits for the already planned visibility/capability gate.
 - The extracted `Concertable.Customer.AppHost` remains excluded from `CarveCustomer.slnx` and has ten foreign
   monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
   `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
