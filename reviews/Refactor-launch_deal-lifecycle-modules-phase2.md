@@ -6,7 +6,7 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `83ebbc394`  _(2026-09-01)_
-**Security-reviewed up to commit:** `3f6d85aaa53914a9de56ecb05245ccb1e1f1507e`  _(2026-08-27)_
+**Security-reviewed up to commit:** `3c474d8be`  _(2026-09-01)_
 **Judgment:** `approved-with-remediation`
 
 ## Legacy review history
@@ -671,10 +671,50 @@ Every suite the range touches is green: `Concertable.DataAccess.UnitTests` 31/31
 
 ### Open, carried forward
 
-- [ ] **TR7 - MEDIUM - security review** - `Security-reviewed up to commit` is stale at `3f6d85aaa` and this
-  range touches `Concertable.Payment` consumers and controllers, so the merge gate needs a security pass
-  before `gh pr merge`.
-- [ ] **TR8 - LOW - coverage** - the contract snapshots now assert that acceptance closes the deal to
+- [x] **TR7 - MEDIUM - security review** - done, see the security pass below.
+- [x] **TR8 - LOW - coverage** - the contract snapshots now assert that acceptance closes the deal to
   edits. The stronger statement - cancel the booking, which reopens the opportunity, then edit the deal and
   find the contract unchanged - exercises immutability through a path the product still allows, and is not
-  covered.
+  covered. Recorded in the Booking module's tech debt rather than rushed: the reopen arrives through several
+  asynchronous hops and would be the suite's most timing-sensitive assertion.
+
+## Security pass - 2026-09-01
+
+**Span:** `3f6d85aaa..3c474d8be` - 916 files, +26221/-8329 under `api/`
+**Judgment:** `no vulnerabilities found`
+
+The span is effectively the whole module carve, so the pass was scoped to the surfaces a carve can actually
+break: who may call an endpoint, whose rows a query returns, what crosses a trust boundary, and what reaches
+a log or a config file.
+
+### Checked
+
+- **Authorization coverage on every controller the span touched.** Zero unguarded mutating endpoints. The
+  guard vocabulary is `HasPermissionAttribute`, `RequiredTenantTypeAttribute`, `AdminAttribute`,
+  `CustomerAttribute` and the framework's `Authorize`/`AllowAnonymous`; the tenant-verification
+  approve/reject pair is `[Admin]`, and the concert contract and invoice PDF downloads are
+  `[RequiredTenantType(TenantType.Venue)]` on top of the tenant query filter. Six unguarded reads remain and
+  are deliberate public marketplace surface: a venue's public profile (explicitly
+  `[EnableRateLimiting(RateLimitPolicies.PublicRead)]`), its `ownership` flag (which answers only about the
+  caller), and the artist and venue public review list and summary. None of the six was modified in the span.
+- **Tenant scoping.** No `IgnoreQueryFilters` introduced anywhere in the span. Filter registration is now
+  guarded by a test rather than by review: `TenantWriteGuardTests` source-scans every module whose DbContext
+  calls `ApplyVenueArtist<>` and asserts its composition root registers `VenueArtistTenantInterceptor`, with
+  a second test guarding the guard against the module list going stale.
+- **Trust boundary on the payment webhook.** `VerifyPaymentFailedProcessor` sends the restored notification
+  to the user id in `PaymentMetadataKeys.VenueManagerId`. That value is stamped server-side by
+  `ApplicationCheckoutService` from `venue.UserId` when the payment intent is created, never supplied by a
+  client, and it returns through a signature-verified provider webhook, so the recipient cannot be steered
+  by a caller. Same trust chain the pre-carve Concert-side processor used.
+- **Raw SQL.** Every `ExecuteSqlRaw`/`FromSqlRaw`/`SqlQueryRaw` occurrence added in the span is in a test
+  fixture or seeder; production code adds none. The one this range authored, the booking update-failing CHECK
+  constraint, is a fixed literal.
+- **Secrets and sensitive logging.** No credential, key or connection string added outside `*.example`
+  files, and nothing added that logs a password, token, key or signature.
+
+### Defence in depth, not a finding
+
+- The verify-payment-failed notification derives its recipient from echoed payment metadata rather than from
+  the application row. The trust chain above makes that safe today, but resolving the venue manager from the
+  application would remove the dependency on metadata round-tripping through the provider entirely. Recorded
+  because the pre-carve code had the same shape and it is worth closing deliberately rather than inheriting.
