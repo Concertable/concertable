@@ -2,10 +2,10 @@
 
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Plan-RepoSplit-Stage4-Fleet-E2E`
-- Branch: `Plan/RepoSplit-Stage4-Fleet-E2E`
-- PR: [#896](https://github.com/Concertable/concertable/pull/896) — draft
-- Last reconciled: **2026-09-01** from branch head `78088a999` plus the reviewed Payment/image and E2E-runner corrections recorded below, current dependency inventory, and exact-candidate local validation
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Plan-RepoSplit-Stage4-System-E2E`
+- Branch: `Plan/RepoSplit-Stage4-System-E2E`
+- PR: [#912](https://github.com/Concertable/concertable/pull/912) — draft
+- Last reconciled: **2026-09-01** from branch head `3a104fbbf`, current dependency inventory, and exact-candidate local validation
 
 ## Current state
 
@@ -21,7 +21,7 @@ retain canonical `Concertable.System.*` assembly names while their C# namespaces
 
 The source-composition seam is named for what it does: `ISystemAppHostFactory`,
 `SystemAppHostFactories`, and `SourceSystemAppHostFactory`. There are no remaining provider-prefixed,
-Fleet-prefixed, `Concertable.AppHost`, or `ConcertableAppHost` identifiers in the active Stage 4 corpus.
+obsolete umbrella-name-prefixed, `Concertable.AppHost`, or `ConcertableAppHost` identifiers in the active Stage 4 corpus.
 
 The regenerated inventory contains 51 cross-target edges. Eight are temporary source-mode System E2E edges,
 all owned by the non-packable, carve-excluded source factory: two each for B2B, Customer, Payment, and Search.
@@ -37,7 +37,7 @@ E2E hosts. This preserves Payment's E2E admin reset and Stripe behavior without 
 
 ## Next Steps
 
-Push the reviewed exact-head candidate to draft PR #896 and await CI/reviewer feedback; do not mark it ready,
+Push the reviewed exact-head candidate to draft PR #912 and await CI/reviewer feedback; do not mark it ready,
 enqueue it, or merge it while the full UI E2E gate is red. The boundary regression that blocked RT3 is fixed:
 focused image-resource tests cover Search pinning and the Payment E2E-host substitution, isolated B2B and
 Customer OIDC probes pass with image-backed foreign resources, and the full API E2E suite passes 11/11.
@@ -56,7 +56,7 @@ temporary source-mode edges to six without moving service behavior or duplicatin
 - Created the owning isolated worktree and kept all Stage 4 progress updates in this ledger.
 - Moved Search Web and Workers project metadata behind `ISystemAppHostFactory`; the carve-retained Search helper no longer knows repository-relative service project paths.
 - Renamed Search extension containers for their `IDistributedApplicationBuilder` receiver and recorded the broader existing naming inconsistency as tech debt.
-- Renamed the full-system repository, Aspire project, namespace, composition type, architecture tests, E2E projects, profiles, surfaces, runs, and documentation from Fleet/legacy AppHost terminology to System/AppHost terminology.
+- Renamed the full-system repository, Aspire project, namespace, composition type, architecture tests, E2E projects, profiles, surfaces, runs, and documentation to canonical System/AppHost terminology.
 - Renamed the source-composition provider abstraction and collaborators to factory terminology.
 - Made Auth and Search pinning resource-neutral and made image-backed Payment compositions substitute the Payment-owned E2E hosts while retaining the imported production-image resources as explicit-start graph members.
 - Added focused Search container-pinning and Payment E2E-host substitution coverage, including copied environment and retargeted-wait assertions.
@@ -80,7 +80,7 @@ temporary source-mode edges to six without moving service behavior or duplicatin
 
 ## Reviews
 
-The canonical branch-local review record is `reviews/Plan-RepoSplit-Stage4-Fleet-E2E.md`. Refresh its exact-head review
+The canonical branch-local review record is `reviews/Plan-RepoSplit-Stage4-System-E2E.md`. Refresh its exact-head review
 after staging the final ledger and runner changes, then push only if no unresolved Stage 4 finding remains.
 
 ## Decisions, discoveries, blockers, and deviations
