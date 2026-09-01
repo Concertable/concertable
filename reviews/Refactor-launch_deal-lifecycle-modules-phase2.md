@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `3f6d85aaa53914a9de56ecb05245ccb1e1f1507e`  _(2026-08-27)_
+**Reviewed up to commit:** `14abccc691ac3c9f3d46f2536ea65ace5229ae55`  _(2026-09-01)_
 **Security-reviewed up to commit:** `3f6d85aaa53914a9de56ecb05245ccb1e1f1507e`  _(2026-08-27)_
-**Judgment:** `approved`
+**Judgment:** `approved-with-remediation`
 
 ## Legacy review history
 ## Coverage
@@ -516,16 +516,85 @@ questions, both needing a product decision rather than a code fix.
 ## Review pass — 2026-09-01 — remediation incremental
 
 **Candidate base:** `e396b21645b92afb2ec050144f49f0004dd4d592`
-**Candidate head:** `726a270023a5f167bd70a585152aa3dba2bd1761`
+**Candidate head:** `14abccc691ac3c9f3d46f2536ea65ace5229ae55`
 **Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
 **Candidate scope:** `all` — 52 paths, 13 non-merge commits
 **Candidate path-set digest:** `sha256:b87be622a0be43a9…`
 **Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
 **Work-order mode:** `append`
-**Pass judgment:** `in-progress`
+**Pass judgment:** `approved-with-remediation`
 
 Covers the remediation for the two prior passes: the `TryExecuteAsync` transaction boundary on both the
 unit-of-work behaviour and the boundary, the mapper disambiguation, the E2E seed-contract carve, the
 duplicate context-base deletion, and the Concert integration assertion corrections. The prior pass reviewed
 `3f6d85aaa..e396b2164`; this pass closes the gap from that head, so completing it advances the single
 top-level watermark to this head.
+
+### Findings
+
+- [x] **RP1 — HIGH — correctness** — `.../Application.Infrastructure/Extensions/DbUpdateExceptionExtensions.cs`
+  The predicates were scoped to the entity TYPE, not the row, and acceptance saves more than one row of that
+  type: after the target application commits, `AcceptCoreAsync` calls `RejectAllExceptAsync`, which loads the
+  opportunity's other `Applied` applications and issues its own `SaveChangesAsync`
+  (`ApplicationRepository.cs:121`). `State` is a concurrency token, so a competing withdraw or reject of a
+  SIBLING application raised a `DbUpdateConcurrencyException` whose `Entries` held that sibling — which the
+  type-scoped predicate accepted. The healthy accept, plus the Booking, Contract and staged escrow command
+  its pre-commit handler had written, were rolled back and the caller was told `Superseded`: a false
+  "someone else won", with no retry. Every predicate now takes the id it guards.
+- [x] **RP2 — HIGH — correctness** — `.../ConcertPayoutComplianceGateApiTests.cs:60`
+  Self-inflicted earlier in this same range. `726a27002` changed the read to `ConcertAsync(concert.Id)` on the
+  claim that an application id was being used as a concert id — but that file's `ConcertAsync(int
+  applicationId)` filters on `ApplicationId`, while the identically named helper in
+  `TenantVerificationGateApiTests` filters on `Id`. The original was correct. Reverted.
+- [x] **RP3 — MEDIUM — correctness** — `SettlementService.ClassifyReservationConflictAsync`
+  The retry ran through the unclassified `ExecuteAsync`, so a second concurrency loss escaped as the same raw
+  `DbUpdateConcurrencyException` the classification was added to remove. Now bounded.
+- [x] **RP4 — LOW — consistency** — `ConcertCancelApiTests.Cancel_WhenSettlementReservationWinsTheRace`
+  The last assertion still expecting `AwaitingSettlement` on the eager-completion path this range codified.
+- [x] **RP5 — HIGH — test coverage** — `TryExecuteAsync` had no test on either interface despite being the
+  load-bearing mechanism for six call sites. `UnitOfWorkBehaviorTests` pins the ordering by asserting a null
+  `Transaction.Current` inside the classification callback; `FactoryUnitOfWorkTests` pins the boundary
+  variant against the real SQLite harness — the context is disposed when classification runs, and an
+  expected failure leaves none of the operation's writes behind. 31 passing, up from 22.
+- [x] **RP6 — MEDIUM — test validity** — `MockPaymentTransport.SingleCommand` reads synchronously, but a
+  command arrives by outbox dispatch after the staging request returns. Three reads in
+  `BookingCancellationApiTests` raced the dispatcher; `SingleCommandAsync` is the waiting counterpart.
+
+### Considered and rejected
+
+- A lens reported the settlement retry hands the race loser the winner's live reservation, risking duplicate
+  money movement. The native layer read both complete strategies and found they key on
+  `settlement.OperationId`, so a resumed reservation is idempotent at the provider — and the test exercising
+  the path, `Finish_WhenAnotherFinishWinsTheRace_ReleasesEscrowAndIssuesInvoiceOnce`, passes. Kept the
+  resume and recorded the disagreement rather than acting on the weaker side.
+- Two findings attributed to this range touch no line it changed (`git diff` checked):
+  `ConcertDoorSplitApiTests.Finish_ShouldIgnoreDuplicateSettlementWebhookEvent` asserts a state that already
+  holds before its Act, and `ConcertDoorRevenueApiTests.Declare_ShouldReturn409_AfterConcertHasSettled` never
+  checks the door revenue stayed put. Both are earlier weak assertions, carried below.
+- **Adding a tracker reset to `IUnitOfWork` was attempted and abandoned.** It exposes EF tracking mechanics
+  on an application contract, and `TrySaveChangesAsync` already owns that clear. Reworking the Booking
+  convergence to compose `TrySaveChangesAsync` instead then broke a passing test
+  (`Cancel_ShouldRecordCancellationFailure_WhenRefundIsRejected`) and was reverted: that clear discards the
+  WHOLE tracker, so used as a mid-flow save inside a broader unit of work it throws away the outbox rows the
+  pre-commit handlers staged in the same context. Any future fix here must not reset shared tracking.
+
+### Open, carried forward
+
+- [ ] **RP7 — HIGH — Booking cancellation convergence** — 9 of 21 failing in
+  `Concertable.B2B.Booking.IntegrationTests`, in tests this branch authored (the project does not exist on
+  main). Two hypotheses were tested and disproved: cross-class pollution (class-alone still fails 9 of 16)
+  and missing concurrency classification on `RecordSucceededAsync`/`RecordFailedAsync` (the attempt broke a
+  green test, see above). These are individual defects, not one shared cause. Two of the nine
+  (`Cancel_WhenAnotherCancellationWinsTheRace`, 30s) are lock timeouts rather than assertion failures.
+- [ ] **RP8 — MEDIUM — remaining Concert and Application failures** — 2 and 2, also in tests this branch
+  authored. `Cancel_WhenAnotherCancellationWinsTheRace` (no refund command reaches the transport),
+  `Cancel_WhenSettlementReservationWinsTheRace` (its armed callback's own `Assert.True` fails),
+  `Accept_WhenTwoApplicationsRaceForOneOpportunity` (30s lock timeout),
+  `Accept_WhenPaymentVerificationWinsTheRace` (404).
+- [ ] **RP9 — MEDIUM — test coverage** — the module predicates are unproven for the positive case, because a
+  `DbUpdateException` with populated `Entries` needs a live provider, and
+  `IsApplicationAcceptanceConflict`'s duplicate-key arm needs real SQL Server (`SqlException` is sealed).
+  `application.accept.duplicate` is asserted nowhere. `ConcertWorkflowTests`'s
+  `ClassifiesSaveFailureAsConflict` flag short-circuits the real predicate with `||`.
+- [ ] **RP10 — LOW — weak assertions** — the two earlier weaknesses named above want a witness that actually
+  moves (a payment/invoice count, and the persisted door revenue).
