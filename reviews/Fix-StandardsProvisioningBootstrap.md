@@ -1,7 +1,7 @@
 # Code review — Fix/StandardsProvisioningBootstrap
 
-**Review status:** complete
-**Judgment:** approve
+**Review status:** `complete`
+**Judgment:** `approved`
 
 **Reviewed up to commit:** `b5217a1672ce51631afe7ae369b179e0585c6568`  _(2026-09-01)_
 **Security-reviewed up to commit:** `b5217a1672ce51631afe7ae369b179e0585c6568`  _(2026-09-01)_
