@@ -9,7 +9,7 @@
 - Dependency/package gates: the generated platform sync bumps `ConcertablePlatformVersion` after this
   merges; the B2B proving ground consumes the terminal source from
   [PR #633](https://github.com/Concertable/concertable/pull/633)
-- Last reconciled: 2026-08-31 against the branch head and a full local-platform build
+- Last reconciled: 2026-09-02 against the branch head and a full local-platform build
 
 ## Current state
 
@@ -29,6 +29,13 @@ once [PR #633](https://github.com/Concertable/concertable/pull/633) is terminal.
   `IIncludableSpecification` + `ThenInclude` continuation (reference and collection overloads),
   `SpecificationOrder`, the `Specification` bases, the predicate family with `And`/`Or`/`Not`/`Via`/
   `IsSatisfiedBy`, and the internal `And`/`Or`/`Not`/`Navigation`/`Expression` nodes.
+- DataAccess read surface: ordering is detected at runtime through one
+  `ApplyOrders(ISpecification<T>)` evaluator overload, so the ordered/unordered `GetAllAsync` twins
+  are gone and a specification held at its shape interface can no longer lose its order silently.
+  That halved the surface, so `GetPageAsync` lands as two methods rather than four over the existing
+  `IPagination` carrier, and `ApplyPagedOrders` rejects paging an unordered specification. `GetAllAsync`
+  returns `IReadOnlyList` rather than `IEnumerable`, and `ToPaginationAsync` takes a `CancellationToken`.
+  All three `IReadRepository` implementations carry it.
 - DataAccess: `QueryableExtensions.Apply` (includes, deduplicated) and `ApplyOrders`, the `IQuery`
   contracts, the shared `GetByIdAsync`/`GetAllAsync` Specification overloads on both repository bases and on
   Customer's `QueryableReadRepository`, and `UpcomingSpecification`/`DateRangeSpecification` migrated off the
