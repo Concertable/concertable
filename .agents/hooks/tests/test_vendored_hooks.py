@@ -12,7 +12,16 @@ class PluginOwnedHooksTests(unittest.TestCase):
         self.assertNotIn("hooks", manifest)
         self.assertFalse((REPO / ".codex" / "hooks.json").exists())
         settings = json.loads((REPO / ".claude" / "settings.json").read_text(encoding="utf-8"))
-        self.assertNotIn("hooks", settings)
+        registered = [
+            hook.get("command", "")
+            for event in settings.get("hooks", {}).values()
+            for entry in event
+            for hook in entry.get("hooks", [])
+        ]
+        # The provisioning bootstrap is the one hook the plugin cannot own: it is what proves the
+        # plugin resolved at all. Everything else must still arrive from the plugin.
+        for command in registered:
+            self.assertIn("standards_provisioning.py", command)
 
     def test_vendored_utilities_remain_provenanced(self):
         manifest = json.loads((REPO / ".agents" / "hooks" / "vendored.json").read_text(encoding="utf-8"))
