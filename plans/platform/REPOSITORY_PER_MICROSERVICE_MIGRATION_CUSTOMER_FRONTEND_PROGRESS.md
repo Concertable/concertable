@@ -1,64 +1,159 @@
-# Repository-per-microservice migration — Customer frontend fold progress
+# Repository-per-microservice migration — Customer progress
 
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\customer-next`
-- Branch: `main` at `e21ae9079ca2fdd3a0063a252f05499159d608ff`
-- PR: none; the private extraction proof is pushed directly to `main`
-- Dependency/package gates: none; this extraction proof is independent of the monorepo Stage 3 and Stage 4 deliveries
-- Last reconciled: **2026-08-31** from fetched `origin/main`, exact `ls-remote` equality, local validation, and completed review
+- Worktree: `C:\Users\tommy\source\repos\customer`
+- Branch: `Chore/customer-promotion-preparation`
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`
+- Dependency/package gates: package access and Actions artifact retention are green; final publication and delivery remain unauthorized
+- Last reconciled: **2026-09-01** from exact local/remote/PR head equality and successful CI run `33556564632`
 
 ## Current state
 
-This stream is terminal. The private `Concertable/customer-next` proof now contains the Customer backend,
-web, mobile, and customer-only shared package plus the standalone workspace, lockfile, package-feed,
-environment, ignore, tooling, and mobile-asset support closure. `origin/main` exactly equals the reviewed
-head `e21ae9079ca2fdd3a0063a252f05499159d608ff`.
+State: **repository preparation active; inert promotion preflight green**. GitHub repository `Concertable/customer-next`
+was renamed in place to canonical `Concertable/customer`; repository ID `1351337130`, PR #1, branches, and
+history were preserved. The inactive local checkout moved from `customer-next` to `customer`, and its origin
+now uses `https://github.com/Concertable/customer.git`.
 
-No agent following this ledger may monitor or edit rt3, Stage 4 fleet E2E, Auth-next, or any monorepo
-migration ledger other than this file. The private proof is not authorization to rename repositories,
-change production, or make customer-next canonical.
+The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the Customer backend,
+web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 validates the owned
+build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
+candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
+Exact-head CI run [`33448642947`](https://github.com/Concertable/customer/actions/runs/33448642947) ran at
+`5555ac82b314384685a7a003fa5bc82e18fa8298`. Failed-job rerun attempt 3 restarted Backend job
+`100007086492`; Frontend job `100007089026` remained green. Backend passed every build, test, package, image,
+migration, simulator-smoke, Linux artifact-integrity, and retention step. Artifact `9818452253`, named
+`customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca`, is retained through
+2026-10-01 with digest `sha256:edb44e3c5334c2b2a2e4ab1ad775270bf84198d3be834c4b5c842deadcf2989b`.
+Its downloaded contents contain exactly the required 14 evidence files. No package or image was published or
+pushed.
+
+At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer now owns a machine-readable
+promotion manifest for exactly four NuGet and three OCI candidates. CI validates actual NuGet metadata and
+each Docker archive's embedded repository, selected SHA tag, and config-digest shape. Manual dispatch remains
+read-only and requires an existing annotated v-prefixed tag that resolves to the exact selected commit; its
+NuGet versions and OCI tags must match that release tag. The workflow contains no package/image publish or
+push operation and has only `contents: read` and `packages: read` permissions.
+
+No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
+stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
+ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-No Customer frontend-fold work remains. This terminal ledger is the evidence record for private
-`customer-next` head `e21ae9079ca2fdd3a0063a252f05499159d608ff`; reopen it only if that head or a recorded
-gate objectively drifts. Canonical rename, deployment, and production cutover begin only under their own
-explicitly authorized checkpoint.
+Implement the next independent Customer-owned repository-policy slice: add bootstrap `CODEOWNERS` assigning the whole Customer repository and `.github/**` to `@TommySeery`, pin every action used by Customer CI to an immutable commit SHA, validate the workflow, and only then enable Customer's repository-level `sha_pinning_required` setting. Keep the workflow's default token read-only and do not add publish permissions, create a release tag, publish or push candidates, change repository visibility, or touch TestKit/foreign AppHost inputs. Record GitHub's current private-plan `403` for rulesets and branch protection as a delivery-time capability dependency; do not attempt to bypass it.
 
 ## Completed work
 
-- The Customer backend, web, mobile, and `@concertable/customer` histories were folded into private
-  `Concertable/customer-next`; local Customer workspaces use `file:` linkage and external
+- Customer backend, web, mobile, and `@concertable/customer` histories were folded into the private
+  repository; local Customer workspaces use `file:` linkage and external
   `@concertable/{shared,web,mobile}` dependencies use the published `alpha` channel.
 - `b63a311` made the extracted workspace standalone with its root manifest, lockfile, package feed, ignore
   state, production environment seam, Vite helper, route tree, and canonical `CarveCustomer.slnx`.
-- `b484496` restored the complete production URL closure and all four Expo assets; `e21ae90` retired the
-  obsolete force-push handoff so this ledger remains the exclusive durable stream record.
+- `b484496` restored the production URL closure and Expo assets; `e21ae90` retired the obsolete force-push
+  handoff; `39ca980` configured repository-scoped package authentication in CI.
+- The repository and local checkout now use the canonical `customer` name.
+- The package administrator granted `Concertable/customer` Actions read access to all 39 recorded NuGet
+  packages, including `Concertable.AppHost.Shared`, and `@concertable/{mobile,shared,web}`.
+- `9e23956` prevents Vitest's `serve`/`test` configuration load from invoking the trusted development-certificate
+  requirement while preserving HTTPS for the real Vite development server.
+- `2ecc33c` adds serialized backend tests, validates the current three-package candidate set from an isolated
+  consumer, and builds a Customer Web OCI archive candidate without publishing packages or images.
+- `97aec2b` adds the dedicated `customer-migrations` job/image candidate, isolates migration-only service
+  registration from runtime startup, and keeps the runtime fallback until AppHost orchestration invokes the
+  migration resource.
+- `1b6e49f` adds the downward-only `Concertable.Customer.Seed.Contracts` package and deterministic Customer
+  seed simulator, drives Customer seed state and the simulator from one review spec, and adds parity,
+  idempotency, clean-consumer, and real OCI load/run gates without publishing artifacts.
+- `5555ac8` adds deterministic integrity evidence for the exact four NuGet and three OCI candidates: one
+  `SHA256SUMS`, seven CycloneDX SBOMs, and pinned vulnerability and secret scans, without publication.
+- `4d1a1ef` adds the exact promotion manifest, repository metadata validator, and manual annotated-tag gate;
+  `c83169d` binds every built OCI archive to its configured repository and selected SHA/release tag. The
+  promotion path remains a read-only preflight with no publication command or permission.
 
 ## Verification
 
-- `npm ci`: 1,237 packages restored from the committed lockfile.
-- `npm run build:shared`: 3/3 Vitest tests passed and the customer-only package built.
-- `npm -w @concertable/web-customer test`: 1/1 Vitest test passed.
-- `npm run build:web`: shared package, `tsc -b`, and Vite production build passed; the emitted artifact was
-  checked for both `https://auth.concertable.co.uk` and `https://business.concertable.co.uk`.
-- `npm run build:mobile`: shared build/tests, Customer mobile `tsc --noEmit`, and Android Expo export passed.
-- `dotnet build CarveCustomer.slnx --configuration Release`: 51 projects restored and built with 0 errors
-  (existing analyzer warnings remain). The earlier `--no-restore` probe was invalid because test-project
-  assets were absent; the canonical standalone gate includes restore.
+- Exact-head remote CI run `33448642947`, attempt 3: Frontend job `100007089026` passed in 2m18s. Backend job
+  `100007086492` ran 6m55s and passed restore, build, tests, migration snapshots, four-package clean consumer,
+  three OCI builds, real simulator smoke, empty-database migration, Linux integrity inventory, and evidence
+  retention.
+- The retained 30-day artifact has exactly `SHA256SUMS`, seven CycloneDX 1.7 SBOMs, three High/Critical
+  vulnerability reports, and three all-severity secret reports. All JSON parsed; the vulnerability and secret
+  reports contain zero findings; `SHA256SUMS` contains seven unique, valid SHA-256 entries covering the four
+  NuGet and three OCI candidates.
+- Local full gate at `5555ac82b314384685a7a003fa5bc82e18fa8298` passed for exactly four NuGet and
+  three OCI candidates, deterministic `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability
+  reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
+- Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
+  web 1/1 and production build; mobile typecheck and Android export — all green.
+- Exact-head CI run `33556564632`: Frontend job `100018718799` passed in 2m12s; Backend job `100018719160`
+  passed in 7m43s, including every prior build/test/package/image/migration/simulator/integrity/retention gate
+  plus `Validate promotion candidate selection`. Retained artifact `9819824696` is nonexpired through
+  2026-10-01 with digest `sha256:117f49aaf830a499bb8e776a74ca7d1d199c91f2f1b08579ea7cfaa45b781382`.
+- Local promotion validation passed against the existing four NuGet and three OCI outputs. A temporary local
+  annotated `v0.1.0-alpha.0.329` tag then built all three OCI candidates and proved exact tag-to-commit,
+  NuGet-version, embedded repository/tag, and config-digest validation; the tag and dedicated outputs were
+  removed afterward.
 
 ## Reviews
 
-Full and incremental review completed at `e21ae9079ca2fdd3a0063a252f05499159d608ff`; all findings were
-resolved and the pushed head was approved with no open findings.
+- Full and incremental extraction review completed through `e21ae9079ca2fdd3a0063a252f05499159d608ff`
+  with all findings resolved.
+- Repository-preparation review completed through `39ca980f375b5661ed7da114297f45b909915851` with no open findings.
+- Independent artifact-gate review through `2ecc33cb533a95b3baa209dcdc259c6e27e81105` has no open findings
+  after reconciling the current and final Customer package rosters.
+- Independent artifact-integrity review through `5555ac82b314384685a7a003fa5bc82e18fa8298` fixed
+  OS-aware path containment and exact artifact-name casing, then found no remaining issues. Draft PR #1 still
+  owns the cumulative delivery gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- A multi-path fold must include support files outside the selected app subtrees. Customer's relocated Vite
-  app uses `app/.env.production`, and Expo's unchanged `../assets/*` references require `app/assets/`.
-- B2B established the support-file categories but its local proof did not contain the shared mobile assets;
-  compare referenced paths against the extracted tree rather than copying its inventory blindly.
-- This is an extraction proof only. Canonical rename, deployment, and production cutover remain separately authorized work.
-- This ledger has no write ownership over the Concertable monorepo's rt3 or fleet branches.
+- Repository ID `1351337130` survived the canonical rename. Reuse
+  `C:\Users\tommy\source\repos\customer`; do not create another clone or rewrite private `main`.
+- Exact NuGet package ACL closure:
+  - `Concertable.AppHost.Shared`
+  - `Concertable.Auth.Contracts`
+  - `Concertable.B2B.Artist.Contracts`, `Concertable.B2B.Concert.Contracts`, `Concertable.B2B.Seed.Contracts`, `Concertable.B2B.Tenant.Contracts`, `Concertable.B2B.User.Contracts`, `Concertable.B2B.Venue.Contracts`
+  - `Concertable.Contracts`
+  - `Concertable.DataAccess.Application`, `Concertable.DataAccess.Infrastructure`
+  - `Concertable.Grpc`, `Concertable.Kernel`
+  - `Concertable.Messaging.Application`, `Concertable.Messaging.AzureServiceBus`, `Concertable.Messaging.Contracts`, `Concertable.Messaging.Domain`, `Concertable.Messaging.Infrastructure`
+  - `Concertable.Payment.Client`, `Concertable.Payment.Contracts`
+  - `Concertable.Seed.Identity`, `Concertable.Seed.Shared`, `Concertable.ServiceDefaults`
+  - `Concertable.Shared.Api`
+  - `Concertable.Shared.Blob.Application`, `Concertable.Shared.Blob.Infrastructure`
+  - `Concertable.Shared.Email.Application`, `Concertable.Shared.Email.Infrastructure`
+  - `Concertable.Shared.Geocoding.Application`, `Concertable.Shared.Geocoding.Infrastructure`
+  - `Concertable.Shared.Imaging.Application`, `Concertable.Shared.Imaging.Infrastructure`
+  - `Concertable.Shared.Notification.Infrastructure`
+  - `Concertable.Shared.Pdf.Application`, `Concertable.Shared.Pdf.Infrastructure`
+  - `Concertable.Shared.QrCode.Application`, `Concertable.Shared.QrCode.Infrastructure`
+  - `Concertable.Testing`, `Concertable.Testing.Integration`
+- Exact npm package ACL closure: `@concertable/mobile`, `@concertable/shared`, `@concertable/web`.
+- Current package candidate set: `Concertable.Customer.Hosting`, `Concertable.Customer.Review.Contracts`,
+  `Concertable.Customer.Ticket.Contracts`, and `Concertable.Customer.Seed.Contracts`. The final Customer
+  train still requires a black-box Customer TestKit, which remains outstanding. Ticket Contracts are
+  intentional because Hosting directly uses
+  `TicketPurchasedEvent` and `SendTicketEmailCommand`.
+- Exact-head CI now creates local Customer Web, `customer-migrations`, and `customer-seed-simulator` archives.
+  The simulator smoke uses `docker load` and `docker run --rm` against the built archive; it is not a source-only
+  substitute. Runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost invokes the
+  migration resource. No package, image, canonical release, visibility change, deployment, or system-consumer
+  update was authorized or performed.
+- The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
+  attempt 3 created the required retained artifact, so the quota blocker is closed.
+- Customer currently has no `CODEOWNERS` and no environments; Actions allow all actions, do not require SHA
+  pinning, use default read-only workflow permissions, and cannot approve pull requests. GitHub returns the
+  private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and
+  `main` branch protection. Repository-local ownership/action pinning can proceed independently; merge-queue
+  enforcement waits for the already planned visibility/capability gate.
+- The extracted `Concertable.Customer.AppHost` remains excluded from `CarveCustomer.slnx` and has ten foreign
+  monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
+  `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
+  available. Do not fake that gate or widen this stream into RT3, Stage 4, Auth, Payment, Search, or B2B.
+- Vitest invokes Vite with `command = serve` and `mode = test`; development-only configuration must consider
+  both values rather than treating every `serve` configuration load as a live dev server.
+- A multi-path fold must include support files outside selected app subtrees: Customer's relocated Vite app
+  uses `app/.env.production`, and Expo's unchanged `../assets/*` references require `app/assets/`.
+- This ledger has no write ownership over the monorepo RT3 or fleet branches.

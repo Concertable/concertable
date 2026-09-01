@@ -24,7 +24,7 @@ paths, and its suite names.
 - A model-changing phase re-scaffolds via `./initial-migrations.ps1` from `api/` (the `migrations` skill),
   never an additive migration. Inherit the build/integration gate from
   [`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md) — don't restate it.
-- **Merge-queue E2E tier** — the full suites (`Concertable.B2B.E2ETests` + the UI regress) are the merge
+- **Merge-queue E2E tier** — the full suites (`Concertable.B2B.E2ETests` + the UI E2E job) are the merge
   queue's gate, selected by the `merge` skill's Step 4; never run them locally ahead of a merge. A red
   suite routes to the `failing-tests` skill's tier table — the only local E2E.
 - A change to a **published** `Concertable.*` contract is a breaking package change (the `packages` skill)
