@@ -1,11 +1,11 @@
 # Repository-per-microservice migration
 
-**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state, the verified 2026-08-26
-rescope, and next steps live in `REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`; that ledger
-overrides any status or inventory figure in this document.
+**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state and next steps live in the
+exclusive stream ledgers named by the `platform/polyrepo-cut` active-owner table in
+`POLYREPO_ROADMAP.md`; those ledgers override any status or inventory figure in this document.
 
 **This document's inventory is a 2026-08-02 snapshot and has drifted.** Four audits re-verified every
-checkpoint against current `main` on 2026-08-26 — see the ledger's rescope table. Known corrections:
+checkpoint against current `main` on 2026-08-26; Git history retains that rescope evidence. Known corrections:
 checkpoint 5 is ~85% delivered and its "keep b2b/customer local" constraint is superseded; the
 `*.Hosting` projects of checkpoint 2 already exist; the `system` repository is renamed `fleet`.
 
@@ -117,7 +117,8 @@ Current packable ownership is:
 
 - Auth: `Concertable.Auth.Contracts`.
 - B2B: Artist, Concert, Tenant, User, and Venue Contracts plus `Concertable.B2B.Seed.Contracts`.
-- Customer: `Concertable.Customer.Review.Contracts`.
+- Customer: `Concertable.Customer.Review.Contracts`, `Concertable.Customer.Ticket.Contracts`, and
+  `Concertable.Customer.Hosting`.
 - Payment: `Concertable.Payment.Contracts` and `Concertable.Payment.Client`.
 - Platform: `Concertable.Contracts`, Kernel, DataAccess Application/Infrastructure, all five Messaging
   layers, ServiceDefaults, shared API/capability Application and Infrastructure packages, seed primitives,
@@ -225,7 +226,7 @@ system repo so desired images, infrastructure, migrations, and E2E promotion sta
 | Repository | Owns | Must not own | Code owner |
 |---|---|---|---|
 | `Concertable/b2b` | B2B backend, modules, migrations, B2B Contracts, B2B seed catalog/simulator, B2B web/mobile surfaces, standalone AppHost | Customer runtime/projections by direct source, shared platform implementations | `@Concertable/b2b-maintainers` |
-| `Concertable/customer` | Customer backend, migrations, Review/Seed Contracts, Customer simulator, customer web/mobile and `@customer/shared`, standalone AppHost | B2B runtime/source | `@Concertable/customer-maintainers` |
+| `Concertable/customer` | Customer backend, migrations, Review/Ticket/Seed Contracts, Customer simulator, customer web/mobile and `@customer/shared`, standalone AppHost | B2B runtime/source | `@Concertable/customer-maintainers` |
 | `Concertable/payment` | Payment Web/Workers, Payment DB migrations, Contracts, Client, Stripe test tooling, standalone AppHost | B2B business logic or database | `@Concertable/payment-maintainers` |
 | `Concertable/search` | Search Web/Workers, projections, Search DB migrations, standalone AppHost | producer write models/databases | `@Concertable/search-maintainers` |
 | `Concertable/auth` | Auth runtime, `Auth.Contracts`, Auth DB and both Auth/Duende migrations, standalone AppHost | B2B DB or tenant/business persistence | `@Concertable/auth-maintainers` |
@@ -284,7 +285,9 @@ scripts/
   E2E, `Concertable.Auth.TestKit`.
 - B2B publishes its existing module Contracts and Seed Contracts, plus `Concertable.B2B.Hosting` and a
   black-box TestKit.
-- Customer publishes Review Contracts, new Customer Seed Contracts, Hosting, and a black-box TestKit.
+- Customer publishes Review Contracts, Ticket Contracts, new Customer Seed Contracts, Hosting, and a
+  black-box TestKit. Ticket Contracts remain in the train because Customer Hosting directly uses
+  `TicketPurchasedEvent` and `SendTicketEmailCommand` in its topology metadata.
 - Payment publishes Contracts, Client, Hosting, and Stripe/E2E TestKit artifacts.
 - Search publishes Hosting and a TestKit. It gets a Search Contracts package only when a real external
   compile-time consumer exists; no empty symmetry package is created.
@@ -376,7 +379,7 @@ Expected foreign image composition after the Auth DB correction:
 |---|---|
 | Auth | none |
 | Payment | Auth, Stripe CLI |
-| Search | Auth, B2B Seed Simulator, Customer Seed Simulator where rating data is required |
+| Search | Auth, B2B Seed Simulator, including B2B-owned rating events |
 | Customer | Auth, Payment Web/Workers, B2B Seed Simulator, Stripe CLI |
 | B2B | Auth, Payment Web/Workers, Customer Seed Simulator where review data is required, Stripe CLI |
 
@@ -565,6 +568,19 @@ Every numbered checkpoint is a separate PR/merge boundary. Complete its verifica
 update the PR, and stop. Cross-repository letters within a checkpoint are also ordered merge boundaries;
 never merge a later letter before the earlier one is green. Tommy must explicitly instruct every merge.
 
+**Checkpoint numbering is final delivery order, not permission to idle.** Preparation for checkpoints
+10–14 runs in parallel whenever the target repository and exact producer artifacts exist. Each `*-next`
+owner may independently land repository-local CI, build/test entry points, package and image publication
+setup, migrations, Hosting/TestKit, seed contracts/simulators, documentation, and repository-settings
+evidence. Record implementation dependencies separately from delivery gates and keep the result
+`implementable, delivery-gated` until its published-baseline revalidation is possible.
+
+The irreversible cutover letters remain ordered: do not freeze or remove monorepo source, rename or change
+repository/package/image visibility, publish a canonical release, change system consumption, migrate live
+data, or deploy production before the preceding checkpoint gates and explicit authorization are satisfied.
+RT3 and Stage 4 are verification/cutover dependencies; they do not block repository-local preparation in a
+private extraction proof.
+
 ### 0. Baseline, permissions, and reproducible inventory (`concertable`)
 
 - Commit a machine-readable project/package/workspace/AppHost/E2E/migration/seed graph and a drift-checking
@@ -714,8 +730,10 @@ images, and AppHost. Update B2B/Customer/system independently through published 
 
 ### 12. Promote Search
 
-Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B/Customer simulator images and published
-Contracts; no producer source or database.
+Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B simulator images and published
+Contracts; no producer source or database. Search's rating inputs are B2B-owned events, so the B2B simulator
+must replay them; do not add a direct Customer simulator dependency unless a separately approved contract
+change makes Customer the producer Search actually consumes.
 
 - Verification: Search build/unit/integration/AppHost/migrations and seed convergence; system search
   projection API/UI flows.
@@ -723,8 +741,13 @@ Contracts; no producer source or database.
 
 ### 13. Promote Customer
 
-Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Seed Contracts,
+Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Ticket/Seed Contracts,
 simulator, and all Customer migrations. B2B remains compatible with the published Customer contract train.
+
+Customer preparation starts from the reviewed private `customer` extraction proof and runs in parallel
+with RT3, Stage 4, and the earlier service promotions. Final 13A–13E delivery remains gated on the canonical
+platform/system baselines and the preceding service cutovers; those gates do not prevent Customer-owned CI,
+publication setup, migration/simulator closure, or standalone verification from being completed beforehand.
 
 - Verification: Customer backend/frontend/mobile build and unit/integration; standalone AppHost; migration
   and simulator tests; system customer purchase/review API/UI/mobile flows.
