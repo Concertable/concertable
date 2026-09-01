@@ -456,3 +456,59 @@ incremental pass.
   members are `VenueTenantId`/`ArtistTenantId`, and the repository and filter built on it name the same
   sides, so a generic type name over domain-specific members is a worse mismatch and still could not move.
   Revisit only when a second service needs two-party rows.
+
+## Review pass — 2026-08-31 — Concert integration triage
+
+**Candidate:** `a2624a19d..434682d51` on `Refactor/launch_deal-lifecycle-modules-phase2`
+**Scope:** the pre-existing `Concertable.B2B.Concert.IntegrationTests` failures, the last red shard on #633
+**Pass judgment:** `changes-requested`
+
+Triage of the 19/69 failures recorded as OPEN3. Fourteen are resolved; five remain and reduce to two
+questions, both needing a product decision rather than a code fix.
+
+### Resolved
+
+- [x] **CI1 — MEDIUM — stale assertion** — ten tests asserted `ConcertState.Draft` for a seeded concert.
+  `ConcertFactory` posts a seeded concert through the real `ConcertEntity.Post` transition whenever its
+  spec carries a `DatePosted`, and 46 of the 47 catalog concerts do — only concert 1 opts out. The seed
+  can no longer produce `Draft`, and every one of these was an unchanged-state assertion spelled as a
+  literal. `ConcertCancelApiTests:235` correctly keeps `Draft`: it creates its concert live.
+- [x] **CI2 — MEDIUM — validation placement** — a negative door revenue is rejected by FluentValidation
+  auto-validation before the action runs, so the operation-owned problem with a stable code that
+  `Declare_ShouldReturnStableProblem_WhenRevenueIsNegative` asserted is an outcome that path cannot
+  produce. The range rule now carries the message the test wanted, and the test asserts the
+  `ValidationProblemDetails` the pipeline returns. `DeclareDoorRevenueError.Negative` stays reachable
+  from the completion runner and the E2E admin surface, neither of which passes through MVC validation.
+- [x] **CI3 — LOW — stale assertion** — door revenue after cancellation returns 409, not 400. NAT16
+  deliberately routes every terminal and cancellation state through the existing `AlreadySettled`
+  failure, which is a `Conflict`.
+- [x] **CI4 — HIGH — correctness / concurrency** — settlement had no save-failure classification at all.
+  It runs through `IUnitOfWorkBoundary`, which never gained the `TryExecuteAsync` the lifecycle
+  operations did, so a concurrency loss on the reservation escaped as a raw
+  `DbUpdateConcurrencyException` and surfaced as a 500. The boundary now carries the same shape,
+  disposing the failed context — rolling its transaction back — before the classification re-runs the
+  reservation against committed truth, so whatever won the race decides the outcome.
+
+### Open
+
+- [ ] **CI5 — HIGH — settlement semantics** — the suites contradict each other on when a revenue-share
+  concert is settled, exactly as OPEN1 does on 400-vs-409. `ConcertVersusApiTests` expects
+  `AwaitingSettlement` after finish and comments that "completion happens on the webhook";
+  `ConcertDoorSplitApiTests` expects `Complete` for the identical operation — same deal family, same
+  `PayoutComplete` strategy — and passes. Production completes eagerly: `PayoutComplete` returns
+  `SettlementConfirmation.ManagerPaid` inline even when the payment requires action, and
+  `SettlementService.CompleteAsync` then runs `CompleteSettlement`, so the concert is marked settled
+  before the payout confirms. Deciding this is a financial question, not a test fix. Four failures hang
+  on it: `ConcertVersusApiTests.Finish_ShouldChargeGuaranteePlusDoorShareOffSession_AfterDoorRevenueDeclared`,
+  `TenantVerificationGateApiTests.Finish_Settles_WhenBothTenantsVerified`,
+  `ConcertPayoutComplianceGateApiTests.Finish_RevenueShare_Settles_WhenPayeeArtistTaxComplianceComplete`
+  and `ConcertCancelApiTests.Cancel_WhenSettlementReservationWinsTheRace_ReturnsConflictAndLeavesSettlementInProgress`,
+  whose armed callback asserts the settlement succeeds and whose tail asserts `AwaitingSettlement`.
+  Note `Finish_RevenueShare_Settles` additionally reads its concert by `PastDoorSplitApp.Id` — an
+  application id used as a concert id — so it asserts against the wrong row regardless.
+- [ ] **CI6 — MEDIUM — test harness** — `Cancel_WhenAnotherCancellationWinsTheRace_SucceedsWithoutASecondRefund`
+  expects exactly one `RefundEscrowCommand`; the transport holds none, only the setup's
+  `CaptureEscrowCommand` and an email, so the winning cancel's refund never reaches it. Same family as
+  OPEN2: the armed-conflict harness runs a full competing HTTP request from inside the first request's
+  save interception. Verified pre-existing — this test was in the original 19 both with and without the
+  `TryExecuteAsync` work.
