@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import actionLinkApi from "./actionLinkApi";
+import { actionLinkApi } from "./actionLinkApi";
 
 const mocks = vi.hoisted(() => ({
   request: vi.fn(),

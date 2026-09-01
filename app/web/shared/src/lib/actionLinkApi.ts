@@ -5,7 +5,7 @@ function apiPath(href: string) {
   return href.replace(/^\/api(?=\/)/i, "");
 }
 
-const actionLinkApi = {
+export const actionLinkApi = {
   execute: async (action: ActionLink): Promise<void> => {
     await apiClient.request({
       url: apiPath(action.href),
@@ -29,5 +29,3 @@ const actionLinkApi = {
     URL.revokeObjectURL(url);
   },
 };
-
-export default actionLinkApi;
