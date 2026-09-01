@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `f0eae9ddd408`  `(2026-08-31)`
+**Reviewed up to commit:** `76d498e5f5c1`  `(2026-09-01)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -68,3 +68,39 @@ runs, and a genuinely independent pass over the specification contract would sti
 - `GetAllAsync<TResult>` over a value projection yields `IEnumerable<TResult?>`. There is no missing-row
   ambiguity for a collection, so the nullability is noise there; nothing projects a value type through a
   collection today.
+
+## Review pass — 2026-09-01 — incremental
+
+**Candidate base:** `f0eae9ddd408c86072d40a171f9c040bc53a7413`
+**Candidate head:** `76d498e5f5c17465d8684eb70caa520053658655`
+**Candidate branch:** `Refactor/data-access-specification-query-boundary`
+**Candidate scope:** `base merge only — no branch-authored change in range`
+**Candidate path-set:** `sha256:ca56178ed1248a37e7b2f36c72ffee1079c0cdbaae0d1bf7a90d8bf6711e528e` `(46 paths)`
+**Work-order path:** `reviews/Refactor-data-access-specification-query-boundary.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The range is one merge of `origin/main` (46 commits) taken to clear a 46-commit base lag and the stale
+`ConcertablePlatformVersion` pin (`0.1.0-alpha.0.1281` -> `0.1.0-alpha.0.1296`, sync #911). The merge was
+textually clean with no conflict resolution, so the range contains no authored content and the branch's
+own diff against base is byte-identical to the previously approved pass.
+
+The interaction risk a base merge carries is semantic, not textual, so the pass checked it directly: the
+46 base-changed paths and the 80 branch-authored paths intersect only at this work-order file. Nothing
+that arrived from base touches the Kernel specification contracts, the DataAccess evaluator, or the
+Search/B2B/Customer consumers this branch rewrites. `b5217a167` was the one base commit naming Search;
+it changes `CommaDelimitedIntArrayModelBinder` and E2E page objects, not the reclassified Search
+specifications.
+
+Verification on the merged head: `local-platform.ps1 prepare` (55 packages) then
+`local-platform.ps1 build api/Concertable.slnx` -> 0 errors, and the full PR matrix at `76d498e5f` is
+72 pass / 5 skipping / 0 fail, including `local-platform-pack`, every carve gate, and the complete
+unit, integration and architecture suites.
+
+**Reviewer independence:** this pass was performed by the session that authored the merge. For a
+base-merge-only range with no authored content and no path overlap it is proportionate, and it does not
+revisit the specification contract itself, whose independence caveat from the 2026-08-31 pass stands.
+
+### Findings
+
+No findings.
