@@ -35,10 +35,7 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Blocked: failed-job rerun attempt 2 of exact-head CI run `33448642947` still cannot retain the completed Customer integrity evidence because the organization Actions artifact storage quota has not recalculated.
-Blocked by: GitHub package/organization administrator; this quota is outside Customer ownership.
-Unblock action: do not rerun while provider quota state is unchanged; wait for GitHub's documented 6–12-hour usage recalculation after the administrator's cleanup or storage increase. Do not delete caches from this stream.
-Resume when: provider quota has recalculated, then rerun only the failed job of exact-head run `33448642947` at `5555ac82b314384685a7a003fa5bc82e18fa8298` and require a nonexpired 30-day `customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca` artifact containing `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability reports, and three all-severity secret reports. Only after that retained artifact is inspected and the exact gate is green may Customer advance. Do not publish or push packages or images.
+Paused: GitHub Actions storage provider — do not rerun while quota state is unchanged; wait for GitHub's documented 6–12-hour recalculation after the administrator's cleanup or storage increase, without deleting caches from this stream. Then rerun only the failed job of exact-head run `33448642947` at `5555ac82b314384685a7a003fa5bc82e18fa8298` and require a nonexpired 30-day `customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca` artifact containing `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability reports, and three all-severity secret reports. Only after that retained artifact is inspected and the exact gate is green may Customer advance. Do not publish or push packages or images.
 
 ## Completed work
 
