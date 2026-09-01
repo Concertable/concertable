@@ -6,6 +6,46 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Redundant `this.` qualification survives outside the PR #633 file set
+
+`STYLE.md` now states that `this.` exists only to disambiguate a member a parameter or local shadows,
+and PR #633 stripped it from the 602 `.cs` files that PR touches. The rest of `api/` still carries
+**977 redundant `this.` qualifications across 85 files** — concentrated in Customer module services,
+`Concertable.Shared` test libraries, Payment infrastructure, and the B2B files this PR does not open.
+The rule is not expressible in `.editorconfig`: `dotnet_style_qualification_for_field` is
+all-or-nothing and its `true` setting is the opposite of the convention.
+
+The sweep was scoped deliberately rather than run repo-wide: four other worktrees are live on shared
+files, and the mechanical pass needs member-scope shadow analysis (a naive strip produces
+`competingChange = competingChange;` wherever a non-constructor setter takes a same-named parameter).
+
+**Resolves when:** the remaining 977 sites are stripped with shadowed members left qualified, the
+solution builds, and no `X = X;` self-assignment exists anywhere in `api/`.
+
+---
+
+### Injected collaborator variables drop their shape noun across the backend
+
+`NAMING.md` requires an injected parameter and its field to keep the collaborator's shape noun
+(`ISettlementService settlementService`), dropping only the domain prefix the containing type already
+supplies (`repository` inside `SettlementService`). PR #633 corrected the ~50 sites its own refactor
+introduced. **562 sites across `api/` still deviate**, two conventions dominating:
+
+| Pattern | Sites | Should read |
+|---|---|---|
+| `XDbContext context` | 132 | `xDbContext`, or `dbContext` where the owner supplies `X` |
+| `XApiFixture fixture` | 98 | `xApiFixture`, or `apiFixture` inside `XApiTests` |
+
+The remaining ~330 are one-offs — pluralised domain nouns for a service (`IBookingService bookings`),
+dropped qualifiers (`IArtistReadModelRepository artistRepository`), and abbreviations
+(`IUnitOfWorkBehavior uowBehavior`). Both dominant patterns are repo-wide conventions that predate the
+module carve, so correcting only a subset fragments them.
+
+**Resolves when:** every injected field and constructor parameter in `api/` names its collaborator type
+in lower camel case with the shape noun intact, and the two dominant patterns are converted in one
+sweep each rather than per-PR.
+
+---
 ### Production assemblies own dev/test seeding across the backend
 
 Dev/test seeder implementations and seed-only helpers currently live in production assemblies across
