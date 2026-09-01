@@ -7,7 +7,7 @@
 - Branch: `Chore/customer-promotion-preparation`
 - PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `5555ac82b314384685a7a003fa5bc82e18fa8298`
 - Dependency/package gates: package access is granted; Actions artifact retention is blocked by the organization storage quota; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-01** from exact remote/PR head equality, local artifact-integrity validation, and CI run `33448642947`
+- Last reconciled: **2026-09-01** from exact remote/PR head equality and failed-job rerun attempt 2 of CI run `33448642947`
 
 ## Current state
 
@@ -21,10 +21,13 @@ web, mobile, customer-only shared package, and standalone support closure. Draft
 build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
 candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
 Exact-head CI run [`33448642947`](https://github.com/Concertable/customer/actions/runs/33448642947) ran at
-`5555ac82b314384685a7a003fa5bc82e18fa8298`. Frontend passed. Backend passed every prior build, test,
-package, image, migration, and real simulator-smoke gate, plus the new Linux artifact-integrity scan; only
-`actions/upload-artifact` failed because the organization Actions artifact storage quota is full. No package
-or image was published or pushed.
+`5555ac82b314384685a7a003fa5bc82e18fa8298`. Failed-job rerun attempt 2 restarted Backend job
+`99686369441`; Frontend job `99686370507` remained green. Backend again passed every build, test, package,
+image, migration, simulator-smoke, and Linux artifact-integrity step before the final retention action found
+all 14 expected files and requested `customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca`
+for 30 days. GitHub again rejected artifact creation because organization storage quota usage had not
+recalculated. The Customer repository still has zero stored artifacts. No package or image was published or
+pushed.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
@@ -32,10 +35,7 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Blocked: exact-head CI run `33448642947` cannot retain the completed Customer integrity evidence because the organization Actions artifact storage quota is full.
-Blocked by: GitHub package/organization administrator; this quota is outside Customer ownership.
-Unblock action: clear or raise the organization Actions artifact storage allowance without deleting caches from this stream, then allow GitHub's documented 6–12-hour usage recalculation window if storage was cleared.
-Resume when: rerun failed exact-head run `33448642947` at `5555ac82b314384685a7a003fa5bc82e18fa8298` and require a retained 30-day `customer-candidate-integrity-<sha>` artifact containing `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability reports, and three all-severity secret reports. Only after that exact gate is green may Customer continue. Do not publish or push packages or images.
+Paused: GitHub Actions storage provider — do not rerun while quota state is unchanged; wait for GitHub's documented 6–12-hour recalculation after the administrator's cleanup or storage increase, without deleting caches from this stream. Then rerun only the failed job of exact-head run `33448642947` at `5555ac82b314384685a7a003fa5bc82e18fa8298` and require a nonexpired 30-day `customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca` artifact containing `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability reports, and three all-severity secret reports. Only after that retained artifact is inspected and the exact gate is green may Customer advance. Do not publish or push packages or images.
 
 ## Completed work
 
@@ -64,9 +64,13 @@ Resume when: rerun failed exact-head run `33448642947` at `5555ac82b314384685a7a
 
 ## Verification
 
-- Exact-head remote CI run `33448642947`: Frontend passed. Backend passed the prior build/test/package/image,
-  migration, and simulator-smoke closure and the new Linux integrity scan; only the final artifact-retention
-  step failed on the organization storage quota.
+- Exact-head remote CI run `33448642947`, attempt 2: Frontend job `99686370507` passed in 2m18s. Backend job
+  `99686369441` ran 7m35s and passed restore, build, tests, migration snapshots, four-package clean consumer,
+  three OCI builds, real simulator smoke, empty-database migration, and Linux integrity inventory; only
+  `Retain candidate integrity evidence` failed.
+- The failed upload found 14 files, validated the requested artifact name and root path, requested 30-day
+  retention, then returned `Artifact storage quota has been hit` with a 6–12-hour recalculation notice.
+  Customer's artifact inventory remained empty, so retained-content inspection was not possible.
 - Local full gate at `5555ac82b314384685a7a003fa5bc82e18fa8298` passed for exactly four NuGet and
   three OCI candidates, deterministic `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability
   reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
@@ -118,10 +122,10 @@ Resume when: rerun failed exact-head run `33448642947` at `5555ac82b314384685a7a
   substitute. Runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost invokes the
   migration resource. No package, image, canonical release, visibility change, deployment, or system-consumer
   update was authorized or performed.
-- Customer currently stores zero Actions artifacts and one 164,423,819-byte cache. Organization cache usage
+- After rerun attempt 2, Customer still stores zero Actions artifacts and one 164,423,819-byte cache. Organization cache usage
   is 12,671,970,938 bytes, concentrated in five approximately 2.5-GB NuGet caches in
-  `Concertable/concertable`; this Customer stream must not delete them. The failed upload found all 14 expected
-  integrity files and requested 30-day retention before GitHub rejected artifact creation on quota.
+  `Concertable/concertable`; this Customer stream must not delete them. Repeating a seven-minute failed-job
+  rerun before provider quota recalculation would only repeat the same terminal upload failure.
 - Vitest invokes Vite with `command = serve` and `mode = test`; development-only configuration must consider
   both values rather than treating every `serve` configuration load as a live dev server.
 - A multi-path fold must include support files outside selected app subtrees: Customer's relocated Vite app
