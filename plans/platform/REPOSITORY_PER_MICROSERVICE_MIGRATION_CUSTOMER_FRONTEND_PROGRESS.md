@@ -5,9 +5,9 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`
-- Dependency/package gates: package access and Actions artifact retention are green; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-01** from exact local/remote/PR head equality and successful CI run `33556564632`
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `070247795927ec6045b138c3225fbed99e5a2eb5`
+- Dependency/package gates: package access, artifact retention, CODEOWNERS, immutable action refs, and repository SHA enforcement are green; final publication and delivery remain unauthorized
+- Last reconciled: **2026-09-01** from reviewed Customer head `070247795927ec6045b138c3225fbed99e5a2eb5`, successful CI run `33566459131`, and Actions-permissions readback
 
 ## Current state
 
@@ -36,13 +36,15 @@ read-only and requires an existing annotated v-prefixed tag that resolves to the
 NuGet versions and OCI tags must match that release tag. The workflow contains no package/image publish or
 push operation and has only `contents: read` and `packages: read` permissions.
 
+Customer PR #1 now carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five action invocations. Exact-head CI run [`33566459131`](https://github.com/Concertable/customer/actions/runs/33566459131) is green, and the repository Actions policy reads back `sha_pinning_required: true` while preserving `allowed_actions: all`, default read-only workflow permissions, and disabled PR approvals.
+
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
 ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Implement the next independent Customer-owned repository-policy slice: add bootstrap `CODEOWNERS` assigning the whole Customer repository and `.github/**` to `@tomjseery`, pin every action used by Customer CI to an immutable commit SHA, validate the workflow, and only then enable Customer's repository-level `sha_pinning_required` setting. Keep the workflow's default token read-only and do not add publish permissions, create a release tag, publish or push candidates, change repository visibility, or touch TestKit/foreign AppHost inputs. Record GitHub's current private-plan `403` for rulesets and branch protection as a delivery-time capability dependency; do not attempt to bypass it.
+Implement the next independent Customer-owned preparation slice: add a black-box `Concertable.Customer.TestKit` package that exposes only the Customer-owned test-admin seams required by future system E2E, with no runtime implementation, DbContext, entity, Hosting, or foreign-service references. Validate its focused tests and clean-consumer package closure without publishing it. Keep AppHost migration orchestration blocked on its named foreign container-hosting inputs; do not publish or push candidates, create tags, change visibility, retry the private-plan protection `403`, or enter another stream.
 
 ## Completed work
 
@@ -71,6 +73,7 @@ Implement the next independent Customer-owned repository-policy slice: add boots
 - `4d1a1ef` adds the exact promotion manifest, repository metadata validator, and manual annotated-tag gate;
   `c83169d` binds every built OCI archive to its configured repository and selected SHA/release tag. The
   promotion path remains a read-only preflight with no publication command or permission.
+- `0702477` adds repository-wide bootstrap `CODEOWNERS` for `@tomjseery` and pins every Customer CI action to the verified immutable commit behind its recorded `v4` channel.
 
 ## Verification
 
@@ -87,10 +90,8 @@ Implement the next independent Customer-owned repository-policy slice: add boots
   reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
 - Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
   web 1/1 and production build; mobile typecheck and Android export — all green.
-- Exact-head CI run `33556564632`: Frontend job `100018718799` passed in 2m12s; Backend job `100018719160`
-  passed in 7m43s, including every prior build/test/package/image/migration/simulator/integrity/retention gate
-  plus `Validate promotion candidate selection`. Retained artifact `9819824696` is nonexpired through
-  2026-10-01 with digest `sha256:117f49aaf830a499bb8e776a74ca7d1d199c91f2f1b08579ea7cfaa45b781382`.
+- Exact-head CI run `33566459131` at `070247795927ec6045b138c3225fbed99e5a2eb5`: Frontend job `100050657740` passed in 2m19s and Backend job `100050657995` passed in 7m23s, including the complete package/image/migration/simulator/integrity/retention gate.
+- Actions policy readback: `enabled: true`, `allowed_actions: all`, `sha_pinning_required: true`; default workflow permissions remain `read` and PR approvals remain disabled.
 - Local promotion validation passed against the existing four NuGet and three OCI outputs. A temporary local
   annotated `v0.1.0-alpha.0.329` tag then built all three OCI candidates and proved exact tag-to-commit,
   NuGet-version, embedded repository/tag, and config-digest validation; the tag and dedicated outputs were
@@ -104,8 +105,8 @@ Implement the next independent Customer-owned repository-policy slice: add boots
 - Independent artifact-gate review through `2ecc33cb533a95b3baa209dcdc259c6e27e81105` has no open findings
   after reconciling the current and final Customer package rosters.
 - Independent artifact-integrity review through `5555ac82b314384685a7a003fa5bc82e18fa8298` fixed
-  OS-aware path containment and exact artifact-name casing, then found no remaining issues. Draft PR #1 still
-  owns the cumulative delivery gate before any merge.
+  OS-aware path containment and exact artifact-name casing, then found no remaining issues.
+- Independent repository-policy review approved `c83169dd2a3d172d765425b12e032e704fcdc4fa..070247795927ec6045b138c3225fbed99e5a2eb5` with no findings after verifying CODEOWNERS precedence, official signed action commits, exact `v4` ref equality, immutable-reference closure, and read-only permissions. Draft PR #1 still owns the cumulative delivery gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -143,11 +144,7 @@ Implement the next independent Customer-owned repository-policy slice: add boots
   update was authorized or performed.
 - The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
   attempt 3 created the required retained artifact, so the quota blocker is closed.
-- Customer currently has no `CODEOWNERS` and no environments; Actions allow all actions, do not require SHA
-  pinning, use default read-only workflow permissions, and cannot approve pull requests. GitHub returns the
-  private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and
-  `main` branch protection. Repository-local ownership/action pinning can proceed independently; merge-queue
-  enforcement waits for the already planned visibility/capability gate.
+- Customer now has repository-wide bootstrap `CODEOWNERS` for `@tomjseery`; all workflow actions are pinned to verified immutable SHAs, and repository Actions requires SHA pinning. GitHub still returns the private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and `main` branch protection. Do not bypass or retry that delivery-time capability gate.
 - The extracted `Concertable.Customer.AppHost` remains excluded from `CarveCustomer.slnx` and has ten foreign
   monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
   `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
