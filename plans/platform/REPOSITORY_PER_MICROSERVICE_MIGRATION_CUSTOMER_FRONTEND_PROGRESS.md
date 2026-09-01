@@ -42,7 +42,7 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Implement the next independent Customer-owned repository-policy slice: add bootstrap `CODEOWNERS` assigning the whole Customer repository and `.github/**` to `@TommySeery`, pin every action used by Customer CI to an immutable commit SHA, validate the workflow, and only then enable Customer's repository-level `sha_pinning_required` setting. Keep the workflow's default token read-only and do not add publish permissions, create a release tag, publish or push candidates, change repository visibility, or touch TestKit/foreign AppHost inputs. Record GitHub's current private-plan `403` for rulesets and branch protection as a delivery-time capability dependency; do not attempt to bypass it.
+Implement the next independent Customer-owned repository-policy slice: add bootstrap `CODEOWNERS` assigning the whole Customer repository and `.github/**` to `@tomjseery`, pin every action used by Customer CI to an immutable commit SHA, validate the workflow, and only then enable Customer's repository-level `sha_pinning_required` setting. Keep the workflow's default token read-only and do not add publish permissions, create a release tag, publish or push candidates, change repository visibility, or touch TestKit/foreign AppHost inputs. Record GitHub's current private-plan `403` for rulesets and branch protection as a delivery-time capability dependency; do not attempt to bypass it.
 
 ## Completed work
 
