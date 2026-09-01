@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `76d498e5f5c1`  `(2026-09-01)`
+**Reviewed up to commit:** `9ab7736cc45b`  `(2026-09-02)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -104,3 +104,53 @@ revisit the specification contract itself, whose independence caveat from the 20
 ### Findings
 
 No findings.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `76d498e5f5c17465d8684eb70caa520053658655`
+**Candidate head:** `9ab7736cc45b7f016363d818af3311f843bad605`
+**Candidate branch:** `Refactor/data-access-specification-query-boundary`
+**Candidate scope:** `branch-authored delta vs the prior watermark`
+**Candidate path-set:** `sha256:b33853138682b396d1afc886419d64636ce547d88f023b44e1b5701836ba10d3` `(9 paths)`
+**Work-order path:** `reviews/Refactor-data-access-specification-query-boundary.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Covers the repository read-surface rework: the runtime-detecting `ApplyOrders(ISpecification)`
+overload, the collapse of the ordered/unordered overload twins, `GetPageAsync`, the
+`IEnumerable` -> `IReadOnlyList` return change, and the `CancellationToken` on
+`ToPaginationAsync`. Applied to all three `IReadRepository` implementations (`Repository`,
+`ReadRepository`, Customer's `QueryableReadRepository`).
+
+Verification: `local-platform.ps1 build api/Concertable.slnx` 0 errors; Kernel 260 passed,
+DataAccess unit 22 passed, DataAccess integration 19 passed.
+
+### Findings
+
+- [x] **3 — Ordering bound by static type, so a spec held at its shape interface silently lost
+  its order.** `GetAllAsync` carried an `ISpecification` and an `IOrderedSpecification` overload
+  per shape. Because overload resolution is static, `ISpecification<T, TResult> spec = ...Select(...)`
+  bound the non-ordering overload and the query ran unordered with no diagnostic. Fixed by
+  detecting `IOrderedSpecification<T>` at runtime inside a single `ApplyOrders(ISpecification<T>)`
+  evaluator overload and deleting the twins. Regression tests
+  `GetAllAsync_OrderedSpecificationHeldAsShapeSpecification_StillAppliesOrders` and
+  `GetAllAsync_OrderedProjectionHeldAsShapeSpecification_StillAppliesOrders` hold the spec at the
+  shape interface exactly as the trap required.
+
+- [x] **4 — `GetPageAsync` accepted a specification carrying no order.** A page taken without
+  `ORDER BY` is undefined: row order is unspecified between the `Count` and the `Skip`/`Take`, so a
+  row can appear on two pages or on none. Fixed by `ApplyPagedOrders`, which throws when the
+  specification carries no order. This matches the precedent already set by a projected
+  specification rejecting include registration rather than silently issuing a wrong query. Test
+  `GetPageAsync_UnorderedSpecification_Throws`.
+
+### Notes
+
+- The `GetByIdAsync` class/struct/nullable triple is unchanged; collapsing it would cost
+  nullability precision on value projections, which pass 1 deliberately bought.
+- The read surface still takes no `IPredicateSpecification`, so a filtered read remains a bespoke
+  repository method. That gap is additive rather than breaking, so it does not need this window.
+
+**Reviewer independence:** this pass was performed by the session that authored the change.
+Findings 3 and 4 were both raised and fixed within it, so the pass is not a substitute for an
+independent read of the specification contract, whose caveat from 2026-08-31 still stands.
