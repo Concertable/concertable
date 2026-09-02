@@ -1216,7 +1216,15 @@ jobs:
 
       - name: Run quarantined Customer UI E2E scenarios
         if: env.RUN == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine"
+        shell: bash
+        # An empty quarantine lane is the healthy steady state, but VSTest exits 1 when a filter matches
+        # nothing — so only that specific message is allowed to pass; any other failure still reports.
+        run: |
+          set -o pipefail
+          if dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine" 2>&1 | tee quarantine-run.log; then
+            exit 0
+          fi
+          grep -q "No test matches the given testcase filter" quarantine-run.log
 
       - name: Upload quarantine E2E diagnostics
         if: env.RUN == 'true' && failure()

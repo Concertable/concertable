@@ -18,9 +18,9 @@
 > (deployment, DNS, pipeline redesign, E2E strategy) are separate concerns and are **not** tracked here.
 >
 > **The cut itself — "repository per microservice" — is §6, and its plan is
-> [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) with its
-> ledger [`..._PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md).** It is named for the target
-> shape rather than for this epic, so a search for "polyrepo" does not find it — start at §6.
+> [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md), with its
+> exclusive active-stream ledgers listed in §6.** It is named for the target shape rather than for this epic,
+> so a search for "polyrepo" does not find it — start at §6.
 >
 > **Companion / standing docs:**
 > [`../../api/docs/MICROSERVICES_ARCHITECTURE.md`](../../api/docs/MICROSERVICES_ARCHITECTURE.md).
@@ -143,12 +143,37 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
 
 - [ ] 🟡 **The cut itself** `platform/polyrepo-cut` — owned by
   [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) /
-  [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md).
+  the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
+  execution.
   Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
   `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
   **Stages 1–2 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages).
-  Next: stage 3 (AppHost image mode) or stage 5 (extract `payment`) — parallel, not chained, because
-  only one blocking runtime edge exists repo-wide.
+  Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
+  parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
+  remain ordered and require explicit authorization.
+
+  | Stream | State and exclusive owner | Durable record |
+  |---|---|---|
+  | Stage 3 RT3 | In flight only on `Plan/RepoSplit-Stage3-Hosting-rt3`; no sibling may edit its AppHosts, composition tests, review work order, or stream state. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md) |
+  | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
+  | Stage 4 Fleet E2E | Paused on draft [PR #896](https://github.com/Concertable/concertable/pull/896); owns only fleet/TestKit/E2E source-boundary removal. | PR #896 carries `REPOSITORY_PER_MICROSERVICE_MIGRATION_STAGE4_FLEET_PROGRESS.md`. |
+  | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
+  | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
+  | Search-next | Reserved exclusively to the Search preparation stream at `C:\Users\tommy\source\repos\search-next` / `Chore/search-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
+
+  Agents read this table and the named ledger before acting. One stream never edits a sibling ledger or
+  worktree. B2B-next preparation remains unassigned until its existing
+  `wip/b2b-frontend-fold-handoff` checkout is reconciled; system/fleet extraction remains with Stage 4 until
+  that composition boundary lands.
+
+  **Post-cut development-fixture terminology.** Keep the current `SeedCatalog`, `Seed.Contracts`,
+  `SeedState`, and `Seed.Simulator` names stable while repository ownership and publication boundaries are
+  moving. After the polyrepo cut is complete, run a dedicated cross-repository naming redesign around the
+  `DevFixture` vocabulary. That follow-up may rename types, packages, and simulator images, but it must
+  preserve the architecture: owners seed only canonical state, reaction-only projections are populated by
+  production-shaped events, and standalone consumers use producer-owned lightweight event publishers rather
+  than another data service's runtime. Decide the exact name mapping in that follow-up instead of spreading
+  opportunistic renames across promotion PRs.
 
 **The launch gate below is WITHDRAWN (2026-08-26.)** It is kept for the reasoning it records, but it
 inverted the trade-off: the monorepo taxes every launch PR — full E2E, full checkout, full migration,
@@ -189,6 +214,10 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
 
 ## Decision log
 
+- **2026-08-31 — Defer seed vocabulary redesign until after the cut.** The current behaviour remains
+  load-bearing, but the `SeedCatalog`/`Seed.Contracts`/`SeedState`/`Seed.Simulator` terminology will be
+  redesigned around `DevFixture` once all repository and publication boundaries are stable. Promotion
+  streams must not mix that naming migration into the polyrepo cut.
 - **2026-08-05 — Roadmap created.** The polyrepo epic existed as a roadmap-less cluster
   (`MICROSERVICE_STEPS`, backend carve, `POLYREPO_FULLSTACK`, deferred mirroring); this roadmap unifies it
   and adds per-service doc & guidance locality (§4) as a tracked stream. Anchor for the doc-locality work
