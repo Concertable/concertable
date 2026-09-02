@@ -305,7 +305,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 235,
+    "projectCount": 236,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -1362,6 +1362,13 @@
         "kind": "runtime",
         "name": "Concertable.DataAccess.Infrastructure",
         "packable": true,
+        "target": "platform-dotnet"
+      },
+      "api/Concertable.DataAccess/Tests/Concertable.DataAccess.IntegrationTests/Concertable.DataAccess.IntegrationTests.csproj": {
+        "area": "Concertable.DataAccess",
+        "kind": "integration-test",
+        "name": "Concertable.DataAccess.IntegrationTests",
+        "packable": false,
         "target": "platform-dotnet"
       },
       "api/Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj": {

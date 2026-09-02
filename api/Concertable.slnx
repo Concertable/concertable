@@ -187,6 +187,7 @@
   <Folder Name="/DataAccess/">
     <Project Path="Concertable.DataAccess/Concertable.DataAccess.Application/Concertable.DataAccess.Application.csproj" />
     <Project Path="Concertable.DataAccess/Concertable.DataAccess.Infrastructure/Concertable.DataAccess.Infrastructure.csproj" />
+    <Project Path="Concertable.DataAccess/Tests/Concertable.DataAccess.IntegrationTests/Concertable.DataAccess.IntegrationTests.csproj" />
     <Project Path="Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Messaging/">
