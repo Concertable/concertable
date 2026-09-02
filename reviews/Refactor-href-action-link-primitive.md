@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `in-progress`
-**Reviewed up to commit:** `b4496a9f8c61de683b8f8ef3c56bab31220464be`  `(2026-09-02)`
-**Judgment:** `changes-requested`
+**Review status:** `complete`
+**Reviewed up to commit:** `e3232f82d372ee26ff2caa890c3ba6de883b6242`  `(2026-09-02)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-02 — full
 
@@ -231,3 +231,38 @@ path matches `security_paths`, so no security layer ran.
   `From_TraversingPath_`, each holding only inputs that reach the check it names.
 
 Fixed in the follow-up commit; a third pass covers that delta.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `b4496a9f8c61de683b8f8ef3c56bab31220464be`
+**Candidate head:** `e3232f82d372ee26ff2caa890c3ba6de883b6242`
+**Candidate branch:** `Refactor/href-action-link-primitive`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:d5bc20e7bc865ff2e841b7da1157100f0f4bc759ecf048d0aa74ef1749970372` `(5 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable/62ef6cf9-f6fe-43dd-a8f6-24f2683961a7/scratchpad/review-bundle-href-inc3`
+**Candidate bundle identity:** `sha256:935ad1ec04021e6f5fab1f6301438a37e2427ed8f0375f859d03d9197108c6b2`
+**Work-order path:** `reviews/Refactor-href-action-link-primitive.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. An adversarial lens was given the current rule as a claim to refute and could not, having
+worked through: a leading `?` or `#` (yields an empty path, which `PathFault` rejects); `#` before a
+later `?`; whether a once-decoded form can need a second decode; `%25` and `+` under
+`Uri.UnescapeDataString`; whether `char.IsControl` misses anything a client treats as a separator (it
+is a superset of what WHATWG strips); whether the whole-value control check and the path-scoped rules
+can disagree in a way that admits something (the whole-value check can only ever be more restrictive,
+since the path is a substring); and every route to an `ActionLink` instance — `with`, a JSON null
+member, a duplicated member, and whether a Vogen `Href` can arrive default rather than null (it is a
+reference type, so absence is null and `ThrowIfNull` catches it).
+
+The one item that lens could not execute, the parent closed: a malformed percent-escape does not throw
+out of `Validate`. Run against the candidate, `/api/files/100%discount.pdf`, `/api/x%`, `/api/%zz/y`
+and `/api/%2/y` are all accepted with no leaked exception type, and `/api/%%2f/y` is rejected because
+it decodes to an empty segment.
+
+Two dispositions are deliberate limits rather than gaps, restated so they are not rediscovered as
+findings: single decode is the guarantee, so a double-encoded `%252e%252e` or `%252F` is not treated
+as traversal or as a separator; and raw control characters are rejected across the whole value,
+including query and fragment, because a browser strips tab/CR/LF from anywhere in a URL string.
