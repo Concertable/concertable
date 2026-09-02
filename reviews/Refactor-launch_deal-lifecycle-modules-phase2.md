@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `83ebbc394`  _(2026-09-01)_
+**Reviewed up to commit:** `b121ed028179583fc7599b965caba7a0683c8913`  _(2026-09-02)_
 **Security-reviewed up to commit:** `3c474d8be`  _(2026-09-01)_
 **Judgment:** `approved-with-remediation`
 
@@ -718,3 +718,81 @@ a log or a config file.
   the application row. The trust chain above makes that safe today, but resolving the venue manager from the
   application would remove the dependency on metadata round-tripping through the provider entirely. Recorded
   because the pre-carve code had the same shape and it is worth closing deliberately rather than inheriting.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `83ebbc3942bd9ea5c9c27ad0143975612c947c18`
+**Candidate head:** `b121ed028179583fc7599b965caba7a0683c8913`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:2e030581a13b2909aa70002370d6b177f297f31c2e578abcf07d8f091f98e55c` `(91 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable/62ef6cf9-f6fe-43dd-a8f6-24f2683961a7/scratchpad/rb-633`
+**Candidate bundle identity:** `sha256:980c696fd3136b87b975bec1243844cb0f83a1f9c739e850b4f4deaf120f5ad7`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved-with-remediation`
+
+Layers: native/general; a conventions lens against `STYLE.md`/`NAMING.md`; a changed-behaviour
+test-impact lens. Parent re-verified every retained claim and rejected two.
+
+**Verified clean by the native layer, recorded so it is not re-derived:** the `744fe0bc9` rename sweep
+is mechanically identifier-only — 389 hunks token-structure-identical after stripping `this.`, 31
+consistent 1:1 renames, zero `X = X;` self-assignments in `api/`, zero `this.X = Y;` name mismatches,
+and every non-constructor shadow site either `static` or still `this.`-qualified. No second
+`ForService`-shaped bug exists. `b121ed028`'s helper sinking is pure motion: the whitespace-normalised
+sorted line multiset is byte-identical before and after for all ten files, and the parent independently
+confirmed the member-signature sets are identical (21/21, 33/33, 9/9) for the three largest.
+`WithService` cannot leak a scoped name, and `RunAsEmulator` still sees every topic.
+
+### Findings
+
+- [x] **TR9 — LOW — reuse** — `api/Concertable.AppHost.Shared/AsbServiceTopology.cs:15`
+  The scoped builder exposed `Publish<TEvent>()` and `Queue<TCommand>()` with no test and no caller
+  anywhere in the tree.
+  **Disposition:** `Publish` deleted — the five topologies declare publications on the base
+  `AsbTopology` before scoping, so a scoped `Publish` has no prospective caller. `Queue` kept and
+  covered by `WithService_Queue_NamesTheQueueForThatService`, because the topology migration will call
+  it (`AuthTopology` and `CustomerTopology` both queue). `AppHost.Shared.UnitTests` 12/12.
+
+- [wontfix] **TR10 — HIGH — correctness** — `app/web/b2b/venue/src/features/concerts/components/ApplicationCard.tsx:60`
+  Deny is gated on `actions.reject`, but the venue endpoint serializes `decline` — the href behind it
+  is `/api/application/{id}/reject`, which is what made the mismatch look correct. The button has never
+  rendered on the venue applications list. This delta preserves it deliberately: `ApplicationActions`
+  carries a `@deprecated reject` purely so the consumer keeps type-checking.
+  **Disposition:** cannot be fixed on this branch, and that is CI-proven rather than asserted.
+  `carve-fe` builds each app's committed source against the `@concertable/*` tiers **as published to
+  the feed** — its own header says `"*"` "links the workspace copy in-monorepo but is unresolvable from
+  the feed" — and the published `web-b2b` still types `ApplicationActions` with `reject` only. Flipping
+  line 60 failed `carve-fe (web/b2b/venue)` at `53eae7d84` with
+  `TS2339: Property 'decline' does not exist on type 'ApplicationActions'`. Transferred to
+  `app/web/TECH_DEBT.md` with the objective condition: `web-b2b` republished carrying `decline`, line 60
+  flipped, `reject` deleted, `carve-fe (web/b2b/venue)` green.
+
+- [x] **TR11 — LOW — docs-and-debt** — `TECH_DEBT.md:21`
+  The entry asserted `dotnet_style_qualification_for_field = true:error` "has been removed from
+  `STYLE.md`'s table". It has not: all seven cached `dotnet-standards` copies still carry that row and
+  the "every constructor assignment is `this.`-qualified — fields *and* public auto-properties" prose
+  with a worked example. The consequence is not cosmetic — the conventions lens on this very pass read
+  the standard and reported the sweep as a 50-site violation.
+  **Disposition:** reworded to state the standard and the codebase currently disagree, with the added
+  resolve condition that `STYLE.md` in `dotagents` states the disambiguation-only rule and is published.
+  The sweep itself is not a violation of the intended convention and no code changed.
+
+**Rejected — the conventions lens's headline finding.** It reported the `this.` sweep as violating
+`STYLE.md` at ~50 sites, including `DealStrategyBuilder.cs:17` as "internally inconsistent" for keeping
+`this.services = services;` while dropping `this.` on the next line. Under the intended
+disambiguation-only convention that line is correct: `services` is shadowed by the parameter, `builder`
+is not. The lens judged against the standard as published, which TR11 records; the sweep is not a defect.
+
+**Rejected — the native layer's premise on NAT2.** It argued the publish-first rescope was unnecessary
+because `app/package.json` links every web package as an npm workspace with `"@concertable/web": "*"`,
+so no publish step gates the frontend. That is true of the in-monorepo build and irrelevant to the gate
+that actually failed: `carve-fe` exists precisely to catch what is "masked in-monorepo by workspace
+hoisting", rewrites `"*"` to `"alpha"`, and installs from the feed only. It failed at `53eae7d84` on
+three separate module/type errors. NAT2's secondary observation stands and is not retained as a
+separate finding: the shared abstraction currently has no consumer while both widgets keep their own
+copies, which is the temporary, intended cost of the split and is owned by the consumer cut-over.
+
+**Not retained:** the new shared `applicationActionLabels` / `ActionLinkButtons` having no tests and no
+callers, and nothing exercising `decline` or the `reject`/`decline` dual shape — both are inherent to
+the publish-first split and owned by the cut-over PR that TR10's debt entry gates.
