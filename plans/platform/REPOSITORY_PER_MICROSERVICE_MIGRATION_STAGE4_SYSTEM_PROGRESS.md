@@ -92,8 +92,10 @@ temporary source-mode edges to six without moving service behavior or duplicatin
 
 ## Reviews
 
-The canonical branch-local review record is `reviews/Plan-RepoSplit-Stage4-System-E2E.md`. Refresh its exact-head review
-after staging the final ledger and runner changes, then push only if no unresolved Stage 4 finding remains.
+The canonical branch-local review record is `reviews/Plan-RepoSplit-Stage4-System-E2E.md`. The full and
+remediation passes are complete and approved with no open findings. The review corrected the remaining live
+`Concertable.System.AppHost` run instructions and the shared E2E helper's mixed legacy/C# 14 extension syntax;
+the focused Search and Payment helper suites passed after remediation.
 
 ## Decisions, discoveries, blockers, and deviations
 
