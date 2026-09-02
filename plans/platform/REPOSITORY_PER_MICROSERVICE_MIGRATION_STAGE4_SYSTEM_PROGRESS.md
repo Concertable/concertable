@@ -17,8 +17,9 @@ migration ledger.
 
 The future repository remains `Concertable/system`: system describes the repository's responsibility for
 full-product composition and testing, but is not a C# namespace prefix. Its umbrella Aspire project is
-`Concertable.AppHost`, its code namespace is `Concertable.Hosting`, and its entry composition type/file is
-`AppHost` / `AppHost.cs`. The split preserves artifact namespacing at `src/Concertable.AppHost/`; deployment
+`Concertable.AppHost`, and its code namespace is also `Concertable.AppHost`. The idiomatic top-level entry
+file is `AppHost.cs`; `AppHostFactory` exposes the reusable builder seam required by architecture tests.
+The split preserves artifact namespacing at `src/Concertable.AppHost/`; deployment
 manifests live under `manifests/` rather than an ambiguous nested `system/` directory.
 
 The full-product E2E projects use matching `Concertable.E2E*` assembly and root-namespace names. Explicit
@@ -63,7 +64,7 @@ temporary source-mode edges to six without moving service behavior or duplicatin
 - Created the owning isolated worktree and kept all Stage 4 progress updates in this ledger.
 - Moved Search Web and Workers project metadata behind the composition seam; the carve-retained Search helper no longer knows repository-relative service project paths.
 - Renamed Search extension containers for their `IDistributedApplicationBuilder` receiver and recorded the broader existing naming inconsistency as tech debt.
-- Reconciled the `Concertable/system` repository vocabulary without leaking `System` into .NET identifiers: `Concertable.AppHost` / `Concertable.Hosting` for Aspire composition and `Concertable.E2E*` for full-product tests.
+- Reconciled the `Concertable/system` repository vocabulary without leaking `System` into .NET identifiers: `Concertable.AppHost` for the Aspire project and namespace, and `Concertable.E2E*` for full-product tests.
 - Preserved namespaced split layout at `src/Concertable.AppHost/`, selected `manifests/` for deployment inputs, and recorded the rationale in the split map.
 - Renamed the source-composition abstraction and collaborators to `IComposition`, `Compositions`, and `SourceComposition`.
 - Gave Search and Payment's divergent pinning operations semantic names: Search replaces project metadata only for source-backed resources, while Payment substitutes its E2E projects for image-backed resources to retain TestKit/admin behavior.
