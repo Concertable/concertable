@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `abec4aa069ef`  `(2026-09-02)`
+**Reviewed up to commit:** `7e1f160253a0`  `(2026-09-02)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-02 — full
@@ -91,3 +91,31 @@ No findings.
 - The translation is now proven rather than assumed: the Concert integration tier was run from a
   short-path checkout (176 passed, 0 failed, 8m27s), which also closes the gap the previous pass
   recorded, where Windows MAX_PATH prevented that tier from running in this worktree.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `abec4aa069efd88c5425665a94552035ab6cbe75`
+**Candidate head:** `7e1f160253a01b5a991931d1378e674659d87e6d`
+**Candidate branch:** `Refactor/RepositoryFinderSpecifications`
+**Candidate scope:** `base merge to platform 0.1.0-alpha.0.1310 plus one authored fix`
+**Candidate path-set:** `sha256:3a373a8193efb52b30eebf019a9513945f475c0d3d729138e0e38937df35afb8` `(12 paths)`
+**Work-order path:** `reviews/Refactor-RepositoryFinderSpecifications.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Merges `origin/main` (7 commits, clean, pin `0.1.0-alpha.0.1310` from sync #929) and fixes the
+one defect that merge surfaced.
+
+Verification on the merged head: build 0 errors, Concert unit tier 234 passed.
+
+### Findings
+
+- [x] **3 — The projection changed which overload `ContractIssuer` calls, and its mock still
+  stubbed the old one.** Moving from the include specification to `ArtistAndVenue?` moved the call
+  from `GetByIdAsync(id, ISpecification<T>, ct)` to the `TResult` overload. `ContractIssuerTests`
+  still set up the entity overload, so Moq returned `default` for the unstubbed projected call and
+  `OrNotFound` threw `NotFoundException`. Fixed by stubbing
+  `ISpecification<ApplicationEntity, ArtistAndVenue?>` and returning an `ArtistAndVenue`; the
+  entity-building helper that existed only to feed the old stub is deleted. Caught by the unit tier
+  locally and independently by CI on the pushed head — the previous pass had run the integration
+  tier after the projection but not the unit tier, which is how it reached CI at all.
