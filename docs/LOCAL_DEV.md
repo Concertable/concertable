@@ -22,7 +22,7 @@ Idempotent — creates only what's missing, never overwrites. It:
 - copies `appsettings.Development.json.example` → `appsettings.Development.json` for `Concertable.Auth`,
   `Concertable.B2B.Web`, `Concertable.Customer.Web` (checked-in templates, no secrets — just
   `https://localhost:517x` origins);
-- sets `ServiceAuth:{B2B,Customer,Auth}ClientSecret` user-secrets on `Concertable.System.AppHost`,
+- sets `ServiceAuth:{B2B,Customer,Auth}ClientSecret` user-secrets on `Concertable.AppHost`,
   `Concertable.B2B.AppHost`, `Concertable.Customer.AppHost` to a shared dev value (not a secret — Auth
   and every service read the same value from the same AppHost config, and it never leaves localhost).
 
@@ -44,7 +44,7 @@ Without it the `stripe-cli` resource is skipped and everything else runs.
 ## Running
 
 ```powershell
-dotnet run --project api/Concertable.System.AppHost                # the whole platform
+dotnet run --project api/Concertable.AppHost                       # the whole platform
 dotnet run --project api/Concertable.B2B/src/Concertable.B2B.AppHost   # just the B2B slice (+ Auth, Payment)
 ```
 

@@ -16,7 +16,7 @@
     - Rename the csproj file and root namespace. Move the project into a new `api/Concertable.B2B/` folder.
     - Move `api/Modules/` → `api/Concertable.B2B/Modules/`.
     - Update `.sln` (and any `.slnx`) project paths. Update all `<ProjectReference>` paths that currently point at `../../../Modules/` — they now point at `../Modules/` (same folder, shorter path since we're inside `Concertable.B2B/`).
-    - Update `Concertable.System.AppHost/DistributedApplicationBuilderExtensions.cs`: the `api` resource that references `Concertable.Web.csproj` becomes `b2b-web` referencing `Concertable.B2B.Web.csproj`. Service name (`concertable-b2b`) does not change — ASB topic subscriptions are keyed on it.
+    - Update `Concertable.AppHost/AppHost.cs`: the `api` resource that references `Concertable.Web.csproj` becomes `b2b-web` referencing `Concertable.B2B.Web.csproj`. Service name (`concertable-b2b`) does not change — ASB topic subscriptions are keyed on it.
     - Update `Concertable.Web/Extensions/` (or wherever `IWebApplicationExtensions` lives) — namespace follows the rename.
 
 20. **Rename `Concertable.Workers` → `Concertable.B2B.Workers`.**
@@ -25,7 +25,7 @@
     - Update AppHost: `workers` resource path → `Concertable.B2B.Workers.csproj`.
     - Update `.sln` / `.slnx` project paths.
 
-**Exit criteria:** `api/Concertable.B2B/` exists. `Concertable.B2B.Web.csproj` and `Concertable.B2B.Workers.csproj` build. All B2B modules reference compile. AppHost starts all services. No behaviour change — `dotnet run --project Concertable.System.AppHost` produces the same running system.
+**Exit criteria:** `api/Concertable.B2B/` exists. `Concertable.B2B.Web.csproj` and `Concertable.B2B.Workers.csproj` build. All B2B modules reference compile. AppHost starts all services. No behaviour change — `dotnet run --project api/Concertable.AppHost` produces the same running system.
 
 ---
 

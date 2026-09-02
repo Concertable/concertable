@@ -20,7 +20,7 @@ startup or every SPA login CORS-fails. Full detail + the port map + gotchas: [`d
 ### Start
 From the repo root:
 ```
-dotnet run --project api/Concertable.System.AppHost
+dotnet run --project api/Concertable.AppHost
 ```
 Or alternatively, just click the play button on Visual Studio.
 The Aspire dashboard will open and list all service URLs.
