@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `9ab7736cc45b`  `(2026-09-02)`
+**Reviewed up to commit:** `eed1f805bad9`  `(2026-09-02)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-08-30 — full
@@ -154,3 +154,40 @@ DataAccess unit 22 passed, DataAccess integration 19 passed.
 **Reviewer independence:** this pass was performed by the session that authored the change.
 Findings 3 and 4 were both raised and fixed within it, so the pass is not a substitute for an
 independent read of the specification contract, whose caveat from 2026-08-31 still stands.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `9ab7736cc45b7f016363d818af3311f843bad605`
+**Candidate head:** `eed1f805bad913d53e54462a4facf6d974807794`
+**Candidate branch:** `Refactor/data-access-specification-query-boundary`
+**Candidate scope:** `base merge only — one conflict resolution, no authored code change`
+**Candidate path-set:** `sha256:5263c946670e24a37fe67180e4bddada71e6fceca7b5ba9d665af816b0f905fd` `(67 paths)`
+**Work-order path:** `reviews/Refactor-data-access-specification-query-boundary.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+One merge of `origin/main` (47 commits) taken to clear the base lag and the stale
+`ConcertablePlatformVersion` pin (`0.1.0-alpha.0.1304`, sync #921). The range carries no authored
+code: this branch's diff against base is byte-identical to the previously approved pass, and the
+only Kernel change in range is `ValueObjects/Href.cs`, a new file arriving from base.
+
+One conflict, in the generated `eng/repository-split/inventory.json` — both sides had advanced
+`projectCount`. Resolved by taking base and re-running `python eng/repository-split/inventory.py`
+over the merged tree rather than hand-picking a count; `--check` then reports
+"inventory.json is current; no test-tier cross-repository ProjectReference".
+
+The 67 base-changed paths intersect this branch's 82 authored paths only at `api/Concertable.slnx`
+(auto-merged, both sides adding projects), the regenerated inventory, and this work order. Base's
+E2E rework (#912, the fleet-to-System boundary rename) touches no Kernel specification contract,
+no DataAccess evaluator, and no repository this branch rewrites.
+
+Verification on the merged head: `local-platform.ps1 build api/Concertable.slnx` 0 errors;
+Kernel 296 passed, DataAccess unit 22 passed, DataAccess integration 19 passed.
+
+**Reviewer independence:** performed by the session that authored the merge. Proportionate for a
+base-merge-only range with no authored code; the specification contract's own independence caveat
+from 2026-08-31 still stands.
+
+### Findings
+
+No findings.
