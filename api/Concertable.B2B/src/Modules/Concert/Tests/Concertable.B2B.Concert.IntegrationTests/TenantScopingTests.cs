@@ -139,7 +139,7 @@ public sealed class TenantScopingTests : IAsyncLifetime
         var venueRead = await venueClient.GetAsync($"/api/organization/concert/{concertId}");
         await venueRead.ShouldBe(HttpStatusCode.OK);
         var venueConcert = await venueRead.Content.ReadAsync<MyDetailsResponse>();
-        Assert.Equal($"/api/concert/{concertId}/contract/pdf", venueConcert!.Actions.Contract!.Href);
+        Assert.Equal($"/api/concert/{concertId}/contract/pdf", venueConcert!.Actions.Contract!.Href.Value);
         Assert.NotNull(venueConcert.Actions.Cancel); // Booked
 
         // Artist party — the other side of the deal reads it too, with the contract link.

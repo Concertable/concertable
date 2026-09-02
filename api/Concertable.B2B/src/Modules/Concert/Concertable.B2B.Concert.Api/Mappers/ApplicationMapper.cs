@@ -4,7 +4,7 @@ using Concertable.B2B.Concert.Application.Interfaces;
 using Concertable.B2B.Concert.Application.Workflow;
 using Concertable.B2B.Concert.Application.Workflow.Capabilities;
 using Concertable.B2B.Concert.Domain.Lifecycle;
-using Microsoft.AspNetCore.Http;
+using Concertable.Shared.Api.Http;
 
 namespace Concertable.B2B.Concert.Api.Mappers;
 
@@ -25,13 +25,13 @@ internal sealed class ApplicationMapper : IApplicationMapper
             dto.Status,
             new VenueApplicationActions(
                 Accept: isPending
-                    ? new ActionLink($"/api/application/{dto.Id}/accept", HttpMethods.Post)
+                    ? ActionLink.Post($"/api/application/{dto.Id}/accept")
                     : null,
                 Checkout: isPending && registry.Has<IAcceptsCheckout>(dto.Opportunity.Deal.DealType)
-                    ? new ActionLink($"/api/application/{dto.Id}/checkout", HttpMethods.Post)
+                    ? ActionLink.Post($"/api/application/{dto.Id}/checkout")
                     : null,
-                Decline: isPending ? new ActionLink($"/api/application/{dto.Id}/reject", HttpMethods.Post) : null,
-                Cancel: isCancellable ? new ActionLink($"/api/application/{dto.Id}/cancel", HttpMethods.Post) : null,
+                Decline: isPending ? ActionLink.Post($"/api/application/{dto.Id}/reject") : null,
+                Cancel: isCancellable ? ActionLink.Post($"/api/application/{dto.Id}/cancel") : null,
                 Contract: ContractAction(dto)));
     }
 
@@ -56,7 +56,7 @@ internal sealed class ApplicationMapper : IApplicationMapper
             status,
             new ArtistApplicationActions(
                 Withdraw: canWithdraw
-                    ? new ActionLink($"/api/application/{dto.Id}/withdraw", HttpMethods.Post)
+                    ? ActionLink.Post($"/api/application/{dto.Id}/withdraw")
                     : null,
                 Contract: ContractAction(dto)));
     }
@@ -84,6 +84,6 @@ internal sealed class ApplicationMapper : IApplicationMapper
 
     private static ActionLink? ContractAction(ApplicationDto dto) =>
         dto.ContractId is not null
-            ? new ActionLink($"/api/application/{dto.Id}/contract/pdf", HttpMethods.Get)
+            ? ActionLink.Get($"/api/application/{dto.Id}/contract/pdf")
             : null;
 }

@@ -4,7 +4,7 @@ using Concertable.B2B.Concert.Application.Interfaces;
 using Concertable.B2B.Concert.Application.Workflow;
 using Concertable.B2B.Concert.Application.Workflow.Capabilities;
 using Concertable.Contracts;
-using Microsoft.AspNetCore.Http;
+using Concertable.Shared.Api.Http;
 
 namespace Concertable.B2B.Concert.Api.Mappers;
 
@@ -21,7 +21,7 @@ internal sealed class OpportunityMapper : IOpportunityMapper
 
         var actions = new OpportunityActions(
             Checkout: registry.Has<IAppliesCheckout>(ct)
-                ? new ActionLink($"/api/application/opportunity/{dto.Id}/checkout", HttpMethods.Post)
+                ? ActionLink.Post($"/api/application/opportunity/{dto.Id}/checkout")
                 : null);
 
         return new OpportunityResponse(

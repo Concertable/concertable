@@ -1,6 +1,6 @@
 using Concertable.B2B.Concert.Api.Responses;
 using Concertable.B2B.Concert.Application.DTOs;
-using Microsoft.AspNetCore.Http;
+using Concertable.Shared.Api.Http;
 
 namespace Concertable.B2B.Concert.Api.Mappers;
 
@@ -12,7 +12,7 @@ internal static class SelfBillingAgreementMappers
     {
         public SelfBillingAgreementResponse ToResponse()
         {
-            var post = new ActionLink(Path, HttpMethods.Post);
+            var post = ActionLink.Post(Path);
             var agreement = status.Agreement;
 
             if (agreement is null)
@@ -34,7 +34,7 @@ internal static class SelfBillingAgreementMappers
                     Grant: null,
                     Renew: status.CanRenew ? post : null,
                     Pdf: status.IsInForce
-                        ? new ActionLink($"{Path}/pdf", HttpMethods.Get)
+                        ? ActionLink.Get($"{Path}/pdf")
                         : null),
             };
         }

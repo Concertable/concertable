@@ -1,4 +1,5 @@
 using Concertable.Contracts;
+using Concertable.Shared.Api.Http;
 
 namespace Concertable.B2B.Concert.Api.Responses;
 

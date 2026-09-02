@@ -1,6 +1,7 @@
 using Concertable.B2B.Artist.Contracts;
 using Concertable.B2B.Concert.Application.DTOs;
 using Concertable.B2B.Deal.Contracts;
+using Concertable.Shared.Api.Http;
 using System.Text.Json.Serialization;
 
 namespace Concertable.B2B.Concert.Api.Responses;
