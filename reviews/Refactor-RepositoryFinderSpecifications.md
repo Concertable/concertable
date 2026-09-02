@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `16a13559c9f3`  `(2026-09-02)`
+**Reviewed up to commit:** `abec4aa069ef`  `(2026-09-02)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-02 — full
@@ -59,3 +59,35 @@ the SqlClient native DLL under the path — so that tier is covered by CI rather
 
 **Reviewer independence:** this pass was performed by the session that authored the change; independent
 lens subagents were not dispatched. It is weaker than an isolated multi-lens pass.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `16a13559c9f3d13f1acf3bec009052c999153d64`
+**Candidate head:** `abec4aa069efd88c5425665a94552035ab6cbe75`
+**Candidate branch:** `Refactor/RepositoryFinderSpecifications`
+**Candidate scope:** `branch-authored delta vs the prior watermark`
+**Candidate path-set:** `sha256:e779b14cd108b9996d9177835e47618a6143c43e72b4afe766e57c58fa98fe04` `(5 paths)`
+**Work-order path:** `reviews/Refactor-RepositoryFinderSpecifications.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Replaces the include-based artist/venue specification with a projection. `ArtistAndVenue` is a
+positional `record struct` in `Application/Projections`, so `GetByIdAsync` returns
+`ArtistAndVenue?` through the value-type `Select` overload and `ContractIssuer` deconstructs it
+directly. That removes the local whose name described nothing, restores the tuple shape the
+deleted finder returned, and narrows the query from the whole application graph to the two
+columns actually read. `CreateWithArtistAndVenue` lost both callers and is deleted.
+
+The type is named rather than a `ValueTuple` because EF translates a constructor projection and
+does not translate a tuple one — `GetTenantPairByIdAsync` already works around exactly that by
+projecting an anonymous type and rebuilding its tuple in memory.
+
+### Findings
+
+No findings.
+
+### Notes
+
+- The translation is now proven rather than assumed: the Concert integration tier was run from a
+  short-path checkout (176 passed, 0 failed, 8m27s), which also closes the gap the previous pass
+  recorded, where Windows MAX_PATH prevented that tier from running in this worktree.
