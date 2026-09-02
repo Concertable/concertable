@@ -78,7 +78,7 @@ Every accept/reject claim below was reproduced by the parent by executing `Href.
   (`/api/files?path=/a/../b`, `/api/concert/7#notes/..`) as accepted.
   `Concertable.Kernel.UnitTests` 271/271.
 
-- [ ] **F4 — HIGH — correctness** — `api/Concertable.Shared/src/Concertable.Shared.Api/Http/ActionLink.cs:8`
+- [x] **F4 — HIGH — correctness** — `api/Concertable.Shared/src/Concertable.Shared.Api/Http/ActionLink.cs:8`
   `ActionLink` serializes but cannot be deserialized. Its only constructor is `private`, its
   properties are get-only, and it carries no `[JsonConstructor]`; deserializing it under the
   application's own serializer options throws, verified verbatim: `NotSupportedException:
@@ -93,6 +93,12 @@ Every accept/reject claim below was reproduced by the parent by executing `Href.
   Fix: annotate the constructor `[JsonConstructor]` — its `href` and `method` parameter names bind to
   the camelCased properties — and add a round-trip assertion to `ActionLinkWireFormatTests`.
 
+  **Disposition:** `[JsonConstructor]` on the constructor, which System.Text.Json honours while the
+  constructor stays `private`, so factory-only construction is preserved rather than traded away.
+  Evidence: two new round-trip tests — `ActionLink` alone, and a record envelope carrying two
+  nullable `ActionLink` members, which is the shape the four module response types use. Both assert
+  equality against the original, so the serialize and deserialize directions are now both pinned.
+
 - [ ] **F5 — LOW — docs-and-debt** — `api/Concertable.B2B/TECH_DEBT.md:149`
   The new debt entry cites code that does not exist on this candidate. There is no Api-layer
   `ApplicationMappers`: the Api-layer file is `Concert.Api/Mappers/ApplicationMapper.cs` (singular),
@@ -102,7 +108,7 @@ Every accept/reject claim below was reproduced by the parent by executing `Href.
   durable doc pointing at paths that do not exist is the dangling citation `docs-and-debt` forbids.
   Fix: correct both to the paths present on this branch.
 
-- [ ] **F6 — LOW — unit-testing** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/ActionLinkWireFormatTests.cs:13`
+- [x] **F6 — LOW — unit-testing** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/ActionLinkWireFormatTests.cs:13`
   `ApplicationOptions()` is a per-test factory method rebuilding a whole `ServiceCollection` and
   `ServiceProvider` on every call, for a value identical across every test. `UNIT.md` rejects this by
   name: "Never a per-test `CreateSut()`/`CreateService()` factory method. A private method rebuilt on
@@ -112,15 +118,25 @@ Every accept/reject claim below was reproduced by the parent by executing `Href.
   shape, so fixing only the new file leaves the two inconsistent. Converting both is preferable, but
   the neighbour is outside this candidate.
 
-- [ ] **F7 — LOW — unit-testing** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/ActionLinkWireFormatTests.cs:41`
+  **Disposition:** replaced by a `private readonly JsonSerializerOptions options` built in the test
+  constructor and read as `this.options`. `GenreWireFormatTests` is unchanged and still carries the
+  old shape — it is outside this candidate's path set, so it is not silently reworked here.
+
+- [x] **F7 — LOW — unit-testing** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/ActionLinkWireFormatTests.cs:41`
   `Factory_RejectsAnHrefThatIsNotRootRelative` breaks `Method_Scenario_ExpectedBehaviour`: "Factory"
   is not a method on `ActionLink`, and the test exercises `Post` only. Fix: rename to
   `Post_HrefNotRootRelative_ThrowsDomainException`.
 
-- [ ] **F8 — LOW — reuse** — `api/Concertable.Shared/src/Concertable.Shared.Api/Http/ActionLink.cs:22`
+  **Disposition:** renamed to `Post_HrefNotRootRelative_ThrowsDomainException`, and a sibling
+  `Get_HrefNotRootRelative_ThrowsDomainException` added so the rejection is asserted for both
+  surviving factories rather than inferred from a shared code path.
+
+- [x] **F8 — LOW — reuse** — `api/Concertable.Shared/src/Concertable.Shared.Api/Http/ActionLink.cs:22`
   `Put` and `Delete` have no caller and no test, and none of the `ActionLink` declarations this
   primitive replaces uses either verb — every existing one is `HttpMethods.Get` or `HttpMethods.Post`.
   Fix: delete both until a caller exists, and add them back with the caller that needs them.
+
+  **Disposition:** both deleted. `Get` and `Post` are the only verbs any existing `ActionLink` uses.
 
 Considered and deliberately not retained: no maximum length on `Href` (no backing column exists, so
 the failure mode is speculative); the Vogen EF value converter being untested (nothing persists an
