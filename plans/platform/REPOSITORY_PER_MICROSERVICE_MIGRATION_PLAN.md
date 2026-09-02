@@ -1,13 +1,13 @@
 # Repository-per-microservice migration
 
-**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state, the verified 2026-08-26
-rescope, and next steps live in `REPOSITORY_PER_MICROSERVICE_MIGRATION_PROGRESS.md`; that ledger
-overrides any status or inventory figure in this document.
+**Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state and next steps live in the
+exclusive stream ledgers named by the `platform/polyrepo-cut` active-owner table in
+`POLYREPO_ROADMAP.md`; those ledgers override any status or inventory figure in this document.
 
 **This document's inventory is a 2026-08-02 snapshot and has drifted.** Four audits re-verified every
-checkpoint against current `main` on 2026-08-26 — see the ledger's rescope table. Known corrections:
+checkpoint against current `main` on 2026-08-26; Git history retains that rescope evidence. Known corrections:
 checkpoint 5 is ~85% delivered and its "keep b2b/customer local" constraint is superseded; the
-`*.Hosting` projects of checkpoint 2 already exist; the `system` repository is renamed `fleet`.
+`*.Hosting` projects of checkpoint 2 already exist; the full-system repository is `Concertable/system`.
 
 **Planning baseline:** `origin/main` at `d3c399ec8b4a4f4916b17764400ffbf73ba455a9` on 2026-08-02.
 **Re-verified against `origin/main` on 2026-08-26** (2873 commits later); machine-readable inventory
@@ -23,7 +23,7 @@ The durable target is nine canonical repositories:
 
 1. five service repositories: B2B, Customer, Payment, Search, and Auth;
 2. two platform repositories: one for shared .NET packages and one for shared frontend packages;
-3. one system repository for the full-stack AppHost, fleet manifest, infrastructure, deployment, and
+3. one system repository for `Concertable.AppHost`, the system manifest, infrastructure, deployment, and
    black-box E2E; and
 4. the conventional organization `.github` repository for reusable workflows and repository policy.
 
@@ -54,7 +54,7 @@ sequence. There is never a repository-wide forced bump that can strand every ser
 - Each service's standalone AppHost is canonical for service development. It runs that service from source
   and foreign dependencies from pinned images.
 - The full-stack AppHost and E2E suite live in `Concertable/system` and run only published images at the
-  compatibility versions recorded in the fleet manifest.
+  compatibility versions recorded in the system manifest.
 - A service runtime may reference only platform packages and published boundary packages. Build-time
   AppHost and test tooling packages are allowed only in AppHost/test projects and are rejected from runtime
   closures.
@@ -117,7 +117,8 @@ Current packable ownership is:
 
 - Auth: `Concertable.Auth.Contracts`.
 - B2B: Artist, Concert, Tenant, User, and Venue Contracts plus `Concertable.B2B.Seed.Contracts`.
-- Customer: `Concertable.Customer.Review.Contracts`.
+- Customer: `Concertable.Customer.Review.Contracts`, `Concertable.Customer.Ticket.Contracts`, and
+  `Concertable.Customer.Hosting`.
 - Payment: `Concertable.Payment.Contracts` and `Concertable.Payment.Client`.
 - Platform: `Concertable.Contracts`, Kernel, DataAccess Application/Infrastructure, all five Messaging
   layers, ServiceDefaults, shared API/capability Application and Infrastructure packages, seed primitives,
@@ -217,7 +218,7 @@ repository-linkage verification is an explicit preflight gate rather than an ass
 
 No `Concertable/config`, `Concertable/system`, `Concertable/platform-dotnet`, or
 `Concertable/platform-web` repository currently exists. The deployment plan's earlier assumption that a
-config repo had been authored is not true in GitHub. The target places fleet IaC and config-as-code in the
+config repo had been authored is not true in GitHub. The target places system IaC and config-as-code in the
 system repo so desired images, infrastructure, migrations, and E2E promotion stay atomic.
 
 ## Target repository topology and ownership
@@ -225,13 +226,13 @@ system repo so desired images, infrastructure, migrations, and E2E promotion sta
 | Repository | Owns | Must not own | Code owner |
 |---|---|---|---|
 | `Concertable/b2b` | B2B backend, modules, migrations, B2B Contracts, B2B seed catalog/simulator, B2B web/mobile surfaces, standalone AppHost | Customer runtime/projections by direct source, shared platform implementations | `@Concertable/b2b-maintainers` |
-| `Concertable/customer` | Customer backend, migrations, Review/Seed Contracts, Customer simulator, customer web/mobile and `@customer/shared`, standalone AppHost | B2B runtime/source | `@Concertable/customer-maintainers` |
+| `Concertable/customer` | Customer backend, migrations, Review/Ticket/Seed Contracts, Customer simulator, customer web/mobile and `@customer/shared`, standalone AppHost | B2B runtime/source | `@Concertable/customer-maintainers` |
 | `Concertable/payment` | Payment Web/Workers, Payment DB migrations, Contracts, Client, Stripe test tooling, standalone AppHost | B2B business logic or database | `@Concertable/payment-maintainers` |
 | `Concertable/search` | Search Web/Workers, projections, Search DB migrations, standalone AppHost | producer write models/databases | `@Concertable/search-maintainers` |
 | `Concertable/auth` | Auth runtime, `Auth.Contracts`, Auth DB and both Auth/Duende migrations, standalone AppHost | B2B DB or tenant/business persistence | `@Concertable/auth-maintainers` |
 | `Concertable/platform-dotnet` | Kernel, generic Contracts, Messaging, DataAccess, ServiceDefaults, shared capabilities, seed primitives, test primitives, generic Aspire hosting primitives, `Concertable.Build` | service DTOs, service topology, service runtime | `@Concertable/platform-maintainers` |
 | `Concertable/platform-web` | `@concertable/shared`, `@concertable/web-shared`, shared ESLint/TypeScript/Vite conventions | B2B- or Customer-only UI/domain code | `@Concertable/frontend-platform-maintainers` |
-| `Concertable/system` | full-stack container AppHost, immutable fleet manifest, API/UI/mobile E2E, Terraform, App Configuration declarations, deployment/promotion/rollback workflows | service implementations, EF models, private domain code | `@Concertable/system-maintainers` |
+| `Concertable/system` | `Concertable.AppHost`, immutable system manifest, API/UI/mobile E2E, Terraform, App Configuration declarations, deployment/promotion/rollback workflows | service implementations, EF models, private domain code | `@Concertable/system-maintainers` |
 | `Concertable/.github` | reusable CI workflows, hardened composite actions, shared Renovate preset, PR/repository policy templates | application/runtime libraries | `@Concertable/platform-maintainers` |
 
 Tommy is bootstrap administrator. Teams and `CODEOWNERS` express the durable ownership boundary even while
@@ -264,12 +265,12 @@ nuget.config
 `system` uses:
 
 ```text
-apphost/             full fleet from containers
+src/Concertable.AppHost/ full system from containers
 tests/api/
 tests/ui/
 tests/mobile/
 testkits/            system-only generic harness code
-fleet/               image digests and compatible package/testkit versions
+manifests/           image digests and compatible package/testkit versions
 infra/modules/
 infra/environments/{test,production}/
 config/{test,production}/
@@ -284,7 +285,9 @@ scripts/
   E2E, `Concertable.Auth.TestKit`.
 - B2B publishes its existing module Contracts and Seed Contracts, plus `Concertable.B2B.Hosting` and a
   black-box TestKit.
-- Customer publishes Review Contracts, new Customer Seed Contracts, Hosting, and a black-box TestKit.
+- Customer publishes Review Contracts, Ticket Contracts, new Customer Seed Contracts, Hosting, and a
+  black-box TestKit. Ticket Contracts remain in the train because Customer Hosting directly uses
+  `TicketPurchasedEvent` and `SendTicketEmailCommand` in its topology metadata.
 - Payment publishes Contracts, Client, Hosting, and Stripe/E2E TestKit artifacts.
 - Search publishes Hosting and a TestKit. It gets a Search Contracts package only when a real external
   compile-time consumer exists; no empty symmetry package is created.
@@ -329,7 +332,7 @@ workspace packages are not published merely because the repositories split.
   scans pass; publishing still requires the owning repository's `GITHUB_TOKEN`.
 - Every package workflow produces provenance, SBOM, and a clean-consumer restore/build test before publish.
 - Renovate is installed across the organization. The shared preset groups packages by producer train,
-  updates NuGet/npm/GitHub Actions and OCI digests, and uses custom managers for `fleet/*.yaml`.
+  updates NuGet/npm/GitHub Actions and OCI digests, and uses custom managers for `manifests/*.yaml`.
 - Patch/minor additive updates may auto-merge only after the consumer's full required CI. Major updates and
   Contract removals always require owner review. No dependency bot may merge a PR with red or missing checks.
 - GitHub Packages access is granted explicitly to every consuming repository. A dedicated least-privilege
@@ -342,7 +345,7 @@ The new flow is producer pull, not central push:
 
 ```text
 producer main -> publish immutable package/image -> Renovate opens consumer PRs
-              -> each consumer builds/tests independently -> system updates compatible fleet digest
+              -> each consumer builds/tests independently -> system updates compatible system digest
 ```
 
 Breaking Contracts use this mandatory sequence:
@@ -376,7 +379,7 @@ Expected foreign image composition after the Auth DB correction:
 |---|---|
 | Auth | none |
 | Payment | Auth, Stripe CLI |
-| Search | Auth, B2B Seed Simulator, Customer Seed Simulator where rating data is required |
+| Search | Auth, B2B Seed Simulator, including B2B-owned rating events |
 | Customer | Auth, Payment Web/Workers, B2B Seed Simulator, Stripe CLI |
 | B2B | Auth, Payment Web/Workers, Customer Seed Simulator where review data is required, Stripe CLI |
 
@@ -399,9 +402,9 @@ Before extraction, E2E must lose all service implementation ProjectReferences. T
 - Stripe test-mode APIs; and
 - generic SQL readiness/reset infrastructure that does not compile service EF models.
 
-The system AppHost reads `fleet/local.yaml`, pulls images by digest, provisions the five databases and shared
+`Concertable.AppHost` reads `manifests/local.yaml`, pulls images by digest, provisions the five databases and shared
 emulators, applies migrations, seeds through owners/simulators, and starts the four SPAs or their preview
-images. `fleet/test.yaml` and `fleet/production.yaml` are desired-state manifests for deployment. A dependency
+images. `manifests/test.yaml` and `manifests/production.yaml` are desired-state manifests for deployment. A dependency
 PR is green only when the full-stack AppHost becomes healthy and affected E2E passes.
 
 ## CI/CD, environments, secrets, and deployment
@@ -431,8 +434,8 @@ the same digest is used by standalone/system composition and Azure Functions on 
 
 ### System CI and deployment
 
-The system repo runs the full Docker health preflight, composes the fleet, and executes API then UI/mobile
-E2E according to the existing risk-tier policy. A merged fleet-manifest PR is the only source of a deployable
+The system repo runs the full Docker health preflight, composes the system, and executes API then UI/mobile
+E2E according to the existing risk-tier policy. A merged system-manifest PR is the only source of a deployable
 multi-service release.
 
 Terraform remains the cloud owner, consistent with `CONFIG_AND_DEPLOYMENT.md` and `DEPLOYMENT.md`:
@@ -452,7 +455,7 @@ allows only protected release refs, prevents self-review where supported, and se
 Secrets are redistributed by least privilege:
 
 - service repositories receive only package credentials and their own integration-test secrets;
-- Stripe/Google/full-fleet service-auth test secrets live only in the system E2E environment unless an owned
+- Stripe/Google/full-system service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
 - canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
 - deployment uses OIDC plus managed identity, App Configuration, and Key Vault references;
@@ -476,7 +479,7 @@ Secrets are redistributed by least privilege:
 - B2B and Customer own canonical seed catalogs and simulator images for outbound events. Consumers never
   seed another service's projections directly outside narrowly scoped integration projection tests.
 - System seeding starts owner-local seed jobs, then producer simulators, then waits for consumer projections.
-  Seed catalog/package/image versions are recorded in the fleet manifest.
+  Seed catalog/package/image versions are recorded in the system manifest.
 - Payment and Auth keep service-local development/test seeders. They publish a simulator only if another
   service gains a real event dependency; symmetry alone is not a reason.
 
@@ -520,7 +523,7 @@ Path ownership for extraction is:
 | Auth | `api/Concertable.Auth`; `api/Concertable.Auth.Contracts` |
 | platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared` |
 | platform-web | `app/shared`; packageized `app/web/shared`; frontend build configuration |
-| system | umbrella AppHost; all current full-stack E2E/helper paths; E2E/docker scripts; fleet IaC/config/deployment history |
+| system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; system IaC/config/deployment history |
 | `.github` | reusable portions of current workflows and policy files, with monorepo-specific jobs excluded |
 
 Files needed by more than one target may legitimately have history in more than one filtered repository, but
@@ -534,7 +537,7 @@ only one target owns the live file after cutover.
   matrix is green. Removal then requires a separate major release.
 - During a service cutover, both the last monorepo image and first canonical-repo image must run against the
   same consumer Contract and database schema.
-- The system fleet retains at least the last known-green and candidate image digests and package matrix.
+- The system repository retains at least the last known-green and candidate image digests and package matrix.
 - Database expansion precedes code rollout; contraction follows only after rollback to the old image is no
   longer required.
 
@@ -564,6 +567,19 @@ they are not deleted.
 Every numbered checkpoint is a separate PR/merge boundary. Complete its verification, commit it, open or
 update the PR, and stop. Cross-repository letters within a checkpoint are also ordered merge boundaries;
 never merge a later letter before the earlier one is green. Tommy must explicitly instruct every merge.
+
+**Checkpoint numbering is final delivery order, not permission to idle.** Preparation for checkpoints
+10–14 runs in parallel whenever the target repository and exact producer artifacts exist. Each `*-next`
+owner may independently land repository-local CI, build/test entry points, package and image publication
+setup, migrations, Hosting/TestKit, seed contracts/simulators, documentation, and repository-settings
+evidence. Record implementation dependencies separately from delivery gates and keep the result
+`implementable, delivery-gated` until its published-baseline revalidation is possible.
+
+The irreversible cutover letters remain ordered: do not freeze or remove monorepo source, rename or change
+repository/package/image visibility, publish a canonical release, change system consumption, migrate live
+data, or deploy production before the preceding checkpoint gates and explicit authorization are satisfied.
+RT3 and Stage 4 are verification/cutover dependencies; they do not block repository-local preparation in a
+private extraction proof.
 
 ### 0. Baseline, permissions, and reproducible inventory (`concertable`)
 
@@ -677,7 +693,7 @@ never merge a later letter before the earlier one is green. Tommy must explicitl
 ### 9. Make the system repository canonical
 
 - 9A (`system-next`): land filtered full-stack AppHost/E2E history, container-only composition,
-  `fleet/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
+  `manifests/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
 - 9B (`system-next`): land the existing Terraform/config/deployment design under system ownership, validate
   plans for test/production, create protected GitHub environments, and perform a test-environment plan or
   ephemeral deployment when Azure credentials/resources are available.
@@ -714,8 +730,10 @@ images, and AppHost. Update B2B/Customer/system independently through published 
 
 ### 12. Promote Search
 
-Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B/Customer simulator images and published
-Contracts; no producer source or database.
+Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B simulator images and published
+Contracts; no producer source or database. Search's rating inputs are B2B-owned events, so the B2B simulator
+must replay them; do not add a direct Customer simulator dependency unless a separately approved contract
+change makes Customer the producer Search actually consumes.
 
 - Verification: Search build/unit/integration/AppHost/migrations and seed convergence; system search
   projection API/UI flows.
@@ -723,8 +741,13 @@ Contracts; no producer source or database.
 
 ### 13. Promote Customer
 
-Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Seed Contracts,
+Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Ticket/Seed Contracts,
 simulator, and all Customer migrations. B2B remains compatible with the published Customer contract train.
+
+Customer preparation starts from the reviewed private `customer` extraction proof and runs in parallel
+with RT3, Stage 4, and the earlier service promotions. Final 13A–13E delivery remains gated on the canonical
+platform/system baselines and the preceding service cutovers; those gates do not prevent Customer-owned CI,
+publication setup, migration/simulator closure, or standalone verification from being completed beforehand.
 
 - Verification: Customer backend/frontend/mobile build and unit/integration; standalone AppHost; migration
   and simulator tests; system customer purchase/review API/UI/mobile flows.
@@ -737,12 +760,12 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
 
 - Verification: full B2B backend/frontend/mobile build and unit/integration; standalone AppHost; all B2B
   migrations and simulator parity; full system API and UI E2E plus affected mobile tests.
-- **Hard stop:** the system fleet contains no monorepo-built service image.
+- **Hard stop:** the system repository contains no monorepo-built service image.
 
 ### 15. Prove deployment and rollback from canonical repositories (`system`)
 
 - Deploy an ephemeral test environment from canonical image digests, run all migration jobs in owner order,
-  seed through owner jobs/simulators, run smoke plus full E2E, then exercise rollback to the prior fleet
+  seed through owner jobs/simulators, run smoke plus full E2E, then exercise rollback to the prior system
   manifest and destroy if using ephemeral mode.
 - Verify production environment protection, OIDC, Key Vault/App Configuration access, migration logs, image
   provenance, and rollback runbook without exposing secrets.

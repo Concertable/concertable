@@ -2,7 +2,8 @@
      Use this when you need to browse, refactor, or search the entire repo at once.
      Each microservice also has its own .slnx (e.g. Concertable.B2B/Concertable.B2B.slnx) for focused work. -->
 <Solution>
-  <Project Path="tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj" />
+  <Project Path="tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj" />
+  <Project Path="tests/Concertable.E2E.Source.UnitTests/Concertable.E2E.Source.UnitTests.csproj" />
   <Project Path="Concertable.AppHost/Concertable.AppHost.csproj" />
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
   <Project Path="Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj" />
@@ -238,6 +239,7 @@
     <Project Path="Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
     <Project Path="Concertable.Search/tests/Concertable.Search.ArchitectureTests/Concertable.Search.ArchitectureTests.csproj" />
     <Project Path="Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj" />
+    <Project Path="Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers.UnitTests/Concertable.Search.E2ETests.Helpers.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Search/Seed/">
     <Project Path="Concertable.Search/src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj" />
