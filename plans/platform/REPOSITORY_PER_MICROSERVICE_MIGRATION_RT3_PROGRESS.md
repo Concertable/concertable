@@ -7,12 +7,13 @@
 - Branch: `Plan/RepoSplit-Stage3-Hosting-rt3` (the PR head is authoritative)
 - PR: [#897](https://github.com/Concertable/concertable/pull/897) — open, unmerged, and carrying the `full-e2e` label
 - Dependency/package gates: published platform `0.1.0-alpha.0.1281` is available; Stage 4 is merged on `main`
-- Last reconciled: **2026-09-02** from exact-head CI run `33670103562`, merge-group run `33672179048`, and diagnostic artifact `9864132171`
+- Last reconciled: **2026-09-02** from exact-head CI run `33676402751`, merge-group run `33672179048`, and diagnostic artifact `9864132171`
 
 ## Current state
 
 RT3 exclusively owns the standalone AppHost cutover from foreign source references to published Hosting
-packages and digest-pinned service containers. Exact-head CI run `33670103562` is green. Merge-group run
+packages and digest-pinned service containers. Exact-head CI run `33676402751` is green with 82 successful
+checks and three expected E2E skips. Merge-group run
 `33672179048` proved the GHCR login and temporary Auth root-user bridge work: Auth created its development
 key and seeded 75 credentials. Auth then exited because the pinned pre-cutover image attempted to bind HTTPS
 on port 8080 without a server certificate. B2B consequently remained at `users=0/71`, because it could not
@@ -26,9 +27,8 @@ project remains source-backed; foreign Hosting dependencies remain published pac
 
 ## Next Steps
 
-Validate the four focused composition suites, all five standalone AppHost/carve builds, and exact-head PR CI
-for the explicit Auth HTTP listener. If green, return PR #897 to the merge queue with `full-e2e`, own API/UI
-E2E to a terminal result, and confirm the merged commit on `main`. The merge-group proof must show GHCR
+Return PR #897 to the merge queue with `full-e2e`, own API/UI E2E to a terminal result, and confirm the
+merged commit on `main`. The merge-group proof must show GHCR
 login, Auth startup and continued operation, B2B and Customer API E2E, UI E2E, the Payment integration shard,
 and `ci-complete` green.
 
@@ -62,9 +62,9 @@ Auth changes in the monorepo are allowed until 10A and must be included in that 
 
 ## Verification
 
-Focused composition suites, all five package-mode AppHost builds, split inventory, and diff checks passed
-before the current repair. Exact-head CI run `33670103562` passed all 82 executed checks with three expected
-E2E skips. Merge-group run `33672179048` completed GHCR authentication, created Auth's development signing
+Exact-head CI run `33676402751` passed all 82 executed checks with three expected E2E skips, including all
+four changed AppHost composition suites, all five standalone carve builds, container-image validation, split
+inventory, and every selected unit and integration shard. Merge-group run `33672179048` completed GHCR authentication, created Auth's development signing
 key, and seeded 75 credentials. Diagnostic artifact `9864132171` contains
 `InvalidOperationException: Unable to configure HTTPS endpoint`; B2B's `users=0/71` readiness state is a
 downstream consequence of Auth exiting before credential events could populate B2B users.
@@ -75,8 +75,9 @@ The prior native, security, persistence, test-impact, and repository review was 
 `438744ed7d150eb76c72d494c19bc6cb280176a5`. Incremental review through
 `e88723e49fa9bf1867fc54cd52bd3910fbd9a279` found no open RT3 finding. The final incremental review found and
 resolved RT3-F5: own-service Hosting had incorrectly remained a package edge that the monorepo source swap
-masked. Security and boundary lenses found no additional issue. Revalidate the resolved candidate before the
-final requeue.
+masked. Security and boundary lenses found no additional issue. Fresh correctness, security, and service-boundary
+reviews of `9851f81646b587d08a1929eb662d2573f8ad0013..36299abfc8915a65ddd5aeda47a52bb8e8e84c7a`
+found no additional issue; the repaired candidate is approved for the final requeue.
 
 ## Decisions, discoveries, blockers, and deviations
 
