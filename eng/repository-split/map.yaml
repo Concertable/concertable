@@ -41,7 +41,7 @@ targets:
     rename:
       api/Concertable.Payment/: ""
     notes:
-      - Payment owns its TestKit, E2E hosts, and Stripe adapter; fleet owns the cross-service helpers.
+      - Payment owns its TestKit, E2E hosts, and Stripe adapter; system owns the cross-service helpers.
 
   search:
     repo: Concertable/search
@@ -122,8 +122,8 @@ targets:
       app/web/shared/: "packages/web/"
       app/mobile/shared/: "packages/mobile/"
 
-  fleet:
-    repo: Concertable/fleet
+  system:
+    repo: Concertable/system
     include:
       - api/Concertable.AppHost
       - api/tests
@@ -139,7 +139,7 @@ targets:
       - eng/repository-split/carve-e2e.ps1
       - scripts
     rename:
-      api/Concertable.AppHost/: "apphost/"
+      api/Concertable.AppHost/: "src/Concertable.AppHost/"
       api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
       api/Concertable.B2B/tests/E2ETests/: "tests/b2b/"
       api/Concertable.Customer/tests/E2ETests/: "tests/customer/"
@@ -147,8 +147,8 @@ targets:
       api/Concertable.Search/tests/E2ETests/: "tests/search/"
       api/tests/: "tests/shared/"
     notes:
-      - "Composes and ships the fleet: umbrella AppHost, cross-service E2E, fleet manifest, IaC, deployment and rollback."
-      - "Renamed from `system`, which read as core infrastructure and misdescribed it."
+      - "Composes and ships the system: umbrella AppHost, cross-service E2E, system manifest, IaC, deployment and rollback."
+      - "System names the repository responsibility, not a .NET namespace; code artifacts avoid the framework System root."
       - "E2E must lose service-implementation references (checkpoint 4) before this extraction can build standalone."
 
   org-github:
