@@ -4,8 +4,8 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `complete`
-**Reviewed up to commit:** `2e3d6d391cbd4a3df75be015c34d8ed90c39379f`  `(2026-09-02)`
+**Review status:** `in-progress`
+**Reviewed up to commit:** `b4496a9f8c61de683b8f8ef3c56bab31220464be`  `(2026-09-02)`
 **Judgment:** `changes-requested`
 
 ## Review pass — 2026-09-02 — full
@@ -150,3 +150,84 @@ the failure mode is speculative); the Vogen EF value converter being untested (n
 invalid-input theory, and `TryFrom` not being driven through every `Validate` branch (all match the
 established `EmailAddressTests` convention and share one code path); and `AddControllers()` inside a
 unit test (the pre-existing, unchanged `GenreWireFormatTests` establishes it locally).
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `2e3d6d391cbd4a3df75be015c34d8ed90c39379f`
+**Candidate head:** `b4496a9f8c61de683b8f8ef3c56bab31220464be`
+**Candidate branch:** `Refactor/href-action-link-primitive`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:e244b109230d554e417c8461f1ba0a95432565a3d305e2dee6f538b925d8e690` `(6 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable/62ef6cf9-f6fe-43dd-a8f6-24f2683961a7/scratchpad/review-bundle-href-inc`
+**Candidate bundle identity:** `sha256:8fb5e615f9c2087c6c9b079a3aa8e923b25ffeb3f97983ec6dbcac7650b1c8dd`
+**Work-order path:** `reviews/Refactor-href-action-link-primitive.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+Layers run: native/general; an adversarial correctness lens tasked only with refuting the claim that
+`Href` now accepts nothing off-origin. Both reported, both were re-verified by the parent by executing
+`Href.TryFrom` and `JsonSerializer.Deserialize`, and by reading the installed axios source. No frozen
+path matches `security_paths`, so no security layer ran.
+
+- [x] **F9 — HIGH — correctness/boundary** — `api/Concertable.Shared/src/Concertable.Kernel/ValueObjects/Href.cs:22`
+  The root-relative rule inspected `value[1]` only, so an empty segment further along was accepted:
+  `Href.TryFrom("/api//evil.com/x")` returned true. That value is not inert. `apiPath`
+  (`app/web/b2b/shared/src/features/concerts/api/actionLinkApi.ts:4`) strips a leading `/api`, leaving
+  `//evil.com/x`; axios `isAbsoluteURL` documents `//` as absolute
+  (`app/node_modules/axios/lib/helpers/isAbsoluteURL.js`), and `buildFullPath` then returns the URL
+  "untouched", dropping `baseURL`; `attachAuth` (`app/shared/src/lib/client.ts`) sets
+  `Authorization: Bearer <token>` on every request unconditionally. So the request, and the caller's
+  access token, leave for the attacker's host. `/api///evil.com` behaves the same, and `apiPath`'s
+  regex is case-insensitive so `/apI//evil.com` does too.
+  **Disposition:** the path is now rejected for containing `//` anywhere, not just at index 1, which
+  closes the family rather than one index. Covered by `From_EmptyPathSegment_ThrowsDomainException`
+  (`//host`, `/api//host`, `/api///host`) and by `TryFrom_InvalidHref_ReturnsFalse`.
+  Not reachable before this branch: all existing `ActionLink` literals interpolate an int id.
+
+- [x] **F10 — MEDIUM — correctness** — `api/Concertable.Shared/src/Concertable.Kernel/ValueObjects/Href.cs:16`
+  Decoding happened in one branch and fed only the `..` test, so the structural rules saw raw bytes
+  only. Verified accepted: `/%2Fevil.com` and `/%2fevil.com` (decode to `//evil.com`),
+  `/%5Cevil.com` (to `/\evil.com`), and `/%09/`, `/%0D/`, `/%0A/` (to the tab, CR and LF forms) —
+  the percent-encoded twins of the four raw payloads the tests already asserted must throw. Accepting
+  a value while rejecting its raw equivalent is incoherent whatever a given client does with it.
+  **Disposition:** `Validate` now applies one `PathFault` rule set to both the raw path and its
+  once-decoded form, so every raw rejection has an encoded counterpart. Single decode remains the
+  stated guarantee, so a double-encoded form is still not traversal. Each encoded form above is now
+  an asserted case.
+
+- [x] **F11 — MEDIUM — correctness** — `api/Concertable.Shared/src/Concertable.Shared.Api/Http/ActionLink.cs:9`
+  `[JsonConstructor]` restored the round trip and simultaneously opened an absent-member hole:
+  `Deserialize<ActionLink>` of `{"method":"POST"}` succeeded and produced an `ActionLink` whose
+  non-nullable `Href` was null, so `link.Href.Value` threw `NullReferenceException`. `Href` *content*
+  was never bypassable — Vogen's converter runs `Validate` — but absence was.
+  **Disposition:** the review's suggested `[JsonRequired]` does not work here; System.Text.Json
+  rejects it outright on a get-only property (`JsonPropertyInfo 'href' ... is marked required but does
+  not specify a setter`), which broke serialization before it could help. The constructor now guards
+  with `DomainException.ThrowIfNull` and `ThrowIfNullOrWhiteSpace`, the helpers `Concertable.Kernel`
+  already provides, which cover the deserialization path and every other. Pinned by
+  `Deserialize_MemberMissing_Throws` and `Deserialize_HrefThatWouldLeaveTheOrigin_Throws`.
+
+- [x] **F12 — MEDIUM — correctness** — `api/Concertable.Shared/src/Concertable.Kernel/ValueObjects/Href.cs:16`
+  The character denylist scanned the whole value while the traversal check correctly scoped itself to
+  the path, so `/api/report?filename=C:\temp\out.csv` was rejected — a `DomainException` thrown
+  while building a response over a backslash that WHATWG only treats as a separator in path state, not
+  query state.
+  **Disposition:** the backslash and empty-segment rules are scoped to `value.Split('?', '#')[0]`. The
+  raw-space rule is dropped entirely rather than rescoped: an unencoded space is a caller formatting
+  bug, not a boundary threat, and rejecting it bought nothing. Control characters stay rejected across
+  the whole value, because a browser strips tab/CR/LF from anywhere in a URL and can reshape it.
+  `From_QueryOrFragmentContent_IsNotJudgedAsAPath` now asserts the backslash-in-query and
+  space-in-query cases are accepted.
+
+- [x] **F13 — LOW — unit-testing** — `api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/ValueObjects/HrefTests.cs:30`
+  Two theory names described rules their data never reached: `""` and `"   "` sat under
+  `From_NotRootRelative_...` though the required-value check rejects them first, and four of the five
+  `From_ValueThatResolvesCrossOrigin_...` inputs were caught by the character check, leaving one input
+  actually exercising the root-relative rule.
+  **Disposition:** split by the rule each input reaches — `From_MissingValue_`,
+  `From_NotRootRelative_`, `From_EmptyPathSegment_`, `From_Backslash_`, `From_ControlCharacter_` and
+  `From_TraversingPath_`, each holding only inputs that reach the check it names.
+
+Fixed in the follow-up commit; a third pass covers that delta.
