@@ -66,11 +66,10 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-No further Customer-only preparation slice is independently implementable. Keep Customer PR #1 draft and
-hold final 13A–13E delivery until the owning plan's canonical platform/system baselines and preceding service
-cutovers are green. Resume standalone AppHost work only when its named foreign container-hosting inputs are
-available; resume rules/main-protection work only when the private-plan capability changes. Do not publish or
-push candidates, create tags, change visibility, retry or bypass the protection `403`, or enter another stream.
+Blocked: Customer Actions receives a package-specific `403` for `Concertable.Testing.Architecture`, keeping `Concertable.Customer.ArchitectureTests` outside the canonical Customer solution.
+Blocked by: the `Concertable.Testing.Architecture` platform package owner.
+Unblock action: grant `Concertable/customer` Actions read access to the `Concertable.Testing.Architecture` package.
+Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Customer.slnx` and require exact-head Customer CI to pass.
 
 ## Completed work
 
