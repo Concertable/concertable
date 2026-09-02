@@ -23,7 +23,7 @@ The durable target is nine canonical repositories:
 
 1. five service repositories: B2B, Customer, Payment, Search, and Auth;
 2. two platform repositories: one for shared .NET packages and one for shared frontend packages;
-3. one system repository for `Concertable.System.AppHost`, the system manifest, infrastructure, deployment, and
+3. one system repository for `Concertable.AppHost`, the system manifest, infrastructure, deployment, and
    black-box E2E; and
 4. the conventional organization `.github` repository for reusable workflows and repository policy.
 
@@ -231,7 +231,7 @@ system repo so desired images, infrastructure, migrations, and E2E promotion sta
 | `Concertable/auth` | Auth runtime, `Auth.Contracts`, Auth DB and both Auth/Duende migrations, standalone AppHost | B2B DB or tenant/business persistence | `@Concertable/auth-maintainers` |
 | `Concertable/platform-dotnet` | Kernel, generic Contracts, Messaging, DataAccess, ServiceDefaults, shared capabilities, seed primitives, test primitives, generic Aspire hosting primitives, `Concertable.Build` | service DTOs, service topology, service runtime | `@Concertable/platform-maintainers` |
 | `Concertable/platform-web` | `@concertable/shared`, `@concertable/web-shared`, shared ESLint/TypeScript/Vite conventions | B2B- or Customer-only UI/domain code | `@Concertable/frontend-platform-maintainers` |
-| `Concertable/system` | `Concertable.System.AppHost`, immutable system manifest, API/UI/mobile E2E, Terraform, App Configuration declarations, deployment/promotion/rollback workflows | service implementations, EF models, private domain code | `@Concertable/system-maintainers` |
+| `Concertable/system` | `Concertable.AppHost`, immutable system manifest, API/UI/mobile E2E, Terraform, App Configuration declarations, deployment/promotion/rollback workflows | service implementations, EF models, private domain code | `@Concertable/system-maintainers` |
 | `Concertable/.github` | reusable CI workflows, hardened composite actions, shared Renovate preset, PR/repository policy templates | application/runtime libraries | `@Concertable/platform-maintainers` |
 
 Tommy is bootstrap administrator. Teams and `CODEOWNERS` express the durable ownership boundary even while
@@ -264,12 +264,12 @@ nuget.config
 `system` uses:
 
 ```text
-apphost/             full system from containers
+src/Concertable.AppHost/ full system from containers
 tests/api/
 tests/ui/
 tests/mobile/
 testkits/            system-only generic harness code
-system/              image digests and compatible package/testkit versions
+manifests/           image digests and compatible package/testkit versions
 infra/modules/
 infra/environments/{test,production}/
 config/{test,production}/
@@ -329,7 +329,7 @@ workspace packages are not published merely because the repositories split.
   scans pass; publishing still requires the owning repository's `GITHUB_TOKEN`.
 - Every package workflow produces provenance, SBOM, and a clean-consumer restore/build test before publish.
 - Renovate is installed across the organization. The shared preset groups packages by producer train,
-  updates NuGet/npm/GitHub Actions and OCI digests, and uses custom managers for `system/*.yaml`.
+  updates NuGet/npm/GitHub Actions and OCI digests, and uses custom managers for `manifests/*.yaml`.
 - Patch/minor additive updates may auto-merge only after the consumer's full required CI. Major updates and
   Contract removals always require owner review. No dependency bot may merge a PR with red or missing checks.
 - GitHub Packages access is granted explicitly to every consuming repository. A dedicated least-privilege
@@ -399,9 +399,9 @@ Before extraction, E2E must lose all service implementation ProjectReferences. T
 - Stripe test-mode APIs; and
 - generic SQL readiness/reset infrastructure that does not compile service EF models.
 
-`Concertable.System.AppHost` reads `system/local.yaml`, pulls images by digest, provisions the five databases and shared
+`Concertable.AppHost` reads `manifests/local.yaml`, pulls images by digest, provisions the five databases and shared
 emulators, applies migrations, seeds through owners/simulators, and starts the four SPAs or their preview
-images. `system/test.yaml` and `system/production.yaml` are desired-state manifests for deployment. A dependency
+images. `manifests/test.yaml` and `manifests/production.yaml` are desired-state manifests for deployment. A dependency
 PR is green only when the full-stack AppHost becomes healthy and affected E2E passes.
 
 ## CI/CD, environments, secrets, and deployment
@@ -520,7 +520,7 @@ Path ownership for extraction is:
 | Auth | `api/Concertable.Auth`; `api/Concertable.Auth.Contracts` |
 | platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared` |
 | platform-web | `app/shared`; packageized `app/web/shared`; frontend build configuration |
-| system | `Concertable.System.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; system IaC/config/deployment history |
+| system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; system IaC/config/deployment history |
 | `.github` | reusable portions of current workflows and policy files, with monorepo-specific jobs excluded |
 
 Files needed by more than one target may legitimately have history in more than one filtered repository, but
@@ -677,7 +677,7 @@ never merge a later letter before the earlier one is green. Tommy must explicitl
 ### 9. Make the system repository canonical
 
 - 9A (`system-next`): land filtered full-stack AppHost/E2E history, container-only composition,
-  `system/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
+  `manifests/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
 - 9B (`system-next`): land the existing Terraform/config/deployment design under system ownership, validate
   plans for test/production, create protected GitHub environments, and perform a test-environment plan or
   ephemeral deployment when Azure credentials/resources are available.

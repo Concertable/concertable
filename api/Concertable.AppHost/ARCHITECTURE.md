@@ -1,4 +1,4 @@
-# Concertable.System.AppHost — architecture
+# Concertable.AppHost — architecture
 
 The umbrella host's one job: **run the whole system together — every data service (`B2B`, `Customer`,
 `Search`) plus the adapter services (`Auth`, `Payment`) and StripeCli — to model the fully-deployed

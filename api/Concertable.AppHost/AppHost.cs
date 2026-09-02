@@ -6,7 +6,7 @@ using Concertable.Frontend.Hosting;
 using Concertable.Payment.Hosting;
 using Concertable.Search.Hosting;
 
-namespace Concertable.System.AppHost;
+namespace Concertable.Hosting;
 
 public static class AppHost
 {

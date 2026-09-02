@@ -26,6 +26,141 @@
     "crossTargetEdgeCount": 51,
     "crossTargetEdges": [
       {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj",
+        "toArea": "Concertable.AppHost.Shared",
+        "toTarget": "platform-dotnet"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj",
+        "toArea": "Concertable.Auth",
+        "toTarget": "auth"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Auth/src/Concertable.Auth/Concertable.Auth.csproj",
+        "toArea": "Concertable.Auth",
+        "toTarget": "auth"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
+        "toArea": "Concertable.B2B",
+        "toTarget": "b2b"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj",
+        "toArea": "Concertable.B2B",
+        "toTarget": "b2b"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.B2B/src/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj",
+        "toArea": "Concertable.B2B",
+        "toTarget": "b2b"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Customer/src/Concertable.Customer.Hosting/Concertable.Customer.Hosting.csproj",
+        "toArea": "Concertable.Customer",
+        "toTarget": "customer"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Customer/src/Concertable.Customer.Web/Concertable.Customer.Web.csproj",
+        "toArea": "Concertable.Customer",
+        "toTarget": "customer"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj",
+        "toArea": "Concertable.Frontend.Hosting",
+        "toTarget": "platform-dotnet"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Payment/src/Concertable.Payment.Hosting/Concertable.Payment.Hosting.csproj",
+        "toArea": "Concertable.Payment",
+        "toTarget": "payment"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Payment/src/Concertable.Payment.Web/Concertable.Payment.Web.csproj",
+        "toArea": "Concertable.Payment",
+        "toTarget": "payment"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Payment/src/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj",
+        "toArea": "Concertable.Payment",
+        "toTarget": "payment"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Search/src/Concertable.Search.Hosting/Concertable.Search.Hosting.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Search/src/Concertable.Search.Web/Concertable.Search.Web.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
+      },
+      {
+        "from": "api/Concertable.AppHost/Concertable.AppHost.csproj",
+        "fromArea": "Concertable.AppHost",
+        "fromKind": "apphost",
+        "fromTarget": "system",
+        "to": "api/Concertable.Search/src/Concertable.Search.Workers/Concertable.Search.Workers.csproj",
+        "toArea": "Concertable.Search",
+        "toTarget": "search"
+      },
+      {
         "from": "api/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj",
         "fromArea": "Concertable.Auth.Contracts",
         "fromKind": "runtime",
@@ -278,142 +413,7 @@
         "toTarget": "b2b"
       },
       {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj",
-        "toArea": "Concertable.AppHost.Shared",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj",
-        "toArea": "Concertable.Auth",
-        "toTarget": "auth"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Auth/src/Concertable.Auth/Concertable.Auth.csproj",
-        "toArea": "Concertable.Auth",
-        "toTarget": "auth"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
-        "toArea": "Concertable.B2B",
-        "toTarget": "b2b"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj",
-        "toArea": "Concertable.B2B",
-        "toTarget": "b2b"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.B2B/src/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj",
-        "toArea": "Concertable.B2B",
-        "toTarget": "b2b"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Customer/src/Concertable.Customer.Hosting/Concertable.Customer.Hosting.csproj",
-        "toArea": "Concertable.Customer",
-        "toTarget": "customer"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Customer/src/Concertable.Customer.Web/Concertable.Customer.Web.csproj",
-        "toArea": "Concertable.Customer",
-        "toTarget": "customer"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj",
-        "toArea": "Concertable.Frontend.Hosting",
-        "toTarget": "platform-dotnet"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Payment/src/Concertable.Payment.Hosting/Concertable.Payment.Hosting.csproj",
-        "toArea": "Concertable.Payment",
-        "toTarget": "payment"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Payment/src/Concertable.Payment.Web/Concertable.Payment.Web.csproj",
-        "toArea": "Concertable.Payment",
-        "toTarget": "payment"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Payment/src/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj",
-        "toArea": "Concertable.Payment",
-        "toTarget": "payment"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Search/src/Concertable.Search.Hosting/Concertable.Search.Hosting.csproj",
-        "toArea": "Concertable.Search",
-        "toTarget": "search"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Search/src/Concertable.Search.Web/Concertable.Search.Web.csproj",
-        "toArea": "Concertable.Search",
-        "toTarget": "search"
-      },
-      {
-        "from": "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj",
-        "fromArea": "Concertable.System.AppHost",
-        "fromKind": "apphost",
-        "fromTarget": "system",
-        "to": "api/Concertable.Search/src/Concertable.Search.Workers/Concertable.Search.Workers.csproj",
-        "toArea": "Concertable.Search",
-        "toTarget": "search"
-      },
-      {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -422,7 +422,7 @@
         "toTarget": "b2b"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -431,7 +431,7 @@
         "toTarget": "b2b"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -440,7 +440,7 @@
         "toTarget": "customer"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -449,7 +449,7 @@
         "toTarget": "customer"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -458,7 +458,7 @@
         "toTarget": "payment"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -467,7 +467,7 @@
         "toTarget": "payment"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -476,7 +476,7 @@
         "toTarget": "search"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -556,6 +556,13 @@
         "name": "Concertable.AppHost.Shared",
         "packable": true,
         "target": "platform-dotnet"
+      },
+      "api/Concertable.AppHost/Concertable.AppHost.csproj": {
+        "area": "Concertable.AppHost",
+        "kind": "apphost",
+        "name": "Concertable.AppHost",
+        "packable": false,
+        "target": "system"
       },
       "api/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj": {
         "area": "Concertable.Auth.Contracts",
@@ -2160,45 +2167,38 @@
         "packable": true,
         "target": "platform-dotnet"
       },
-      "api/Concertable.System.AppHost/Concertable.System.AppHost.csproj": {
-        "area": "Concertable.System.AppHost",
-        "kind": "apphost",
-        "name": "Concertable.System.AppHost",
-        "packable": false,
-        "target": "system"
-      },
-      "api/tests/Concertable.System.AppHost.ArchitectureTests/Concertable.System.AppHost.ArchitectureTests.csproj": {
+      "api/tests/Concertable.AppHost.ArchitectureTests/Concertable.AppHost.ArchitectureTests.csproj": {
         "area": "tests",
         "kind": "architecture-test",
-        "name": "Concertable.System.AppHost.ArchitectureTests",
+        "name": "Concertable.AppHost.ArchitectureTests",
         "packable": false,
         "target": "system"
       },
-      "api/tests/Concertable.System.E2E.Source.UnitTests/Concertable.System.E2E.Source.UnitTests.csproj": {
+      "api/tests/Concertable.E2E.Source.UnitTests/Concertable.E2E.Source.UnitTests.csproj": {
         "area": "tests",
         "kind": "e2e",
-        "name": "Concertable.System.E2E.Source.UnitTests",
+        "name": "Concertable.E2E.Source.UnitTests",
         "packable": false,
         "target": "system"
       },
-      "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj": {
+      "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj": {
         "area": "tests",
         "kind": "e2e",
-        "name": "Concertable.System.E2E.Source",
+        "name": "Concertable.E2E.Source",
         "packable": false,
         "target": "system"
       },
-      "api/tests/Concertable.System.E2E/Concertable.System.E2E.csproj": {
+      "api/tests/Concertable.E2E/Concertable.E2E.csproj": {
         "area": "tests",
         "kind": "e2e",
-        "name": "Concertable.System.E2E",
+        "name": "Concertable.E2E",
         "packable": false,
         "target": "system"
       }
     },
     "sourceModeE2EEdges": [
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2207,7 +2207,7 @@
         "toTarget": "b2b"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2216,7 +2216,7 @@
         "toTarget": "b2b"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2225,7 +2225,7 @@
         "toTarget": "customer"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2234,7 +2234,7 @@
         "toTarget": "customer"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2243,7 +2243,7 @@
         "toTarget": "payment"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2252,7 +2252,7 @@
         "toTarget": "payment"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",
@@ -2261,7 +2261,7 @@
         "toTarget": "search"
       },
       {
-        "from": "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj",
+        "from": "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj",
         "fromArea": "tests",
         "fromKind": "e2e",
         "fromTarget": "system",

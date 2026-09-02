@@ -125,7 +125,7 @@ targets:
   system:
     repo: Concertable/system
     include:
-      - api/Concertable.System.AppHost
+      - api/Concertable.AppHost
       - api/tests
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
       - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests
@@ -139,7 +139,7 @@ targets:
       - eng/repository-split/carve-e2e.ps1
       - scripts
     rename:
-      api/Concertable.System.AppHost/: "apphost/"
+      api/Concertable.AppHost/: "src/Concertable.AppHost/"
       api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
       api/Concertable.B2B/tests/E2ETests/: "tests/b2b/"
       api/Concertable.Customer/tests/E2ETests/: "tests/customer/"
@@ -148,6 +148,7 @@ targets:
       api/tests/: "tests/shared/"
     notes:
       - "Composes and ships the system: umbrella AppHost, cross-service E2E, system manifest, IaC, deployment and rollback."
+      - "System names the repository responsibility, not a .NET namespace; code artifacts avoid the framework System root."
       - "E2E must lose service-implementation references (checkpoint 4) before this extraction can build standalone."
 
   org-github:

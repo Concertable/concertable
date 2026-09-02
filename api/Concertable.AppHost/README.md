@@ -1,4 +1,4 @@
-# Concertable.System.AppHost
+# Concertable.AppHost
 
 **Executable umbrella Aspire host.** Runs every service in the system at once for "I want everything wired up" dev sessions.
 

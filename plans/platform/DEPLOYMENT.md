@@ -269,7 +269,7 @@ For **Mode B (ephemeral)**: a manual `workflow_dispatch` `spin-up` (apply + migr
 The goal: one command to a full local stack, and the **same config keys** locally and in cloud (only the
 *source* differs — emulators local, managed Azure in cloud).
 
-- **Run:** `aspire run` on the monorepo AppHost (`api/Concertable.System.AppHost`) boots the SQL container, ASB
+- **Run:** `aspire run` on the monorepo AppHost (`api/Concertable.AppHost`) boots the SQL container, ASB
   emulator, Azurite, all 8 backend hosts, and the 4 SPAs. This is unchanged and stays the local story — the
   AppHost is run-mode only (no publish branching, since Terraform owns cloud).
 - **Secrets — mechanism wired; consolidation is optional dev hygiene, NOT deploy prep.** `UserSecretsId` is

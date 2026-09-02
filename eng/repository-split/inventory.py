@@ -38,7 +38,7 @@ AREA_TARGETS = {
     "Concertable.ServiceDefaults": "platform-dotnet",
     "Concertable.AppHost.Shared": "platform-dotnet",
     "Concertable.Frontend.Hosting": "platform-dotnet",
-    "Concertable.System.AppHost": "system",
+    "Concertable.AppHost": "system",
     "tests": "system",
 }
 
@@ -80,7 +80,7 @@ def area_of(rel_path: str) -> str | None:
 
 TEST_KINDS = {"unit-test", "integration-test", "architecture-test", "fixture", "composition-test"}
 SERVICE_OWNED_E2E_SUFFIXES = (".E2ETests.Server", ".E2ETests.Web", ".E2ETests.Workers", ".E2ETests.Stripe")
-SOURCE_MODE_E2E_FACTORY = "api/tests/Concertable.System.E2E.Source/Concertable.System.E2E.Source.csproj"
+SOURCE_MODE_E2E_COMPOSITION = "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj"
 
 
 def is_e2e_name(name: str) -> bool:
@@ -192,14 +192,14 @@ def build_dotnet(files: list[str]) -> dict:
         cross_target_by_kind[e["fromKind"]] += 1
 
     source_mode_e2e = sorted(
-        (e for e in cross_target if e["from"] == SOURCE_MODE_E2E_FACTORY),
+        (e for e in cross_target if e["from"] == SOURCE_MODE_E2E_COMPOSITION),
         key=lambda e: (e["from"], e["to"]),
     )
     blocking_e2e = sorted(
         (
             e
             for e in cross_target
-            if e["fromKind"] == "e2e" and e["from"] != SOURCE_MODE_E2E_FACTORY
+            if e["fromKind"] == "e2e" and e["from"] != SOURCE_MODE_E2E_COMPOSITION
         ),
         key=lambda e: (e["from"], e["to"]),
     )
@@ -346,7 +346,7 @@ def main() -> int:
         blocking_e2e = inventory["dotnet"]["blockingE2EEdges"]
         if blocking_e2e:
             print(
-                "E2E CROSS-REPOSITORY ProjectReference(s) OUTSIDE THE SOURCE-MODE PROVIDER:",
+                "E2E CROSS-REPOSITORY ProjectReference(s) OUTSIDE THE SOURCE-MODE COMPOSITION:",
                 file=sys.stderr,
             )
             for e in blocking_e2e:

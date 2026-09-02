@@ -47,7 +47,7 @@ $serviceAuthKeys = @(
 # UserSecretsId storage is machine-wide (outside any worktree) — set once, every
 # checkout picks it up. Each AppHost that boots Auth needs all three.
 $appHosts = @(
-    'api/Concertable.System.AppHost'
+    'api/Concertable.AppHost'
     'api/Concertable.B2B/src/Concertable.B2B.AppHost'
     'api/Concertable.Customer/src/Concertable.Customer.AppHost'
 )
@@ -86,6 +86,6 @@ Write-Host "     dotnet user-secrets set Stripe:SecretKey sk_test_xxx --project 
 Write-Host "   Without it the stripe-cli resource is skipped and the rest of the app runs fine." -ForegroundColor DarkGray
 
 Write-Host ""
-Write-Host "Done. Run an AppHost with:  dotnet run --project api/Concertable.System.AppHost" -ForegroundColor Cyan
+Write-Host "Done. Run an AppHost with:  dotnet run --project api/Concertable.AppHost" -ForegroundColor Cyan
 Write-Host "(or api/Concertable.B2B/src/Concertable.B2B.AppHost for just the B2B slice)" -ForegroundColor DarkGray
 Write-Host ""
