@@ -6,12 +6,12 @@
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
 - PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head
-  `08ddbd812fd037544be47da2530098c49b278e86`
+  `a12ab4574858743ddc30432cc0bedf567a8303c2`
 - Dependency/package gates: package access, artifact retention, TestKit, CODEOWNERS, immutable action refs,
   and repository SHA enforcement are green; final publication and delivery remain unauthorized
 - Last reconciled: **2026-09-02** from reviewed Customer head
-  `08ddbd812fd037544be47da2530098c49b278e86`, successful CI run `33570252885`, and Actions-permissions
-  readback
+  `a12ab4574858743ddc30432cc0bedf567a8303c2`, successful CI run `33574758398`, and database/schema
+  convention audit
 
 ## Current state
 
@@ -46,6 +46,12 @@ The package exposes an injected-`HttpClient` client and Customer-owned ticket pu
 models only; it has no runtime implementation, DbContext, entity, Hosting, or foreign-service reference.
 Its focused contract tests, clean-consumer closure, and the complete Customer CI gate are green without any
 package or image publication.
+
+At exact head `a12ab4574858743ddc30432cc0bedf567a8303c2`, all hand-written Customer runtime,
+design-time, and integration-fixture connection-name lookups use the service-local `Db.Name` constant. The
+AppHost-facing `CustomerConstants.Database` remains the composition-side alias. All seven modules already
+use their local `Schema.Name` and `Schema.Tables.*` constants for hand-written EF mappings; generated
+migrations and snapshots remain unchanged.
 
 Customer PR #1 carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five
 action invocations. Exact-head CI run [`33570252885`](https://github.com/Concertable/customer/actions/runs/33570252885)
@@ -95,6 +101,8 @@ push candidates, create tags, change visibility, retry or bypass the protection 
 - `01bc246` adds the black-box `Concertable.Customer.TestKit`, focused HTTP contract tests, and the fifth
   NuGet promotion candidate; `08ddbd8` aligns the integrity-evidence gate with eight package/image SBOMs and
   six Trivy reports.
+- `a12ab45` centralizes the Customer database connection name behind service-local `Db.Name` across runtime,
+  design-time, and integration-fixture registration while preserving the AppHost composition alias.
 
 ## Verification
 
@@ -116,6 +124,13 @@ push candidates, create tags, change visibility, retry or bypass the protection 
   Frontend job `100062440903` passed in 2m25s and Backend job `100062440740` passed in 7m24s, including
   TestKit's focused tests, five-package packing and clean-consumer restore/build, all three OCI candidates,
   migration/simulator gates, eight SBOMs, six Trivy reports, and retained integrity evidence.
+- Exact-head CI run `33574758398` at `a12ab4574858743ddc30432cc0bedf567a8303c2`:
+  Frontend job `100076169718` passed in 2m21s and Backend job `100076169572` passed in 7m28s, including the
+  complete build/test, migration snapshot, five-package clean-consumer, three-image, migration/simulator,
+  integrity, and retention gates.
+- Retained artifact `9826377165`, `customer-candidate-integrity-46b00e25ad548b851288cca711da7b4f3394575b`,
+  expires 2026-10-02 and has digest
+  `sha256:b70184430477aa17620f41443e5e1d7aa8824c4b6b0001f8bf2055cf65b20bac`.
 - Retained artifact `9824844924`, `customer-candidate-integrity-39a769bc914f1ffbf4854474f02cd91010fe1095`,
   expires 2026-10-01 and has digest
   `sha256:824d572595749d3141f94ff9792ca5489a0f39e96a4416c6fdf3fa6ab8e2bf10`.
@@ -146,6 +161,11 @@ push candidates, create tags, change visibility, retry or bypass the protection 
   `070247795927ec6045b138c3225fbed99e5a2eb5..08ddbd812fd037544be47da2530098c49b278e86`
   after finding and correcting the stale 13-file/seven-SBOM integrity count; no findings remain. Draft PR #1
   still owns the cumulative delivery gate before any merge.
+- Independent database/schema convention review approved
+  `08ddbd812fd037544be47da2530098c49b278e86..a12ab4574858743ddc30432cc0bedf567a8303c2`
+  with no findings after verifying connection-name closure, the intentional composition alias, all seven
+  module `Schema` owners, and untouched generated migrations. Draft PR #1 still owns the cumulative delivery
+  gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
