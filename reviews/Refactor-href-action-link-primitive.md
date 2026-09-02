@@ -99,7 +99,7 @@ Every accept/reject claim below was reproduced by the parent by executing `Href.
   nullable `ActionLink` members, which is the shape the four module response types use. Both assert
   equality against the original, so the serialize and deserialize directions are now both pinned.
 
-- [ ] **F5 — LOW — docs-and-debt** — `api/Concertable.B2B/TECH_DEBT.md:149`
+- [x] **F5 — LOW — docs-and-debt** — `api/Concertable.B2B/TECH_DEBT.md:149`
   The new debt entry cites code that does not exist on this candidate. There is no Api-layer
   `ApplicationMappers`: the Api-layer file is `Concert.Api/Mappers/ApplicationMapper.cs` (singular),
   and the only `ApplicationMappers.cs` sits in `Concert.Application/Mappers/`, which builds no action
@@ -107,6 +107,12 @@ Every accept/reject claim below was reproduced by the parent by executing `Href.
   here — on this branch it is `app/web/b2b/shared/src/features/concerts/api/actionLinkApi.ts`. A
   durable doc pointing at paths that do not exist is the dangling citation `docs-and-debt` forbids.
   Fix: correct both to the paths present on this branch.
+
+  **Disposition:** corrected. The mapper list is now `ApplicationMapper`, `ConcertMappers`,
+  `SelfBillingAgreementMappers` and `OpportunityMapper` under `Concert.Api/Mappers/`, plus
+  `Conversations.Api/Mappers/MessageMappers`; the frontend reference is `apiPath` in
+  `app/web/b2b/shared/src/features/concerts/api/actionLinkApi.ts`. All six cited paths were checked
+  to exist on this branch.
 
 - [x] **F6 — LOW — unit-testing** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/ActionLinkWireFormatTests.cs:13`
   `ApplicationOptions()` is a per-test factory method rebuilding a whole `ServiceCollection` and
