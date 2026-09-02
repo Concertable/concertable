@@ -126,7 +126,7 @@ Verification on the merged head: build 0 errors, Concert unit tier 234 passed.
 **Candidate head:** `9bfce704433bf160c8ec151fedb82a79757a1443`
 **Candidate branch:** `Refactor/RepositoryFinderSpecifications`
 **Candidate scope:** `documentation only — one tech-debt entry`
-**Candidate path-set:** `sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` `(0 paths)`
+**Candidate path-set:** `sha256:198db902afcd301ecc438a1b4727217158d7bac7e6215cb3af8501217615f85e` `(2 paths)`
 **Work-order path:** `reviews/Refactor-RepositoryFinderSpecifications.md`
 **Work-order mode:** `append`
 **Pass judgment:** `approved`
