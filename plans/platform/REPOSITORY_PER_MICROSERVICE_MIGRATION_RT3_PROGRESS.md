@@ -20,7 +20,9 @@ tries to create the relative development key at `/app/tempkey.jwk`. The image ex
 
 The focused RT3 repair runs only the local Aspire Auth bridge containers as root so that immutable legacy image
 can persist its development signing key. It does not change the Auth deployable, image defaults, or production
-runtime. All four consumer AppHosts carry an exact composition assertion for the runtime arguments.
+runtime. All four consumer AppHosts carry an exact composition assertion for the runtime arguments. The final
+incremental review also restored each standalone AppHost's own `*.Hosting` project reference from source;
+foreign Hosting dependencies remain published packages.
 
 Merge-group run `33658754750` also had an independent Payment integration fixture failure after 44 tests
 passed: its Testcontainers SQL container stopped before the remaining five tests ran. That is a runner/container
@@ -29,7 +31,8 @@ green.
 
 ## Next Steps
 
-Validate the four focused AppHost composition suites and exact-head PR CI for the Auth bridge-user repair. If
+Validate the five standalone AppHost/carve builds, four focused composition suites, and exact-head PR CI for
+the own-Hosting source references and Auth bridge-user repair. If
 green, return PR #897 to the merge queue with `full-e2e`, own API/UI E2E to a terminal result, and confirm the
 merged commit on `main`. The merge-group proof must show GHCR login, Auth startup, B2B and Customer API E2E,
 UI E2E, the Payment integration shard, and `ci-complete` green.
@@ -56,6 +59,8 @@ exact refresh.
   `.github/scripts/e2e-ghcr-login.test.mjs`.
 - Merge-group run `33658754750` proved GHCR authentication works and exposed the legacy Auth image's
   `/app/tempkey.jwk` permission defect.
+- Every canonical standalone AppHost now compiles its owning service's `*.Hosting` project from source while
+  consuming only foreign Hosting seams as packages, matching checkpoint 2 and the post-extraction layout.
 
 ## Verification
 
@@ -69,8 +74,10 @@ Payment itself starting; its public health timeout is downstream of Auth's exit.
 
 The prior native, security, persistence, test-impact, and repository review was approved through
 `438744ed7d150eb76c72d494c19bc6cb280176a5`. Incremental review through
-`e88723e49fa9bf1867fc54cd52bd3910fbd9a279` found no open RT3 finding. Review the focused CI authentication
-and Auth bridge-user repairs before the final requeue.
+`e88723e49fa9bf1867fc54cd52bd3910fbd9a279` found no open RT3 finding. The final incremental review found and
+resolved RT3-F5: own-service Hosting had incorrectly remained a package edge that the monorepo source swap
+masked. Security and boundary lenses found no additional issue. Revalidate the resolved candidate before the
+final requeue.
 
 ## Decisions, discoveries, blockers, and deviations
 
