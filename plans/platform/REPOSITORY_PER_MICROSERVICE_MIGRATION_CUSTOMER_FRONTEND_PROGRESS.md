@@ -6,12 +6,14 @@
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
 - PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head
-  `a12ab4574858743ddc30432cc0bedf567a8303c2`
-- Dependency/package gates: package access, artifact retention, TestKit, CODEOWNERS, immutable action refs,
-  and repository SHA enforcement are green; final publication and delivery remain unauthorized
+  `79cb07d6dab684a75cba60012374ac76c41c4b0c`
+- Dependency/package gates: the canonical solution's package closure, artifact retention, TestKit,
+  CODEOWNERS, immutable action refs, and repository SHA enforcement are green. The separately retained
+  ArchitectureTests project cannot restore `Concertable.Testing.Architecture` under Customer's package ACL
+  and remains outside the canonical solution as before; final publication and delivery remain unauthorized
 - Last reconciled: **2026-09-02** from reviewed Customer head
-  `a12ab4574858743ddc30432cc0bedf567a8303c2`, successful CI run `33574758398`, and database/schema
-  convention audit
+  `79cb07d6dab684a75cba60012374ac76c41c4b0c`, successful CI run `33636812070`, and the canonical
+  standalone-solution audit
 
 ## Current state
 
@@ -22,16 +24,9 @@ now uses `https://github.com/Concertable/customer.git`.
 
 The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the Customer backend,
 web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 validates the owned
-build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
-candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
-Exact-head CI run [`33448642947`](https://github.com/Concertable/customer/actions/runs/33448642947) ran at
-`5555ac82b314384685a7a003fa5bc82e18fa8298`. Failed-job rerun attempt 3 restarted Backend job
-`100007086492`; Frontend job `100007089026` remained green. Backend passed every build, test, package, image,
-migration, simulator-smoke, Linux artifact-integrity, and retention step. Artifact `9818452253`, named
-`customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca`, is retained through
-2026-10-01 with digest `sha256:edb44e3c5334c2b2a2e4ab1ad775270bf84198d3be834c4b5c842deadcf2989b`.
-Its downloaded contents contain exactly the required 14 evidence files. No package or image was published or
-pushed.
+build, tests, migration snapshots, package candidates, and Customer Web, migrations, and seed-simulator OCI
+candidates. Package-level Actions read access is granted for the exact closure recorded below, except the
+separately retained ArchitectureTests dependency. No package or image was published or pushed.
 
 At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer gained a machine-readable
 promotion manifest for exactly four NuGet and three OCI candidates. CI validates actual NuGet metadata and
@@ -53,8 +48,15 @@ AppHost-facing `CustomerConstants.Database` remains the composition-side alias. 
 use their local `Schema.Name` and `Schema.Tables.*` constants for hand-written EF mappings; generated
 migrations and snapshots remain unchanged.
 
+At exact head `79cb07d6dab684a75cba60012374ac76c41c4b0c`, `Concertable.Customer.slnx` is the sole
+canonical solution and the carve-era duplicate is removed. The broken monorepo-only `UseLocalCore` swap is
+gone. CI restores, builds, tests, and packs the canonical solution with checkout credentials disabled after
+fetch. `Concertable.Customer.TestKit` now packages its README, and the clean-consumer gate compiles concrete
+uses of every Customer package. Standalone guidance now names this repository as canonical, uses the real
+solution and .NET 10, and no longer claims the absent standalone AppHost or broken parent guidance paths.
+
 Customer PR #1 carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five
-action invocations. Exact-head CI run [`33570252885`](https://github.com/Concertable/customer/actions/runs/33570252885)
+action invocations. Exact-head CI run [`33636812070`](https://github.com/Concertable/customer/actions/runs/33636812070)
 is green, and the repository Actions policy reads back `sha_pinning_required: true` while preserving
 `allowed_actions: all`, default read-only workflow permissions, and disabled PR approvals.
 
@@ -75,13 +77,6 @@ push candidates, create tags, change visibility, retry or bypass the protection 
 - Customer backend, web, mobile, and `@concertable/customer` histories were folded into the private
   repository; local Customer workspaces use `file:` linkage and external
   `@concertable/{shared,web,mobile}` dependencies use the published `alpha` channel.
-- `b63a311` made the extracted workspace standalone with its root manifest, lockfile, package feed, ignore
-  state, production environment seam, Vite helper, route tree, and canonical `CarveCustomer.slnx`.
-- `b484496` restored the production URL closure and Expo assets; `e21ae90` retired the obsolete force-push
-  handoff; `39ca980` configured repository-scoped package authentication in CI.
-- The repository and local checkout now use the canonical `customer` name.
-- The package administrator granted `Concertable/customer` Actions read access to all 39 recorded NuGet
-  packages, including `Concertable.AppHost.Shared`, and `@concertable/{mobile,shared,web}`.
 - `9e23956` prevents Vitest's `serve`/`test` configuration load from invoking the trusted development-certificate
   requirement while preserving HTTPS for the real Vite development server.
 - `2ecc33c` adds serialized backend tests, validates the current three-package candidate set from an isolated
@@ -103,45 +98,28 @@ push candidates, create tags, change visibility, retry or bypass the protection 
   six Trivy reports.
 - `a12ab45` centralizes the Customer database connection name behind service-local `Db.Name` across runtime,
   design-time, and integration-fixture registration while preserving the AppHost composition alias.
+- `6271c23` makes `Concertable.Customer.slnx` canonical, removes carve/`UseLocalCore` residue, packages the
+  TestKit README, compiles package usage in the consumer preflight, hardens checkout credential handling,
+  and corrects standalone guidance. `79cb07d` retains the previously validated ArchitectureTests boundary
+  after its package-specific ACL failure.
 
 ## Verification
 
-- Exact-head remote CI run `33448642947`, attempt 3: Frontend job `100007089026` passed in 2m18s. Backend job
-  `100007086492` ran 6m55s and passed restore, build, tests, migration snapshots, four-package clean consumer,
-  three OCI builds, real simulator smoke, empty-database migration, Linux integrity inventory, and evidence
-  retention.
-- The retained 30-day artifact has exactly `SHA256SUMS`, seven CycloneDX 1.7 SBOMs, three High/Critical
-  vulnerability reports, and three all-severity secret reports. All JSON parsed; the vulnerability and secret
-  reports contain zero findings; `SHA256SUMS` contains seven unique, valid SHA-256 entries covering the four
-  NuGet and three OCI candidates.
-- Local full gate at `5555ac82b314384685a7a003fa5bc82e18fa8298` passed for exactly four NuGet and
-  three OCI candidates, deterministic `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability
-  reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
-- Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
-  web 1/1 and production build; mobile typecheck and Android export — all green.
-- Exact-head CI run `33566459131` at `070247795927ec6045b138c3225fbed99e5a2eb5`: Frontend job `100050657740` passed in 2m19s and Backend job `100050657995` passed in 7m23s, including the complete package/image/migration/simulator/integrity/retention gate.
-- Exact-head CI run `33570252885` at `08ddbd812fd037544be47da2530098c49b278e86`:
-  Frontend job `100062440903` passed in 2m25s and Backend job `100062440740` passed in 7m24s, including
-  TestKit's focused tests, five-package packing and clean-consumer restore/build, all three OCI candidates,
-  migration/simulator gates, eight SBOMs, six Trivy reports, and retained integrity evidence.
-- Exact-head CI run `33574758398` at `a12ab4574858743ddc30432cc0bedf567a8303c2`:
-  Frontend job `100076169718` passed in 2m21s and Backend job `100076169572` passed in 7m28s, including the
-  complete build/test, migration snapshot, five-package clean-consumer, three-image, migration/simulator,
+- Exact-head CI run [`33636812070`](https://github.com/Concertable/customer/actions/runs/33636812070) at
+  `79cb07d6dab684a75cba60012374ac76c41c4b0c`: Frontend job `100269619614` passed in 1m59s and
+  Backend job `100269619229` passed in 7m14s, including the canonical solution build/tests, seven migration
+  snapshots, five-package pack and compile-use consumer closure, three OCI candidates, migration/simulator,
   integrity, and retention gates.
-- Retained artifact `9826377165`, `customer-candidate-integrity-46b00e25ad548b851288cca711da7b4f3394575b`,
+- Retained artifact `9849406524`, `customer-candidate-integrity-4e4aa1c5354da0f1e0af912ba7c5c24865e38aea`,
   expires 2026-10-02 and has digest
-  `sha256:b70184430477aa17620f41443e5e1d7aa8824c4b6b0001f8bf2055cf65b20bac`.
-- Retained artifact `9824844924`, `customer-candidate-integrity-39a769bc914f1ffbf4854474f02cd91010fe1095`,
-  expires 2026-10-01 and has digest
-  `sha256:824d572595749d3141f94ff9792ca5489a0f39e96a4416c6fdf3fa6ab8e2bf10`.
-- Local TestKit verification passed 3/3 focused contract tests, the complete Release solution build,
-  promotion selection for five NuGet and three OCI candidates, and a temporary five-package clean-consumer
-  restore/build with zero errors; no candidate was published.
-- Actions policy readback: `enabled: true`, `allowed_actions: all`, `sha_pinning_required: true`; default workflow permissions remain `read` and PR approvals remain disabled.
-- Local promotion validation passed against the existing four NuGet and three OCI outputs. A temporary local
-  annotated `v0.1.0-alpha.0.329` tag then built all three OCI candidates and proved exact tag-to-commit,
-  NuGet-version, embedded repository/tag, and config-digest validation; the tag and dedicated outputs were
-  removed afterward.
+  `sha256:06107990940fca0005c5c5eff40eef7aa9c39c627ecfde48bc8ac4629a1ff8e9`.
+- Run [`33635705299`](https://github.com/Concertable/customer/actions/runs/33635705299) proved the otherwise
+  green canonical solution cannot restore `Concertable.Customer.ArchitectureTests` because Customer lacks
+  package-specific access to `Concertable.Testing.Architecture` (`403`). `79cb07d` restored the project's
+  prior exclusion from the canonical solution; it did not delete or weaken the architecture tests.
+- Actions policy remains `enabled: true`, `allowed_actions: all`, `sha_pinning_required: true`; default
+  workflow permissions remain `read` and PR approvals remain disabled. The workflow remains read-only and
+  both checkout invocations set `persist-credentials: false`.
 
 ## Reviews
 
@@ -204,7 +182,10 @@ push candidates, create tags, change visibility, retry or bypass the protection 
 - The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
   attempt 3 created the required retained artifact, so the quota blocker is closed.
 - Customer now has repository-wide bootstrap `CODEOWNERS` for `@tomjseery`; all workflow actions are pinned to verified immutable SHAs, and repository Actions requires SHA pinning. GitHub still returns the private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and `main` branch protection. Do not bypass or retry that delivery-time capability gate.
-- The extracted `Concertable.Customer.AppHost` remains excluded from `CarveCustomer.slnx` and has ten foreign
+- `Concertable.Customer.ArchitectureTests` stays outside `Concertable.Customer.slnx`, matching the prior
+  carve solution boundary. Adding it requires the package owner to grant `Concertable/customer` Actions read
+  access to `Concertable.Testing.Architecture`; do not replace that package with source or suppress the test.
+- The extracted `Concertable.Customer.AppHost` remains excluded from `Concertable.Customer.slnx` and has ten foreign
   monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
   `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
   available. Do not fake that gate or widen this stream into RT3, Stage 4, Auth, Payment, Search, or B2B.
