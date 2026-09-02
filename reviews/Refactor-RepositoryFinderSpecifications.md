@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `9bfce704433b`  `(2026-09-02)`
+**Reviewed up to commit:** `31ff9621a637`  `(2026-09-02)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-02 — full
@@ -140,6 +140,36 @@ module's own file because that module owns the problem, and carries the owner de
 resolves-when condition like its siblings.
 
 No executable change, so the prior verification stands.
+
+### Findings
+
+No findings.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `9bfce704433b`
+**Candidate head:** `31ff9621a637e00d3f61d97fd063a0c5c5d4c81d`
+**Candidate branch:** `Refactor/RepositoryFinderSpecifications`
+**Candidate scope:** `base merge resolving one documentation conflict`
+**Candidate path-set:** `sha256:973d2f14be6fb0fb560535dc747321203386bec3a751e021be14103c9713ecc0` `(16 paths)`
+**Work-order path:** `reviews/Refactor-RepositoryFinderSpecifications.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Merges `origin/main` after PR #867 landed, which cleared the branch's DIRTY state. One conflict, in
+`Concert/TECH_DEBT.md`: #867 deleted the resolved `Genres allows duplicate tags` entry while this
+branch appended the `IssueAsync` entry to the same tail. Resolved by keeping both intentions — the
+deletion stands, since `docs-and-debt` requires a resolved entry to be removed rather than archived,
+and the new entry remains.
+
+#867 also changed `ConcertEntity.Genres` and `OpportunityEntity.Genres` from `List<Genre>` to
+`EfSet<Genre>`. This branch's specifications include `Artist.Genres`, which is a different member:
+`ArtistReadModel.Genres` is `ICollection<ArtistReadModelGenre>` configured with `HasMany` against
+its own table, so it is a real navigation and the include is unaffected by the primitive-collection
+change. Checked rather than assumed, because a specification that includes a primitive collection
+would be silently wrong.
+
+Verification on the merged head: build 0 errors, Concert unit tier 237 passed (base added three).
 
 ### Findings
 
