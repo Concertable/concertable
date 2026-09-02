@@ -115,7 +115,7 @@ Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Cu
   both checkout invocations set `persist-credentials: false`.
 - Concertable PR #922 merged as `ac74fdf9a0687a436872a7c1c4da622126e7885b`; its automatic packages run
   `33644847202` succeeded through `Push to GitHub Packages`, and its automatic images run `33644847172`
-  succeeded through eight `Build and push the image` jobs. This publication was not an authorized Customer
+  succeeded through nine `Build and push the image` jobs. This publication was not an authorized Customer
   action and is the explicit merge gate for this closeout PR.
 
 ## Reviews
