@@ -582,7 +582,7 @@ owns:
 | `ApplicationWithdrawRejectApiTests` | Application terminal decisions and notifications; Application integration tests. |
 | `ApplicationFinancialOperationApiTests` | Booking-owned acceptance financial-operation state exposed by the compatibility route; Booking integration tests. |
 | `ApplicationCancelApiTests` | Split by command owner: pending withdrawal/guards to Application, pre-Concert cancellation/refund to Booking, post-creation cancellation to Concert. Opportunity reopening is verified through its HTTP boundary from the initiating module. |
-| `ApplicationDoorSplitApiTests`, `ApplicationFlatFeeApiTests`, `ApplicationVenueHireApiTests`, `ApplicationVersusApiTests` | Split Application-only checkout/apply/accept validation from the complete payment/Accept/Booking/Concert journey. Application cases move to Application integration tests; complete journeys move to the B2B process integration suite. |
+| `ApplicationDoorSplitApiTests`, `ApplicationFlatFeeApiTests`, `ApplicationVenueHireApiTests`, `ApplicationVersusApiTests` | Split Application-only checkout/apply/accept validation from the complete payment/Accept/Booking/Concert journey. Application cases move to Application integration tests; complete journeys move to the B2B journey integration suite. |
 | `ContractApiTests` | Split Application-owned consent/signature/fingerprint cases from Booking-owned immutable Contract formation, metadata, PDF, and snapshot cases. |
 | `BookingConfirmationEmailTests` | Concert-creation notification/outbox behaviour stays with Concert; the pure renderer case belongs in Concert unit tests. |
 | `ConcertApiTests`, `ConcertCancelApiTests`, `ConcertDoorRevenueApiTests`, `ConcertDoorSplitApiTests`, `ConcertFlatFeeApiTests`, `ConcertInvoiceApiTests`, `ConcertPayoutComplianceGateApiTests`, `ConcertSelfBillingGateApiTests`, `ConcertVenueHireApiTests`, `ConcertVersusApiTests`, `OutboxVerificationTests`, `SelfBillingAgreementApiTests`, `SelfBillingAgreementGateApiTests` | Genuinely Concert-owned HTTP, completion, cancellation, settlement, invoice, self-billing, notification, and outbox behaviour; remain in Concert integration tests. |
@@ -602,7 +602,7 @@ The target topology is:
   production `DbContext` or read stance.
 - `ConcertApiFixture` resolves only Concert persistence. Application and Booking fixtures resolve
   only their own contexts and never expose one another's or Concert's context.
-- `Concertable.B2B.Process.IntegrationTests` owns only complete multi-module journeys. It has no direct
+- `Concertable.B2B.Journey.IntegrationTests` owns only complete multi-module journeys. It has no direct
   Domain or Infrastructure project reference and observes stages through HTTP or deliberate Contracts
   surfaces.
 - The shared `ApiFixture` remains host-neutral infrastructure. It does not become a generic context,

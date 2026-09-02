@@ -1364,10 +1364,10 @@
         "packable": false,
         "target": "b2b"
       },
-      "api/Concertable.B2B/tests/Concertable.B2B.Process.IntegrationTests/Concertable.B2B.Process.IntegrationTests.csproj": {
+      "api/Concertable.B2B/tests/Concertable.B2B.Journey.IntegrationTests/Concertable.B2B.Journey.IntegrationTests.csproj": {
         "area": "Concertable.B2B",
         "kind": "integration-test",
-        "name": "Concertable.B2B.Process.IntegrationTests",
+        "name": "Concertable.B2B.Journey.IntegrationTests",
         "packable": false,
         "target": "b2b"
       },
