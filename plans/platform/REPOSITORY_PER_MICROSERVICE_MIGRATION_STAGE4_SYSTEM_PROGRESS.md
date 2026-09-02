@@ -17,8 +17,9 @@ migration ledger.
 
 The future repository remains `Concertable/system`: system describes the repository's responsibility for
 full-product composition and testing, but is not a C# namespace prefix. Its umbrella Aspire project is
-`Concertable.AppHost`, and its code namespace is also `Concertable.AppHost`. The idiomatic top-level entry
-file is `AppHost.cs`; `AppHostFactory` exposes the reusable builder seam required by architecture tests.
+`Concertable.AppHost`, and its code namespace is also `Concertable.AppHost`. The idiomatic project-based
+Aspire entry is top-level composition in `AppHost.cs`; architecture tests load it through the supported
+`DistributedApplicationTestingBuilder` project seam rather than a hand-written entry-point or factory type.
 The split preserves artifact namespacing at `src/Concertable.AppHost/`; deployment
 manifests live under `manifests/` rather than an ambiguous nested `system/` directory.
 
