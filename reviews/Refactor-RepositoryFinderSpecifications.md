@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `7e1f160253a0`  `(2026-09-02)`
+**Reviewed up to commit:** `9bfce704433b`  `(2026-09-02)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-02 — full
@@ -119,3 +119,28 @@ Verification on the merged head: build 0 errors, Concert unit tier 234 passed.
   entity-building helper that existed only to feed the old stub is deleted. Caught by the unit tier
   locally and independently by CI on the pushed head — the previous pass had run the integration
   tier after the projection but not the unit tier, which is how it reached CI at all.
+
+## Review pass — 2026-09-02 — incremental
+
+**Candidate base:** `7e1f160253a0`
+**Candidate head:** `9bfce704433bf160c8ec151fedb82a79757a1443`
+**Candidate branch:** `Refactor/RepositoryFinderSpecifications`
+**Candidate scope:** `documentation only — one tech-debt entry`
+**Candidate path-set:** `sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` `(0 paths)`
+**Work-order path:** `reviews/Refactor-RepositoryFinderSpecifications.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Adds one entry to the Concert module's `TECH_DEBT.md` recording that `ContractIssuer.IssueAsync`
+ends both lookups in `OrNotFound` where `result-carriers` wants a `Result`. The behaviour is
+pre-existing — this branch swapped the finder underneath the first `OrNotFound` and changed nothing
+about how it fails — so it is logged rather than fixed here, per `docs-and-debt`: a shortcut that is
+the right call is logged with its reasoning, never left silent. The entry sits in the Concert
+module's own file because that module owns the problem, and carries the owner decision and a
+resolves-when condition like its siblings.
+
+No executable change, so the prior verification stands.
+
+### Findings
+
+No findings.
