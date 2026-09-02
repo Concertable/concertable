@@ -5,9 +5,15 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`
-- Dependency/package gates: package access and Actions artifact retention are green; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-01** from exact local/remote/PR head equality and successful CI run `33556564632`
+- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head
+  `79cb07d6dab684a75cba60012374ac76c41c4b0c`
+- Dependency/package gates: the canonical solution's package closure, artifact retention, TestKit,
+  CODEOWNERS, immutable action refs, and repository SHA enforcement are green. The separately retained
+  ArchitectureTests project cannot restore `Concertable.Testing.Architecture` under Customer's package ACL
+  and remains outside the canonical solution as before; final publication and delivery remain unauthorized
+- Last reconciled: **2026-09-02** from reviewed Customer head
+  `79cb07d6dab684a75cba60012374ac76c41c4b0c`, successful CI run `33636812070`, and the canonical
+  standalone-solution audit
 
 ## Current state
 
@@ -18,23 +24,41 @@ now uses `https://github.com/Concertable/customer.git`.
 
 The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the Customer backend,
 web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 validates the owned
-build, tests, migration snapshots, current package candidates, and Customer Web and migrations OCI image
-candidates. Package-level Actions read access is granted for the exact NuGet and npm closures recorded below.
-Exact-head CI run [`33448642947`](https://github.com/Concertable/customer/actions/runs/33448642947) ran at
-`5555ac82b314384685a7a003fa5bc82e18fa8298`. Failed-job rerun attempt 3 restarted Backend job
-`100007086492`; Frontend job `100007089026` remained green. Backend passed every build, test, package, image,
-migration, simulator-smoke, Linux artifact-integrity, and retention step. Artifact `9818452253`, named
-`customer-candidate-integrity-9f730499058ba4833bb093dd4635ee50af6fd6ca`, is retained through
-2026-10-01 with digest `sha256:edb44e3c5334c2b2a2e4ab1ad775270bf84198d3be834c4b5c842deadcf2989b`.
-Its downloaded contents contain exactly the required 14 evidence files. No package or image was published or
-pushed.
+build, tests, migration snapshots, package candidates, and Customer Web, migrations, and seed-simulator OCI
+candidates. Package-level Actions read access is granted for the exact closure recorded below, except the
+separately retained ArchitectureTests dependency. No package or image was published or pushed.
 
-At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer now owns a machine-readable
+At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer gained a machine-readable
 promotion manifest for exactly four NuGet and three OCI candidates. CI validates actual NuGet metadata and
 each Docker archive's embedded repository, selected SHA tag, and config-digest shape. Manual dispatch remains
 read-only and requires an existing annotated v-prefixed tag that resolves to the exact selected commit; its
 NuGet versions and OCI tags must match that release tag. The workflow contains no package/image publish or
 push operation and has only `contents: read` and `packages: read` permissions.
+
+At exact head `08ddbd812fd037544be47da2530098c49b278e86`, the manifest and every package and
+integrity gate now cover five NuGet candidates, adding the black-box `Concertable.Customer.TestKit`.
+The package exposes an injected-`HttpClient` client and Customer-owned ticket purchase/upcoming-ticket wire
+models only; it has no runtime implementation, DbContext, entity, Hosting, or foreign-service reference.
+Its focused contract tests, clean-consumer closure, and the complete Customer CI gate are green without any
+package or image publication.
+
+At exact head `a12ab4574858743ddc30432cc0bedf567a8303c2`, all hand-written Customer runtime,
+design-time, and integration-fixture connection-name lookups use the service-local `Db.Name` constant. The
+AppHost-facing `CustomerConstants.Database` remains the composition-side alias. All seven modules already
+use their local `Schema.Name` and `Schema.Tables.*` constants for hand-written EF mappings; generated
+migrations and snapshots remain unchanged.
+
+At exact head `79cb07d6dab684a75cba60012374ac76c41c4b0c`, `Concertable.Customer.slnx` is the sole
+canonical solution and the carve-era duplicate is removed. The broken monorepo-only `UseLocalCore` swap is
+gone. CI restores, builds, tests, and packs the canonical solution with checkout credentials disabled after
+fetch. `Concertable.Customer.TestKit` now packages its README, and the clean-consumer gate compiles concrete
+uses of every Customer package. Standalone guidance now names this repository as canonical, uses the real
+solution and .NET 10, and no longer claims the absent standalone AppHost or broken parent guidance paths.
+
+Customer PR #1 carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five
+action invocations. Exact-head CI run [`33636812070`](https://github.com/Concertable/customer/actions/runs/33636812070)
+is green, and the repository Actions policy reads back `sha_pinning_required: true` while preserving
+`allowed_actions: all`, default read-only workflow permissions, and disabled PR approvals.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
@@ -42,20 +66,16 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Implement the next independent Customer-owned repository-policy slice: add bootstrap `CODEOWNERS` assigning the whole Customer repository and `.github/**` to `@TommySeery`, pin every action used by Customer CI to an immutable commit SHA, validate the workflow, and only then enable Customer's repository-level `sha_pinning_required` setting. Keep the workflow's default token read-only and do not add publish permissions, create a release tag, publish or push candidates, change repository visibility, or touch TestKit/foreign AppHost inputs. Record GitHub's current private-plan `403` for rulesets and branch protection as a delivery-time capability dependency; do not attempt to bypass it.
+Blocked: Customer Actions receives a package-specific `403` for `Concertable.Testing.Architecture`, keeping `Concertable.Customer.ArchitectureTests` outside the canonical Customer solution.
+Blocked by: the `Concertable.Testing.Architecture` platform package owner.
+Unblock action: grant `Concertable/customer` Actions read access to the `Concertable.Testing.Architecture` package.
+Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Customer.slnx` and require exact-head Customer CI to pass.
 
 ## Completed work
 
 - Customer backend, web, mobile, and `@concertable/customer` histories were folded into the private
   repository; local Customer workspaces use `file:` linkage and external
   `@concertable/{shared,web,mobile}` dependencies use the published `alpha` channel.
-- `b63a311` made the extracted workspace standalone with its root manifest, lockfile, package feed, ignore
-  state, production environment seam, Vite helper, route tree, and canonical `CarveCustomer.slnx`.
-- `b484496` restored the production URL closure and Expo assets; `e21ae90` retired the obsolete force-push
-  handoff; `39ca980` configured repository-scoped package authentication in CI.
-- The repository and local checkout now use the canonical `customer` name.
-- The package administrator granted `Concertable/customer` Actions read access to all 39 recorded NuGet
-  packages, including `Concertable.AppHost.Shared`, and `@concertable/{mobile,shared,web}`.
 - `9e23956` prevents Vitest's `serve`/`test` configuration load from invoking the trusted development-certificate
   requirement while preserving HTTPS for the real Vite development server.
 - `2ecc33c` adds serialized backend tests, validates the current three-package candidate set from an isolated
@@ -71,30 +91,34 @@ Implement the next independent Customer-owned repository-policy slice: add boots
 - `4d1a1ef` adds the exact promotion manifest, repository metadata validator, and manual annotated-tag gate;
   `c83169d` binds every built OCI archive to its configured repository and selected SHA/release tag. The
   promotion path remains a read-only preflight with no publication command or permission.
+- `0702477` adds repository-wide bootstrap `CODEOWNERS` for `@tomjseery` and pins every Customer CI action to the verified immutable commit behind its recorded `v4` channel.
+- `01bc246` adds the black-box `Concertable.Customer.TestKit`, focused HTTP contract tests, and the fifth
+  NuGet promotion candidate; `08ddbd8` aligns the integrity-evidence gate with eight package/image SBOMs and
+  six Trivy reports.
+- `a12ab45` centralizes the Customer database connection name behind service-local `Db.Name` across runtime,
+  design-time, and integration-fixture registration while preserving the AppHost composition alias.
+- `6271c23` makes `Concertable.Customer.slnx` canonical, removes carve/`UseLocalCore` residue, packages the
+  TestKit README, compiles package usage in the consumer preflight, hardens checkout credential handling,
+  and corrects standalone guidance. `79cb07d` retains the previously validated ArchitectureTests boundary
+  after its package-specific ACL failure.
 
 ## Verification
 
-- Exact-head remote CI run `33448642947`, attempt 3: Frontend job `100007089026` passed in 2m18s. Backend job
-  `100007086492` ran 6m55s and passed restore, build, tests, migration snapshots, four-package clean consumer,
-  three OCI builds, real simulator smoke, empty-database migration, Linux integrity inventory, and evidence
-  retention.
-- The retained 30-day artifact has exactly `SHA256SUMS`, seven CycloneDX 1.7 SBOMs, three High/Critical
-  vulnerability reports, and three all-severity secret reports. All JSON parsed; the vulnerability and secret
-  reports contain zero findings; `SHA256SUMS` contains seven unique, valid SHA-256 entries covering the four
-  NuGet and three OCI candidates.
-- Local full gate at `5555ac82b314384685a7a003fa5bc82e18fa8298` passed for exactly four NuGet and
-  three OCI candidates, deterministic `SHA256SUMS`, seven CycloneDX SBOMs, three High/Critical vulnerability
-  reports, and three all-severity secret reports. Results: zero High/Critical vulnerabilities and zero secrets.
-- Earlier standalone proof: 51-project Release build; seven migration snapshots; `npm ci`; shared 3/3;
-  web 1/1 and production build; mobile typecheck and Android export — all green.
-- Exact-head CI run `33556564632`: Frontend job `100018718799` passed in 2m12s; Backend job `100018719160`
-  passed in 7m43s, including every prior build/test/package/image/migration/simulator/integrity/retention gate
-  plus `Validate promotion candidate selection`. Retained artifact `9819824696` is nonexpired through
-  2026-10-01 with digest `sha256:117f49aaf830a499bb8e776a74ca7d1d199c91f2f1b08579ea7cfaa45b781382`.
-- Local promotion validation passed against the existing four NuGet and three OCI outputs. A temporary local
-  annotated `v0.1.0-alpha.0.329` tag then built all three OCI candidates and proved exact tag-to-commit,
-  NuGet-version, embedded repository/tag, and config-digest validation; the tag and dedicated outputs were
-  removed afterward.
+- Exact-head CI run [`33636812070`](https://github.com/Concertable/customer/actions/runs/33636812070) at
+  `79cb07d6dab684a75cba60012374ac76c41c4b0c`: Frontend job `100269619614` passed in 1m59s and
+  Backend job `100269619229` passed in 7m14s, including the canonical solution build/tests, seven migration
+  snapshots, five-package pack and compile-use consumer closure, three OCI candidates, migration/simulator,
+  integrity, and retention gates.
+- Retained artifact `9849406524`, `customer-candidate-integrity-4e4aa1c5354da0f1e0af912ba7c5c24865e38aea`,
+  expires 2026-10-02 and has digest
+  `sha256:06107990940fca0005c5c5eff40eef7aa9c39c627ecfde48bc8ac4629a1ff8e9`.
+- Run [`33635705299`](https://github.com/Concertable/customer/actions/runs/33635705299) proved the otherwise
+  green canonical solution cannot restore `Concertable.Customer.ArchitectureTests` because Customer lacks
+  package-specific access to `Concertable.Testing.Architecture` (`403`). `79cb07d` restored the project's
+  prior exclusion from the canonical solution; it did not delete or weaken the architecture tests.
+- Actions policy remains `enabled: true`, `allowed_actions: all`, `sha_pinning_required: true`; default
+  workflow permissions remain `read` and PR approvals remain disabled. The workflow remains read-only and
+  both checkout invocations set `persist-credentials: false`.
 
 ## Reviews
 
@@ -104,8 +128,21 @@ Implement the next independent Customer-owned repository-policy slice: add boots
 - Independent artifact-gate review through `2ecc33cb533a95b3baa209dcdc259c6e27e81105` has no open findings
   after reconciling the current and final Customer package rosters.
 - Independent artifact-integrity review through `5555ac82b314384685a7a003fa5bc82e18fa8298` fixed
-  OS-aware path containment and exact artifact-name casing, then found no remaining issues. Draft PR #1 still
-  owns the cumulative delivery gate before any merge.
+  OS-aware path containment and exact artifact-name casing, then found no remaining issues.
+- Independent repository-policy review approved
+  `c83169dd2a3d172d765425b12e032e704fcdc4fa..070247795927ec6045b138c3225fbed99e5a2eb5`
+  with no findings after verifying CODEOWNERS precedence, official signed action commits, exact `v4` ref
+  equality, immutable-reference closure, and read-only permissions. Draft PR #1 still owns the cumulative
+  delivery gate before any merge.
+- Independent TestKit review approved
+  `070247795927ec6045b138c3225fbed99e5a2eb5..08ddbd812fd037544be47da2530098c49b278e86`
+  after finding and correcting the stale 13-file/seven-SBOM integrity count; no findings remain. Draft PR #1
+  still owns the cumulative delivery gate before any merge.
+- Independent database/schema convention review approved
+  `08ddbd812fd037544be47da2530098c49b278e86..a12ab4574858743ddc30432cc0bedf567a8303c2`
+  with no findings after verifying connection-name closure, the intentional composition alias, all seven
+  module `Schema` owners, and untouched generated migrations. Draft PR #1 still owns the cumulative delivery
+  gate before any merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -132,9 +169,9 @@ Implement the next independent Customer-owned repository-policy slice: add boots
   - `Concertable.Testing`, `Concertable.Testing.Integration`
 - Exact npm package ACL closure: `@concertable/mobile`, `@concertable/shared`, `@concertable/web`.
 - Current package candidate set: `Concertable.Customer.Hosting`, `Concertable.Customer.Review.Contracts`,
-  `Concertable.Customer.Ticket.Contracts`, and `Concertable.Customer.Seed.Contracts`. The final Customer
-  train still requires a black-box Customer TestKit, which remains outstanding. Ticket Contracts are
-  intentional because Hosting directly uses
+  `Concertable.Customer.Seed.Contracts`, `Concertable.Customer.TestKit`, and
+  `Concertable.Customer.Ticket.Contracts`. The Customer-owned candidate roster is complete. Ticket Contracts
+  are intentional because Hosting directly uses
   `TicketPurchasedEvent` and `SendTicketEmailCommand`.
 - Exact-head CI now creates local Customer Web, `customer-migrations`, and `customer-seed-simulator` archives.
   The simulator smoke uses `docker load` and `docker run --rm` against the built archive; it is not a source-only
@@ -143,12 +180,11 @@ Implement the next independent Customer-owned repository-policy slice: add boots
   update was authorized or performed.
 - The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
   attempt 3 created the required retained artifact, so the quota blocker is closed.
-- Customer currently has no `CODEOWNERS` and no environments; Actions allow all actions, do not require SHA
-  pinning, use default read-only workflow permissions, and cannot approve pull requests. GitHub returns the
-  private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and
-  `main` branch protection. Repository-local ownership/action pinning can proceed independently; merge-queue
-  enforcement waits for the already planned visibility/capability gate.
-- The extracted `Concertable.Customer.AppHost` remains excluded from `CarveCustomer.slnx` and has ten foreign
+- Customer now has repository-wide bootstrap `CODEOWNERS` for `@tomjseery`; all workflow actions are pinned to verified immutable SHAs, and repository Actions requires SHA pinning. GitHub still returns the private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and `main` branch protection. Do not bypass or retry that delivery-time capability gate.
+- `Concertable.Customer.ArchitectureTests` stays outside `Concertable.Customer.slnx`, matching the prior
+  carve solution boundary. Adding it requires the package owner to grant `Concertable/customer` Actions read
+  access to `Concertable.Testing.Architecture`; do not replace that package with source or suppress the test.
+- The extracted `Concertable.Customer.AppHost` remains excluded from `Concertable.Customer.slnx` and has ten foreign
   monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
   `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
   available. Do not fake that gate or widen this stream into RT3, Stage 4, Auth, Payment, Search, or B2B.
