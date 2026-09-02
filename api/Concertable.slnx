@@ -335,7 +335,7 @@
     <Project Path="Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.E2EAdmin.IntegrationTests/Concertable.B2B.E2EAdmin.IntegrationTests.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />
-    <Project Path="Concertable.B2B/tests/Concertable.B2B.Journey.IntegrationTests/Concertable.B2B.Journey.IntegrationTests.csproj" />
+    <Project Path="Concertable.B2B/tests/Concertable.B2B.Lifecycle.IntegrationTests/Concertable.B2B.Lifecycle.IntegrationTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/E2ETests/">
     <Project Path="Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj" />
