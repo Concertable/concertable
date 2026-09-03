@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `233ca5c90c644a89a828e6f7c62251abf9236161`  `(2026-09-03)`
-**Security-reviewed up to commit:** `233ca5c90c644a89a828e6f7c62251abf9236161`  `(2026-09-03)`
+**Reviewed up to commit:** `9c6c30c0b027eb3da59dcd56d4ef6b1e2725537a`  `(2026-09-03)`
+**Security-reviewed up to commit:** `9c6c30c0b027eb3da59dcd56d4ef6b1e2725537a`  `(2026-09-03)`
 **Judgment:** `changes-requested`
 
 ## Review pass — 2026-09-03 — full
@@ -36,3 +36,26 @@
 - [x] **PAY-004 — LOW — result contracts** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/Errors/PaymentMethodChargeError.cs:7`
   The new published error union has no exact definition contract inventory. Add both composite cases to `PaymentErrorDefinitionTests`, hard-coding their code, message, and semantic kind.
   Resolved by adding exact code, message, and kind assertions for both composite cases. Focused error-contract tests passed (72).
+
+## Review pass — 2026-09-03 — incremental
+
+**Candidate base:** `233ca5c90c644a89a828e6f7c62251abf9236161`
+**Candidate head:** `9c6c30c0b027eb3da59dcd56d4ef6b1e2725537a`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:66a37995863a09186dcd43286a3bb570ace9985bd75c10cbb25bd0eb2d267353` `(11 paths)`
+**Candidate bundle:** `C:\Users\TommySeery\AppData\Local\Temp\concertable-review-payment-5cad6e294b8e406d9a561d096adadeeb`
+**Candidate bundle identity:** `sha256:f260d7d08c7ecc8a70df1a94e5f90983811230eb6fecac7a3acdc498edbfce11`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **PAY-005 — MEDIUM — domain invariants** — `api/Concertable.Payment/src/Concertable.Payment.Domain/Entities/PaymentSessionAttemptEntity.cs:137`
+  The remediation validates the payment-method identifier before mutation, but `ApplyTransition` still assigns `LastAttemptedAt` and `State` before validating the required provider status and optional provider diagnostics. Invalid provider input can therefore still leave a partially transitioned in-memory entity. Normalize every supplied diagnostic before the first mutation and prove rejection leaves all state unchanged.
+  Resolved by normalizing every provider diagnostic before the first assignment and asserting an oversized diagnostic leaves state, timestamps, diagnostics, and events unchanged. Focused domain tests passed (6).
+- [ ] **PAY-006 — HIGH — correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/PaymentOperationResolver.cs:123`
+  A transient provider retrieval or reconciliation failure is returned as `ProviderUnavailable`, but both reference-based queue handlers pass every resolver error to `RejectAsync`, making the financial operation terminal and replaying that rejection forever. Preserve the operation as pending and surface a retryable handler failure for provider-unavailable resolution; cover the persisted pending state and subsequent successful replay.
+- [ ] **PAY-007 — LOW — test architecture** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Infrastructure/FinancialOperationHandlerTests.cs:48`
+  The new reference-deposit, reference-capture, and manager-payment tests are mock-interaction orchestration tests, which the routed unit-test standard assigns to integration. Replace them with SQL-backed scenarios that use the real operation resolver and persistence boundary while faking only the external payment provider seams.
