@@ -30,7 +30,8 @@
 - [x] **PAY-002 — MEDIUM — domain invariants** — `api/Concertable.Payment/src/Concertable.Payment.Domain/Entities/PaymentSessionAttemptEntity.cs:124`
   `ApplyTransition` mutates the attempt to `Succeeded` before validating the required payment-method identifier. A thrown validation exception therefore leaves an invalid succeeded in-memory entity that a later save can persist. Validate and normalize the identifier before any mutation, including the mapped length limit, and assert that rejection leaves the attempt unchanged.
   Resolved by validating and normalizing the immutable payment-method identifier before mutating observed attempt state. Focused domain tests passed (5), including the unchanged-state assertion.
-- [ ] **PAY-003 — LOW — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Grpc/ManagerPaymentRequestMappers.cs:65`
+- [x] **PAY-003 — LOW — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Grpc/ManagerPaymentRequestMappers.cs:65`
   The edited extension container adds another legacy `this` extension even though the C# standard requires migrating the whole touched container to C# 14 `extension()` blocks. Convert every ordinary extension in this mapper together.
+  Resolved by converting every extension member in the mapper to receiver blocks. The Payment infrastructure project builds with zero warnings and errors.
 - [ ] **PAY-004 — LOW — result contracts** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/Errors/PaymentMethodChargeError.cs:7`
   The new published error union has no exact definition contract inventory. Add both composite cases to `PaymentErrorDefinitionTests`, hard-coding their code, message, and semantic kind.
