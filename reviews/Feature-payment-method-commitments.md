@@ -33,5 +33,6 @@
 - [x] **PAY-003 — LOW — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Grpc/ManagerPaymentRequestMappers.cs:65`
   The edited extension container adds another legacy `this` extension even though the C# standard requires migrating the whole touched container to C# 14 `extension()` blocks. Convert every ordinary extension in this mapper together.
   Resolved by converting every extension member in the mapper to receiver blocks. The Payment infrastructure project builds with zero warnings and errors.
-- [ ] **PAY-004 — LOW — result contracts** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/Errors/PaymentMethodChargeError.cs:7`
+- [x] **PAY-004 — LOW — result contracts** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/Errors/PaymentMethodChargeError.cs:7`
   The new published error union has no exact definition contract inventory. Add both composite cases to `PaymentErrorDefinitionTests`, hard-coding their code, message, and semantic kind.
+  Resolved by adding exact code, message, and kind assertions for both composite cases. Focused error-contract tests passed (72).
