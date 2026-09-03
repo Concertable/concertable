@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `122c98ece3d6cfa0a7c3aede61b213874cb7bc03`  `(2026-09-03)`
-**Security-reviewed up to commit:** `122c98ece3d6cfa0a7c3aede61b213874cb7bc03`  `(2026-09-03)`
+**Reviewed up to commit:** `76b20c877db47293524a0a9164a5f6a31b3c8294`  `(2026-09-03)`
+**Security-reviewed up to commit:** `76b20c877db47293524a0a9164a5f6a31b3c8294`  `(2026-09-03)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
@@ -96,3 +96,56 @@ all of which were dead before it — then stopped at `payment-web-e2e` crashing 
 commit, and this checkout lacks the `ServiceAuth__B2BClientSecret`, `ServiceAuth__CustomerClientSecret`
 and `ServiceAuth__AuthClientSecret` values CI injects, so the local stop is unattributed and the merge
 queue owns the verdict.
+
+## Review pass — 2026-09-03 — incremental
+
+**Candidate base:** `122c98ece3d6cfa0a7c3aede61b213874cb7bc03`
+**Candidate head:** `76b20c877db47293524a0a9164a5f6a31b3c8294`
+**Candidate branch:** `Plan/RepoSplit-Stage3-Hosting-rt3`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:6e5b60697c77f3d62461a9f80a43fa0e101fc9792f4afa0219b1cd09ba7bc676` `(8 paths)`
+**Candidate bundle:** `reviewed in-place from the frozen range; no disposable bundle materialized`
+**Candidate bundle identity:** `n/a — see Deviations in the full pass`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Delta driven by merge-queue run 33799140674, which executed all ten B2B API E2E tests for the
+first time on this branch and failed all ten on the Auth endpoint. Evidence: `TestTokenMinter`
+dialling `https://localhost:7083/connect/token` returned `AuthenticationException: Cannot determine
+the frame size or a corrupted frame was received`, the B2B workers host's service-token call failed
+identically, and `docker image inspect` of the pinned digest shows `ASPNETCORE_HTTP_PORTS=8080`
+with no HTTPS port and `ExposedPorts: {"8080/tcp"}`.
+
+### Findings
+
+- [x] **RT3-5 — HIGH — correctness** — `api/Concertable.Auth/src/Concertable.Auth.Hosting/AppHostExtensions.cs:31`
+  `WithHttpsDeveloperCertificate()` supplied the pinned Auth image a certificate but nothing opened a
+  TLS socket, while all four AppHosts declare that container port as their `https` endpoint — the
+  endpoint asserted a protocol the container never spoke, so every https consumer met a plaintext
+  listener. Fixed by setting `ASPNETCORE_URLS` to the container's own https URL, which outranks
+  `ASPNETCORE_HTTP_PORTS`, guarded to run mode so a published manifest never inherits the developer
+  certificate. The repeated `8080` literal is now one `AuthConstants.ContainerPort` shared by the URL
+  and the four endpoint declarations. Verified: all four AppHost architecture suites pass (9/5/10/4/2),
+  including each publish-graph test.
+
+- [x] **RT3-6 — LOW — test-coverage** — `api/Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers.UnitTests/ContainerBackedPinningTests.cs:112`
+  `PinHttpsEndpoint` changed from replacing an endpoint to mutating one, so the create path every
+  substituted E2E project still uses had no guard against drifting from the previous declarative form.
+  Pinned by asserting name, scheme, port, target port, proxy mode and external flag against a
+  declaratively built peer. This also rules the RT3 helper change out as the cause of RT3-5.
+
+### Security layer
+
+Re-run over the delta. `Concertable.Auth*` and `Concertable.Payment*` paths changed, so the marker is
+re-stamped at this head. No HIGH or MEDIUM finding. `ASPNETCORE_URLS` is a trusted orchestration value,
+the developer certificate stays run-mode-only by the new `IsRunMode` guard — which makes the existing
+"publish mode is unaffected" comment true rather than aspirational — and no secret handling changed.
+
+### Verification state at this head
+
+`e2e-api-tests` remains unverified at this head; it runs only in the merge queue, and local runs cannot
+reach it in this checkout (missing `ServiceAuth__B2BClientSecret`, `ServiceAuth__CustomerClientSecret`,
+`ServiceAuth__AuthClientSecret`). What run 33799140674 did establish, and this head keeps: the fixture
+reaches ready, auth and payment-web both publish on their contract ports, and all ten tests execute.
+
