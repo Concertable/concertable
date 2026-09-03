@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `76b20c877db47293524a0a9164a5f6a31b3c8294`  `(2026-09-03)`
-**Security-reviewed up to commit:** `76b20c877db47293524a0a9164a5f6a31b3c8294`  `(2026-09-03)`
-**Judgment:** `approved`
+**Reviewed up to commit:** `8a9af31ff`  `(2026-09-03)`
+**Security-reviewed up to commit:** `8a9af31ff`  `(2026-09-03)`
+**Judgment:** `changes-requested`
 
 ## Review pass — 2026-09-03 — full
 
@@ -148,4 +148,48 @@ the developer certificate stays run-mode-only by the new `IsRunMode` guard — w
 reach it in this checkout (missing `ServiceAuth__B2BClientSecret`, `ServiceAuth__CustomerClientSecret`,
 `ServiceAuth__AuthClientSecret`). What run 33799140674 did establish, and this head keeps: the fixture
 reaches ready, auth and payment-web both publish on their contract ports, and all ten tests execute.
+
+## Review pass — 2026-09-03 — incremental
+
+**Candidate base:** `76b20c877db47293524a0a9164a5f6a31b3c8294`
+**Candidate head:** `8a9af31ff`
+**Candidate branch:** `Plan/RepoSplit-Stage3-Hosting-rt3`
+**Candidate scope:** `all`
+**Candidate bundle:** `reviewed in-place from the frozen range; no disposable bundle materialized`
+**Candidate bundle identity:** `n/a — see Deviations in the full pass`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [ ] **RT3-7 — HIGH — correctness** — `api/Concertable.Auth/src/Concertable.Auth.Hosting/AppHostExtensions.cs:24`
+  **This branch cannot pass `e2e-api-tests` and must not be merged until this is decided.**
+  `WithHttpsDeveloperCertificate()` does not supply a usable certificate to the pinned Auth image,
+  so the https-Auth bridge the RT3 E2E story rests on has no working implementation. Both reachable
+  states are red, proven by two queue runs:
+  - Without `ASPNETCORE_URLS` (current state, run 33799140674): the image binds HTTP only, so the port
+    every AppHost declares as `https` serves plaintext. All ten tests execute and all ten fail —
+    `TestTokenMinter` and the B2B workers' service-token call both get
+    `AuthenticationException: Cannot determine the frame size or a corrupted frame was received`.
+  - With `ASPNETCORE_URLS=https://+:8080` (run 33803938996, reverted in `8a9af31ff`): Kestrel fails to
+    bind — `Unable to configure HTTPS endpoint. No server certificate was specified, and the default
+    developer certificate could not be found or is out of date` — auth exits and every dependent
+    cascades. Strictly worse, hence the revert.
+
+  Three candidate resolutions, each a real trade-off for the owner to pick:
+  1. Serve Auth over HTTP in E2E (what `36299abfc` did before `dd95b011a` reversed it): declare the
+     endpoint `http`, make `Endpoints.Auth` an `http://` URL, and treat `E2E` as dev-like for
+     `RequireHttpsMetadata`. Unblocks now; costs the https fidelity `dd95b011a` was reaching for.
+  2. Mount a real certificate: export the developer certificate to a file, bind-mount it into the
+     container, and set `Kestrel__Certificates__Default__Path`/`__Password`. Faithful; the workflow's
+     existing "Provision HTTPS dev certificate" step is the hook, and local dev needs the same.
+  3. Wait for a corrected Auth image that serves HTTPS — already the documented removal gate this
+     bridge shares with `--user root`.
+
+### Verification state at this head
+
+Red. `e2e-api-tests` fails at this head for the reason recorded above. `AuthConstants.ContainerPort`
+and its four AppHost call sites are kept from the reverted commit and are verified by the architecture
+suites (B2B 20/20, Auth 2/2).
 
