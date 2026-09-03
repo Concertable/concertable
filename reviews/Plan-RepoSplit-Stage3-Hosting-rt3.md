@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `2aba5fc2c`  `(2026-09-03)`
-**Security-reviewed up to commit:** `2aba5fc2c`  `(2026-09-03)`
+**Reviewed up to commit:** `2a4fefce7`  `(2026-09-03)`
+**Security-reviewed up to commit:** `2a4fefce7`  `(2026-09-03)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
@@ -231,4 +231,21 @@ the container did. Production and dev topology are unchanged: both keep the pinn
 
 Both E2E test projects build; `Concertable.E2E.Source.UnitTests` 3/3 and the pinning suite 7/7 pass.
 `e2e-api-tests` runs only in the merge queue, so the queue owns the verdict as before.
+
+## Review pass — 2026-09-03 — incremental
+
+**Candidate base:** `2aba5fc2c`
+**Candidate head:** `2a4fefce7`
+**Candidate branch:** `Plan/RepoSplit-Stage3-Hosting-rt3`
+**Candidate scope:** `eng/repository-split/inventory.json`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Generated-artifact regeneration only. `split-inventory` failed on the PR head purely as drift —
+the source-backed Auth reference added one edge the committed inventory did not carry. Regenerated
+with `python eng/repository-split/inventory.py`; the check now reports
+`no test-tier cross-repository ProjectReference`, and the new edge is classified
+`fromKind: e2e` / `fromTarget: system`, the full-stack-harness bucket the packages standard exempts.
+No findings.
 
