@@ -9,7 +9,7 @@
        - A carve must NOT copy this file. Its absence is the cut-over to feed packages. -->
 
   <PropertyGroup>
-    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $(MSBuildProjectName.Contains('.AppHost'))">true</_SwapPlatformSourcePackages>
+    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $(MSBuildProjectName.EndsWith('.AppHost'))">true</_SwapPlatformSourcePackages>
     <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]'))">true</_SwapPlatformSourcePackages>
   </PropertyGroup>
 
