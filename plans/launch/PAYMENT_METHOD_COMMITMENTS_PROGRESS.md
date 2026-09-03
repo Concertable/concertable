@@ -23,6 +23,7 @@ Run a fresh incremental review over the latest remediation commit, then open and
 - Re-scaffolded the Payment initial migration in this commit; unchanged contexts retained their existing migration identities.
 - Resolved all four full-review findings: provider reconciliation races, atomic attempt transitions, mapper extension syntax, and composite error-contract coverage.
 - Resolved all three incremental-review findings: complete transition validation before mutation, retry transient reference resolution without terminal rejection, and move reference orchestration coverage to SQL-backed integration tests.
+- Added Payment's canonical host-backed integration fixture and migrated the reference-payment scenarios onto the production service composition.
 - Scoped the Payment topology service once through the topology builder.
 
 ## Verification

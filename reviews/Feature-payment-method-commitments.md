@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `9c6c30c0b027eb3da59dcd56d4ef6b1e2725537a`  `(2026-09-03)`
-**Security-reviewed up to commit:** `9c6c30c0b027eb3da59dcd56d4ef6b1e2725537a`  `(2026-09-03)`
+**Reviewed up to commit:** `5903062f6b0e8d3a2c4c6d3d82e1bf655223a8a4`  `(2026-09-04)`
+**Security-reviewed up to commit:** `5903062f6b0e8d3a2c4c6d3d82e1bf655223a8a4`  `(2026-09-04)`
 **Judgment:** `changes-requested`
 
 ## Review pass — 2026-09-03 — full
@@ -61,3 +61,22 @@
 - [x] **PAY-007 — LOW — test architecture** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Infrastructure/FinancialOperationHandlerTests.cs:48`
   The new reference-deposit, reference-capture, and manager-payment tests are mock-interaction orchestration tests, which the routed unit-test standard assigns to integration. Replace them with SQL-backed scenarios that use the real operation resolver and persistence boundary while faking only the external payment provider seams.
   Resolved by replacing the three orchestration unit tests with SQL-backed integration scenarios using the real resolver, repositories, unit of work, audit interceptor, and persisted reloads. Focused integration tests passed (3).
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `9c6c30c0b027eb3da59dcd56d4ef6b1e2725537a`
+**Candidate head:** `5903062f6b0e8d3a2c4c6d3d82e1bf655223a8a4`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:3ea68765a7314ff44f8537aedc1af4ef6845ca2cdc17c0909b15a7ef918105fa` `(9 paths)`
+**Candidate bundle:** `C:\Users\TommySeery\AppData\Local\Temp\concertable-review-payment-b71d686fe87c44e8bbaf7e885234ad04`
+**Candidate bundle identity:** `sha256:971081043bb4f18c373192737be216ccbe8db2d17ec8903f7177b0f1856353d2`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **PAY-008 — LOW — test architecture** — `api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/ReferencePaymentOperationTests.cs:69`
+  The replacement scenarios use SQL but still manually construct the handler and manager service while mocking the internal `IEscrowService` and `IPaymentManager`, so they remain orchestration tests and do not satisfy PAY-007's requirement to exercise the real composition while faking only external provider seams. Drive the scenarios through a real Payment host/service-provider composition with the real internal services and repositories, replacing only Stripe and transport boundaries, then assert the persisted outcomes.
+  Resolved by adding Payment's host-backed integration fixture and driving the registered handlers and manager-payment service through the production container with real internal collaborators. Only the Stripe session adapter and bus transport are replaced; focused host integration tests passed (3).
