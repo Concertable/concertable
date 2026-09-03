@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `8a9af31ff`  `(2026-09-03)`
-**Security-reviewed up to commit:** `8a9af31ff`  `(2026-09-03)`
-**Judgment:** `changes-requested`
+**Reviewed up to commit:** `2aba5fc2c`  `(2026-09-03)`
+**Security-reviewed up to commit:** `2aba5fc2c`  `(2026-09-03)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
 
@@ -163,8 +163,8 @@ reaches ready, auth and payment-web both publish on their contract ports, and al
 
 ### Findings
 
-- [ ] **RT3-7 — HIGH — correctness** — `api/Concertable.Auth/src/Concertable.Auth.Hosting/AppHostExtensions.cs:24`
-  **This branch cannot pass `e2e-api-tests` and must not be merged until this is decided.**
+- [x] **RT3-7 — HIGH — correctness** — `api/Concertable.Shared/tests/Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs:41`
+  Resolved in `2aba5fc2c` by option 4 below: the E2E tier runs Auth from source.
   `WithHttpsDeveloperCertificate()` does not supply a usable certificate to the pinned Auth image,
   so the https-Auth bridge the RT3 E2E story rests on has no working implementation. Both reachable
   states are red, proven by two queue runs:
@@ -192,4 +192,43 @@ reaches ready, auth and payment-web both publish on their contract ports, and al
 Red. `e2e-api-tests` fails at this head for the reason recorded above. `AuthConstants.ContainerPort`
 and its four AppHost call sites are kept from the reverted commit and are verified by the architecture
 suites (B2B 20/20, Auth 2/2).
+
+## Review pass — 2026-09-03 — incremental
+
+**Candidate base:** `8a9af31ff`
+**Candidate head:** `2aba5fc2c`
+**Candidate branch:** `Plan/RepoSplit-Stage3-Hosting-rt3`
+**Candidate scope:** `all`
+**Candidate bundle:** `reviewed in-place from the frozen range; no disposable bundle materialized`
+**Candidate bundle identity:** `n/a — see Deviations in the full pass`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Resolves RT3-7 by a fourth option none of the three recorded there needed: neither weaken the
+contract to HTTP, nor hand-mount a certificate, nor wait for a corrected image. The E2E tier runs
+Auth from source, which is the pattern this same harness already applies to the Payment web and
+workers hosts beside their own production images — a production image the E2E tier cannot use is
+substituted for the source project, and the AppHosts keep the image so the RT3 cut-over is
+untouched. Auth then receives the developer certificate natively, exactly as `b2b-web` on 7086 does.
+
+### Findings
+
+- [x] **RT3-8 — MEDIUM — correctness** — `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/DistributedApplicationBuilderExtensions.cs:22`
+  `PinAuthApi` located Auth with `builder.Resources.Single(r => r.Name == AuthConstants.Resource)`,
+  which after substitution is the explicit-start container that never runs — so `Services__B2BApiUrl`
+  (and the Customer equivalent) would have been set on a dead resource and silently absent from the
+  Auth that actually serves. Fixed by threading the substituted resource `PinAuthService` returns.
+
+### Security layer
+
+Re-run over the delta. `Concertable.Auth*` paths changed, so the marker is re-stamped at this head.
+No HIGH or MEDIUM finding. The change removes a certificate-handling workaround rather than adding
+one, and the source-backed Auth in E2E carries the same `ASPNETCORE_ENVIRONMENT=E2E` and secret set
+the container did. Production and dev topology are unchanged: both keep the pinned image.
+
+### Verification state at this head
+
+Both E2E test projects build; `Concertable.E2E.Source.UnitTests` 3/3 and the pinning suite 7/7 pass.
+`e2e-api-tests` runs only in the merge queue, so the queue owns the verdict as before.
 
