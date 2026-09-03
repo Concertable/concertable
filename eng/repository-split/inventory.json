@@ -548,7 +548,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 236,
+    "projectCount": 237,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -1772,6 +1772,13 @@
         "area": "Concertable.Payment",
         "kind": "integration-test",
         "name": "Concertable.Payment.E2EAdmin.IntegrationTests",
+        "packable": false,
+        "target": "payment"
+      },
+      "api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests.Fixtures/Concertable.Payment.IntegrationTests.Fixtures.csproj": {
+        "area": "Concertable.Payment",
+        "kind": "fixture",
+        "name": "Concertable.Payment.IntegrationTests.Fixtures",
         "packable": false,
         "target": "payment"
       },
