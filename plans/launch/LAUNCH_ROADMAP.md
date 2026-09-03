@@ -60,6 +60,7 @@ table-stakes items were resolved in the same pass.
   allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
   dispatch. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
+- [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish a Payment-owned durable operation reference before the lifecycle refactor resumes its Application, Booking, and Concert cut-over. Payment remains the sole owner of provider payment-method identifiers and verification evidence; B2B retains only its deal decisions and stable consumer correlation. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**
 
