@@ -17,10 +17,10 @@ on `origin/main`.
 
 ## Next Steps
 
-No RT3 action remains. The migration next promotes Auth through plan checkpoints 10A–10F: refresh and freeze
-Auth at the approved SHA, land its canonical repository and release, qualify the resulting package/image in
-the system compatibility set, promote that exact set through configuration, then remove frozen monorepo Auth
-source. Those checkpoints remain owned by the Auth promotion workstream.
+No RT3 action remains. The migration next promotes Auth through the plan's future Auth checkpoints: refresh
+and freeze Auth at the approved SHA, land its canonical repository and release, qualify the resulting
+package/image in the system compatibility set, then consume the canonical Auth contracts and remove frozen
+monorepo Auth source. Those checkpoints remain owned by the Auth promotion workstream.
 
 ## Completed work
 
@@ -57,6 +57,3 @@ successful exact-head CI and merge-queue validation.
   and its composition assertions.
 - A pinned Auth image did not transfer Auth source ownership. The monorepo remains Auth's writer until the
   explicit checkpoint-10 refresh/freeze/publish cutover.
-- The future canonical full-system repository is `Concertable/system`; its Aspire project/namespace is
-  `Concertable.System.AppHost`. Terraform and deployable environment state move to
-  `Concertable/infrastructure` and `Concertable/configuration`.
