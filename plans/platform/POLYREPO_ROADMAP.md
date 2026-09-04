@@ -35,8 +35,8 @@ collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first
 `EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · the extraction mechanism, proven end to end on
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
-**In flight:** the **cut** (§6) — stages 1 and 2 delivered, extraction unblocked; and the **frontend
-full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
+**In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, and checkpoint 4 delivered;
+extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
 `AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
@@ -146,10 +146,11 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
   execution.
   Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
-  `platform-web`, `system`, `.github`); nine stages; the Payment extraction is proven end to end.
-  **Stages 1–4 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages,
-  standalone AppHosts consume published Hosting/image boundaries, and full-system E2E composition is
-  system-owned). Stage 3 RT3 closed through [PR #897](https://github.com/Concertable/concertable/pull/897)
+  `platform-web`, `system`, `.github`); seventeen checkpoints; the Payment extraction is proven end to end.
+  **Checkpoints 1–2, the final Hosting RT3, and checkpoint 4 are delivered** (all 45 test-tier
+  cross-repository `ProjectReference`s are now packages, standalone AppHosts consume published Hosting/image
+  boundaries, and full-system E2E composition is system-owned). RT3 closed through
+  [PR #897](https://github.com/Concertable/concertable/pull/897)
   (`2979ab78f4204eeed07cca06654777a37965f007`) and Stage 4 closed through
   [PR #912](https://github.com/Concertable/concertable/pull/912)
   (`62390281b4191a7166136d69163a2c6482f6a463`); Git history retains their deleted ledgers.
