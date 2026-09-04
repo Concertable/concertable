@@ -2,6 +2,7 @@
   "name": "concertable-app",
   "private": true,
   "workspaces": [
+    "build-config",
     "web/customer",
     "web/b2b/venue",
     "web/b2b/artist",
@@ -74,6 +75,7 @@
     }
   },
   "devDependencies": {
+    "@concertable/build-config": "*",
     "@types/react-dom": "^19",
     "dependency-cruiser": "^17.4.3"
   },
