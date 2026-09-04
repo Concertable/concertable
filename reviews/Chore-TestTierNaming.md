@@ -6,10 +6,14 @@
 > was explicitly read-only — decide, then implement. It occupies `reviews/Chore-TestTierNaming.md`
 > because that is where the brief asked for it and it is the canonical slug for `Chore/TestTierNaming`.
 > If a real review pass lands on this branch later, append it below under a proper
-> `## Review pass` heading per `review-lifecycle`; do not retrofit this section into one. See §6.8.
+> `## Review pass` heading per `review-lifecycle`; do not retrofit this section into one. See §6.9.
 
-Read-only pass over merged `main` (`e1475b473`) in the `Chore/TestTierNaming` worktree. Nothing here is
-implemented.
+Research pass over merged `main` (`e1475b473`) in the `Chore/TestTierNaming` worktree.
+
+**Status: partly implemented.** §1.1/§1.2's tier split and §3's G1 gate are landed on this branch
+(`fee52b4cf` and its successor). §4.2's `ValidateOnStart` conversion, and G1's extension to B2B and
+Customer, are not — both are blocked on the defect in §5.4a, which the gate found the moment it existed.
+Sections still describing something as a proposal say so; §5.4a and §5.4b record what landing it revealed.
 
 Everything below was verified against the tree. Where the brief was wrong, the correction is marked
 **[CORRECTION]** and stated with its evidence. Where research found no canonical name, that is said
@@ -590,6 +594,56 @@ pass is not doing. So: **the declaration is provably the same one that failed in
 provably pin it. Whether `dotnet run` fails today is unverified.** It should be checked before G5 is
 written, because G5's rule depends on the answer.
 
+### 5.4a What the G1 gate found the moment it existed — three hosts cannot start
+
+G1 is implemented and landed for Auth, Search and Payment. Pointing it at B2B produced a defect in two
+seconds that no existing tier could see, and it is the same root cause as §5.3 one layer along.
+
+Aspire keys service-discovery configuration by an endpoint's **`UriScheme`, not its name**. So
+`WithHttpEndpoint(targetPort: 8080, name: "https")` in the standalone B2B and Customer AppHosts produces
+`services:payment-web:http:0` and `services:payment-web:http:1` — and never
+`services:payment-web:https:0`, which is exactly the key `AddPaymentClient` requires and throws on
+(`Concertable.Payment.Client/Extensions/ServiceCollectionExtensions.cs:13`). Resolved app-model keys for
+`b2b-web`, verbatim from the gate:
+
+```
+--services:auth:https:0=...
+--services:payment-web:http:0=...
+--services:payment-web:http:1=...        <- no https:0 anywhere
+```
+
+`AddPaymentClient` is called by **b2b-web**, **b2b-workers** and **customer-web**. All three fail at startup
+under `dotnet run` on either standalone AppHost. The only reason anything works is that the E2E harness sets
+the key by hand in three places — `Concertable.B2B.E2ETests/DistributedApplicationBuilderExtensions.cs:66`
+and `:89`, and the Customer sibling at `:68`. So the single path that exercises these hosts supplies what
+the app model does not, which is the whole pathology in one line.
+
+This **resolves §6.2 and §6.3 with evidence**: the standalone AppHosts are broken in run mode, and the
+`https`-named plaintext endpoint is not deliberate — it buys nothing, because the name never reaches
+service discovery.
+
+Recorded as HIGH in `api/Concertable.AppHost.Shared/TECH_DEBT.md`, with the two real fix options and an
+explicit warning not to switch the declaration to `WithHttpsEndpoint` (that would make the key appear and
+every gRPC call over it fail at runtime — RT3's Auth TLS failure, moved along). B2B's and Customer's
+`AppModelStartupContractTests` are deliberately **not** added yet: the gate is correct and the topology is
+not, and asserting the broken state as correct is the mistake §5.3 already documents.
+
+### 5.4b Two more things the gate surfaced
+
+- **`AddStripeCli` puts a blocking side effect in the app model.** `AppHostExtensions.cs:135` attaches
+  `paymentWeb.WithEnvironment(async ctx => ... await webhookSecret.Task.WaitAsync(TimeSpan.FromSeconds(60)))`.
+  Resolving Payment's app-model configuration therefore blocks 60s awaiting a log line from a Stripe CLI
+  process that is not running, then throws `TimeoutException`. The `composition-testing` skill's own rule is
+  that "composition registration must remain side-effect-free"; this breaks it. Payment's gate pins
+  `--Stripe:SecretKey=` empty so the resource is skipped deterministically, which is a workaround in the
+  test, not a fix in the AppHost.
+- **The secret residual is exactly 7 keys.** Everything the AppHosts forward only when already configured
+  (`AddSecrets`, `WithOptionalEnvironment`): the three `ServiceAuth:*ClientSecret` values,
+  `ServiceAuth:ClientSecret`, `Stripe:SecretKey`, `Stripe:WebhookSecret`, `ExternalServices:UseRealStripe`.
+  That is the honest remainder §1.3 predicted `CompositionTestArguments` would shrink to — 7 secrets rather
+  than 25 mixed secrets and topology keys. It lives in `AppModelConfiguration.Secrets`, and the comment there
+  states the rule: a topology key added to that list hides the defect the tier exists to catch.
+
 ### 5.5 Two divergent `PinHttpsEndpoint` implementations
 
 - `Concertable.Testing.E2E.DistributedApplicationBuilderExtensions.PinHttpsEndpoint` (line 251): adds an
@@ -628,45 +682,51 @@ needing a host, HTTP or a database is an integration test" — these need the re
 
 ## 6. What I could not settle — questions for you
 
-1. **Rename now, or gate now and rename later?** §1.2 recommends `*.StartupTests`, but
-   `architecture-tests` already runs on PRs and already blocks `e2e-api-tests`, so every gate can land
-   today with no tier-gate or workflow edit. Rename as a precondition, or as a follow-up once green?
+1. ~~Rename now, or gate now and rename later?~~ **Done — both, in that order.** The tier split landed
+   first, then G1 on top of it.
 
-2. **Does `dotnet run` on `Concertable.B2B.AppHost` actually work right now?** §5.4 shows the same
-   HTTP-only-image-declared-as-https arrangement that failed in E2E, still in all four standalone
-   AppHosts, with the architecture suites asserting it. I did not boot one. If it *does* work, my model of
-   defect #4 is incomplete and G5's rule needs rewriting. If it does not, that is a live bug on `main` in
-   the canonical dev entry point.
+2. ~~Does `dotnet run` on `Concertable.B2B.AppHost` work right now?~~ **Answered: no.** §5.4a has the
+   evidence — b2b-web, b2b-workers and customer-web all throw at startup on a missing
+   `services:payment-web:https:0`.
 
-3. **Is the Payment image's `https`-named-but-plaintext endpoint deliberate?** §5.3's fix depends on it.
-   If the image genuinely serves only HTTP on 8080, the honest fix renames the endpoint and updates
-   `Auth__Authority` and the Stripe CLI forward URL — which changes what consumers dial. If the image
-   should serve HTTPS, the fix is in the image. I can't tell which from the tree.
+3. **THE ONE DECISION I NEED.** §5.4a proves the `https`-named plaintext endpoint is not deliberate and
+   buys nothing, so it has to go. Which replacement do you want?
+   **(a)** Give `Concertable.Payment.Client` a scheme-agnostic address key it owns — `Services:PaymentApiUrl`,
+   matching the `Services:B2BApiUrl` / `Services:CustomerApiUrl` convention already in the AppHosts. Each
+   AppHost then supplies whichever endpoint actually exists. Correct and convention-consistent, but it is a
+   published-contract change: accept-new-with-fallback, publish, bump, migrate, delete the old key.
+   **(b)** Run Payment from source in the standalone AppHosts, as E2E now does for Auth. One small edit,
+   green immediately, but it gives back part of the RT3 image cut-over you just landed.
+   I lean (a) — (b) re-opens RT3 — but (a) is three PRs and (b) is one, and that trade is yours.
 
-4. **One Startup project per service, or split app-model from host-startup?** §1.2 proposes one project
-   with `ResourceGraphTests` + `WebHostTests` + `WorkerHostTests`. The alternative is two projects
-   (`*.AppModelTests` and `*.StartupTests`) on the grounds that "what the graph supplies" and "what the
-   host requires" are different questions. I think that over-splits — the gate that matters (G1) is
-   precisely their *intersection*, and it needs both in one place — but it is a judgement call.
+4. ~~One Startup project per service, or split app-model from host-startup?~~ **Went with one per service.**
+   G1 turned out to be exactly the intersection of "what the graph supplies" and "what the host requires",
+   so splitting them would have put the only gate that matters across two projects.
 
-5. **How far does `ValidateOnStart` adoption go in one pass?** §4.2 is the highest-value change and it
+5. **Should `AddStripeCli`'s blocking environment callback be fixed?** §5.4b: it makes resolving Payment's
+   app-model configuration block 60s on a live process, against the `composition-testing` skill's own
+   side-effect-free rule. Payment's gate pins the Stripe key empty to dodge it, which is a test-side
+   workaround. Fixing it properly means the webhook secret arriving by some route other than an `await`
+   inside `WithEnvironment`.
+
+6. **How far does `ValidateOnStart` adoption go in one pass?** §4.2 is the highest-value change and it
    touches 20 escape hatches across 8 production host files, i.e. real production behaviour in every
    service. Options-pattern-per-host is a clean multi-PR cut-over; a single pass would be a large, wide
    diff. Which shape do you want?
 
-6. **Where should the "does this image actually answer TLS" check live?** §3 proposes folding it into
+7. **Where should the "does this image actually answer TLS" check live?** §3 proposes folding it into
    `publish-images.yml` at build time and recording the answer beside the digest, so PR-time gates stay
    static. That means a new recorded artifact (image → schemes/ports) and somewhere to keep it. If you'd
    rather not carry that, #4 stays uncatchable before a boot.
 
-7. **`Concertable.E2E.Source` is excluded from composition coverage as a "source provider", but under
+8. **`Concertable.E2E.Source` is excluded from composition coverage as a "source provider", but under
    `UseSourceComposition=false` there is no `IE2EHostProvider` implementation at all** — the harness
    compiles and `E2EHosts.Source()` throws at runtime. Fine while the carved mode only runs the helper
    unit tests (what the Stage-4 progress note records). Intended end state, or is a package/image-backed
    provider still planned? The answer decides whether the seam in §1.3 should keep `CreateBuilderAsync`
    and the seven `IProjectMetadata` members on one interface.
 
-8. **Where should a research document like this actually live?** `review-lifecycle` owns
+9. **Where should a research document like this actually live?** `review-lifecycle` owns
    `reviews/<branch-slug>.md` and defines it as a code-review work order with a frozen candidate
    identity and `[ ]` findings. This file is neither, and it collides with that path. If a review pass
    later lands on `Chore/TestTierNaming` it must append rather than overwrite. `plans/` or a
