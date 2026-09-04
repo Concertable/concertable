@@ -702,9 +702,12 @@ private extraction proof.
   remote/rehome command; renamed-repository PRs are not treated as transferable. After Tommy approves the
   archival renames, create ten private `*-next` targets: five services, `platform-dotnet-next`,
   `platform-web-next`, `system-next`, `infra-next`, and `config-next`; transfer each recorded preparation ref
-  into its new target and prove its CI receives it. Apply least-privilege Actions/package settings and
-  CODEOWNERS/team access. Because the present entitlement cannot enforce private `main`, do not represent a
-  target as protected or canonical until an entitlement upgrade makes rulesets/merge queue verifiable.
+  to a named `prep/*` preservation branch in its new target. That direct ref transfer is preservation, not
+  integration. After 6C imports the filtered target base, use the retained filter-repo commit map to rebase or
+  cherry-pick the recorded preparation commits onto that base, recreate the PR in the new repository, and
+  require green target CI before retiring the archive branch. Apply least-privilege Actions/package settings
+  and CODEOWNERS/team access. Because the present entitlement cannot enforce private `main`, do not represent
+  a target as protected or canonical until an entitlement upgrade makes rulesets/merge queue verifiable.
 - 6C: push filtered histories and reports; reconcile the `infra` and `config` bootstrap inputs so Terraform
   has one owner; run secret scans and clean-clone builds. Resolve every extraction-map claim, generate retained
   history/audit reports, and do not make a target canonical.

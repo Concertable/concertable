@@ -26,8 +26,11 @@ inputs under final names; they must be preserved and reconciled, never overwritt
   transfer to a new repository.
 - Preserve the seven legacy final-name staging repositories by renaming each to its dated
   `<name>-staging-archive-<date>` identity, then create the ten fresh private `*-next` targets and transfer
-  the recorded preparation refs. The exact rename set is `auth`, `b2b`, `customer`, `payment`, `search`,
-  `infra`, and `config`; no force-push or repository overwrite is allowed.
+  the recorded preparation refs to named `prep/*` preservation branches. After 6C imports filtered history,
+  use the filter-repo commit map to rebase or cherry-pick the recorded commits onto the target base, recreate
+  each PR there, and require target CI green before retiring the archive branch. The exact rename set is
+  `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config`; no force-push or repository overwrite
+  is allowed.
 - Reconcile the existing `config` bootstrap Terraform into the sole `infra` ownership boundary before the
   filtered-history handoff. Then resolve all 70 extraction-map claims and generate the 6C audit reports.
 
