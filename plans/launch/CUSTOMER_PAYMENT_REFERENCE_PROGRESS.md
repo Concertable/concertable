@@ -38,14 +38,11 @@ verdict: `plans/launch/PAYMENT_BOUNDARY_DECISION.md` §1.
 
 - No review yet; the branch does not exist.
 
-## Downstream handoffs
-
-- `plans/launch/PAYMENT_LEGACY_CULL_PROGRESS.md` — gate: Customer is off the raw-identifier
-  Payment APIs (this plan terminal). The legacy cull must not start its delivery before this gate
-  and the B2B consumer migration (PR #633) are both terminal.
-
 ## Decisions, discoveries, blockers, and deviations
 
 - On-session purchase collects no mandate; saved-card selection, if ever built, is Payment's
   surface per `PAYMENT_BOUNDARY_DECISION.md` §1 — Customer proxies at most an opaque token and
   persists nothing.
+- Owner decision, 2026-09-04: PR #933 includes the legacy cull and breaking vocabulary pass, so
+  Customer migrates directly from the raw-identifier client to the final reference surface after
+  that package publishes; there is no later producer-cull dependency.

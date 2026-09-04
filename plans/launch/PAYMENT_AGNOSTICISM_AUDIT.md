@@ -111,14 +111,17 @@ Two costs the equivalence hides: `int` to `string` is a **column type change**, 
 value is inside the fingerprint's SHA-256 payload, so it needs a `CurrentVersion` bump and a
 migration story.
 
-## What the existing cull plan misses
+## What the superseded cull scope missed
 
-`plans/launch/PAYMENT_LEGACY_CULL_PLAN.md` states the right invariant and delivers the
-provider-identifier half competently. Grepping it and `PAYMENT_BOUNDARY_DECISION.md` for `BookingId`,
+The original standalone cull scope stated the right invariant and delivered the provider-identifier
+half competently. Grepping it and `PAYMENT_BOUNDARY_DECISION.md` for `BookingId`,
 `booking_id`, `ManagerPayment`, `ConcertId`, `concert_id` returns **zero hits**. Its Delivery misses:
 all of `booking_id`; all of `ManagerPayment`; `ConcertId` / `CustomerPayment` / `Ticket`; the B2B
 package dependency; the D4 structural requirement (a key rename leaves it intact); and any schema
 step at all. Its rename-gate grep would pass with every one of those still present.
+
+That scope is now absorbed by `PAYMENT_METHOD_COMMITMENTS_PLAN.md` so PR #933 carries one complete
+breaking Payment release.
 
 `tests/Concertable.Payment.ArchitectureTests/PaymentContractReferenceTests.cs:14-24` checks only
 assembly references to `Concertable.B2B*` / `Concertable.Customer*`, passes today with every leak

@@ -449,13 +449,13 @@ Currently handled (worktree, `Services/Webhook/`): `setup_intent.succeeded`,
 by `FinancialOperation`; Payment holds every provider identifier, every consent artifact, and
 every retry/reconcile decision; the bus and gRPC contracts speak references and typed errors only.
 
-1. **Harden, then deliver PR #933** (`Feature/payment-method-commitments`, open): fold the
-   consent + key hardening into the producer before it merges — `allow_redisplay_filters` →
-   `["always"]`; record MIT consent evidence on the operation row; migrate
-   `StripeRequestOptions`'s `identity:action` keys onto the attempt-keyed shape; verify §5.5's
-   typed decline split in `PaymentMethodChargeError` before the publish freezes the contract —
-   then incremental review, merge, and publish the Payment Contracts + Client packages. One
-   publish carries all of it. *(in flight)*
+1. **Deliver the final producer surface on PR #933** (`Feature/payment-method-commitments`, open):
+   keep the completed consent + key hardening, replace every consumer correlation with
+   `(OperationType, ClientReference)`, remove the raw-identifier and bespoke session surfaces,
+   remove consumer-role vocabulary, and land the §6 renames. Re-scaffold Payment, re-record the
+   deliberately breaking compatibility baselines, review the full candidate, then publish the
+   Payment Contracts + Client packages. Owner decision, 2026-09-04: one breaking release carries
+   all producer changes because neither consumer has adopted the intermediate reference surface.
 2. **Unblock PR #633** (`Refactor/launch_deal-lifecycle-modules-phase2`): the B2B
    lifecycle-ownership refactor consumes the new Payment surface, so it goes ready after the
    packages publish — advance its Payment pins, revalidate, merge.
@@ -468,17 +468,6 @@ every retry/reconcile decision; the bus and gRPC contracts speak references and 
 4. **Re-key `IConfirm`/`ICancel`/`IComplete` by `FinancialOperation`** (§2). B2B-internal,
    independently shippable; naturally rides with or immediately after 3 since it touches the same
    call sites.
-5. **Legacy cull in Payment** — remove the raw-identifier RPCs/commands
-   (`DepositEscrowCommand.PaymentMethodId`, the intent-id fetch surface), delete
-   `TransactionTypes.ApplicationApply`/`ApplicationAccept`, stop enriching bus events with pm ids,
-   move the FlatFee hold + Verify flows onto the generic subsystem, retire the bespoke
-   `Create*Session` paths, keep `VerifyTransactionEntity` as ledger only. **Breaking published
-   contract change** → its own plan and the two-step publish-then-bump, only after 3 leaves no
-   consumer on the legacy surface.
-6. **Vocabulary pass on the published contracts** — `ContextId`, `ClientReference`,
-   `PaymentSessionDefinition`, `CreateOrReplay`→`Create`, agnostic `PaymentMetadataKeys`. All
-   breaking (proto field/method renames); batch with 5 to pay the coordination cost once.
-
-Step 1 is in flight; step 2 follows its package publish; step 4 is B2B-internal and
-independently shippable; step 3 is the coordinated consumer cut-over; steps 5–6 are one breaking
-producer release behind it.
+Step 1 is in flight; step 2 follows its package publish; step 4 is B2B-internal and independently
+shippable; step 3 is the coordinated B2B consumer cut-over. Customer migrates independently after
+the same package publish. There is no second producer cull release.

@@ -60,9 +60,8 @@ table-stakes items were resolved in the same pass.
   allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
   dispatch. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
-- [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish a Payment-owned durable operation reference before the lifecycle refactor resumes its Application, Booking, and Concert cut-over. Payment remains the sole owner of provider payment-method identifiers and verification evidence; B2B retains only its deal decisions and stable consumer correlation. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
+- [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish Payment's final consumer-agnostic surface in one breaking release: durable operation references, provider-identifier ownership, reference-keyed escrow/ledger/settlement, legacy raw-identifier removal, and payment-owned vocabulary. B2B and Customer then migrate directly from the old surface once. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
 - [ ] 🟡 **Customer payment-reference migration** `launch/customer-payment-reference` — Customer stops relaying client-supplied Stripe payment-method ids (`TicketPurchaseParams.PaymentMethodId` and the customer web/mobile checkout); ticket purchase runs on-session sessions by a Customer-minted operation reference. Gated on the published packages from the payment-operation-ownership producer (PR #933). See [CUSTOMER_PAYMENT_REFERENCE_PLAN.md](CUSTOMER_PAYMENT_REFERENCE_PLAN.md).
-- [ ] 🟡 **Payment legacy cull + vocabulary** `launch/payment-legacy-cull` — remove the raw-identifier APIs, the B2B nouns in Payment's contracts, and the bespoke session paths, and land the contract renames, in one breaking release once BOTH consumer migrations (the B2B migration riding PR #633 and the Customer payment-reference migration) are terminal. See [PAYMENT_LEGACY_CULL_PLAN.md](PAYMENT_LEGACY_CULL_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**
 
