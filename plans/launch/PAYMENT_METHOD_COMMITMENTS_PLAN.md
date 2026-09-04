@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Make Payment the sole owner of provider identifiers, payment operations, verification evidence, escrow, settlement, and ledger correlation. Consumer services identify their contexts through opaque `PaymentOperationReference` values and never store or forward a provider identifier. Payment's published surface and persistence contain payment vocabulary only.
+Make Payment the sole owner of provider payment-method identifiers, payment operations, verification evidence, escrow, settlement, and ledger correlation. Consumer services identify their contexts through opaque `PaymentOperationReference` values and never store or forward a provider payment-method identifier. Payment's published surface and persistence contain payment vocabulary only.
 
 ## Delivery
 
@@ -17,7 +17,7 @@ Make Payment the sole owner of provider identifiers, payment operations, verific
 
 ## Invariants
 
-- A provider identifier exists only in Payment persistence and provider adapter calls.
+- A provider payment-method identifier exists only in Payment persistence and provider adapter calls.
 - Payment remains consumer-domain agnostic: operation type and client reference are opaque strings.
 - Repeating a commitment request for the same reference replays the canonical Payment session operation.
 - Only a terminal successful setup or verification operation may supply a payment method to a later financial operation.

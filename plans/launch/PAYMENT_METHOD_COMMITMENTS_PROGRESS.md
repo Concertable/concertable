@@ -7,15 +7,18 @@
 - Branch: `Feature/payment-method-commitments`
 - PR: [#933](https://github.com/Concertable/concertable/pull/933) (open, owner-blocked until the final breaking surface is merge-ready)
 - Dependency/package gates: B2B migration on PR [#633](https://github.com/Concertable/concertable/pull/633) and the Customer payment-reference migration both wait for the breaking Payment Contracts and Client packages from this producer
-- Last reconciled: 2026-09-04 after the owner folded the agnosticism audit and legacy cull into PR #933 and the branch merged current `origin/main`
+- Last reconciled: 2026-09-05 after Delivery items 4–6 and the clean v1 compatibility baseline passed local implementation gates
 
 ## Current state
 
-Delivery items 1–3 are implemented and previously reviewed. The owner decided that PR #933 must also deliver the complete consumer-agnostic Payment surface, raw-identifier cull, and breaking vocabulary pass in one producer release because neither consumer has adopted the intermediate surface. The former legacy-cull plan is absorbed and deleted. Current `origin/main` is merged at `d66dd4ba5`; the Payment solution builds cleanly after that merge. The previous review approval is historical and a fresh full review is required for the final candidate.
+Delivery items 1–6 are implemented. Payment now uses opaque operation references throughout its published contracts and persistence, exposes the surviving clean contract as v1, owns generic payment-method and payout-owner registration events, and has no B2B or Customer product dependency. The Payment initial migration and candidate v1 compatibility baseline are re-scaffolded. The previous review approval is historical and a fresh full review is required for the final candidate.
 
 ## Next Steps
 
-1. Execute Delivery item 4 from `PAYMENT_METHOD_COMMITMENTS_PLAN.md`: replace every Payment-side `BookingId` correlation with `PaymentOperationReference(OperationType, ClientReference)` across bus contracts, gRPC, financial-operation state, escrow, settlement, ledger, and persistence; enforce the escrow composite alternate key; bump the settlement fingerprint version; run focused tests; then re-scaffold Payment's initial migration.
+1. Commit the verified Delivery items 4–6 candidate.
+2. Run the fresh canonical full review and resolve every finding against the exact candidate head.
+3. Push the reviewed head and complete exact-head remote validation.
+4. Stop for the owner's explicit approval before enqueueing PR #933 or publishing the breaking v1 packages.
 
 ## Completed work
 
@@ -24,11 +27,18 @@ Delivery items 1–3 are implemented and previously reviewed. The owner decided 
 - Resolved the prior full and incremental review findings; the historical approved watermark is `448316d2a260e1507dc1c8e1ca3dba607fb5b9ec`.
 - Merged current `origin/main` into the branch at `d66dd4ba5` before beginning the breaking release.
 - Owner decision, 2026-09-04: absorb the agnostic surface, legacy cull, and vocabulary cleanup into PR #933 as one breaking Payment release; remove the dormant cull plan and its later producer gate.
+- Replaced booking/application correlation with `PaymentOperationReference`, removed the role-specific Customer/Manager surfaces and raw provider-identifier inputs, and split the public clients into session, settlement, reporting, escrow, commission, and payout operations.
+- Replaced Auth/B2B ingress knowledge with Payment-owned owner-registration events and reduced Payment's accepted JWT audience to `concertable.payment.api`.
+- Re-scaffolded the Payment initial migration and generated the clean candidate contract as compatibility baseline `v1`; the old published package remains historical fixture `0.1.0-alpha.0.1254` only.
 
 ## Verification
 
-- `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --no-restore`: passed after the base merge with 0 warnings and 0 errors.
-- Before the scope expansion: Payment unit tests 589 passed, integration tests 59 passed, architecture tests 9 passed, and plan graph passed with 0 errors and 0 warnings.
+- `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --no-restore --verbosity minimal`: passed with 0 warnings and 0 errors.
+- Payment unit tests: 534 passed.
+- Payment integration tests: 59 passed against SQL Server.
+- Payment architecture tests: 11 passed.
+- Compatibility tests: 4 passed against candidate baseline `v1`.
+- Superseded Payment source identities (`BookingId`, `ContextId`, `ConsumerCorrelation`, `CustomerPayment`, `ManagerPayment`, Customer/Auth registration events, consumer seed catalogs) scan empty.
 
 ## Reviews
 
