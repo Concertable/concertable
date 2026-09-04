@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `5903062f6b0e8d3a2c4c6d3d82e1bf655223a8a4`  `(2026-09-04)`
-**Security-reviewed up to commit:** `5903062f6b0e8d3a2c4c6d3d82e1bf655223a8a4`  `(2026-09-04)`
-**Judgment:** `changes-requested`
+**Reviewed up to commit:** `6510ca80cc7b27557512eac2f24f859ab1269254`  `(2026-09-04)`
+**Security-reviewed up to commit:** `eef36ac547f8a61c025af2f428c45317a64223de`  `(2026-09-04)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
 
@@ -80,3 +80,37 @@
 - [x] **PAY-008 — LOW — test architecture** — `api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/ReferencePaymentOperationTests.cs:69`
   The replacement scenarios use SQL but still manually construct the handler and manager service while mocking the internal `IEscrowService` and `IPaymentManager`, so they remain orchestration tests and do not satisfy PAY-007's requirement to exercise the real composition while faking only external provider seams. Drive the scenarios through a real Payment host/service-provider composition with the real internal services and repositories, replacing only Stripe and transport boundaries, then assert the persisted outcomes.
   Resolved by adding Payment's host-backed integration fixture and driving the registered handlers and manager-payment service through the production container with real internal collaborators. Only the Stripe session adapter and bus transport are replaced; focused host integration tests passed (3).
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `5903062f6b0e8d3a2c4c6d3d82e1bf655223a8a4`
+**Candidate head:** `eef36ac547f8a61c025af2f428c45317a64223de`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:35a66b2d88601b7b11d81d2cab7475ef002ee46ba0d42b58458e501f7683b1d4` `(13 paths)`
+**Candidate bundle:** `C:\Users\TommySeery\AppData\Local\Temp\concertable-review-payment-9ea2edc5ebec47e9808de6b8563bd2d4`
+**Candidate bundle identity:** `sha256:4b4aa47258ad1dccda1f92b8c7a61ac985cfb3a7ed1c463dfbef605e0d1f1742`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings.
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `eef36ac547f8a61c025af2f428c45317a64223de`
+**Candidate head:** `6510ca80cc7b27557512eac2f24f859ab1269254`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:affce3e3b644f7abf16c1f35b129e69892f934beebe227b2d28ed4a54f2829c2` `(2 paths)`
+**Candidate bundle:** `local immutable Git objects`
+**Candidate bundle identity:** `sha256:affce3e3b644f7abf16c1f35b129e69892f934beebe227b2d28ed4a54f2829c2`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings.
