@@ -43,3 +43,35 @@ for (const surface of webSurfaces) {
     }
   });
 }
+
+for (const surface of ["mobile/b2b", "mobile/customer"]) {
+  test(`${surface} carve consumes the candidate build configuration as a package`, () => {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/carve-fe.mjs", surface, "--worktree", "--prepare-only", "--keep"],
+      { cwd: appRoot, encoding: "utf8" },
+    );
+    const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+    assert.equal(result.status, 0, output);
+
+    const workMatch = output.match(/\(kept carve work: (.+)\)/);
+    assert.ok(workMatch, output);
+    const work = resolve(workMatch[1].trim());
+    assert.equal(dirname(work), resolve(tmpdir()));
+    assert.match(basename(work), /^carve-fe-/);
+
+    try {
+      const surfaceDirectory = join(work, "repo", "app", ...surface.split("/"));
+      const manifest = JSON.parse(readFileSync(join(surfaceDirectory, "package.json"), "utf8"));
+      const dependency = manifest.devDependencies["@concertable/build-config"];
+      assert.match(dependency, /^file:\.build-config\/.+\.tgz$/);
+      assert.equal(existsSync(join(surfaceDirectory, dependency.slice("file:".length))), true);
+      assert.match(readFileSync(join(surfaceDirectory, "metro.config.js"), "utf8"),
+        /@concertable\/build-config\/metro/);
+      assert.equal(existsSync(join(work, "repo", "app", "build-config")), false);
+      assert.equal(existsSync(join(work, "repo", "app", "mobile", "shared")), false);
+    } finally {
+      rmSync(work, { recursive: true, force: true });
+    }
+  });
+}

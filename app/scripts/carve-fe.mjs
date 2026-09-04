@@ -3,8 +3,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-// Carve one frontend surface into a standalone tree and build it against the package feed ONLY — the
-// npm counterpart of the backend carve-{auth,payment,search,b2b,customer} CI gates. A surface that
+// Carve one frontend surface into a standalone tree. Runtime tiers restore from the package feed;
+// build configuration uses the exact candidate tarball during publisher preparation. A surface that
 // imports an @concertable tier it does not declare (masked in-monorepo by workspace hoisting) fails
 // here at install; a shared import absent from the feed fails at restore; a build that only resolves
 // via monorepo-root config fails standalone.
@@ -78,6 +78,7 @@ try {
   const tar = join(work, "surface.tar");
   const archivePaths = [`app/${surface}`];
   if (spec.kind === "web") archivePaths.push("app/scripts/vite-development-https.ts");
+  if (spec.kind === "mobile") archivePaths.push("app/build-config");
   execFileSync("git", ["archive", "--format=tar", "-o", tar, treeish, ...archivePaths], {
     cwd: repoRoot,
   });
@@ -97,6 +98,21 @@ try {
     for (const name of Object.keys(deps)) {
       if (name.startsWith("@concertable/")) deps[name] = "alpha";
     }
+  }
+
+  if (spec.kind === "mobile") {
+    // The new producer is not on the feed until its separately gated publisher cutover. Install its
+    // exact candidate tarball, then remove the source so Metro cannot succeed through a source alias.
+    const buildConfigSource = join(carveRoot, "app", "build-config");
+    const buildConfigArtifacts = join(dir, ".build-config");
+    mkdirSync(buildConfigArtifacts);
+    const packed = JSON.parse(execFileSync(npm, [
+      ...npmPrefix, "pack", "--ignore-scripts", "--json", "--cache", cache,
+      "--pack-destination", buildConfigArtifacts,
+    ], { cwd: buildConfigSource, encoding: "utf8" }));
+    pkg.devDependencies ??= {};
+    pkg.devDependencies["@concertable/build-config"] = `file:.build-config/${packed[0].filename}`;
+    rmSync(buildConfigSource, { recursive: true, force: true });
   }
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
