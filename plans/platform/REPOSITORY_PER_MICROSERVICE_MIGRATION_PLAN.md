@@ -253,13 +253,14 @@ before creating fresh `*-next` repositories; it must never force-push or overwri
 Tommy is bootstrap administrator. Teams and `CODEOWNERS` express the durable ownership boundary even while
 one person fills multiple roles.
 
-The current source and generated mirrors are public, and the canonical repositories preserve that public
-visibility. Temporary `*-next` repositories remain private until their history, settings, and artifacts pass
-the cutover review. `Concertable/.github` is public from creation so public repositories can call its reusable
-workflows. Canonical GHCR runtime, migration, and simulator images are public and anonymously pullable after
-image-layer secret scanning; this avoids a long-lived registry credential in Azure and in local AppHosts.
-NuGet and npm packages retain explicit package/repository access grants because they do not share GHCR's
-anonymous public-pull behavior.
+The source repository and historical generated mirrors are public. Canonical repositories preserve that
+public visibility, but every mirror/archive action is conditional on the live repository inventory rather
+than an assumed roster. Temporary `*-next` repositories remain private until their history, settings, and
+artifacts pass the cutover review. `Concertable/.github` is public from creation so public repositories can
+call its reusable workflows. Canonical GHCR runtime, migration, and simulator images are public and
+anonymously pullable after image-layer secret scanning; this avoids a long-lived registry credential in Azure
+and in local AppHosts. NuGet and npm packages retain explicit package/repository access grants because they
+do not share GHCR's anonymous public-pull behavior.
 
 ### Repository layout contracts
 
@@ -440,9 +441,11 @@ configuration promotion PR; the AppHost does not deploy production.
 
 Each repository owns a thin calling workflow and its final `ci-complete` aggregation job. Required rulesets,
 merge queue, dependency review, secret scanning, and branch naming are applied uniformly where the GitHub
-entitlement supports them. Private targets without rulesets use an explicitly reviewed branch-protection
-substitute until the organization upgrades; reusable workflow updates arrive through Renovate rather than
-floating tags.
+entitlement supports them. The current entitlement also rejects private-repository branch-protection reads,
+so it has no technical substitute for private target `main` enforcement: those targets remain private and
+non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade makes the intended
+ruleset/merge-queue policy verifiable. Reusable workflow updates arrive through Renovate rather than floating
+tags.
 
 ### Service CI and release
 
@@ -581,8 +584,9 @@ only one target owns the live file after cutover.
 2. After canonical commits but before monorepo source removal, cherry-pick/replay those commits back into the
    frozen monorepo path, verify, then explicitly re-enable mirroring. Never overwrite canonical work with the
    old force-push workflow.
-3. After source removal, operational rollback is a system-manifest PR to the last known-green image digests
-   and compatible migration/schema state. Repository topology is not automatically reversed.
+3. After source removal, operational rollback is a configuration rollback to the last known-green
+   system-qualified image set and compatible migration/schema state. Repository topology is not
+   automatically reversed.
 4. Break-glass source rollback restores the signed monorepo bundle/tag into a new recovery repository; it
    never unarchives and force-pushes the historical monorepo silently.
 
@@ -692,11 +696,15 @@ private extraction proof.
 
 - 6A: create public `Concertable/.github`, reusable workflows, Renovate preset, ruleset/environment templates,
   teams, and bootstrap CODEOWNERS. Verify a disposable public fixture consumes every reusable workflow.
-- 6B: reconcile the seven legacy final-name staging repositories (`auth`, `b2b`, `customer`, `payment`,
-  `search`, `infra`, `config`) and, after Tommy explicitly approves their archival renames, create ten private
-  `*-next` targets: five services, `platform-dotnet-next`, `platform-web-next`, `system-next`, `infra-next`,
-  and `config-next`. Apply least-privilege Actions/package settings, CODEOWNERS/team access, and `main`
-  protections. Use a reviewed branch-protection substitute while private-repository rulesets are unavailable.
+- 6B: inventory every active branch, PR, owner worktree, and exact head in the seven legacy final-name staging
+  repositories (`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, `config`). Before an approved archival
+  rename, create a preserved-ref/bundle handoff for each active preparation branch and record the new-target
+  remote/rehome command; renamed-repository PRs are not treated as transferable. After Tommy approves the
+  archival renames, create ten private `*-next` targets: five services, `platform-dotnet-next`,
+  `platform-web-next`, `system-next`, `infra-next`, and `config-next`; transfer each recorded preparation ref
+  into its new target and prove its CI receives it. Apply least-privilege Actions/package settings and
+  CODEOWNERS/team access. Because the present entitlement cannot enforce private `main`, do not represent a
+  target as protected or canonical until an entitlement upgrade makes rulesets/merge queue verifiable.
 - 6C: push filtered histories and reports; reconcile the `infra` and `config` bootstrap inputs so Terraform
   has one owner; run secret scans and clean-clone builds. Resolve every extraction-map claim, generate retained
   history/audit reports, and do not make a target canonical.
@@ -712,8 +720,9 @@ private extraction proof.
   version, and prove clean restore.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
-- 7C (GitHub): rename the stale `shared` mirror to `shared-mirror-archive-<date>` and
-  `platform-dotnet-next` to `platform-dotnet`; update package links/Actions access.
+- 7C (GitHub): rename `platform-dotnet-next` to `platform-dotnet`; update package links/Actions access. If
+  a legacy `shared` mirror exists in the verified live inventory, preserve it as
+  `shared-mirror-archive-<date>`; do not assume that repository exists.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
@@ -749,8 +758,9 @@ private extraction proof.
   mirror automation. Do not delete source yet.
 - 10B (`auth-next`): rebase the verified extraction on that SHA; land CI, Auth-owned publication/images,
   standalone AppHost, migrations, Hosting/TestKit, rules, and main branch.
-- 10C (GitHub): rename `auth` to `auth-mirror-archive-<date>` and `auth-next` to `auth`; transfer package/image
-  permissions; publish a canonical Auth release.
+- 10C (GitHub): promote `auth-next` to `auth`, retaining the dated staging archive established in 6B;
+  transfer package/image permissions and publish a canonical Auth release. The final-name target is already
+  free at this point and is never overwritten.
 - 10D (`system`): Renovate/manual PR updates Auth packages and image digest; run full affected E2E and record
   the qualified compatibility set.
 - 10E (`config`): promote that exact set to test and prove the Auth/login deployment smoke.
@@ -819,8 +829,8 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
   topology/history/package map and cutover tag/bundle reference.
 - Confirm no package, image, workflow, AppHost, E2E, environment, or deployment still depends on the
   monorepo.
-- Archive `Concertable/concertable` and the six dated mirror archives. Retain package/image versions and
-  signed source bundles.
+- Archive `Concertable/concertable` and only the dated staging/mirror archives recorded in the final live
+  inventory. Retain package/image versions and signed source bundles.
 - Verification: clean clones/builds of all eleven canonical repos; Renovate dry-run/dashboard; full system E2E;
   test deployment smoke; GitHub audit of rulesets/environments/secrets/package ACLs.
 - **Hard stop:** archival is the terminal checkpoint. The plan is deleted in the commit that records the

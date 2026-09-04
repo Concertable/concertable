@@ -21,12 +21,13 @@ inputs under final names; they must be preserved and reconciled, never overwritt
 ## Next Steps
 
 - Obtain a package-read credential, then record package ACLs and repository linkage without reading secret values.
-- Prove and record the reviewed branch-protection substitute on a private target while private-repository
-  merge-queue rulesets remain unavailable.
+- Record every active legacy-repository branch, PR, worktree, and exact head. Before any rename, create a
+  preserved-ref/bundle handoff and a rehome command for each active preparation branch; GitHub PRs do not
+  transfer to a new repository.
 - Preserve the seven legacy final-name staging repositories by renaming each to its dated
-  `<name>-staging-archive-<date>` identity, then create the ten fresh private `*-next` targets. The exact
-  rename set is `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config`; no force-push or
-  repository overwrite is allowed.
+  `<name>-staging-archive-<date>` identity, then create the ten fresh private `*-next` targets and transfer
+  the recorded preparation refs. The exact rename set is `auth`, `b2b`, `customer`, `payment`, `search`,
+  `infra`, and `config`; no force-push or repository overwrite is allowed.
 - Reconcile the existing `config` bootstrap Terraform into the sole `infra` ownership boundary before the
   filtered-history handoff. Then resolve all 70 extraction-map claims and generate the 6C audit reports.
 
@@ -50,6 +51,6 @@ Not started for this planning candidate.
 
 - Do not create `configuration-next` or `infrastructure-next`: live `config` and `infra` are established
   bootstrap repositories and duplicating their identities would destroy the cutover's recoverability.
-- The current GitHub entitlement returns 403 for private-repository ruleset/merge-queue reads. 6B will use
-  a reviewed branch-protection substitute until that entitlement changes; it must be proven and recorded
-  before a target is treated as protected.
+- The current GitHub entitlement returns 403 for private-repository ruleset, merge-queue, and branch-protection
+  reads. There is no technical private-main enforcement substitute on this entitlement: targets remain private
+  and non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade is verified.
