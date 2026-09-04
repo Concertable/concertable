@@ -6,6 +6,34 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### An untenanted context has no base, so 14 contexts hand-roll `OnModelCreating`
+
+`multitenancy` gives every stance a base that owns `OnModelCreating` — default schema, then the module's
+configuration provider, then filters — and forbids a concrete context from declaring one. Three of the four
+stances have that base (`TenantScopedDbContext`, `ReadDbContext`, `PrivilegedDbContext`). A context with **no**
+tenancy has none, so it derives from `DbContextBase` and repeats the same two lines — B2B's `Admin`, `Deal`,
+`Tenant` and `User`, all seven Customer module contexts, and the single contexts of Payment, Search and Auth
+(the last two without the schema line):
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+    modelBuilder.HasDefaultSchema(Schema.Name);
+    provider.Configure(modelBuilder);
+}
+```
+
+`PrivilegedDbContext` already *is* that shape — unfiltered, writable, provider and schema composed by the
+base — but its name states a moderation stance these four modules do not have, so reusing it as-is would
+misname them.
+
+**Resolves when:** those 14 contexts compose provider and schema through a base rather than their own
+`OnModelCreating`, and the only `OnModelCreating` declarations left in `api/` are the bases' and
+`OutboxDbContext`/`InboxDbContext`, which configure a real model rather than composing a provider.
+
+---
+
 ### Redundant `this.` qualification survives outside the PR #633 file set
 
 `STYLE.md` now states that `this.` exists only to disambiguate a member a parameter or local shadows,
