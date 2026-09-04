@@ -146,25 +146,28 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
   execution.
   Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
-  `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
-  **Stages 1–2 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages).
+  `platform-web`, `system`, `.github`); nine stages; the Payment extraction is proven end to end.
+  **Stages 1–4 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages,
+  standalone AppHosts consume published Hosting/image boundaries, and full-system E2E composition is
+  system-owned). Stage 3 RT3 closed through [PR #897](https://github.com/Concertable/concertable/pull/897)
+  (`2979ab78f4204eeed07cca06654777a37965f007`) and Stage 4 closed through
+  [PR #912](https://github.com/Concertable/concertable/pull/912)
+  (`62390281b4191a7166136d69163a2c6482f6a463`); Git history retains their deleted ledgers.
   Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
   parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
   remain ordered and require explicit authorization.
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
-  | Stage 3 RT3 | In flight only on `Plan/RepoSplit-Stage3-Hosting-rt3`; no sibling may edit its AppHosts, composition tests, review work order, or stream state. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md) |
   | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
-  | Stage 4 Fleet E2E | Paused on draft [PR #896](https://github.com/Concertable/concertable/pull/896); owns only fleet/TestKit/E2E source-boundary removal. | PR #896 carries `REPOSITORY_PER_MICROSERVICE_MIGRATION_STAGE4_FLEET_PROGRESS.md`. |
   | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
   | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
   | Search-next | Reserved exclusively to the Search preparation stream at `C:\Users\tommy\source\repos\search-next` / `Chore/search-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
 
   Agents read this table and the named ledger before acting. One stream never edits a sibling ledger or
   worktree. B2B-next preparation remains unassigned until its existing
-  `wip/b2b-frontend-fold-handoff` checkout is reconciled; system/fleet extraction remains with Stage 4 until
-  that composition boundary lands.
+  `wip/b2b-frontend-fold-handoff` checkout is reconciled; the completed Stage 4 boundary leaves system
+  extraction available for its later repository-foundation checkpoint.
 
   **Post-cut development-fixture terminology.** Keep the current `SeedCatalog`, `Seed.Contracts`,
   `SeedState`, and `Seed.Simulator` names stable while repository ownership and publication boundaries are
