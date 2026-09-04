@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `15b7b5b2c`  `(2026-09-04)`
-**Security-reviewed up to commit:** `15b7b5b2c`  `(2026-09-04)`
+**Reviewed up to commit:** `7a01a3bb9`  `(2026-09-04)`
+**Security-reviewed up to commit:** `7a01a3bb9`  `(2026-09-04)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
@@ -277,4 +277,39 @@ No findings.
 `B2B API 10 passed, 0 failed`, exit 0, including all four `ConcertFinishedTests`, which exercise the
 full settlement chain and had never passed here. Fixture reaches ready with all six hosts running;
 Auth serves its contract port from source. Pinning suite 7/7.
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `15b7b5b2c`
+**Candidate head:** `7a01a3bb9`
+**Candidate branch:** `Plan/RepoSplit-Stage3-Hosting-rt3`
+**Candidate scope:** `api/Concertable.Shared/tests/Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+- [x] **RT3-10 — HIGH — correctness** — `api/Concertable.Shared/tests/Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs:57`
+  Queue run 33825893300 passed `e2e-api-tests` and failed all 32 UI scenarios, each at fixture init on
+  `Readiness check timed out for https://localhost:7086/health`. The cause was upstream: `auth-e2e`
+  exited with `ServiceAuth:AuthClientId is required.` The AppHosts set that with a plain
+  `WithEnvironment` on the Auth container, which a substituted resource inherits only through the
+  callback chain `SubstituteE2EProject` copies — and that chain held in the API tier while failing in
+  the UI tier of the same run, with byte-identical job environments. Fixed by setting the client id
+  explicitly in `PinAuthService`, from `AuthConstants.ServiceName`, in the callback that runs last.
+  Provenance: `e2e-ui-tests` was skipped in every earlier run on this branch, so nothing regressed
+  here; it is green on `main` (run 33649926153), so the defect is this branch's.
+
+### Security layer
+
+Re-run over the delta. `Concertable.Auth*` in scope, so the marker moves. No finding: the change sets a
+non-secret client identifier from an existing constant, and the three `ServiceAuth` secrets keep coming
+from the run's own configuration exactly as before.
+
+### Verification state at this head
+
+`e2e-api-tests`: green in run 33825893300 and 10/10 locally at `15b7b5b2c`. Pinning suite 7/7 here.
+`e2e-ui-tests`: unverified at this head — the local UI reproduction was stopped before the stack booted,
+so the merge queue owns that verdict.
 
