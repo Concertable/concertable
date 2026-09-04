@@ -2,6 +2,8 @@ using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Application.Errors;
 using Concertable.B2B.Concert.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Concertable.B2B.Concert.Infrastructure.Specifications;
+using Concertable.Kernel.Specifications;
 
 namespace Concertable.B2B.Concert.Infrastructure.Services;
 
@@ -25,7 +27,12 @@ internal sealed class ConcertDraftService : IConcertDraftService
     {
         logger.CreatingConcertDraft(bookingId);
 
-        var bookingConcert = await bookingRepository.GetWithApplicationAndConcertByIdAsync(bookingId);
+        var spec = new BookingSpecification()
+            .Include(booking => booking.Application.Artist.Genres)
+            .Include(booking => booking.Application.Opportunity.Venue)
+            .Include(booking => booking.Concert);
+
+        var bookingConcert = await bookingRepository.GetByIdAsync(bookingId, spec);
         if (bookingConcert is null)
             return new CreateConcertDraftError.BookingNotFound(bookingId);
 
@@ -33,14 +40,14 @@ internal sealed class ConcertDraftService : IConcertDraftService
         var opportunity = bookingConcert.Application.Opportunity;
         var venue = opportunity.Venue;
 
-        var artistGenres = artist.Genres.Select(g => g.Genre);
+        var artistGenres = artist.Genres.Select(g => g.Genre).ToList();
         var opportunityGenres = opportunity.Genres;
 
-        var matchingGenres = opportunityGenres.Any()
-            ? artistGenres.Intersect(opportunityGenres)
+        var matchingGenres = opportunityGenres.Count > 0
+            ? artistGenres.Intersect(opportunityGenres).ToList()
             : artistGenres;
 
-        if (!matchingGenres.Any())
+        if (matchingGenres.Count == 0)
         {
             logger.ConcertDraftCreationFailed(bookingId, artist.Id, opportunity.Id);
             return new CreateConcertDraftError.GenreMismatch();

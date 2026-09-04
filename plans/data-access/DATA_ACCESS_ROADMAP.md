@@ -11,3 +11,4 @@ package and its service consumers.
   messaging couplings are measured.
 - [ ] DateTimeOffset audit contract and Payment adoption `data-access/audit-datetimeoffset`
 - [ ] Shared concurrency-save recovery and Payment adoption `data-access/try-save-changes`
+- [ ] Specification, predicate, and Query Object boundary `data-access/specification-query-boundary`

@@ -956,6 +956,14 @@ jobs:
           name: local-platform
           path: artifacts/local-platform
 
+      - name: Log in to GHCR
+        if: needs.changes.outputs.run_e2e == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Provision HTTPS dev certificate
         if: needs.changes.outputs.run_e2e == 'true'
         run: |
@@ -1043,6 +1051,14 @@ jobs:
         with:
           name: local-platform
           path: artifacts/local-platform
+
+      - name: Log in to GHCR
+        if: needs.changes.outputs.run_e2e_ui == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Provision HTTPS dev certificate
         if: needs.changes.outputs.run_e2e_ui == 'true'
@@ -1172,6 +1188,14 @@ jobs:
         with:
           name: local-platform
           path: artifacts/local-platform
+
+      - name: Log in to GHCR
+        if: env.RUN == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Provision HTTPS dev certificate
         if: env.RUN == 'true'

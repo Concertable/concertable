@@ -73,34 +73,6 @@ internal sealed class ConcertRepository : Repository<ConcertEntity>, IConcertRep
             .ToListAsync();
     }
 
-    public async Task<ConcertEntity?> GetByIdWithArtistAndVenueAsync(int id)
-    {
-        return await context.Concerts
-            .Where(e => e.Id == id)
-            .Include(e => e.Artist)
-            .Include(e => e.Venue)
-            .Include(e => e.Booking)
-                .ThenInclude(b => b.Application)
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task<ConcertEntity?> GetByIdWithVenueAsync(int id)
-    {
-        return await context.Concerts
-            .Where(e => e.Id == id)
-            .Include(e => e.Venue)
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task<ConcertEntity?> GetByIdWithBookingAsync(int id, CancellationToken ct = default)
-    {
-        return await context.Concerts
-            .Where(e => e.Id == id)
-            .Include(e => e.Booking)
-                .ThenInclude(b => b.Application)
-            .FirstOrDefaultAsync(ct);
-    }
-
     /* Owner read by concert id. Concert itself is public/unfiltered, so scope by requiring a
        tenant-visible Booking (Bookings is tenant-filtered) — a non-party sees none and gets a 404,
        exactly like ContractRepository.GetByConcertIdAsync. */
@@ -144,17 +116,9 @@ internal sealed class ConcertRepository : Repository<ConcertEntity>, IConcertRep
             .ToListAsync();
     }
 
-    public Task<int?> GetDealIdByIdAsync(int concertId)
-    {
-        return context.Concerts
-            .Where(c => c.Id == concertId)
-            .Select(c => (int?)c.Booking.Application.Opportunity.DealId)
-            .FirstOrDefaultAsync();
-    }
-
     public async Task<IEnumerable<int>> GetEndedConfirmedIdsAsync() =>
-        await endedAndBooked.And(doorRevenueOutstanding.Not())
-            .Apply(context.Concerts)
+        await context.Concerts
+            .Where(endedAndBooked.And(doorRevenueOutstanding.Not()).ToExpression())
             .Select(c => c.Id)
             .ToListAsync();
 
