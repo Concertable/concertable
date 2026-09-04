@@ -10,6 +10,7 @@
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Project Path="Concertable.ServiceDefaults/tests/Concertable.ServiceDefaults.UnitTests/Concertable.ServiceDefaults.UnitTests.csproj" />
   <Project Path="tests/Concertable.AppHost.ArchitectureTests/Concertable.AppHost.ArchitectureTests.csproj" />
+  <Project Path="tests/Concertable.AppHost.StartupTests/Concertable.AppHost.StartupTests.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
     <Project Path="Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj" />
@@ -17,7 +18,7 @@
     <Project Path="Concertable.Auth/tests/Concertable.Auth.IntegrationTests/Concertable.Auth.IntegrationTests.csproj" />
     <Project Path="Concertable.Auth/tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj" />
-    <Project Path="Concertable.Auth/tests/Concertable.Auth.ArchitectureTests/Concertable.Auth.ArchitectureTests.csproj" />
+    <Project Path="Concertable.Auth/tests/Concertable.Auth.StartupTests/Concertable.Auth.StartupTests.csproj" />
     <Project Path="Concertable.Auth/tools/Concertable.Auth.OperationalStoreMigration/Concertable.Auth.OperationalStoreMigration.csproj" />
     <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
   </Folder>
@@ -214,6 +215,7 @@
     <Project Path="Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj" />
     <Project Path="Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
     <Project Path="Concertable.Payment/tests/Concertable.Payment.ArchitectureTests/Concertable.Payment.ArchitectureTests.csproj" />
+    <Project Path="Concertable.Payment/tests/Concertable.Payment.StartupTests/Concertable.Payment.StartupTests.csproj" />
   </Folder>
   <Folder Name="/Payment/Tests/">
     <Project Path="Concertable.Payment/tests/Concertable.Payment.E2EAdmin.IntegrationTests/Concertable.Payment.E2EAdmin.IntegrationTests.csproj" />
@@ -239,6 +241,7 @@
     <Project Path="Concertable.Search/tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
     <Project Path="Concertable.Search/tests/Concertable.Search.ArchitectureTests/Concertable.Search.ArchitectureTests.csproj" />
+    <Project Path="Concertable.Search/tests/Concertable.Search.StartupTests/Concertable.Search.StartupTests.csproj" />
     <Project Path="Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj" />
     <Project Path="Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers.UnitTests/Concertable.Search.E2ETests.Helpers.UnitTests.csproj" />
   </Folder>
@@ -280,6 +283,7 @@
   </Folder>
   <Folder Name="/B2B/Tests/">
     <Project Path="Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj" />
+    <Project Path="Concertable.B2B/tests/Concertable.B2B.StartupTests/Concertable.B2B.StartupTests.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.E2EAdmin.IntegrationTests/Concertable.B2B.E2EAdmin.IntegrationTests.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj" />
@@ -292,6 +296,7 @@
   </Folder>
   <Folder Name="/Customer/Tests/">
     <Project Path="Concertable.Customer/tests/Concertable.Customer.ArchitectureTests/Concertable.Customer.ArchitectureTests.csproj" />
+    <Project Path="Concertable.Customer/tests/Concertable.Customer.StartupTests/Concertable.Customer.StartupTests.csproj" />
     <Project Path="Concertable.Customer/tests/Concertable.Customer.E2EAdmin.IntegrationTests/Concertable.Customer.E2EAdmin.IntegrationTests.csproj" />
     <Project Path="Concertable.Customer/tests/Concertable.Customer.IntegrationTests.Fixtures/Concertable.Customer.IntegrationTests.Fixtures.csproj" />
   </Folder>

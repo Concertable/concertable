@@ -54,6 +54,7 @@ jobs:
       run_fe:     ${{ steps.detect.outputs.run_fe }}
       unit_projects: ${{ steps.scope.outputs.unit_projects }}
       architecture_projects: ${{ steps.scope.outputs.architecture_projects }}
+      startup_projects: ${{ steps.scope.outputs.startup_projects }}
       integration_projects: ${{ steps.scope.outputs.integration_projects }}
       services:             ${{ steps.detect.outputs.services }}
     steps:
@@ -65,12 +66,15 @@ jobs:
         run: |
           unit_projects=$(find api -type f -name '*.UnitTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           architecture_projects=$(find api -type f -name '*.ArchitectureTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          startup_projects=$(find api -type f -name '*.StartupTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           integration_projects=$(find api -type f -name '*.IntegrationTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           [ "$unit_projects" != '[]' ] || { echo "No unit test projects found."; exit 1; }
           [ "$architecture_projects" != '[]' ] || { echo "No architecture test projects found."; exit 1; }
+          [ "$startup_projects" != '[]' ] || { echo "No startup test projects found."; exit 1; }
           [ "$integration_projects" != '[]' ] || { echo "No integration test projects found."; exit 1; }
           echo "all_unit=$unit_projects"                 >> "$GITHUB_OUTPUT"
           echo "all_architecture=$architecture_projects" >> "$GITHUB_OUTPUT"
+          echo "all_startup=$startup_projects"           >> "$GITHUB_OUTPUT"
           echo "all_integration=$integration_projects"   >> "$GITHUB_OUTPUT"
       - name: Classify changed files
         id: detect
@@ -192,6 +196,7 @@ jobs:
         env:
           ALL_UNIT: ${{ steps.test-projects.outputs.all_unit }}
           ALL_ARCHITECTURE: ${{ steps.test-projects.outputs.all_architecture }}
+          ALL_STARTUP: ${{ steps.test-projects.outputs.all_startup }}
           ALL_INTEGRATION: ${{ steps.test-projects.outputs.all_integration }}
           SERVICES: ${{ steps.detect.outputs.services }}
         run: |
@@ -200,25 +205,27 @@ jobs:
           # running another service's suites. Shared-tier projects live outside the five service
           # folders and therefore only ever run under ALL, which is exactly when they can be affected.
           if [ "$SERVICES" = "ALL" ]; then
-            unit="$ALL_UNIT"; architecture="$ALL_ARCHITECTURE"; integration="$ALL_INTEGRATION"
+            unit="$ALL_UNIT"; architecture="$ALL_ARCHITECTURE"; startup="$ALL_STARTUP"; integration="$ALL_INTEGRATION"
             echo "-> full fan-out."
           else
             pattern=$(printf '%s' "$SERVICES" | tr ' ' '\n' | grep -v '^$' \
               | sed -E 's|^|^api/Concertable\\.|' | paste -sd '|' -)
             if [ -z "$pattern" ]; then
-              unit='[]'; architecture='[]'; integration='[]'
+              unit='[]'; architecture='[]'; startup='[]'; integration='[]'
               echo "-> no service in scope; backend test matrices are empty."
             else
               filter() { printf '%s' "$1" | jq -c --arg p "$pattern" 'map(select(test($p)))'; }
               unit=$(filter "$ALL_UNIT")
               architecture=$(filter "$ALL_ARCHITECTURE")
+              startup=$(filter "$ALL_STARTUP")
               integration=$(filter "$ALL_INTEGRATION")
               echo "-> scoped to /$pattern/."
             fi
           fi
-          echo "unit=$unit"; echo "architecture=$architecture"; echo "integration=$integration"
+          echo "unit=$unit"; echo "architecture=$architecture"; echo "startup=$startup"; echo "integration=$integration"
           echo "unit_projects=$unit"                 >> "$GITHUB_OUTPUT"
           echo "architecture_projects=$architecture" >> "$GITHUB_OUTPUT"
+          echo "startup_projects=$startup"           >> "$GITHUB_OUTPUT"
           echo "integration_projects=$integration"   >> "$GITHUB_OUTPUT"
 
   build:
@@ -864,9 +871,46 @@ jobs:
         shell: pwsh
         run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
 
+  startup-tests:
+    runs-on: ubuntu-latest
+    needs: [build, changes, local-platform-pack]
+    # Gate: would any host refuse to boot on the configuration its app model supplies? Builds every real
+    # registration graph and every AppHost resource graph without starting a process, so a configuration or
+    # deployment-topology defect fails here in seconds on the PR instead of surfacing as an unrelated E2E
+    # timeout in the merge queue. e2e-api-tests needs this job for exactly that reason.
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.startup_projects != '[]'
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.changes.outputs.startup_projects) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Run ${{ matrix.project }}
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
+
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes, local-platform-pack, architecture-tests]
+    needs: [build, changes, local-platform-pack, architecture-tests, startup-tests]
     if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.integration_projects != '[]'
     permissions:
       contents: read
@@ -907,7 +951,7 @@ jobs:
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes, architecture-tests]
+    needs: [build, changes, architecture-tests, startup-tests]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
     # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
@@ -1318,6 +1362,7 @@ jobs:
       - carve-fe
       - unit-tests
       - architecture-tests
+      - startup-tests
       - integration-tests
       - e2e-api-tests
       - e2e-ui-tests
