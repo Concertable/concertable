@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `2a4fefce7`  `(2026-09-03)`
-**Security-reviewed up to commit:** `2a4fefce7`  `(2026-09-03)`
+**Reviewed up to commit:** `15b7b5b2c`  `(2026-09-04)`
+**Security-reviewed up to commit:** `15b7b5b2c`  `(2026-09-04)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
@@ -248,4 +248,33 @@ with `python eng/repository-split/inventory.py`; the check now reports
 `no test-tier cross-repository ProjectReference`, and the new edge is classified
 `fromKind: e2e` / `fromTarget: system`, the full-stack-harness bucket the packages standard exempts.
 No findings.
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `2a4fefce7`
+**Candidate head:** `15b7b5b2c`
+**Candidate branch:** `Plan/RepoSplit-Stage3-Hosting-rt3`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+- [x] **RT3-9 — HIGH — correctness** — `api/Concertable.Shared/tests/Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs:206`
+  Queue run 33816087124 hung for two hours with no error and no timeout. Local reproduction found
+  `search-web` on `Waiting for resource 'auth' to enter the 'Running' state`, where `auth` is the
+  explicit-start container the substitution leaves behind and which never starts — so `StartAsync`
+  never returns. `SubstituteE2EProject` retargets only the waits present when it runs, and
+  `AddE2EStack` pins Auth first and adds Search later, so Search named the dead original. Latent until
+  Auth became a substituted resource. Fixed by `RetargetSubstitutedWaits`, a single sweep after the
+  stack is composed that repoints any wait aimed at an explicit-start resource onto its `-e2e`
+  replacement — order-independent, so a later pin cannot reintroduce it. Regression test added.
+
+### Verification state at this head
+
+**Green, and verified locally for the first time on this branch.** `./scripts/e2e.ps1 api b2b` →
+`B2B API 10 passed, 0 failed`, exit 0, including all four `ConcertFinishedTests`, which exercise the
+full settlement chain and had never passed here. Fixture reaches ready with all six hosts running;
+Auth serves its contract port from source. Pinning suite 7/7.
 
