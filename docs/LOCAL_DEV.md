@@ -41,7 +41,9 @@ The root router also accepts `-Owner Auth|B2B|Customer|Payment|Search`.
 
 `-Owner FullStack` retains the existing source-based umbrella experience. A container-only System
 host is a separate prerequisite: `./scripts/setup-local-dev.ps1 -Owner System -AppHostProject <path.csproj>`
-requires an explicit Aspire AppHost with package references and no source ProjectReferences.
+requires an explicit Aspire AppHost with package references and no evaluated source ProjectReferences.
+System mode requires the .NET SDK even with `-WhatIf`: it evaluates MSBuild items, including
+`Directory.Build.props`, `Directory.Build.targets`, and explicit imports, without building or restoring.
 System bootstrap sets only that project's user-secrets and never changes service source settings.
 The current `api/Concertable.AppHost` is rejected in System mode.
 
@@ -65,6 +67,7 @@ Auth's two contexts both use `AuthDb`. Messaging's existing design-time factory 
 `ConnectionStrings__B2BDb` key, supplied with a parseable platform-only placeholder; it opens no database.
 
 Scaffolding preserves the existing migration ID when normalized generated content is unchanged.
+Backups live directly under the owner root, outside EF project compilation and on the checkout volume.
 A failed scaffold restores that context's prior files; an earlier successfully scaffolded context
 remains changed and is visible in Git. These commands do not apply migrations, start an AppHost,
 or alter runtime migration behavior. Empty-database migration verification requires the owning
@@ -78,6 +81,8 @@ Run `./scripts/sync-owner-tooling.ps1` to refresh copies and
 `./scripts/test-owner-operations.ps1` checks isolated script closures, dry runs, bootstrap
 idempotency, migration rollback/ID stability, environment restoration, and the System project gate
 without invoking a real SDK, database, or user-secrets store.
+`./scripts/test-system-bootstrap.ps1` additionally verifies imported-reference rejection through
+real SDK evaluation; it performs no restore, build, or user-secrets writes.
 
 ## Stripe (optional)
 
