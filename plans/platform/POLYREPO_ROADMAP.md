@@ -35,7 +35,7 @@ collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first
 `EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · the extraction mechanism, proven end to end on
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
-**In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, and checkpoint 4 delivered;
+**In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A delivered;
 extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
@@ -147,13 +147,21 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   execution.
   Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
   `platform-web`, `system`, `.github`); seventeen checkpoints; the Payment extraction is proven end to end.
-  **Checkpoints 1–2, the final Hosting RT3, and checkpoint 4 are delivered** (all 45 test-tier
+  **Checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A are delivered** (all 45 test-tier
   cross-repository `ProjectReference`s are now packages, standalone AppHosts consume published Hosting/image
   boundaries, and full-system E2E composition is system-owned). RT3 closed through
   [PR #897](https://github.com/Concertable/concertable/pull/897)
   (`2979ab78f4204eeed07cca06654777a37965f007`) and Stage 4 closed through
   [PR #912](https://github.com/Concertable/concertable/pull/912)
-  (`62390281b4191a7166136d69163a2c6482f6a463`); Git history retains their deleted ledgers.
+  (`62390281b4191a7166136d69163a2c6482f6a463`); Git history retains their deleted ledgers. The public
+  organization workflow foundation closed through
+  [`.github` PR #1](https://github.com/Concertable/.github/pull/1)
+  (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and its live-policy verification repair through
+  [`.github` PR #2](https://github.com/Concertable/.github/pull/2)
+  (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`). All eleven reusable workflows passed from the exact-head
+  public fixture in [run 33894314188](https://github.com/Concertable/workflow-fixture/actions/runs/33894314188);
+  teams, owner access, release-environment policy, the main merge queue, and immutable-tag protection were
+  then applied and read back successfully.
   Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
   parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
   remain ordered and require explicit authorization.
