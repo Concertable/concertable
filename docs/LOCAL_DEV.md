@@ -15,6 +15,9 @@ pieces of config live outside git by design:
 
 ```powershell
 ./scripts/setup-local-dev.ps1
+# Or bootstrap only the owning service, from any working directory:
+./api/Concertable.Customer/setup-local-dev.ps1 -WhatIf
+./api/Concertable.Customer/setup-local-dev.ps1
 ```
 
 Idempotent — creates only what's missing, never overwrites. It:
@@ -23,14 +26,60 @@ Idempotent — creates only what's missing, never overwrites. It:
   `Concertable.B2B.Web`, `Concertable.Customer.Web` (checked-in templates, no secrets — just
   `https://localhost:517x` origins);
 - sets `ServiceAuth:{B2B,Customer,Auth}ClientSecret` user-secrets on `Concertable.AppHost`,
-  `Concertable.B2B.AppHost`, `Concertable.Customer.AppHost` to a shared dev value (not a secret — Auth
+  and all five standalone service AppHosts to a shared dev value (not a secret — Auth
   and every service read the same value from the same AppHost config, and it never leaves localhost).
 
 `user-secrets` storage is machine-wide, so step 2 is genuinely once-per-machine; the
 `appsettings.Development.json` files are per-worktree (gitignored), so re-run the script (or copy the
 files) in each new worktree.
 
-### Stripe (optional)
+Each service root owns its `setup-local-dev.ps1`. It only configures that service's source
+settings and AppHost secrets; foreign service containers receive their configuration through the
+owning AppHost. Auth, B2B, and Customer have source settings templates; Payment and Search require
+only AppHost secrets. `-WhatIf` performs no SDK or user-secrets commands and writes no files.
+The root router also accepts `-Owner Auth|B2B|Customer|Payment|Search`.
+
+`-Owner FullStack` retains the existing source-based umbrella experience. A container-only System
+host is a separate prerequisite: `./scripts/setup-local-dev.ps1 -Owner System -AppHostProject <path.csproj>`
+requires an explicit Aspire AppHost with package references and no source ProjectReferences.
+System bootstrap sets only that project's user-secrets and never changes service source settings.
+The current `api/Concertable.AppHost` is rejected in System mode.
+
+## Migration scaffolding
+
+Each service owns `initial-migrations.ps1` and its `migrations.psd1` context manifest.
+Messaging owns the platform Inbox/Outbox scaffolding. The root command delegates to those six owners:
+
+```powershell
+./api/initial-migrations.ps1 -WhatIf
+./api/initial-migrations.ps1 -Owner Auth -Context PersistedGrantDbContext -WhatIf
+./api/Concertable.Auth/initial-migrations.ps1
+./api/Concertable.Auth/initial-migrations.ps1 -Check
+```
+
+Actual scaffolding and model checks require a compatible `dotnet-ef` tool, the .NET SDK, and
+package-feed restore access. Dry runs require only PowerShell. Commands resolve projects relative to
+the owner root and work after that root is extracted. Each command exports only its design-time
+connection settings for the duration of the call and restores the caller's environment afterward.
+Auth's two contexts both use `AuthDb`. Messaging's existing design-time factory still reads the
+`ConnectionStrings__B2BDb` key, supplied with a parseable platform-only placeholder; it opens no database.
+
+Scaffolding preserves the existing migration ID when normalized generated content is unchanged.
+A failed scaffold restores that context's prior files; an earlier successfully scaffolded context
+remains changed and is visible in Git. These commands do not apply migrations, start an AppHost,
+or alter runtime migration behavior. Empty-database migration verification requires the owning
+service's migration runner/integration checks against real SQL infrastructure.
+
+The generic helper's canonical source is
+`api/Concertable.Shared/tools/OwnerOperations.psm1`, destined for
+`Concertable/platform-dotnet:tools/OwnerOperations.psm1`. Each owner carries a vendored copy.
+Run `./scripts/sync-owner-tooling.ps1` to refresh copies and
+`./scripts/sync-owner-tooling.ps1 -Check` to enforce byte parity.
+`./scripts/test-owner-operations.ps1` checks isolated script closures, dry runs, bootstrap
+idempotency, migration rollback/ID stability, environment restoration, and the System project gate
+without invoking a real SDK, database, or user-secrets store.
+
+## Stripe (optional)
 
 Only needed for payment / settlement / webhook flows. `setup-local-dev.ps1` does **not** set it. If you
 need it, use your own Stripe **test** key (same account as `pk_test_...` in `app/web/.env.development`):
