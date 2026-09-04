@@ -3,98 +3,77 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M3-Frontend-Build-Config`
-- Branch: `Refactor/RepoSplit-M3-Frontend-Build-Config`
-- PR: [#948](https://github.com/Concertable/concertable/pull/948), draft; restacked directly onto exact landed
-  `origin/main` `516f4cc25936289744babef3f98b1a297035fbb6`. Local, upstream, and PR head were proven equal
-  at `b6596ca8573d0dd4b3f398248190f1d3a64b48ac`; this commit carries the focused split-inventory
-  repair found by that head's CI.
-- Dependency/package gates: PR #633 and the exact landed-main restack/review are complete. M3 does not depend
-  on M1 or M2. Its merge must causally trigger the real `@concertable/build-config` publication and feed
-  verification before this delivery is terminal.
-- Last reconciled: 2026-09-07 against landed `origin/main`
-  `516f4cc25936289744babef3f98b1a297035fbb6`, patch-equivalent restacked candidate
-  `93d102222f9cc25b5f4b68af97e6f08df59f16b0`, and the focused M3 validation and review evidence below.
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
+- Branch: `Refactor/M1-Platform-Expand`
+- PR: not opened; first stage of the four-branch M1 stack above monorepo PR #633
+- Dependency/package gates: M1 delivery is gated on PR #633 landing; package inventory and ACLs require a
+  credential with `read:packages`; private-repository merge-queue rulesets are unavailable on the current
+  GitHub entitlement.
+- Last reconciled: 2026-09-05 — corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the fixed M1
+  repository topology, and PR #633 head `3f89818c7c91b5cf9d658fbe7e8460163de06d78`.
 
 ## Current state
 
-Checkpoint 6A is terminal and checkpoint 6B preparation is active. Existing private `auth`, `b2b`,
-`customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities. The remaining
-selected repositories are `platform-dotnet`, `platform-frontend`, and separate `system`; none is created by
-this packet. General shared frontend code covers web and mobile while those remain package tiers, not
-repository boundaries.
-
-M1 is published as four draft stacked PRs #942-#945. M2 is published as independent sibling draft PR #947.
-M3's seven commits were restacked without conflict from #633 snapshot `ad4ad986f` onto the exact landed-main
-merge `516f4cc25`; `git range-diff` reports every old/new pair as patch-equivalent (`=`) and preserves the
-original order. The reviewed pre-checkpoint candidate is `93d102222`, and draft PR #948 was force-with-lease
-updated to checkpoint `b6596ca85`. Its first exact-head CI exposed a stale generated split inventory: the
-generator still named the obsolete `platform-web` target and did not assign the new build-config workspace.
-The focused repair assigned that owned topology and regenerated the inventory. Exact-head CI run
-`34162425623` is green. This commit closes the remaining publication-rail omission by adding build-config to
-the main-branch frontend publisher and its clean feed-consumer verification.
-M3 extracts the product-neutral `@concertable/build-config` package, makes product workspaces own their
-package lists, and uses the shared Metro resolver for both mobile applications without encoding product
-ownership into the platform tier.
+Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
+public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Existing private
+`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
+The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
+creation is part of M1. Four clean M1 branches preserve the Platform Expand, Owner Hosting Sync, AppHost Sync,
+and Platform Contract boundaries above PR #633 head `3f89818c7`; Git owns their current rewritten heads. Local
+review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
+retires them only in Platform Contract, and proves Auth replacement plus B2B mobile endpoint composition.
 
 ## Next Steps
 
-- Validate and review this publication-rail repair, push one stable candidate, require exact-head PR CI, then
-  make PR #948 ready and deliver it independently through the merge queue.
-- Bind the post-merge frontend publication run to #948's landing commit and require
-  `@concertable/build-config` to pass the workflow's clean feed-consumer verification before calling M3
-  terminal.
-- Keep M1, M2, and M3 separate. Do not create repositories, import history, publish packages, or perform a
-  service cutover from this preparation branch.
+- Freeze and complete a fresh full review of the current restacked candidate, recording its immutable artifact
+  and watermark. Repair any finding on the owning M1 stage without changing the four publication boundaries.
+- When PR #633 lands, restack the four stages onto the exact landed `origin/main` if necessary. Re-run the
+  Customer and system composition suites that are currently blocked by #633, plus the package-clean gates.
+- Deliver Platform Expand, Owner Hosting Sync, AppHost Sync, and Platform Contract in that order only after the
+  landed-base validation and review are terminal.
 
 ## Completed work
 
-- Checkpoint 6A closed through `.github` PRs #1 and #2; all eleven reusable workflows passed from the public
-  fixture before shared policy was applied and read back.
-- Corrective commits `82bf5dbbb` and `bb59d9ba3` established the retained target identities; the later
-  `f4709fe4b` record preserves the selected `platform-dotnet`, `platform-frontend`, and `system` topology.
-- M1 is represented by draft PRs #942-#945 and creates no repository.
-- M2 remains owned by its sibling worktree; its current delivery gate is recorded there.
-- M3 implementation commits are now `9a4e894f8` and `901b27c72` on landed main. The generic Metro resolver
-  preserves #633's Stripe and React Native package visibility without product-specific platform code.
-- The original seven-commit sequence was preserved as `9a4e894f8`, `901b27c72`, `b53944dfd`, `cdecab835`,
-  `0cdf50364`, `2dbd0a7ac`, and `93d102222`; the exact old/new range-diff is patch-equivalent throughout.
-- Checkpoint `b6596ca85` carried the refreshed landed-main review and preparation metadata and was published
-  to draft PR #948 with local/upstream/PR head equality proven.
-- This commit assigns `app/build-config` to the corrected `platform-frontend` extraction target, replaces the
-  obsolete `platform-web` generator/map label, and refreshes the generated inventory.
+- Checkpoint 6A closed through `.github` PR #1 (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and policy repair
+  PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
+- Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
+  their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
+- Extraction-map preflight found no duplicate claims but 70 unclaimed tracked paths; 6C is not ready.
+- The complete four-stage M1 chain was rebased without conflicts onto PR #633 head `3f89818c7` and retains its
+  staged package expansion, owner migration, composition migration, and contract-removal boundaries.
+- Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
+  and normalized resource names, so the B2B mobile API tunnel is emitted correctly.
+- Review remediation added exact Auth SPA replacement coverage, retained legacy hosting compatibility until the
+  final contract stage, and added owned frontend endpoint assertions to the B2B, Customer, and system graphs.
 
 ## Verification
 
-- Landed-main integrity: seven-commit `git range-diff` is patch-equivalent throughout and
-  `git diff --check 516f4cc25..93d102222` passed.
-- Frontend boundaries: 10/10 tests passed; dependency lint reported zero violations across all 13 workspaces.
-- Package matrix: all six packages built; 109 package tests passed across the five packages with test scripts.
-- Product builds: all five web builds, both mobile TypeScript checks, and both Android/Hermes exports passed.
-  The sandbox denied execution of `hermesc.exe`; the unchanged commands passed outside that restriction.
-- Isolation: both fresh feed-restored mobile carves passed typecheck and Android/Hermes export with shared
-  assets resolved from `node_modules/@concertable/mobile` and source package directories absent.
-- Independent packed consumer: CommonJS dependency-cruiser/Metro, ESM Vite/Vitest, TypeScript config and
-  package subpath resolution passed; the tarball contained only the eight intended files.
-- Split inventory: `python eng/repository-split/inventory.py --check` passes; a focused assertion proves
-  `app/build-config` targets `platform-frontend` and no frontend workspace remains unassigned.
+- Ancestry from PR #633 head `3f89818c7` through the complete M1 stack is verified after each local restack.
+- Package inventory and local platform preparation pass with 57 packages. Auth Hosting, B2B Hosting, Auth
+  AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
+  form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
+- `Concertable.AppHost.Shared` passes 13/13 tests. Auth architecture passes 3/3 tests, the pre-remediation B2B
+  source-mode architecture suite passed 33/33, and the current focused B2B mobile composition regression passes.
+- Customer and umbrella system execution remain blocked by #633's Customer compile errors (`PaymentOutcome` is
+  sealed and `CheckoutSession` is missing). Package-mode B2B composition remains blocked until the #633-era
+  Payment.Hosting producer is published because the pinned binary expects the previous `AsbTopology` contract.
+- No local E2E suite was run; E2E remains a remote merge-queue diagnostic gate.
 
 ## Reviews
 
-The fresh frozen-head full review over `516f4cc25936289744babef3f98b1a297035fbb6..93d102222f9cc25b5f4b68af97e6f08df59f16b0`
-approved the complete 30-path landed-main candidate with no functional or security findings. This commit adds
-the CI-driven inventory/map repair; the durable work order
-`reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md` owns its required incremental watermark before the
-next push.
+The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its first immutable full pass requested
+changes: three findings are repaired and two composition-suite findings are implemented but await execution once
+#633's Customer source compiles. Because remediation restacked the candidate, a fresh full pass will establish the
+current review watermark rather than treating the rewritten history as an incremental review.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- `platform-frontend` owns general shared web/mobile packages and tooling. Web and mobile remain package
-  tiers within that repository; they are not separate repositories.
-- Product packages own their workspace membership. Shared build helpers accept explicit caller-owned inputs
-  and do not import B2B or Customer manifests.
-- The extraction generator and map use the selected `platform-frontend` identity and assign
-  `app/build-config` to that target; the superseded `platform-web` label must not return.
-- The shared Metro helper discovers project and package `node_modules` roots generically, preserving native
-  package visibility introduced by #633 without a Stripe-specific platform rule.
-- No repository creation, history import, visibility change, package publication, or cutover was performed.
+- Existing service, `infra`, and `config` repository IDs and active owner ledgers override historical labels;
+  they are not renamed or replaced.
+- Shared packages have two repository owners: `platform-dotnet` and `platform-frontend`. The frontend owner
+  contains general shared web/mobile code; web and mobile remain package tiers, not repositories.
+- `system` is a separate container-composition and black-box qualification boundary.
+- M1 creates no repositories and makes no further topology decision.
+- The current GitHub entitlement returns 403 for private-repository ruleset, merge-queue, and branch-protection
+  reads. There is no technical private-main enforcement substitute on this entitlement: targets remain private
+  and non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade is verified.
