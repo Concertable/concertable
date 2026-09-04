@@ -11,6 +11,7 @@
   ],
   "exports": {
     "./dependency-cruiser": "./dependency-cruiser.cjs",
+    "./metro": "./metro.cjs",
     "./typescript": "./tsconfig.json",
     "./vite": "./vite.mjs",
     "./vitest": "./vitest.mjs",
