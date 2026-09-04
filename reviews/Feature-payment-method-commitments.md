@@ -4,10 +4,10 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `complete`
+**Review status:** `in-progress`
 **Reviewed up to commit:** `6510ca80cc7b27557512eac2f24f859ab1269254`  `(2026-09-04)`
 **Security-reviewed up to commit:** `eef36ac547f8a61c025af2f428c45317a64223de`  `(2026-09-04)`
-**Judgment:** `approved`
+**Judgment:** `pending`
 
 ## Review pass — 2026-09-03 — full
 
@@ -114,3 +114,36 @@ No findings.
 ### Findings
 
 No findings.
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `6510ca80cc7b27557512eac2f24f859ab1269254`
+**Candidate head:** `060e7619e503b4283040d2cd34b196d01c97dec4`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:b407949401013a144915dff82ed75eb4d37646d7a35784e5ffb3c6c4ce99755c` `(65 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Feature-payment-method-commitments\ba80e5ef-1310-4d8a-8735-834a064fd1da\scratchpad\review-bundle`
+**Candidate bundle identity:** `sha256:c9f546a44816682f4694c6a830766daecd898372359053fe423802bc9a56a9ff`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `pending`
+
+### Findings
+
+- [x] **PAY-008 — MEDIUM — result contracts** — `api/Concertable.Payment/src/Concertable.Payment.Application/Errors/PaymentRejection.cs:3`
+  `PaymentRejection` and `ManagerPaymentRejection` are `readonly record struct` types used as the `TError` of
+  `Result<PaymentOutcome, …>` across `IStripePaymentIntentClient.ChargeAsync`, `IPaymentManager.SettleAsync` /
+  `SettleBoundCommissionAsync`, and `ManagerPaymentService.PayCoreAsync`. The `result-errors` standard requires every
+  `TError` to be a closed, operation-owned `XError` union implementing `IError`, declared with Dunet and implicit
+  conversions off, with `Definition` derived in one exhaustive switch. These instead carry a `PaymentRecovery` enum
+  discriminant beside the error rather than a named case, and add `Declined` / `Unrecoverable` / `FromPayment` wrapper
+  factories the same standard bans. Replace both with internal Dunet unions owning an `AuthenticationRequired` case and
+  a composite case forwarding the nested definition, delete the enum, and match the union exhaustively where it is
+  translated to `PaymentMethodChargeError`.
+  Resolved by replacing both structs with internal operation-owned Dunet unions `ChargeError` and
+  `ManagerChargeError`, each with an `AuthenticationRequired` case and a composite case forwarding the nested
+  definition, and by deleting `PaymentRecovery` and every wrapper factory. `ChargeErrorMappers` translates between
+  them and to `PaymentError` / `ManagerPaymentOperationError` through exhaustive switches with no discard arm, and
+  `ManagerPaymentService` matches the union exhaustively where it produces `PaymentMethodChargeError`. Both unions
+  gained exact definition-contract rows with derived codes. Payment unit tests passed (589), integration (59),
+  architecture (9).
