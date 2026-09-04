@@ -26,6 +26,16 @@ function global:dotnet {
     $global:OwnerTestCalls.Add($arguments)
     $global:LASTEXITCODE = 0
     if ($global:OwnerTestMode -eq 'Unexpected') { throw 'A dry run invoked dotnet.' }
+    if ($arguments[0] -eq 'msbuild') {
+        Assert ($arguments -contains '-getItem:ProjectReference') 'System must inspect evaluated references.'
+        if ($global:OwnerTestMode -eq 'SystemFailure') { $global:LASTEXITCODE = 1; return }
+        if ($global:OwnerTestMode -eq 'SystemReferences') {
+            '{"Properties":{"IsAspireHost":"true"},"Items":{"ProjectReference":[{"Identity":"../runtime.csproj","DefiningProjectFullPath":"Directory.Build.targets"}]}}'
+        } else {
+            '{"Properties":{"IsAspireHost":"true"},"Items":{"ProjectReference":[]}}'
+        }
+        return
+    }
     if ($arguments[0] -eq 'user-secrets') {
         if ($global:OwnerTestMode -eq 'SecretFailure') { $global:LASTEXITCODE = 1; return }
         if ($arguments[1] -eq 'list') {
@@ -40,6 +50,9 @@ function global:dotnet {
     $output = $arguments[[array]::IndexOf($arguments, '--output-dir') + 1]
     $directory = Join-Path $project $output
     Assert (@(Get-ChildItem -LiteralPath $project -Filter '*ModelSnapshot.cs' -Recurse -File).Count -eq 0) 'The EF project still contains backup snapshots.'
+    $backups = @(Get-ChildItem -LiteralPath (Split-Path $project -Parent) -Filter '.migration-backup-*' -Directory -Force)
+    Assert ($backups.Count -eq 1) 'Backup must be an immediate child of the owner root, independent of OS temp.'
+    Assert ([IO.Path]::GetPathRoot($backups[0].FullName) -eq [IO.Path]::GetPathRoot($project)) 'Backup must remain on the project volume.'
     Write-Fixture (Join-Path $directory '20990101000000_InitialCreate.cs') 'model'
     Write-Fixture (Join-Path $directory '20990101000000_InitialCreate.Designer.cs') '[Migration("20990101000000_InitialCreate")]'
     Write-Fixture (Join-Path $directory 'TestDbContextModelSnapshot.cs') $(if ($global:OwnerTestMode -eq 'Changed') { 'changed' } else { 'snapshot' })
@@ -87,9 +100,14 @@ try {
     & (Join-Path $repoRoot 'api/initial-migrations.ps1') -WhatIf
     & (Join-Path $repoRoot 'scripts/setup-local-dev.ps1') -WhatIf
     Assert ($global:OwnerTestCalls.Count -eq 0) 'Dry runs invoked dotnet.'
+    $global:OwnerTestMode = 'SystemReferences'
     Assert-Throws { & (Join-Path $PSScriptRoot 'system/setup-local-dev.ps1') -AppHostProject (Join-Path $repoRoot 'api/Concertable.AppHost/Concertable.AppHost.csproj') -WhatIf } 'without source ProjectReferences'
     $systemProject = Join-Path $temporaryRoot 'system/Host.csproj'
     Write-Fixture $systemProject '<Project><PropertyGroup><IsAspireHost>true</IsAspireHost><UserSecretsId>offline-fixture</UserSecretsId></PropertyGroup></Project>'
+    Assert-Throws { & (Join-Path $PSScriptRoot 'system/setup-local-dev.ps1') -AppHostProject $systemProject -WhatIf } 'without source ProjectReferences'
+    $global:OwnerTestMode = 'SystemFailure'
+    Assert-Throws { & (Join-Path $PSScriptRoot 'system/setup-local-dev.ps1') -AppHostProject $systemProject -WhatIf } 'Cannot evaluate System AppHost'
+    $global:OwnerTestMode = 'SystemValid'
     & (Join-Path $PSScriptRoot 'system/setup-local-dev.ps1') -AppHostProject $systemProject -WhatIf
 
     $global:OwnerTestMode = 'Secrets'
@@ -129,10 +147,21 @@ try {
     $global:OwnerTestMode = 'Changed'
     Invoke-OwnerMigrations -Root $fixture -Manifest $manifest
     Assert (Test-Path -LiteralPath (Join-Path $directory '20990101000000_InitialCreate.cs')) 'Changed model did not retain new migration.'
-    Assert (@(Get-ChildItem -LiteralPath (Split-Path $directory -Parent) -Filter '*.owner-backup-*').Count -eq 0) 'Backup was orphaned.'
+    Assert (@(Get-ChildItem -LiteralPath $fixture -Filter '.migration-backup-*' -Force).Count -eq 0) 'Backup was orphaned.'
     Invoke-OwnerMigrations -Root $fixture -Manifest $manifest -Check
     $manifest.Migrations[0].Project = '../escape'
     Assert-Throws { Invoke-OwnerMigrations -Root $fixture -Manifest $manifest -WhatIf } 'inside owner root'
+    $caseRoot = Join-Path $temporaryRoot 'caseowner'
+    $caseSibling = Join-Path $temporaryRoot 'CASEOWNER'
+    New-Item -ItemType Directory -Path (Join-Path $caseRoot 'project') -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $caseSibling 'project') -Force | Out-Null
+    $ownerModule = Get-Module OwnerOperations | Where-Object { $_.Path -eq (Join-Path $repoRoot 'api/Concertable.Shared/tools/OwnerOperations.psm1') } | Select-Object -First 1
+    if ([IO.Path]::DirectorySeparatorChar -eq '/') {
+        Assert-Throws { & $ownerModule { param($Root) Resolve-OwnerPath $Root '../CASEOWNER/project' } $caseRoot } 'inside owner root'
+    } else {
+        $resolved = & $ownerModule { param($Root) Resolve-OwnerPath $Root '../CASEOWNER/project' } $caseRoot
+        Assert ($resolved -eq (Join-Path $caseSibling 'project')) 'Windows containment must remain case-insensitive.'
+    }
     [Environment]::SetEnvironmentVariable('OWNER_TEST_CONNECTION', $saved, 'Process')
     Write-Host 'PASS: 21 contexts, 6 isolated migration carves, 5 isolated bootstraps, root dry runs, System gate, idempotency, rollback, ID stability, environment restoration, path boundary.'
 } finally {
