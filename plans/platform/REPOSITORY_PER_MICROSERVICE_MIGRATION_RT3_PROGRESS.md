@@ -4,41 +4,96 @@
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Plan-RepoSplit-Stage3-Hosting-rt3`
-- Branch: `Plan/RepoSplit-Stage3-Hosting-rt3` at `438744ed7d150eb76c72d494c19bc6cb280176a5`
-- PR: [#897](https://github.com/Concertable/concertable/pull/897) — open; exact-head CI running
-- Dependency/package gates: published platform `0.1.0-alpha.0.1281` is available; no implementation blocker remains
-- Last reconciled: **2026-08-31** from the exact branch/PR head, package run `33408113198`, and completed review work order
+- Branch: `Plan/RepoSplit-Stage3-Hosting-rt3` (the PR head is authoritative)
+- PR: [#897](https://github.com/Concertable/concertable/pull/897) — open, unmerged, and carrying the `full-e2e` label
+- Dependency/package gates: published platform `0.1.0-alpha.0.1281` is available; Stage 4 is merged on `main`
+- Last reconciled: **2026-09-02** from merge-group run `33680328629` and diagnostic artifact `9867079977` (Auth HTTPS-certificate crash), repair pending CI
 
 ## Current state
 
 RT3 exclusively owns the standalone AppHost cutover from foreign source references to published Hosting
-packages and digest-pinned service containers. The implementation, package-mode builds, and final incremental
-review are complete at the exact pushed PR head. No sibling may edit its AppHosts, composition tests, review
-work order, branch, PR, or this ledger.
+packages and digest-pinned service containers. Merge-group run `33680328629` proved the GHCR login and
+temporary Auth root-user bridge work — Auth created its development key and seeded 75 credentials — then
+exited: the earlier `ASPNETCORE_URLS=http://+:8080` bridge in the AppHost was overridden by the E2E
+harness's `PinAuthService`, which re-set `ASPNETCORE_URLS=https://localhost:7083` on the container. Kestrel
+then tried to bind HTTPS with no certificate and crashed (`InvalidOperationException: Unable to configure
+HTTPS endpoint`). Every downstream resource `WaitFor(auth)`, so B2B never became healthy and all ten B2B API
+E2E tests timed out on `https://localhost:7086/health`.
+
+The repair keeps Auth on its pinned image with a real `https` endpoint. `AddAuth` now hands the container
+the ASP.NET Core development certificate at run time via Aspire's `WithHttpsDeveloperCertificate()` (dev +
+E2E; publish mode unaffected), so Kestrel serves real TLS on the container port. The AppHosts declare
+`WithHttpsEndpoint(targetPort: 8080, name: "https")` and no longer set `ASPNETCORE_URLS`; `PinAuthService`
+pins the host port to the E2E contract, publishes it unproxied, and never overrides `ASPNETCORE_URLS`. All
+four image-consuming standalone AppHosts carry composition assertions for the root runtime arguments, the
+`https`-scheme endpoint, and the developer-certificate request. Each AppHost's own `*.Hosting` project
+remains source-backed; foreign Hosting dependencies remain published packages.
 
 ## Next Steps
 
-Own [PR #897](https://github.com/Concertable/concertable/pull/897) exact-head CI to a terminal result, address
-any failure on the RT3 branch, and keep the review watermark current after substantive repairs. Do not queue
-or merge the PR without Tommy's explicit authorization.
+Return PR #897 to the merge queue with `full-e2e`, own API/UI E2E to a terminal result, and confirm the
+merged commit on `main`. The merge-group proof must show GHCR
+login, Auth startup and continued operation, B2B and Customer API E2E, UI E2E, the Payment integration shard,
+and `ci-complete` green.
+
+After Auth publishes an image that uses a non-root-writable development signing-key path and ships (or can be
+handed) its own server certificate, update the pinned Auth digest and remove the `--user root` runtime
+argument and the `WithHttpsDeveloperCertificate()` bridge in `AddAuth`, along with their composition
+assertions. After RT3 lands, repository promotion
+proceeds through the canonical plan's single-writer cutovers: refresh each extracted service from the approved
+final monorepo SHA, freeze that monorepo path, validate and publish from the service repository, switch
+package/image consumers, then remove the frozen monorepo source. Auth follows checkpoints 10A–10E; ongoing
+Auth changes in the monorepo are allowed until 10A and must be included in that exact refresh.
 
 ## Completed work
 
 - Hosting seam and digest repairs landed through PRs #870, #881, #888, and #892.
 - Platform `0.1.0-alpha.0.1281` published successfully in run `33408113198` and was merged into the RT3 candidate.
 - All five standalone AppHosts built in Release package mode against `1281`; inventory and diff gates passed.
+- Service AppHost implementation files/classes use the canonical local `AppHost.cs` / `AppHost` names.
+- Stage 4's container-backed E2E support was merged from `main`; the sole merge conflict in
+  `eng/repository-split/inventory.json` passed exact-head CI.
+- Exact-head PR CI runs `33649519103` and `33656931486` passed; the latter recorded 81 successful checks and
+  three expected E2E skips.
+- All three E2E jobs authenticate to GHCR with read-only `GITHUB_TOKEN` package permission, protected by
+  `.github/scripts/e2e-ghcr-login.test.mjs`.
+- Merge-group run `33658754750` proved GHCR authentication works and exposed the legacy Auth image's
+  `/app/tempkey.jwk` permission defect.
+- Exact-head CI run `33670103562` passed 82 checks with three expected E2E skips.
+- Merge-group run `33672179048` proved the root-user repair, then exposed the legacy Auth image's
+  certificate-free HTTPS listener defect; diagnostic artifact `9864132171` records the exact failure.
+- Merge-group run `33680328629` showed the `ASPNETCORE_URLS=http://+:8080` AppHost bridge is inert under
+  E2E: `PinAuthService` re-sets `ASPNETCORE_URLS` to the host `https://localhost:7083` URL after it, so the
+  container still bound HTTPS with no certificate and crashed. Fixed by giving the Auth container the
+  development certificate (`WithHttpsDeveloperCertificate()` in `AddAuth`) and removing the harness's
+  `ASPNETCORE_URLS` override; diagnostic artifact `9867079977` records the pre-fix failure.
+- Every canonical standalone AppHost now compiles its owning service's `*.Hosting` project from source while
+  consuming only foreign Hosting seams as packages, matching checkpoint 2 and the post-extraction layout.
 
 ## Verification
 
-Focused composition suites, all five package-mode AppHost builds, split inventory, and diff checks passed at
-the reviewed head. Exact-head PR CI is in progress.
+Pending CI for the Auth developer-certificate repair. The merge-group proof must show GHCR login, Auth
+startup and continued operation, B2B and Customer API E2E, UI E2E, the Payment integration shard, and
+`ci-complete` green. Diagnostic artifact `9867079977` (merge-group run `33680328629`) contains the pre-fix
+`InvalidOperationException: Unable to configure HTTPS endpoint`; B2B's `users=0/71` readiness state was a
+downstream consequence of Auth exiting before credential events could populate B2B users.
 
 ## Reviews
 
-`reviews/Plan-RepoSplit-Stage3-Hosting-rt3.md` is complete and approved through
-`438744ed7d150eb76c72d494c19bc6cb280176a5`, including security review, with no open RT3 findings.
+The prior native, security, persistence, test-impact, and repository review was approved through
+`438744ed7d150eb76c72d494c19bc6cb280176a5`. Incremental review through
+`e88723e49fa9bf1867fc54cd52bd3910fbd9a279` found no open RT3 finding. The final incremental review found and
+resolved RT3-F5: own-service Hosting had incorrectly remained a package edge that the monorepo source swap
+masked. Security and boundary lenses found no additional issue. Fresh correctness, security, and service-boundary
+reviews of `9851f81646b587d08a1929eb662d2573f8ad0013..36299abfc8915a65ddd5aeda47a52bb8e8e84c7a`
+found no additional issue; the repaired candidate is approved for the final requeue.
 
 ## Decisions, discoveries, blockers, and deviations
 
 - RT3 consumes four foreign images: Auth, Payment Web, Payment Workers, and B2B Seed Simulator; image references remain immutable digests.
-- The RT3 owner must merge this newly tracked ledger from `origin/main` and carry later material updates on its substantive branch commits.
+- Pre-cutover bridge images may remain private. Every CI job that starts an image-backed AppHost authenticates to GHCR with its existing read-only `GITHUB_TOKEN` package permission.
+- The pinned Auth image's development signing-key path is not writable by its image user. The temporary `--user root` override is confined to local Aspire bridge composition and has an explicit removal gate tied to a corrected Auth image and digest.
+- The pinned Auth image assumes an HTTPS process listener without carrying a certificate. RT3 hands the container the ASP.NET Core development certificate at run time via Aspire's `WithHttpsDeveloperCertificate()` (run + E2E only; publish mode unchanged), so it serves real TLS on its `https` endpoint until a corrected image is available. The E2E harness pins the host port and must not set `ASPNETCORE_URLS` on the container.
+- A pinned Auth image does not transfer Auth source ownership. The monorepo remains Auth's writer until the explicit checkpoint-10 refresh/freeze/publish cutover.
+- There is no ongoing bidirectional source synchronization. Each service promotion performs one final monorepo-to-service refresh and then flips to the service repository as the sole writer.
+- The local command runner was unavailable during this checkpoint (`unsupported protocol version 5`), so branch writes and CI evidence were handled through GitHub; the existing RT3 worktree remains the designated local checkout.
