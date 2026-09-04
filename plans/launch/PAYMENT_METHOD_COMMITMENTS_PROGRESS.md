@@ -7,19 +7,18 @@
 - Branch: `Feature/payment-method-commitments`
 - PR: [#933](https://github.com/Concertable/concertable/pull/933) (open)
 - Dependency/package gates: B2B migration and PR [#633](https://github.com/Concertable/concertable/pull/633) both wait for the Payment Contracts and Client packages from this producer change
-- Last reconciled: 2026-09-04 after landing the Delivery item 3 Stripe hardening pass on this branch
+- Last reconciled: 2026-09-04 after the Delivery item 3 Stripe hardening pass and its incremental review closed approved
 
 ## Current state
 
-Payment now owns provider payment-method identifiers and resolves stable `PaymentOperationReference` values for setup, validation, charges, escrow deposits, and authorization capture. All full and incremental producer review findings are resolved and all local validation gates are green; the existing raw-identifier APIs remain temporarily for package-compatible consumer migration. PR #933 is open. The Stripe boundary research is recorded in `plans/launch/PAYMENT_BOUNDARY_DECISION.md`; its §5 hardening (plan Delivery item 3) is now implemented on this branch and awaits the incremental review over the new commits.
+Payment now owns provider payment-method identifiers and resolves stable `PaymentOperationReference` values for setup, validation, charges, escrow deposits, and authorization capture. All full and incremental producer review findings are resolved and all local validation gates are green; the existing raw-identifier APIs remain temporarily for package-compatible consumer migration. PR #933 is open. The Stripe boundary research is recorded in `plans/launch/PAYMENT_BOUNDARY_DECISION.md`; its §5 hardening (plan Delivery item 3) is implemented on this branch and its incremental review is closed approved.
 
 ## Next Steps
 
-1. Run the incremental review over the Delivery item 3 hardening commits, resolve any findings, and push the stable candidate.
-2. Deliver PR #933 through merge, package publication, and platform sync.
-3. Dispatch the downstream handoff: PR #633 (`DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`) advances its Payment pins against the published packages, revalidates, goes ready, and merges.
-4. The B2B + SPA consumer migration (plan Delivery item 5) rides PR #633 (owner decision, 2026-09-04) — no separate consumer worktree. After the packages publish and #633's Payment pins advance, #633 adopts the reference surface (`SetupPaymentMethod`/`ValidatePaymentMethod`, `*ByReference` commands), deletes `ApplyRequest`/`AcceptRequest.PaymentMethodId`, the pm-id entity columns, and the `FindHeldIntentAsync` round-trip, updates the SPA checkout flow, and re-scaffolds affected initial migrations. It must also supply `PaymentMethodSetupRequest.MandateTermsVersion` — the terms version the payer accepted — and present those variable-amount merchant-initiated terms in the SPA setup flow. Union disposition for this step: collapse the `Apply` union *usage* into a single keyed `IApply` strategy family (its two arms become identical once `PaymentMethodId` is deleted) and remove the `Apply` union record — but **keep** `KeyedUnionBuilder`, its tests, and the `DealUnionBuilder`/`DealUnionFactory`/`IDealUnionFactory` wrapper: they are the retained typed-escalation tier (owner decision, 2026-09-04) for a future capability whose shared-action contract genuinely fractures on legitimate client input (typed request-union + capability-keyed union; see the trichotomy below). Also correct `api/Concertable.B2B/CODE_PATTERNS.md`: the unions table still documents the deleted Accept union, and the keyed-union entry should state its admission test — input stored in terms → keyed strategy; input chosen by the user during the shared action → capability-keyed union with a tagged request union; input negotiated as its own act → separate endpoint.
-5. Consumer reaction to `PaymentMethodChargeError.AuthenticationRequired` is B2B-side work on the same consumer migration: it is the "bring the payer back on-session against the existing operation reference" branch of the keyed `FinancialOperation` strategy, distinct from the new-method recovery that `ChargeFailure` selects.
+1. Push the stable candidate and deliver PR #933 through merge, package publication, and platform sync.
+2. Dispatch the downstream handoff: PR #633 (`DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`) advances its Payment pins against the published packages, revalidates, goes ready, and merges.
+3. The B2B + SPA consumer migration (plan Delivery item 5) rides PR #633 (owner decision, 2026-09-04) — no separate consumer worktree. After the packages publish and #633's Payment pins advance, #633 adopts the reference surface (`SetupPaymentMethod`/`ValidatePaymentMethod`, `*ByReference` commands), deletes `ApplyRequest`/`AcceptRequest.PaymentMethodId`, the pm-id entity columns, and the `FindHeldIntentAsync` round-trip, updates the SPA checkout flow, and re-scaffolds affected initial migrations. It must also supply `PaymentMethodSetupRequest.MandateTermsVersion` — the terms version the payer accepted — and present those variable-amount merchant-initiated terms in the SPA setup flow. Union disposition for this step: collapse the `Apply` union *usage* into a single keyed `IApply` strategy family (its two arms become identical once `PaymentMethodId` is deleted) and remove the `Apply` union record — but **keep** `KeyedUnionBuilder`, its tests, and the `DealUnionBuilder`/`DealUnionFactory`/`IDealUnionFactory` wrapper: they are the retained typed-escalation tier (owner decision, 2026-09-04) for a future capability whose shared-action contract genuinely fractures on legitimate client input (typed request-union + capability-keyed union; see the trichotomy below). Also correct `api/Concertable.B2B/CODE_PATTERNS.md`: the unions table still documents the deleted Accept union, and the keyed-union entry should state its admission test — input stored in terms → keyed strategy; input chosen by the user during the shared action → capability-keyed union with a tagged request union; input negotiated as its own act → separate endpoint.
+4. Consumer reaction to `PaymentMethodChargeError.AuthenticationRequired` is B2B-side work on the same consumer migration: it is the "bring the payer back on-session against the existing operation reference" branch of the keyed `FinancialOperation` strategy, distinct from the new-method recovery that `ChargeFailure` selects.
 
 ## Completed work
 
@@ -35,7 +34,7 @@ Payment now owns provider payment-method identifiers and resolves stable `Paymen
 ## Verification
 
 - `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --no-restore`: passed with 0 warnings and 0 errors.
-- Payment unit tests: 585 passed.
+- Payment unit tests: 589 passed.
 - Payment integration tests: 59 passed.
 - Payment architecture tests: 9 passed.
 - Plan graph: 0 errors and 0 warnings.
@@ -45,7 +44,7 @@ Payment now owns provider payment-method identifiers and resolves stable `Paymen
 
 ## Reviews
 
-The canonical producer review is recorded in `reviews/Feature-payment-method-commitments.md`. All findings are resolved; the approved review watermark covers `6510ca80cc7b27557512eac2f24f859ab1269254` and the security watermark covers `eef36ac547f8a61c025af2f428c45317a64223de` (the later commit is test-only).
+The canonical producer review is recorded in `reviews/Feature-payment-method-commitments.md`. All findings are resolved; the approved review watermark covers `448316d2a260e1507dc1c8e1ca3dba607fb5b9ec` and the security watermark covers `eef36ac547f8a61c025af2f428c45317a64223de`. PAY-008 rejected the hardening pass's first shape — struct rejection carriers with a recovery enum — and was resolved by the `ChargeError`/`ManagerChargeError` operation-owned unions.
 
 ## Downstream handoffs
 

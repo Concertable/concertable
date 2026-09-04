@@ -4,10 +4,10 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `in-progress`
-**Reviewed up to commit:** `6510ca80cc7b27557512eac2f24f859ab1269254`  `(2026-09-04)`
+**Review status:** `complete`
+**Reviewed up to commit:** `448316d2a260e1507dc1c8e1ca3dba607fb5b9ec`  `(2026-09-04)`
 **Security-reviewed up to commit:** `eef36ac547f8a61c025af2f428c45317a64223de`  `(2026-09-04)`
-**Judgment:** `pending`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
 
@@ -126,7 +126,7 @@ No findings.
 **Candidate bundle identity:** `sha256:c9f546a44816682f4694c6a830766daecd898372359053fe423802bc9a56a9ff`
 **Work-order path:** `reviews/Feature-payment-method-commitments.md`
 **Work-order mode:** `append`
-**Pass judgment:** `pending`
+**Pass judgment:** `changes-requested`
 
 ### Findings
 
@@ -147,3 +147,24 @@ No findings.
   `ManagerPaymentService` matches the union exhaustively where it produces `PaymentMethodChargeError`. Both unions
   gained exact definition-contract rows with derived codes. Payment unit tests passed (589), integration (59),
   architecture (9).
+
+## Review pass — 2026-09-04 — incremental
+
+**Candidate base:** `060e7619e503b4283040d2cd34b196d01c97dec4`
+**Candidate head:** `448316d2a260e1507dc1c8e1ca3dba607fb5b9ec`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:5f14a6f922b4262183d5fcde9b05fa821dcdae983823ac6fe439f5546cecc020` `(20 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Feature-payment-method-commitments\ba80e5ef-1310-4d8a-8735-834a064fd1da\scratchpad\review-bundle`
+**Candidate bundle identity:** `sha256:c9f546a44816682f4694c6a830766daecd898372359053fe423802bc9a56a9ff`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The PAY-008 remediation delta was reviewed against `result-carriers`, `result-errors`, and
+`csharp-naming`: both replacement unions are closed, operation-owned, Dunet-declared with implicit conversions
+off, and derive `Definition` in one exhaustive switch with no discard arm; every translation between them
+matches all cases and preserves the observed error rather than reconstructing one. The remaining `rejection!`
+extractions are the already-recorded Reunion non-null-accessor debt, not new.
