@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`  _(2026-09-05)_
-**Security-reviewed up to commit:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`  _(2026-09-05)_
+**Reviewed up to commit:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`  _(2026-09-05)_
+**Security-reviewed up to commit:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`  _(2026-09-05)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1027,3 +1027,119 @@ Two lenses, correctness and security, over the consumer cut-over, with the produ
 - The repeat accept-checkout double-hold rejection stands: `PaymentSessionService.CreateAsync` reserves on
   the reference and returns `OperationConflict` only on a genuine mismatch.
 - The `ToDetails` TPH downcast was not re-examined; the file is untouched.
+
+## Review pass — 2026-09-05 — incremental and security closeout
+
+**Candidate base:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`
+**Candidate head:** `3f89818c7c91b5cf9d658fbe7e8460163de06d78`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:e00d0b402f72c19fbf50f7f137e385a58077ebc8fff58742368f1b1eb31e4926` `(89 paths)`
+**Candidate bundle:** `C:\Users\TommySeery\AppData\Local\Temp\concertable-review-633-3f89818c-incremental-17de4143`
+**Candidate bundle identity:** `sha256:10d0d7b0c6c6221a69524d1d9b8016bae26cf962d1272fc0a6d5b35c4f6b553c`
+**Security candidate base:** `39fbbc0126d6ddd8d40426e25663bea29cd7f1a5`
+**Security candidate path-set:** `sha256:5b8af2f01c3b29144ae1c6fcae4821ff76c9f5868394560a328d21dc4b7811ed` `(530 paths)`
+**Security candidate bundle identity:** `sha256:2e7aaf663a08038b667c98ed88fc96d3bdea259aaee296402c5208e20b90c90b`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **IR28 — HIGH — security** — `VerifyPaymentFailedProcessor.cs:54-98`
+  accepted a syntactically valid `verify/app:{id}` failure without proving that the Payment operation belonged
+  to the application's venue. A foreign payer's event could therefore record a failure and notify users for
+  another venue's application. The handler now derives the venue from B2B's persisted application, validates
+  `operationId` plus payer ownership in Payment, inboxes unknown/foreign operations without domain mutation,
+  and leaves provider-unavailable checks unconsumed for redelivery. Application integration tests cover a
+  foreign payer and outage-then-retry. **Disposition:** closed in `d6d6ebf69`.
+- [x] **IR29 — MEDIUM — correctness** — `PaymentSessionProviderRequest.cs:46`
+  stamped the operation id as private provider metadata key `operation_id`, while B2B's v1 event consumer reads
+  public `PaymentMetadataKeys.OperationId` (`operationId`). Production verification failures consequently
+  failed the shape guard that the mocks passed. The producer now uses the public key and its webhook integration
+  test asserts the exact metadata value. **Disposition:** closed in `d6d6ebf69`.
+- [x] **IR30 — LOW — test coverage** — `BookingCancellationApiTests.cs:126`
+  covered deferred-refund followed by capture success but not capture rejection, the ordering most likely to
+  strand a booking in `CancellationPending`. The new integration case defers the refund, rejects the in-flight
+  capture, and proves terminal `Cancelled` with no Concert. **Disposition:** closed in `d6d6ebf69`.
+- [x] **IR31 — LOW — maintainability** — changed Booking, Concert, integration-fixture, and package-pin files
+  added narrative comments explaining the reviewed design. Those comments were removed; the incremental source
+  diff now adds no comments. **Disposition:** closed in `d6d6ebf69` and `17ad067e1`.
+
+### Adversarial money-path adjudication
+
+1. **Deferred refund versus in-flight capture.** The deferred event records only its inbox row
+   (`CancellationFinancialOperationOutcomeProcessor.cs:33-37`) and leaves the Booking in
+   `CancellationPending`. If capture succeeds, `BookingWorkflow.cs:173-179` reissues the same cancellation
+   operation id/reference/reason; Payment's pending operation fingerprint matches, the now-present escrow is
+   refunded, and the refund success moves the Booking to `Cancelled`. If capture fails,
+   `BookingWorkflow.cs:207-212` applies `Cancel`, also ending `Cancelled`; this is proven at
+   `BookingCancellationApiTests.cs:126-140`. Capture-first produces the same two terminal paths after the
+   cancellation transaction commits. A redelivered deferred envelope is inbox-skipped; a later success has a
+   distinct event-type-stable message id and is not suppressed. No interleaving leaves captured money on a
+   cancelled Booking or leaves the Booking pending.
+2. **Inbox while waiting.** The deferred arm goes through `TryRecordInboxAsync`; every owned cancellation
+   outcome does the same before its effect (`CancellationFinancialOperationOutcomeProcessor.cs:68-84`). The
+   acceptance handler writes inbox plus transition in one transaction, and its fresh-scope concurrency retry
+   rolls both back before retrying. Foreign reference shapes intentionally return before inbox because they
+   belong to another consumer and perform no effect.
+3. **Venue binding.** Success validation resolves `VenueTenantId` from B2B's application and Payment resolves
+   the whole reference against that owner. Failure validation now resolves the same B2B-owned venue and asks
+   Payment for the operation by `operationId` and owner (`VerifyPaymentFailedProcessor.cs:58-74`). Nothing on
+   the inbound event supplies the authoritative tenant. Venue A's operation cannot advance or fail venue B's
+   application.
+4. **Stamped references.** FlatFee opens `EscrowHold(app:{id})`; Booking freezes it as the authorization and
+   later emits booking-scoped `Escrow(booking:{id})` for `CaptureEscrowCommand`
+   (`FlatFeeConfirmStep.cs:38`). VenueHire freezes `MethodSetup(opportunity:{id}:artist:{tenant})` as the payment
+   method and emits the same booking-scoped escrow identity for `DepositEscrowCommand`
+   (`VenueHireConfirmStep.cs:36`). Payment resolves either frozen dependency by its whole reference and compares
+   `PayerOwnerKey` server-side (`PaymentOperationResolver.cs:100-117`). The two-reference shape is deliberate:
+   the new operation is Booking-owned while the underlying authorization/method retains its original identity.
+5. **Double effect.** Capture, deposit, and refund enter `FinancialOperationHandler.PrepareAsync`, whose stable
+   operation id/fingerprint rejects changed facts and whose terminal replay republishes without calling the
+   provider. Refund reservations resume by the same operation id; completed refunds replay. Release atomically
+   reserves `EscrowEntity.ReleaseOperationId` and returns the existing transfer on replay. Settlement loads its
+   unique operation id and compares its fingerprint before charging. Provider calls also receive operation-based
+   idempotency keys. B2B inboxes independently prevent duplicate outcome transitions; none of these guarantees
+   relies on a mock.
+
+### Security closeout
+
+- Tenant-scoped HTTP paths still derive authority from the active tenant/membership boundary. The internal
+  cross-tenant reads above recover B2B-owned facts by aggregate id and fail closed; no endpoint or projection
+  gained caller-selected tenant authority.
+- Whole `PaymentOperationReference` values remain intact across contracts. Type guards precede every encoded-id
+  parse, foreign shapes are skipped without throwing, and Payment revalidates payer ownership before resolving
+  authorization or payment-method dependencies.
+- No provider identifier entered B2B state, contracts, logs, DTOs, or frontend. The reviewed logging contains
+  references and failure classification only, with no new personal-data disclosure.
+- IR19's settlement-completion-before-inbox ordering remains bounded by Settlement's operation/state idempotency,
+  retains its existing `wontfix` debt owner, and was not widened by this range.
+
+### Validation
+
+- `./scripts/integration.ps1 Application` — 73/73 passed.
+- `./scripts/integration.ps1 Booking` — 24/24 passed.
+- Focused Payment webhook metadata test — 1/1 passed.
+- Final focused Application ownership/retry tests — 3/3 passed.
+- The clean B2B solution build reached only the two explicitly out-of-scope Customer legacy contract errors
+  (`CheckoutSession`; sealed `PaymentOutcome`); all B2B projects compiled. No E2E was run.
+
+## Review pass — 2026-09-05 — remediation incremental
+
+**Candidate base:** `3f89818c7c91b5cf9d658fbe7e8460163de06d78`
+**Candidate head:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. The branch moved after the original bundle was frozen: concurrent commit `026180690` added a
+local-platform-only Payment version override. Its default remains published version `0.1.0-alpha.0.1322`; only
+`UseLocalPlatformPackages=true` follows the locally packed platform version, as exercised by the green module
+integration runs. The remediation diff closes IR28–IR31 and introduces no compatibility surface, provider
+identifier, loose payment reference, Customer change, or added source comment. All findings have terminal
+dispositions and both review watermarks cover the final fixing head.

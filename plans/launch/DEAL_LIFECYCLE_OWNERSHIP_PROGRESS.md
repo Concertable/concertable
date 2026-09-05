@@ -340,7 +340,8 @@ close before PR #633 leaves draft.
   `wontfix` with its debt entry in `Modules/Concert/TECH_DEBT.md`. No `[ ]` finding remains. CI on this
   branch stays red only on Customer's two legacy compile errors and the jobs downstream of them; the merge is
   Tommy's admin merge.
-- Incremental and security closeout over `db5d4be8c..3f89818c7` / `39fbbc012..3f89818c7` added IR28–IR31.
+- Incremental and security closeout began over `db5d4be8c..3f89818c7` / `39fbbc012..3f89818c7` and followed
+  the concurrently added local-platform pin commit through remediation head `17ad067e1`; it added IR28–IR31.
   The branch now proves failed verification ownership through B2B's persisted venue and Payment's operation
   owner, retries provider-unavailable ownership checks, stamps the public `operationId` metadata key, and
   covers both terminal outcomes after a deferred refund. Narrative comments found in the reviewed range were
