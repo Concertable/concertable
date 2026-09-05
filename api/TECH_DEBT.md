@@ -221,6 +221,12 @@ operation being added; declaration-contract exceptions remain excluded.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
 
+### Per-project `obj`/`bin` output risks Windows `MAX_PATH` as module nesting deepens
+
+A project's `obj`/`bin` folders sit inside its own source directory and repeat the full project name a second time beneath it, so a nested module's build output can exceed Windows' 260-character path limit — e.g. `Concertable.B2B.Dashboard.Opportunity.Application/obj/Debug/net10.0/Concertable.B2B.Dashboard.Opportunity.Application.dll` is 272 characters. On a Windows machine without NTFS long-path support enabled, this intermittently fails MSBuild's `Copy` task with `MSB3030: could not copy ... because it was not found` even though the file compiled and exists — the referencing project simply can't see it. Enabling `LongPathsEnabled` in the registry is an immediate per-machine mitigation, but it is not enforced anywhere, so a fresh clone or a locked-down machine hits this again. First surfaced building `Concertable.B2B.Dashboard.Opportunity.Api` on `Refactor/launch_deal-lifecycle-modules-phase2`.
+
+**Resolves when:** each service adopts the .NET SDK's `UseArtifactsOutput`, centralizing `obj`/`bin` to one short `artifacts/` tree at the service root instead of inside every project folder — landed per-service at the point that service is extracted into its own repo during the repo-split migration, rather than as a big-bang change across the still-shared monorepo.
+
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
 When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the hold: Payment exposes no cancel anywhere (`ManagerPayment` has `FindHeldIntent` but no cancel RPC, and there is no internal hold-cancel — `IStripeHoldClient` has only `FindHeldIntent`/`Capture`), so the funds stay ring-fenced until Stripe auto-expires the intent (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
