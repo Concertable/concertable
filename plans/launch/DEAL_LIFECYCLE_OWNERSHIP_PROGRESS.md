@@ -78,8 +78,9 @@ owned; the `ConcertSalesProjection` end state in `api/Concertable.B2B/TECH_DEBT.
   `api/Concertable.Payment` source (the test tiers resolve Payment through
   `PlatformSourcePackages.targets`, not through the package). Every one of those inputs is reverted before
   the push; nothing machine-specific, temporary or disposable is committed.
-- **This is preparation evidence only.** The real gate is the published breaking Payment package after
-  #933 merges; until then PR #633 is `delivery-ready`, not merge-ready.
+- **This was preparation evidence, and it is now superseded.** #933 has merged, so CI builds this
+  consumer against Payment v1 source and is the authoritative gate; the local artifact only remains the
+  way the suites above are run offline. See `## Next Steps` for the delivery state that replaced it.
 
 ### Pre-existing branch red the cut-over uncovered
 
@@ -171,16 +172,29 @@ placement remains recorded Application technical debt in
 
 ## Next Steps
 
-Finish the MM_BOUNDARY_HARDENING pass (see "Boundary hardening" below): land A3's architecture rules once
-the Kernel package build blocker clears, get A4's concurrency proof back, finish the Part B sweep write-up,
-then decide the Conversations cross-context follow-up (log tech debt or fix now). After that, commit the
-module-workflow checkpoint and run the requested Claude CLI incremental review over `12273b558..HEAD`,
-addressing every valid finding. Then close IR9-IR10 and run the canonical fresh incremental review over the
-fix commits from the recorded watermark, `python .agents/hooks/plan_graph.py --root <worktree>`, and
-`git diff --check`; do not run local E2E. Then push one stable candidate, prove local, remote-tracking, and
-PR heads match, mark PR #633 ready, and follow it through merge-queue E2E, merge, publication, and platform
-sync to terminal. Delete this ledger, the plan, and the review artifact in the closeout once the lifecycle
-is terminal.
+**The delivery gate changed on 2026-09-05: this PR is no longer waiting on a published package — it is one
+of the two changes that unblock the publication.** PR #933 merged as `3f7fd95cc` at head `ec11b801f`, but
+main's CI went red, so `Publish packages` was cancelled and `Platform sync` skipped;
+`ConcertablePlatformVersion` on main is still `0.1.0-alpha.0.1329`, i.e. pre-#933, and no v1 Payment package
+exists on the feed. CI builds `api/Concertable.slnx` against Payment's **source**, so main's red is exactly
+two consumers still on the removed contract:
+
+- **B2B** — `ArtistDashboardService`/`VenueDashboardService` (`IManagerPaymentReportingClient`),
+  `Concert.Application/Responses/Checkout.cs` (`CheckoutSession`), `FinishConcertError.cs`
+  (`ManagerPaymentError`). **This PR fixes all of them.**
+- **Customer** — `Ticket.Application/DTOs/TicketDtos.cs` (`CheckoutSession`) and `TicketPayment.cs`
+  (`cannot derive from sealed PaymentOutcome`). Not touched here; that consumer is
+  `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md`'s.
+
+The producer defect recorded above is owned by **PR #937** (`Fix/payment-operation-reference-json`), which
+adds `[JsonConstructor]` plus a serialize/deserialize regression test. It does not by itself make main green.
+
+Next, in order: push the review-pass fixes (IR11-IR17) as a second commit; take PR #633 out of draft so CI
+runs on the exact head; monitor that run to terminal and prove every residual failure is exclusively an
+unchanged Customer legacy reference, naming the files; then **stop** — merging PR #633 needs Tommy's explicit
+authorization and an admin merge, because it stays structurally red until Customer lands. Once #633, #937 and
+the Customer migration are all on main, CI goes green, packages publish, and platform sync bumps the pin;
+only then is this ledger's lifecycle terminal and the plan, ledger and review artifact are deleted.
 
 ## Boundary hardening (MM_BOUNDARY_HARDENING_PROMPT.md)
 

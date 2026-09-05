@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `86aa3449eccc070166d26aab7a37b8f3d7488b0e`  _(2026-09-02)_
+**Reviewed up to commit:** `62b9fde66500c9830e20ed47a2f5633d2c5ffa80`  _(2026-09-05)_
 **Security-reviewed up to commit:** `3c474d8be`  _(2026-09-01)_
 **Judgment:** `approved-with-remediation`
 
@@ -796,3 +796,112 @@ copies, which is the temporary, intended cost of the split and is owned by the c
 **Not retained:** the new shared `applicationActionLabels` / `ActionLinkButtons` having no tests and no
 callers, and nothing exercising `decline` or the `reject`/`decline` dual shape — both are inherent to
 the publish-first split and owned by the cut-over PR that TR10's debt entry gates.
+
+## Review pass — 2026-09-05 — Payment v1 consumer cut-over
+
+**Candidate base:** `39fbbc0126d6ddd8d40426e25663bea29cd7f1a5`
+**Candidate head:** `62b9fde66500c9830e20ed47a2f5633d2c5ffa80`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved-with-remediation`
+
+Three read-only lenses over the cut-over — the Payment boundary, persistence/migrations, and test
+doubles plus the frontend edge. They ran against the worktree at the candidate head rather than a
+materialized bundle, so no bundle identity is recorded; every retained claim below was re-verified by
+the parent against the file it names, and against #933's own source in its worktree where the claim was
+about producer behaviour.
+
+### Findings
+
+- [x] **IR11 — HIGH — correctness** — `Concertable.B2B.Hosting/B2BTopology.cs:44`
+  Payment v1 publishes `RefundEscrowDeferredEvent` when a refund finds nothing to refund
+  (`PaymentTopology.cs:19`, raised at `FinancialOperationHandler.cs:213`). B2B neither subscribed to it
+  nor handled it, so cancelling a booking whose escrow never captured left the aggregate in
+  `CancellationPending` permanently, and `BookingWorkflow.CancelAsync` then returned success on every
+  retry without doing anything.
+  **Disposition:** handled on both cancel paths. `CancellationFinancialOperationOutcomeProcessor` and
+  Concert's `FinancialOperationOutcomeProcessor` take the deferred arm through the same `Cancel` action
+  as the succeeded arm — the money never moved, so the cancellation is complete — registered in both
+  modules and subscribed in `B2BTopology` and `B2BWebHostExtensions`.
+
+- [x] **IR12 — HIGH — correctness** — `VerifyPaymentProcessor.cs:33`, `VerifyPaymentFailedProcessor.cs:39`,
+  `AcceptanceFinancialOperationOutcomeProcessor.cs:45,61,77,94`
+  Both families read the encoded id out of the reference before the inbox guard, and threw on a
+  reference whose shape they did not own. `MethodVerificationType` is Payment's own `verify` constant
+  rather than a B2B-owned token, so any other consumer's verification passed the type guard and then
+  threw in `ReadApplicationId`; the acceptance handlers had no type guard at all. A message that throws
+  ahead of its inbox row is never marked processed, so the transport redelivers it forever, head-of-line
+  blocking a subscription B2B shares with the verify outcomes.
+  **Disposition:** both now guard on type and shape and return on a miss (`TryReadApplicationId`, and a
+  `TryReadBooking` that requires `EscrowType`). A reference this service did not mint is another
+  consumer's message, not a malformed one.
+
+- [x] **IR13 — MEDIUM — test-coverage** — `FlatFeeLifecycleTests.cs:80`, `VersusLifecycleTests.cs:73`
+  `Accept_ShouldIgnoreDuplicateWebhookEvent` did not redeliver anything for the checkout-bearing flows.
+  The simulator preferred the directly-opened operation, so the second call announced an `escrow-hold`
+  `PaymentSucceededEvent` that neither registered handler consumes; the inbox guard could have been
+  deleted and the test would still have passed.
+  **Disposition:** the simulator now redelivers a settled acceptance outcome ahead of re-announcing a
+  session, so the second call is a genuine duplicate of the outcome the flow actually settled on.
+
+- [x] **IR14 — MEDIUM — test-coverage** — `BookingCancellationApiTests.cs:58`, `ConcertCancelApiTests.cs:108`
+  Both asserted `Assert.Empty(fixture.EscrowClient.Holds)`. Escrow deposits and captures move as bus
+  commands under v1, and the only surviving `IEscrowOperationsClient` caller is `ReleaseEscrowComplete`,
+  so `Holds` is unconditionally empty and the assertion could never fail.
+  **Disposition:** replaced with `Assert.Empty(fixture.PaymentTransport.FinancialCommands)`, which is
+  where a wrongly-staged capture, deposit or refund would actually appear.
+
+- [x] **IR15 — LOW — test-coverage** — `FlatFeeLifecycleTests.cs:143`
+  The test expected `InvalidOperationException` from `FailingEmailRenderer`, but the transport throws
+  the same type on its own wait timeout, so a flow that never staged the capture at all would have
+  satisfied the assertion and the four follow-ups.
+  **Disposition:** asserts the renderer's message.
+
+- [x] **IR16 — LOW — efficiency** — `Mocks/MockPaymentTransport.cs:245`
+  Redelivery consulted its settled-command fallback only after the full five-second polling deadline,
+  on top of the simulator's two-second gate.
+  **Disposition:** the fallback is checked before the loop when redelivering, and the gate is now
+  acceptance-scoped, so it no longer waits on a pending refund it would not have acted on.
+
+- [x] **IR17 — LOW — correctness** — `MockWebhookSimulatorFail.cs:46`
+  The failure path minted a fresh envelope id where the success path uses one stable per operation, so
+  calling it twice applied the same failure twice and defeated the invariant this change introduced.
+  **Disposition:** both paths now use `PaymentOperationEnvelopes.StableId`.
+
+### Considered and rejected
+
+- **A repeated accept-checkout creates a second authorization hold.** It does not. `CreateAsync` mints a
+  fresh operation id per call, but Payment reserves on the reference:
+  `PaymentSessionEntityConfigurations.cs:55-56` declares `HasIndex(OperationType, ClientReference)`
+  `.IsUnique()`, so the insert hits a duplicate key, `PaymentSessionOperationRepository.cs:67-78`
+  re-fetches by reference and re-fingerprints the specification with the existing operation id, and an
+  otherwise-identical request comes back `Replayed`. It returns `Conflict` only when the request
+  genuinely differs, which is correct. The lens that raised this read the legacy Payment source left in
+  this worktree after the overlay was reverted, not v1.
+
+- **The abstract-TPH downcast in `QueryableConcertMappers.ToDetails` is untranslatable.** The failure
+  that fixed `DoorRevenueOutstandingSpecification` needed the second ingredient this call site lacks:
+  composition into a correlated subquery. `ToDetails` is consumed only at top level, where EF lowers the
+  cast to a discriminator `IN`, and `GET /api/concert/{id}` and `/api/concert/application/{id}` are
+  covered by Concert 69/69 and by every Lifecycle test that fetches the concert after acceptance. The
+  file is also untouched by this change.
+
+### Open, carried forward
+
+- [ ] **IR18 — MEDIUM — test-coverage** — `TestClientOptions.cs:24`
+  `UseFailingPayment()` has had no caller since `c55c99718`, so `MockEscrowClientFail` is dead and
+  `ReleaseEscrowComplete`'s `FinishConcertError.EscrowReleaseFailure` branch has no coverage. Predates
+  this change; the branch is reachable and should get a test, or the option should go.
+
+- [ ] **IR19 — LOW — correctness** — `SettlementPaymentProcessor.cs:41`, `SettlementPaymentFailedProcessor.cs:35`
+  Both run the settlement mutation in its own transaction before opening a second one to check and write
+  the inbox row, so the envelope-id inbox provides no idempotency on that path; convergence rests on
+  `SettlementService`'s state check and `InvoiceIssuer`'s existence check. The shape predates this
+  change and the two refund processors do it correctly.
+
+- [ ] **IR20 — LOW — test-coverage** — `BookingCancellationApiTests.cs:56,72`, `ConcertCancelApiTests.cs:107`
+  Negative assertions about staged commands read the transport synchronously, but a command arrives by
+  outbox dispatch after the request returns, so a regression that wrongly stages one is still in flight
+  at the moment of the read. Pre-existing pattern; needs the waiting counterpart.
