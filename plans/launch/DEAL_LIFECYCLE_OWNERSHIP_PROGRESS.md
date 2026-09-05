@@ -36,10 +36,128 @@ a rejected edge leaves state, auxiliary facts, and events untouched. Operation e
 Deal-varying dispatch now has one shared Deal-specific composition layer. `DealStrategyBuilder` composes
 the generic keyed-strategy builder and automatically requires full `DealType` coverage for every registered
 same-interface family. `DealUnionBuilder<TUnion>` composes the generic keyed-union builder and enforces one
-method-header case per DealType. Application Apply and Accept use operation-owned Dunet unions; Accept maps
-FlatFee and VenueHire to `IAccept`, DoorSplit and Versus to `IAcceptPaid`, and the consumer matches those
-interfaces rather than DealType. The .NET 11 plan records the direct native `union Accept(IAccept,
-IAcceptPaid)` replacement, which removes only the Dunet wrappers.
+method-header case per DealType. No family needs that escalation today: with Payment owning payment-method
+commitments, apply and accept take the same arguments for every deal type, so Application's `IApply` and
+`IMintCommitment` are same-interface families. `DealUnionBuilder` stays for the first family that genuinely
+fractures on caller input.
+
+## Payment v1 consumer cut-over
+
+B2B now consumes only Payment's consumer-agnostic v1 surface (producer PR
+[#933](https://github.com/Concertable/concertable/pull/933)). No provider identifier crosses the boundary
+and none is persisted: `PaymentOperationReference` is minted once in
+`Concertable.B2B.Infrastructure/Payments/PaymentOperationReferences`, frozen onto `ContractEntity`, and
+read back by Booking and Concert. `BookingEntity.FinancialOperationReferenceId`,
+`ConcertEntity.FinancialOperationReferenceId`, `VerifyPaymentEntity.ProviderTransactionId` and
+`SettlementConfirmation.ManagerPaid(transactionId)` are gone; the Payment-owned `Guid OperationId` is the
+only operation identity B2B stores. The legacy `IManagerPaymentOperationsClient` /
+`IManagerPaymentReportingClient` / `CheckoutSession` / `FindHeldIntentAsync` surface is replaced by
+`IPaymentSessionOperationsClient`, `ISettlementOperationsClient` and `IPaymentReportingClient`, and the
+`*ByReference` escrow commands collapse back into `CaptureEscrowCommand` / `DepositEscrowCommand` /
+`RefundEscrowCommand` carrying the reference. B2B's `Checkout.Session` is now a B2B-owned
+`CheckoutSession`, so the SPA contract is unchanged while the Payment type no longer reaches the HTTP edge.
+
+Concert's ticket-sold counter no longer sniffs `PaymentSucceededEvent` metadata for
+`type=ticket`/`concertId`/`quantity` — those keys are deleted in v1. `TicketSaleProcessor` subscribes to
+Customer's already-published `TicketPurchasedEvent` instead, which is where a ticket sale is actually
+owned; the `ConcertSalesProjection` end state in `api/Concertable.B2B/TECH_DEBT.md` stays open.
+
+### Preparation evidence (not a published-package validation)
+
+- Producer commit: `ec11b801fb314929552f4907ddf81361ea05d4ab` (PR #933 head; reviewed watermark
+  `6018baa840aac6ae0c493b14fcdcb77a3ab13774`, and the one commit between them is docs-only).
+- Package version: `0.1.0-local.ec11b801f`, built with
+  `dotnet pack <project> -c Release -o artifacts/payment-v1-ec11b801f -p:MinVerVersionOverride=0.1.0-local.ec11b801f -p:PackageVersion=0.1.0-local.ec11b801f`
+  from that worktree, against published platform `0.1.0-alpha.0.1329`.
+- Artifact location: `.worktrees/Feature-payment-method-commitments/artifacts/payment-v1-ec11b801f/`.
+- SHA-256: `Concertable.Payment.Contracts` `8acd2f7427bef507464f5ff032eeb3dc2ed112683f897dea6d25b2759fffac83`;
+  `Concertable.Payment.Client` `5d6b4cc15255b3ce2e2a4a3e2e8991cd08b69639869a9b7fea082470eeadc63b`;
+  `Concertable.Payment.TestKit` `24d5df732843f233536d897ba6200614474163a4fd2cf07c4ecfebe57bca9f65`.
+- Consumed through working-tree-only edits to `api/Concertable.B2B/nuget.config` and
+  `api/Concertable.B2B/Directory.Packages.props`, plus a working-tree-only overlay of #933's
+  `api/Concertable.Payment` source (the test tiers resolve Payment through
+  `PlatformSourcePackages.targets`, not through the package). Every one of those inputs is reverted before
+  the push; nothing machine-specific, temporary or disposable is committed.
+- **This is preparation evidence only.** The real gate is the published breaking Payment package after
+  #933 merges; until then PR #633 is `delivery-ready`, not merge-ready.
+
+### Pre-existing branch red the cut-over uncovered
+
+`Concertable.B2B.Application.Infrastructure` did not compile before this work, so every project downstream
+of it — the Application, Booking, Concert, Dashboard and Lifecycle integration suites and the Concert unit
+suite — had never been built or run on this branch. Compiling them surfaced four defects that predate the
+Payment cut-over and are fixed here:
+
+- `BookingFactory` left the contract on `BookingEntity.Contract`, so the seeder's booking save dragged the
+  contract into the same `IDENTITY_INSERT` window and every B2B fixture failed at seed. The seed aggregate
+  now clears the navigation.
+- `ConfirmedBookings` hard-coded tenant ids that four Concert unit tests mocked with fresh GUIDs, and two
+  door-revenue tests dated `now` before the fixture's 2035 concert. Both now read the fixture's constants.
+- `ApplicationEntity.Accept` raised only `ApplicationAcceptedDomainEvent`, so a verification recorded
+  *before* the acceptance was never replayed against the booking the acceptance creates and the booking sat
+  in `AwaitingConfirmation` forever. `Accept` now re-raises the recorded verification after the acceptance
+  event, which is the durable replayable join NAT11 asked for.
+- `ConcertEntity`'s settlement payment reference was never mapped, so the column did not exist and the
+  reference read back empty on every settlement. `ConcertEntityConfiguration` now maps it as a complex
+  property beside the financial failure, and the Concert migration is re-scaffolded.
+- `DoorRevenueOutstandingSpecification` downcast to the **abstract** `DoorRevenueConcert`, which EF cannot
+  translate at all, so `/api/venue-dashboard/kpis` returned 500 and the completion sweep's query threw. It
+  now casts to the concrete `DoorSplitConcert` / `VersusConcert` leaves, which EF translates to the
+  discriminator, in the one place the predicate is defined.
+- `ConcertApiFixture.FailSettlementPersistenceAsync` armed its CHECK constraint on the provider-reference
+  column this change removes; the state half alone already admits the reservation and rejects the
+  completion, which is what the constraint is for.
+- Four Application/Concert tests asserted the retired contract (a `pi_` client-secret prefix, apply
+  succeeding with no committed method, accept requiring one). They now assert the v1 behaviour: apply
+  without a commitment is `402`, accept before verification is `204` and waits.
+- `MockPaymentTransport` could only settle a *pending* command, so a second webhook for a flow whose only
+  Payment operation moves over the bus threw instead of redelivering. Each outcome now carries an envelope
+  id stable per operation, and after the wait window finds nothing pending the settled command's outcome is
+  repeated — which is what the bus does and what the inbox dedupes.
+- `scripts/integration.ps1` carries a hand-written roster that never gained the six integration projects
+  this branch adds (Application, Booking, Dashboard, Deal, Opportunity, Lifecycle), so the local entrypoint
+  could not see or run the suites covering this change. CI discovers by `find` and always ran them; the
+  roster now matches. `Admin` and `E2EAdmin` were missing before this branch and are left alone.
+
+The venue dashboard's revenue chart changed meaning, not just names: v1 has no ticket-scoped reporting
+query, so what was `charts/ticket-revenue` now reports every payment where the tenant is payee. It is
+renamed end to end — `charts/payment-revenue`, `GetPaymentRevenueAsync`, `useVenuePaymentRevenueQuery`,
+card title "Revenue" — rather than left saying something the number no longer means.
+
+`Modules/Deal/ARCHITECTURE.md` §2.7 and two tech-debt entries described the retired surface
+(`IManagerPaymentClient`, `FindHeldIntentAsync`, the `*Step` names, and a "resolves when `ManagerPayment`
+gains a `CancelHeldIntent` RPC" that v1 makes unreachable). All three now describe the v1 shape.
+
+### Invariant sweep and its deliberate survivors
+
+`PaymentMethodId` / `paymentMethodId` / `payment_method_id` / `PaymentIntentId` / `paymentIntentId` /
+`payment_intent_id` / `SetupIntentId` / `ChargeId` / `TransferId` / `RefundId`, case-insensitively over
+`api/Concertable.B2B`, `app/web/b2b` and `app/web/shared`, is zero except:
+
+- `app/web/shared/.../checkout/StripePaymentForm.tsx` and `.../payments/NewCardSection.tsx` — the browser's
+  own Stripe adapter reading `intent.payment_method`, still offered to callers through `onSuccess` /
+  `onConfirmed`. B2B stopped consuming it; narrowing the shared tier is publish-first and is recorded in
+  `api/Concertable.B2B/TECH_DEBT.md`.
+- `Concertable.B2B.E2ETests` / `.Ui` — provider ids **read back from Payment's own database** through the
+  Payment TestKit and asserted against real Stripe objects. That is what the E2E tier is for; nothing B2B
+  sends carries them, and the addressing is now `PaymentOperationReference`-shaped via
+  `Concertable.B2B.E2ETests/PaymentOperationsDb`.
+- Old generated migration snapshots are gone: Application, Booking and Concert were re-scaffolded, so no
+  `PaymentMethodId` / `SettlementPaymentMethodId` column survives anywhere in B2B's model.
+
+`api/Concertable.Customer` and `app/customer/shared` still consume the removed contract and are **not**
+touched here; that consumer is `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md`'s.
+
+### Producer defect found while validating (owned by #933, not fixed here)
+
+`PaymentOperationReference` does not survive a JSON round-trip: it is a `readonly record struct` whose
+parameterized constructor carries no `[JsonConstructor]`, so `System.Text.Json` binds the implicit
+parameterless constructor and every value is lost. Serializing produces
+`{"OperationType":"escrow","ClientReference":"booking:48"}`; deserializing yields `('', '')`. That silently
+empties the reference on every escrow command and event crossing the outbox, and B2B's Booking integration
+suite fails on exactly that. Verified with a standalone probe against the packed v1 assembly, and confirmed
+fixed by adding `[JsonConstructor]` — applied only to the local overlay to prove the consumer, never to
+#933 and never committed here.
 
 The final security review added IR7-IR10. IR7 is closed: verify-payment handlers now resolve only the
 Booking id before entering the repository's serialized financial transition, and deterministic overlap
