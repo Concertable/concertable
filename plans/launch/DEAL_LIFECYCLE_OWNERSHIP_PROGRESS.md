@@ -13,6 +13,9 @@
 - Dependency/package gates: blocked on terminal Phase 0-1 delivery of
   `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`. Phase 1 delivery remains terminal; final `api/**`
   package publication and platform sync remain part of PR #633's later delivery lifecycle.
+  The B2B payment slice also waits for PR #933's breaking Payment packages: session requests carry
+  one validated `PaymentOperationReference`, and public outcomes/events expose only Payment-owned
+  identities rather than provider object ids.
 - Last reconciled: 2026-08-19 after suspending PR #633 behind the independently deliverable Deal
   dispatch foundation while preserving its `ApplicationDoorSplitApiTests` continuation
 

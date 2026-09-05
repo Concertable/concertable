@@ -10,7 +10,7 @@
   (`launch/payment-operation-ownership`) must be published and the Customer platform pin advanced
   before Delivery item 1 can complete; local preparation against exact local producer artifacts
   (`./scripts/local-platform.ps1 prepare` in the producer worktree) is permitted, delivery-gated.
-- Last reconciled: 2026-09-04 at plan authoring
+- Last reconciled: 2026-09-05 after reconciling the final PR #933 producer contract
 
 ## Current state
 
@@ -46,3 +46,7 @@ verdict: `plans/launch/PAYMENT_BOUNDARY_DECISION.md` §1.
 - Owner decision, 2026-09-04: PR #933 includes the legacy cull and breaking vocabulary pass, so
   Customer migrates directly from the raw-identifier client to the final reference surface after
   that package publishes; there is no later producer-cull dependency.
+- Final producer contract, 2026-09-05: `PaymentSessionOperationRequest` carries one validated
+  `PaymentOperationReference`; public payment outcomes and success/failure events expose no provider
+  identifier. Customer correlates every result and event through its opaque reference or the
+  Payment-owned operation id.

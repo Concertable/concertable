@@ -4,10 +4,10 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `complete`
+**Review status:** `in-progress`
 **Reviewed up to commit:** `448316d2a260e1507dc1c8e1ca3dba607fb5b9ec`  `(2026-09-04)`
 **Security-reviewed up to commit:** `eef36ac547f8a61c025af2f428c45317a64223de`  `(2026-09-04)`
-**Judgment:** `approved`
+**Judgment:** `pending`
 
 ## Review pass — 2026-09-03 — full
 
@@ -168,3 +168,72 @@ No findings. The PAY-008 remediation delta was reviewed against `result-carriers
 off, and derive `Definition` in one exhaustive switch with no discard arm; every translation between them
 matches all cases and preserves the observed error rather than reconstructing one. The remaining `rejection!`
 extractions are the already-recorded Reunion non-null-accessor debt, not new.
+
+## Review pass — 2026-09-05 — full staged
+
+**Candidate base:** `a1244c4542df12a3db96d5119acae91338e4dde1`
+**Candidate head:** `98b56896a27519b67059e4036939436ccfdc7103`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:dad14f14b7692f3c33cd9a1399015e74d07d4764938908f74cbe3ad92c7fd9e3` `(269 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\concertable-review-payment-2479592f62104d47874a03e0c5bcfb8b`
+**Candidate bundle identity:** `sha256:611635e36f77d836039e36ca6eccd647addddb78c8de549672f9cbc42542d5b2`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **PAY-009 — HIGH — service boundary** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/PaymentOutcome.cs:3`
+  Payment's published v1 responses still expose Stripe identifiers through `PaymentOutcome.TransactionId`,
+  `EscrowDeposit.ChargeId`, `Transfer.TransferId`, `Refund.RefundId`, their protobuf response fields, and the
+  `PaymentSucceededEvent` / `PaymentFailedEvent` transaction identity. That
+  preserves provider knowledge in every consuming product and contradicts the agnostic boundary this cut-over
+  establishes. Split provider execution results from public operation outcomes, return only Payment-owned
+  references or status at the public edge, and add an architecture/contract guard that rejects provider
+  identifiers in the published client, contracts, and operation-response protobuf surface.
+  Resolved by separating provider execution DTOs from public outcomes, publishing only opaque operation
+  references, reserving the removed protobuf fields, and adding a reflection guard over both published
+  assemblies. Payment architecture tests passed (13).
+- [x] **PAY-010 — HIGH — correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Services/EscrowService.cs:1`
+  Opaque operation references are checked only for whitespace at several gRPC/client paths and are not bounded
+  consistently before a money-moving provider call. An overlong operation type or client reference can therefore
+  create a Stripe authorization or settlement and only then fail when Payment persists into its bounded columns,
+  orphaning the provider-side mutation. Centralize reference normalization and length validation, enforce it at
+  generated-client construction and every gRPC ingress before invoking application services, align persistence
+  limits to the canonical contract, and prove invalid/default/overlong references fail before a provider call.
+  Resolved by making `PaymentOperationReference` a validated `readonly record struct`, carrying it as one value
+  through requests and repositories, applying its 100/200 limits to every persisted operation-reference pair,
+  and rejecting invalid gRPC requests before the service is called. Payment unit tests passed (545) and the
+  focused gRPC integration tests passed (9).
+- [x] **PAY-011 — LOW — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/PaymentMappers.cs:1`
+  Several extension containers changed by this candidate retain or add legacy `this` extension methods even though
+  the C# standard requires a touched container to use C# 14 `extension()` blocks. Convert every ordinary extension
+  member in each changed container together; source-generated logging extensions remain exempt.
+  Resolved by converting every changed ordinary extension container as a unit. The changed-path scan contains no
+  legacy ordinary extension declaration, and the Payment solution builds with zero warnings and errors.
+
+## Coverage
+
+- [x] Contracts, client, domain, and application — 100 files — `api/Concertable.Payment/src/Concertable.Payment.{Contracts,Client,Domain,Application}/**`; `api/Concertable.Payment/tools/**`
+- [x] Runtime and persistence — 78 files — remaining changed paths under `api/Concertable.Payment/src/**`
+- [x] Tests, docs, plans, and everything else — 91 files — all remaining changed paths
+
+## Rules manifest
+
+Route source: `.agents/skill-routes.json` at candidate tree `5bafa68886cdf88c837fccbd13abbd8a00267d0c`
+
+- Contracts, client, domain, and application — skills: routed .NET naming, style, DI, domain-events, module-structure, persistence, proto, result-carriers, result-errors, and Payment boundary standards; local guidance: root and `api/Concertable.Payment/AGENTS.md`; security: yes
+- Runtime and persistence — skills: routed .NET naming, style, DI, domain-events, HTTP, logging, migrations, multitenancy, persistence, result terminals, seeding, and Payment boundary standards; local guidance: root and `api/Concertable.Payment/AGENTS.md`; security: yes
+- Tests, docs, plans, and everything else — skills: composition-testing, docs-and-debt, E2E, integration-testing, packages, unit-testing, and routed counterparts; local guidance: root plus changed-path `AGENTS.md` files; security: yes
+
+## Cross-area notes
+
+The raw provider-identifier leak also existed on the legacy webhook event path. The repair now resolves provider
+objects privately from opaque references, and a succeeded or failed webhook without reference metadata is a
+logged no-op rather than a provider-ID event.
+
+## Parent finalization
+
+**Cross-area notes status:** `complete`
+**Parent summary status:** `complete`

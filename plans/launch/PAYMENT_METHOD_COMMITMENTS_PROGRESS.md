@@ -7,16 +7,16 @@
 - Branch: `Feature/payment-method-commitments`
 - PR: [#933](https://github.com/Concertable/concertable/pull/933) (open, owner-blocked until the final breaking surface is merge-ready)
 - Dependency/package gates: B2B migration on PR [#633](https://github.com/Concertable/concertable/pull/633) and the Customer payment-reference migration both wait for the breaking Payment Contracts and Client packages from this producer
-- Last reconciled: 2026-09-05 after Delivery items 4–6 and the clean v1 compatibility baseline passed local implementation gates
+- Last reconciled: 2026-09-05 after the fresh full-review findings were resolved and all local Payment gates passed
 
 ## Current state
 
-Delivery items 1–6 are implemented. Payment now uses opaque operation references throughout its published contracts and persistence, exposes the surviving clean contract as v1, owns generic payment-method and payout-owner registration events, and has no B2B or Customer product dependency. The Payment initial migration and candidate v1 compatibility baseline are re-scaffolded. The previous review approval is historical and a fresh full review is required for the final candidate.
+Delivery items 1–6 are implemented. Payment now uses validated opaque operation references throughout its published contracts and persistence, exposes the surviving clean contract as v1, owns generic payment-method and payout-owner registration events, and has no B2B or Customer product dependency. Public outcomes and events carry only Payment-owned identities; provider object identifiers remain private to Payment. The Payment initial migration and candidate v1 compatibility baseline are re-scaffolded. The fresh full review raised PAY-009 through PAY-011; all three are resolved and await the required incremental review of the remediation commit.
 
 ## Next Steps
 
-1. Commit the verified Delivery items 4–6 candidate.
-2. Run the fresh canonical full review and resolve every finding against the exact candidate head.
+1. Commit the verified PAY-009 through PAY-011 remediation.
+2. Run the canonical incremental review against that exact remediation head and stamp its approval in a separate reviews-only commit.
 3. Push the reviewed head and complete exact-head remote validation.
 4. Stop for the owner's explicit approval before enqueueing PR #933 or publishing the breaking v1 packages.
 
@@ -30,13 +30,16 @@ Delivery items 1–6 are implemented. Payment now uses opaque operation referenc
 - Replaced booking/application correlation with `PaymentOperationReference`, removed the role-specific Customer/Manager surfaces and raw provider-identifier inputs, and split the public clients into session, settlement, reporting, escrow, commission, and payout operations.
 - Replaced Auth/B2B ingress knowledge with Payment-owned owner-registration events and reduced Payment's accepted JWT audience to `concertable.payment.api`.
 - Re-scaffolded the Payment initial migration and generated the clean candidate contract as compatibility baseline `v1`; the old published package remains historical fixture `0.1.0-alpha.0.1254` only.
+- Split internal provider execution results from public Payment outcomes, removed provider identifiers from response and event contracts, and added a published-surface architecture guard.
+- Made `PaymentOperationReference` a validated `readonly record struct`, carried it as one value through public requests and repositories, and aligned every persisted reference pair to its canonical 100/200 limits.
+- Converted every extension container changed by the breaking candidate to C# 14 extension blocks.
 
 ## Verification
 
 - `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --no-restore --verbosity minimal`: passed with 0 warnings and 0 errors.
-- Payment unit tests: 534 passed.
-- Payment integration tests: 59 passed against SQL Server.
-- Payment architecture tests: 11 passed.
+- Payment unit tests: 545 passed.
+- Payment integration tests: 63 passed against SQL Server.
+- Payment architecture tests: 13 passed.
 - Compatibility tests: 4 passed against candidate baseline `v1`.
 - Superseded Payment source identities (`BookingId`, `ContextId`, `ConsumerCorrelation`, `CustomerPayment`, `ManagerPayment`, Customer/Auth registration events, consumer seed catalogs) scan empty.
 
@@ -53,6 +56,7 @@ The canonical producer review is `reviews/Feature-payment-method-commitments.md`
 
 - The final invariant is stronger than provider-id ownership: Payment contains no B2B or Customer product knowledge. `Booking`, `Concert`, `Ticket`, `Application`, `Opportunity`, and `Manager` are forbidden product vocabulary; Stripe's own `Customer` object and Payment's `Escrow`, `Commission`, `Settlement`, `PayoutAccount`, `Ledger`, `Payer`, and `Payee` vocabulary remain legitimate.
 - `PaymentOperationReference(OperationType, ClientReference)` is the only consumer-correlation primitive. Payment stores and compares both opaque strings but never interprets consumer values. Escrow uniqueness is the composite pair, not `ClientReference` alone.
+- Public payment, escrow, transfer, refund, and integration-event outcomes expose only Payment-owned operation identities and status. Payment resolves provider object identifiers privately from the opaque reference when an internal handler needs one.
 - Removing the integer booking correlation changes persisted column types and the settlement fingerprint payload. Payment has no deployed rows, so the migration story is an initial-migration re-scaffold; `SettlementOperationFingerprint.CurrentVersion` still advances for explicit hash identity.
 - The final package surface separates durable session operations, settlement operations, payment reporting, and escrow operations. Customer's old role-specific gRPC service and all raw payment-method/intent-id APIs are removed rather than renamed.
 - `PaymentMethodChargeError.AuthenticationRequired` remains distinct from new-method recovery and carries no provider artifact; consumers re-enter by operation reference.
