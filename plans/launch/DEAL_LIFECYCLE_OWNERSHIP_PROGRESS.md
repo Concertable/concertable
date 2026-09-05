@@ -37,7 +37,7 @@ Deal-varying dispatch now has one shared Deal-specific composition layer. `DealS
 the generic keyed-strategy builder and automatically requires full `DealType` coverage for every registered
 same-interface family. `DealUnionBuilder<TUnion>` composes the generic keyed-union builder and enforces one
 method-header case per DealType. No family needs that escalation today: with Payment owning payment-method
-commitments, apply and accept take the same arguments for every deal type, so Application's `IApply` and
+commitments, apply and accept take the same arguments for every deal type, so Application's `IApplyStep` and
 `IMintCommitment` are same-interface families. `DealUnionBuilder` stays for the first family that genuinely
 fractures on caller input.
 
@@ -62,25 +62,48 @@ Concert's ticket-sold counter no longer sniffs `PaymentSucceededEvent` metadata 
 Customer's already-published `TicketPurchasedEvent` instead, which is where a ticket sale is actually
 owned; the `ConcertSalesProjection` end state in `api/Concertable.B2B/TECH_DEBT.md` stays open.
 
-### Preparation evidence (not a published-package validation)
+### Published-package evidence
 
-- Producer commit: `ec11b801fb314929552f4907ddf81361ea05d4ab` (PR #933 head; reviewed watermark
-  `6018baa840aac6ae0c493b14fcdcb77a3ab13774`, and the one commit between them is docs-only).
-- Package version: `0.1.0-local.ec11b801f`, built with
-  `dotnet pack <project> -c Release -o artifacts/payment-v1-ec11b801f -p:MinVerVersionOverride=0.1.0-local.ec11b801f -p:PackageVersion=0.1.0-local.ec11b801f`
-  from that worktree, against published platform `0.1.0-alpha.0.1329`.
-- Artifact location: `.worktrees/Feature-payment-method-commitments/artifacts/payment-v1-ec11b801f/`.
-- SHA-256: `Concertable.Payment.Contracts` `8acd2f7427bef507464f5ff032eeb3dc2ed112683f897dea6d25b2759fffac83`;
-  `Concertable.Payment.Client` `5d6b4cc15255b3ce2e2a4a3e2e8991cd08b69639869a9b7fea082470eeadc63b`;
-  `Concertable.Payment.TestKit` `24d5df732843f233536d897ba6200614474163a4fd2cf07c4ecfebe57bca9f65`.
-- Consumed through working-tree-only edits to `api/Concertable.B2B/nuget.config` and
-  `api/Concertable.B2B/Directory.Packages.props`, plus a working-tree-only overlay of #933's
-  `api/Concertable.Payment` source (the test tiers resolve Payment through
-  `PlatformSourcePackages.targets`, not through the package). Every one of those inputs is reverted before
-  the push; nothing machine-specific, temporary or disposable is committed.
-- **This was preparation evidence, and it is now superseded.** #933 has merged, so CI builds this
-  consumer against Payment v1 source and is the authoritative gate; the local artifact only remains the
-  way the suites above are run offline. See `## Next Steps` for the delivery state that replaced it.
+The producer is delivered and this consumer is validated against the real feed, not a local artifact.
+
+- Producer PRs: [#933](https://github.com/Concertable/concertable/pull/933) merged as
+  `3f7fd95cc0fc4a6fbd2168f035cce3088fc3d22f`, and the JSON-transport fix
+  [#937](https://github.com/Concertable/concertable/pull/937) (reviewed head
+  `4346770d56cbbc81bcc774bde92e3c40bc89ad88`) merged as
+  `ea33c48e66ec814d2341b35b72be73a04f8cc347`, which is the source commit the packages were built from.
+- Published Payment version: **`0.1.0-alpha.0.1322`** — `Concertable.Payment.Client`,
+  `Concertable.Payment.Contracts`, `Concertable.Payment.Hosting`, `Concertable.Payment.TestKit`.
+- Package workflow (green, reported "Your package was pushed" for every Payment package, fresh-consumer
+  feed restore passed): <https://github.com/Concertable/concertable/actions/runs/33978948615>.
+  Corrected image workflow (green): <https://github.com/Concertable/concertable/actions/runs/33978948571>.
+  #933's own package and image runs were cancelled before their push steps, so no broken artifact escaped.
+- SHA-256 of the packages this branch actually restored from the feed:
+  `Concertable.Payment.Contracts` `4cf37682e1e3e6d7fd7e175c591cf8b920b08cecb4da9136100fcca566551539`;
+  `Concertable.Payment.Client` `68b7e9aec20c60bc7824fa1af49c8f487c3658b347dbce36e57f2cc0993cef5a`.
+  `Payment.Hosting` and `Payment.TestKit` are not restored here: `PlatformSourcePackages.targets` swaps
+  them to `ProjectReference` for `*.AppHost` and `/tests/` projects, so only the two `src` packages come
+  from the feed in this solution.
+- The `[JsonConstructor]` blocker recorded below is **resolved by #937**, which added the attribute and a
+  serialize/deserialize regression test. It is history now, not an open gate.
+
+**The platform pin deliberately stays at `0.1.0-alpha.0.1329` while Payment moves to `0.1.0-alpha.0.1322`.**
+The alpha heights are not monotonic in time — `1329` was published 2026-09-02 and `1322` on 2026-09-05 — and
+`Concertable.Payment.Contracts 1322` declares `Concertable.Kernel >= 0.1.0-alpha.0.1329`. Moving
+`ConcertablePlatformVersion` to `1322` therefore downgrades Kernel beneath what Payment itself requires and
+fails restore with `NU1605` (warning-as-error). Only the four Payment packages carry the explicit `1322`
+pin; every other platform package stays on `$(ConcertablePlatformVersion)`. B2B is the only service bumped —
+Customer's pin rides its own migration.
+
+### Preparation evidence, retained as history
+
+Before publication this consumer was proven against an exact artifact packed from #933's head
+`ec11b801fb314929552f4907ddf81361ea05d4ab` (reviewed watermark
+`6018baa840aac6ae0c493b14fcdcb77a3ab13774`) as version `0.1.0-local.ec11b801f`, consumed through
+working-tree-only edits to `api/Concertable.B2B/nuget.config` and `api/Concertable.B2B/Directory.Packages.props`
+plus a working-tree-only overlay of #933's `api/Concertable.Payment` source. Every one of those inputs was
+reverted before the push; no machine-specific feed, temporary path or disposable version pin was ever
+committed. That artifact is superseded by the published packages above and is recorded only so the earlier
+green runs in this ledger can be interpreted.
 
 ### Pre-existing branch red the cut-over uncovered
 
@@ -149,7 +172,7 @@ gains a `CancelHeldIntent` RPC" that v1 makes unreachable). All three now descri
 `api/Concertable.Customer` and `app/customer/shared` still consume the removed contract and are **not**
 touched here; that consumer is `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md`'s.
 
-### Producer defect found while validating (owned by #933, not fixed here)
+### Producer defect found while validating — resolved by #937
 
 `PaymentOperationReference` does not survive a JSON round-trip: it is a `readonly record struct` whose
 parameterized constructor carries no `[JsonConstructor]`, so `System.Text.Json` binds the implicit
@@ -157,8 +180,9 @@ parameterless constructor and every value is lost. Serializing produces
 `{"OperationType":"escrow","ClientReference":"booking:48"}`; deserializing yields `('', '')`. That silently
 empties the reference on every escrow command and event crossing the outbox, and B2B's Booking integration
 suite fails on exactly that. Verified with a standalone probe against the packed v1 assembly, and confirmed
-fixed by adding `[JsonConstructor]` — applied only to the local overlay to prove the consumer, never to
-#933 and never committed here.
+fixed by adding `[JsonConstructor]`, applied only to the local overlay at the time to prove the consumer.
+PR #937 landed exactly that attribute plus a serialize/deserialize regression test, and the packages this
+branch now restores are built from its merge commit, so the defect cannot reach B2B.
 
 The final security review added IR7-IR10. IR7 is closed: verify-payment handlers now resolve only the
 Booking id before entering the repository's serialized financial transition, and deterministic overlap
@@ -172,29 +196,31 @@ placement remains recorded Application technical debt in
 
 ## Next Steps
 
-**The delivery gate changed on 2026-09-05: this PR is no longer waiting on a published package — it is one
-of the two changes that unblock the publication.** PR #933 merged as `3f7fd95cc` at head `ec11b801f`, but
-main's CI went red, so `Publish packages` was cancelled and `Platform sync` skipped;
-`ConcertablePlatformVersion` on main is still `0.1.0-alpha.0.1329`, i.e. pre-#933, and no v1 Payment package
-exists on the feed. CI builds `api/Concertable.slnx` against Payment's **source**, so main's red is exactly
-two consumers still on the removed contract:
+The producer is delivered and published, so this consumer is no longer delivery-gated on a package. It is
+now one of the two changes that make `main` green again. `main` went red when #933 merged, because CI builds
+`api/Concertable.slnx` against Payment's **source**, and two consumers were still on the removed contract:
 
 - **B2B** — `ArtistDashboardService`/`VenueDashboardService` (`IManagerPaymentReportingClient`),
   `Concert.Application/Responses/Checkout.cs` (`CheckoutSession`), `FinishConcertError.cs`
-  (`ManagerPaymentError`). **This PR fixes all of them.**
+  (`ManagerPaymentError`). **This PR fixes all of them**; the invariant sweep over the merged tree returns
+  zero hits for those identifiers in `api/Concertable.B2B/src`.
 - **Customer** — `Ticket.Application/DTOs/TicketDtos.cs` (`CheckoutSession`) and `TicketPayment.cs`
-  (`cannot derive from sealed PaymentOutcome`). Not touched here; that consumer is
+  (`cannot derive from sealed PaymentOutcome`). Not touched here, by instruction; that consumer is
   `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md`'s.
 
-The producer defect recorded above is owned by **PR #937** (`Fix/payment-operation-reference-json`), which
-adds `[JsonConstructor]` plus a serialize/deserialize regression test. It does not by itself make main green.
+So PR #633 is expected to stay structurally red on the whole-solution jobs until Customer lands, and every
+residual failure must be shown to be exclusively an unchanged Customer legacy reference before this is
+handed on.
 
-Next, in order: push the review-pass fixes (IR11-IR17) as a second commit; take PR #633 out of draft so CI
-runs on the exact head; monitor that run to terminal and prove every residual failure is exclusively an
-unchanged Customer legacy reference, naming the files; then **stop** — merging PR #633 needs Tommy's explicit
-authorization and an admin merge, because it stays structurally red until Customer lands. Once #633, #937 and
-the Customer migration are all on main, CI goes green, packages publish, and platform sync bumps the pin;
-only then is this ledger's lifecycle terminal and the plan, ledger and review artifact are deleted.
+Immediate actions: push the merge and the published-package sync; take PR #633 out of draft so CI runs on
+the exact head (a draft reports no checks at all, which is why it has never had a verdict); monitor that run
+to terminal; then report the head as ready for independent review, naming the Customer-only failures that
+remain. **Do not merge PR #633** — that needs Tommy's explicit authorization and an admin merge, since it
+cannot go green alone.
+
+Once #633 and the Customer migration are both on `main`, CI goes green, the platform sync bumps
+`ConcertablePlatformVersion` past the split pin recorded above, and only then is this ledger's lifecycle
+terminal and the plan, ledger and review artifact deleted.
 
 ## Boundary hardening (MM_BOUNDARY_HARDENING_PROMPT.md)
 
@@ -273,9 +299,9 @@ close before PR #633 leaves draft.
 - Replaced the four copied Deal strategy builders with the shared generic keyed builder plus the
   Deal-specific `DealStrategyBuilder`; added the generic keyed-union catalog, `DealUnionBuilder<TUnion>`,
   and `IDealUnionFactory<TUnion>`; and moved Application Apply/Accept dispatch out of DealType switches.
-- Replaced operation-specific executors and `*Step` contracts with one executable module-local workflow
-  per Application, Booking, and Concert. Application retains heterogeneous Apply/Accept union dispatch;
-  Booking and Concert retain homogeneous Deal strategy dispatch behind operation-named interfaces.
+- Replaced operation-specific executors with one executable module-local workflow per Application, Booking,
+  and Concert. Deal-varying lifecycle leaves remain discrete `*Step` contracts selected through
+  `IDealStrategyFactory<TStrategy>` so implementations can be shared and recombined by `DealType`.
 
 ## Verification
 
@@ -293,6 +319,9 @@ close before PR #633 leaves draft.
   temporary UI E2E sources. Architecture composition validation passed outside the sandbox, leaving 21/23
   green; the two remaining failures are in unchanged Reunion package-ownership and Venue fixture-boundary
   paths, not this dispatch diff.
+- Step naming slice: Application, Booking, and Concert Infrastructure builds completed with 0 warnings and
+  0 errors; Application 20/20, Booking 9/9, Concert 105/105, Deal 47/47, and B2B Architecture 29/29 passed.
+  The repository-wide old-name and old-filename sweep returned zero matches.
 - A local Concert integration diagnostic reached 38 passing B2B cases before it was stopped after five
   failures in unchanged HTTP-status and concurrency tests generated nearly 50 MB of captured seed logs. The
   moved Cancel/Complete bodies match `12273b558`; this run is not recorded as a green integration gate.
@@ -306,6 +335,9 @@ close before PR #633 leaves draft.
 - IR7-IR8 are resolved; IR9-IR10 remain active. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`), IR5
   (`c61566685`), and the current IR6 topology checkpoint landed after `b61fc7feb`; a fresh incremental review
   over those fix commits is the remaining review gate. Keep the artifact until PR #633 merges, then delete it.
+- Independent review 2026-09-05 over `39fbbc0..db5d4be8c` added IR21–IR27. IR21 (Booking deferred-refund
+  arm) and IR22 (verify outcome bound to the venue payer) are fixed on the branch; IR23 is a Payment producer
+  PR that blocks DoorSplit/Versus in production; IR24–IR27 are open for the follow-up session.
 
 ## Decisions, discoveries, blockers, and deviations
 

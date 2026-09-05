@@ -141,8 +141,8 @@ owns creation.
 
 Cancellation and completion are coordinated by the module-local `IConcertWorkflow`. Each method retains
 its own validation, persistence, transaction, IO, and typed failure contract. Deal-varying work remains
-behind operation-specific `ICancel` and `IComplete` implementations selected through the homogeneous
-`IDealStrategyFactory<T>`.
+behind operation-specific `ICancelStep` and `ICompleteStep` implementations selected through the homogeneous
+`IDealStrategyFactory<TStrategy>`.
 The pre-commit `BookingConfirmedDomainEventHandler` remains a thin adapter to the service. Creation has
 no expected caller-actionable failure after a confirmed Booking: Application already validated genre
 eligibility, while a missing or mismatched local projection is an invariant violation. Cancel and
@@ -305,8 +305,8 @@ the operation name without `Step` or redundant aggregate prefixes:
 | Module | Deal-selected contracts |
 |---|---|
 | Application | `IApplyStandard`, `IApplyPrepaid`, `IAccept`, `IAcceptPaid` |
-| Booking | `IConfirm`, `ICancel` |
-| Concert | `ICancel`, `IComplete` |
+| Booking | `IConfirmStep`, `ICancelStep` |
+| Concert | `ICancelStep`, `ICompleteStep` |
 
 Deal-varying methods are classified by invocation shape. A genuine same-interface family is selected
 through `IDealStrategyFactory<TStrategy>`. A method whose implementations require different parameters,
@@ -753,7 +753,7 @@ a machine or another module's operations, or requests a whole workflow.
 - The runtime dependency graph is Contracts-only and acyclic, with no backwards command/control flow.
 - There is no shared workflow module, cross-module strategy registry, umbrella state machine, or dependency-
   holder exposing the whole lifecycle.
-- Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancel`) are used without redundant
+- Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
   aggregate prefixes inside their module.
 - Heterogeneous Deal-varying methods resolve once through `IDealUnionFactory<TUnion>` and match by
   method-header type; each module owns its union and mappings, and no workflow repeats a four-Deal switch

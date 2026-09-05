@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `62b9fde66500c9830e20ed47a2f5633d2c5ffa80`  _(2026-09-05)_
-**Security-reviewed up to commit:** `3c474d8be`  _(2026-09-01)_
-**Judgment:** `approved-with-remediation`
+**Reviewed up to commit:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`  _(2026-09-05)_
+**Security-reviewed up to commit:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`  _(2026-09-05)_
+**Judgment:** `changes-requested`
 
 ## Legacy review history
 ## Coverage
@@ -495,7 +495,7 @@ questions, both needing a product decision rather than a code fix.
   concert is settled, exactly as OPEN1 does on 400-vs-409. `ConcertVersusApiTests` expects
   `AwaitingSettlement` after finish and comments that "completion happens on the webhook";
   `ConcertDoorSplitApiTests` expects `Complete` for the identical operation — same deal family, same
-  `PayoutComplete` strategy — and passes. Production completes eagerly: `PayoutComplete` returns
+  `PayoutCompleteStep` strategy — and passes. Production completes eagerly: `PayoutCompleteStep` returns
   `SettlementConfirmation.ManagerPaid` inline even when the payment requires action, and
   `SettlementService.CompleteAsync` then runs `CompleteSettlement`, so the concert is marked settled
   before the payout confirms. Deciding this is a financial question, not a test fix. Four failures hang
@@ -824,7 +824,8 @@ about producer behaviour.
   **Disposition:** handled on both cancel paths. `CancellationFinancialOperationOutcomeProcessor` and
   Concert's `FinancialOperationOutcomeProcessor` take the deferred arm through the same `Cancel` action
   as the succeeded arm — the money never moved, so the cancellation is complete — registered in both
-  modules and subscribed in `B2BTopology` and `B2BWebHostExtensions`.
+  modules and subscribed in `B2BTopology` and `B2BWebHostExtensions`. **Revised by IR21:** the Booking arm
+  now only records the inbox row; Concert's still cancels.
 
 - [x] **IR12 — HIGH — correctness** — `VerifyPaymentProcessor.cs:33`, `VerifyPaymentFailedProcessor.cs:39`,
   `AcceptanceFinancialOperationOutcomeProcessor.cs:45,61,77,94`
@@ -848,7 +849,7 @@ about producer behaviour.
 
 - [x] **IR14 — MEDIUM — test-coverage** — `BookingCancellationApiTests.cs:58`, `ConcertCancelApiTests.cs:108`
   Both asserted `Assert.Empty(fixture.EscrowClient.Holds)`. Escrow deposits and captures move as bus
-  commands under v1, and the only surviving `IEscrowOperationsClient` caller is `ReleaseEscrowComplete`,
+  commands under v1, and the only surviving `IEscrowOperationsClient` caller is `ReleaseEscrowCompleteStep`,
   so `Holds` is unconditionally empty and the assertion could never fail.
   **Disposition:** replaced with `Assert.Empty(fixture.PaymentTransport.FinancialCommands)`, which is
   where a wrongly-staged capture, deposit or refund would actually appear.
@@ -892,7 +893,7 @@ about producer behaviour.
 
 - [ ] **IR18 — MEDIUM — test-coverage** — `TestClientOptions.cs:24`
   `UseFailingPayment()` has had no caller since `c55c99718`, so `MockEscrowClientFail` is dead and
-  `ReleaseEscrowComplete`'s `FinishConcertError.EscrowReleaseFailure` branch has no coverage. Predates
+  `ReleaseEscrowCompleteStep`'s `FinishConcertError.EscrowReleaseFailure` branch has no coverage. Predates
   this change; the branch is reachable and should get a test, or the option should go.
 
 - [ ] **IR19 — LOW — correctness** — `SettlementPaymentProcessor.cs:41`, `SettlementPaymentFailedProcessor.cs:35`
@@ -905,3 +906,92 @@ about producer behaviour.
   Negative assertions about staged commands read the transport synchronously, but a command arrives by
   outbox dispatch after the request returns, so a regression that wrongly stages one is still in flight
   at the moment of the read. Pre-existing pattern; needs the waiting counterpart.
+
+## Review pass — 2026-09-05 — independent review of the v1 cut-over
+
+**Candidate base:** `39fbbc0126d6ddd8d40426e25663bea29cd7f1a5`
+**Candidate head:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:32a67f886d591016075700e861a6af9b5ad01fd9d03941bbcd7de0c7dac42b64` `(505 paths)`
+**Candidate bundle:** none materialized; read from the worktree at the frozen head, plus the staged 1322
+pin and `PaymentTopology.cs` reconciliation. `8fed74604`, the step rename, landed after the read and was
+not re-reviewed.
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+Two lenses, correctness and security, over the consumer cut-over, with the producer read at `origin/main`
+`ea33c48e6`, the commit the 1322 packages were built from. Nothing was executed during the review.
+
+### Findings
+
+- [x] **IR21 — HIGH — correctness** — `CancellationFinancialOperationOutcomeProcessor.cs:35`,
+  `BookingWorkflow.cs:174`, `BookingStateMachine.cs:9`
+  IR11's Booking arm cancelled on `RefundEscrowDeferredEvent`. Cancellation is allowed from
+  `AwaitingConfirmation`, so the refund reaches Payment before the acceptance capture or deposit; Payment
+  finds no escrow and defers, B2B moves the booking to `Cancelled`, and when the capture then lands
+  `RecordSucceededCoreAsync` returns on the terminal state. The money is captured into escrow and nothing
+  refunds it; Payment's refund operation stays `Pending` with no retry. IR11's premise was wrong: every
+  acceptance command yields a terminal outcome through the outbox, and both outcome arms already converge a
+  `CancellationPending` booking.
+  **Disposition:** the Booking deferred arm records the inbox row and leaves the booking in
+  `CancellationPending`; the acceptance outcome arms finish it. Concert's arm stays, since a concert exists
+  only after the escrow landed. `MockPaymentTransport.DeferLatestAsync` emits the deferred event without
+  settling the command, covered by `Cancel_ShouldWaitForTheCapture_WhenTheRefundIsDeferred` and
+  `Cancel_ShouldMarkCancelled_WhenTheRefundIsDeferred`.
+
+- [x] **IR22 — MEDIUM — security** — `VerifyPaymentProcessor.cs:33`
+  A `("verify", "app:N")` outcome was trusted on its reference alone, and for DoorSplit and Versus that
+  verification alone confirms the booking. Payment accepts that reference from any consumer with any
+  `PayerOwnerId`, and the event carries no payer identity, so another consumer setting up a method under it
+  would confirm a B2B booking without the venue registering a card.
+  **Disposition:** the processor resolves the application's venue tenant and validates the method with
+  Payment against that payer before recording; a miss records the inbox row and skips with a warning.
+  `MockPaymentSessionClient` binds each reference to its payer the way Payment's resolver does, covered by
+  `Verification_FromAPayerOtherThanTheVenue_IsNotRecorded`. The failure arm stays unbound until the
+  producer stamps the payer owner (IR23).
+
+- [ ] **IR23 — HIGH — correctness, Payment-owned** — `SetupIntentWebhookHandler.cs`,
+  `PaymentSessionProviderRequest.cs:38` at `origin/main`
+  The setup-intent webhook reads `operationType` and `clientReference` with the throwing accessor;
+  session-created intents carry only `type` and `correlation`. Every B2B verification passes the
+  `type == verify` guard and throws inside the outbox unit of work, so `PaymentSucceededEvent` is never
+  published and DoorSplit and Versus bookings strand in `AwaitingConfirmation`. Not this diff's code. A
+  producer PR must stamp `PaymentMetadataKeys.OperationType`, `ClientReference` and `PayerOwnerId` in
+  `PaymentSessionProviderRequest.Create`, with a test that a session-shaped `setup_intent.succeeded`
+  publishes; then publish and bump the four Payment pins here.
+
+- [ ] **IR24 — MEDIUM — correctness** — `SettlementPaymentProcessor.cs:39`,
+  `SettlementPaymentFailedProcessor.cs:33`, `VenueDashboardService.cs:119`
+  Both settlement handlers guard only on operation type, then parse with the throwing readers and throw
+  on a missing concert, all before the inbox row. `SettlementType` equals Payment's
+  `TransactionTypes.Settlement`, so another consumer's settlement passes the guard and is redelivered until
+  dead-lettered, blocking the shared subscription. The IR12 class, unfixed for the settlement pair; the
+  dashboard's throwing read turns the same reference into a 500.
+
+- [ ] **IR25 — LOW — correctness** — `AcceptanceFinancialOperationOutcomeProcessor.cs:150`,
+  `BookingWorkflow.cs:218`
+  `Validate` throws inside the inbox transaction on an operation-id or expected-operation mismatch.
+  Unreachable for B2B-minted references; a foreign `("escrow", "booking:N")` event dead-letters and blocks
+  the subscription. Skip with a warning after the inbox row instead.
+
+- [ ] **IR26 — HIGH — delivery** — `Directory.Packages.props`, `PaymentTopology.cs`,
+  `Concertable.B2B.E2ETests.csproj`
+  CI run 33980757957 on `db5d4be8c` fails `local-platform-pack` on `ConfirmedBooking.cs(18,5) CS0246`,
+  because the committed props still pin Payment to platform 1329, and on `PaymentTopology.cs(10,52)
+  CS0029`, because the committed file is main's shape. Both fixes are staged, not committed.
+  `split-inventory` fails on the `ProjectReference` this range added from the E2E project to
+  `Concertable.B2B.Infrastructure`. None of the three is a Customer legacy reference.
+
+- [ ] **IR27 — LOW — test-coverage** — `PaymentOperationEnvelopes.cs:13`
+  The simulated `PaymentSucceededEvent` metadata carries `operationType` and `clientReference`, which
+  Payment stamps on settlement and escrow intents but not on session-created ones. The suites therefore
+  prove the verify flow against a shape the producer does not produce, which is how IR23 stayed invisible.
+  Align the double with the producer once IR23 lands.
+
+### Considered and not overturned
+
+- The repeat accept-checkout double-hold rejection stands: `PaymentSessionService.CreateAsync` reserves on
+  the reference and returns `OperationConflict` only on a genuine mismatch.
+- The `ToDetails` TPH downcast was not re-examined; the file is untouched.

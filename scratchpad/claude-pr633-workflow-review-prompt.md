@@ -59,8 +59,8 @@ Application retains heterogeneous union dispatch:
 
 Booking and Concert retain homogeneous strategy dispatch through operation-named interfaces:
 
-- Booking: `IConfirm`, `ICancel`
-- Concert: `ICancel`, `IComplete`
+- Booking: `IConfirmStep`, `ICancelStep`
+- Concert: `ICancelStep`, `ICompleteStep`
 
 The old `*Executor` and `*Step` wrappers are intentionally removed. Selected interfaces live under the
 owning Application project's `Strategies/<Operation>` folder; implementations live under the owning
@@ -75,7 +75,7 @@ operations; they existed so confirmation implementations could call back into th
 them.
 
 `BookingWorkflow` now owns uniform Booking and Contract creation privately, then invokes the selected
-`IConfirm` only for the Deal-specific financial effect. The two creation methods therefore leave
+`IConfirmStep` only for the Deal-specific financial effect. The two creation methods therefore leave
 `IBookingService`. Confirm that this preserves transaction, outbox, persistence-order, ID-generation, and
 handoff behavior without introducing a DI cycle.
 
