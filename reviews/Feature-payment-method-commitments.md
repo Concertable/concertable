@@ -4,10 +4,10 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `in-progress`
-**Reviewed up to commit:** `448316d2a260e1507dc1c8e1ca3dba607fb5b9ec`  `(2026-09-04)`
-**Security-reviewed up to commit:** `eef36ac547f8a61c025af2f428c45317a64223de`  `(2026-09-04)`
-**Judgment:** `pending`
+**Review status:** `complete`
+**Reviewed up to commit:** `8fb94d14042a30bb2a28dc0838896ad1a7145c7d`  `(2026-09-05)`
+**Security-reviewed up to commit:** `8fb94d14042a30bb2a28dc0838896ad1a7145c7d`  `(2026-09-05)`
+**Judgment:** `changes-requested`
 
 ## Review pass — 2026-09-03 — full
 
@@ -237,3 +237,24 @@ logged no-op rather than a provider-ID event.
 
 **Cross-area notes status:** `complete`
 **Parent summary status:** `complete`
+
+## Review pass — 2026-09-05 — incremental
+
+**Candidate base:** `98b56896a27519b67059e4036939436ccfdc7103`
+**Candidate head:** `8fb94d14042a30bb2a28dc0838896ad1a7145c7d`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:1c0146c59b06091eaaf7a10729168ba1c81de489c0cfd1aecad9bdfc10042c18` `(101 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\concertable-review-payment-538b3be5c9294a44bf48c3e71483ccb2`
+**Candidate bundle identity:** `sha256:70d55862b20706c0bec6eb4c28ef666f9f7be30836b2d3f05b7083dbaf02f258`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **PAY-012 — LOW — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/PaymentMethodOperations.cs:9`
+  The new `PaymentOperationReference` constructor assigns its public auto-properties without the `this.`
+  qualification required for every constructor assignment. Qualify both assignments and retain the value
+  type's validated `readonly record struct` shape.
+  Resolved by qualifying both constructor assignments. The focused value-object tests passed (8).
