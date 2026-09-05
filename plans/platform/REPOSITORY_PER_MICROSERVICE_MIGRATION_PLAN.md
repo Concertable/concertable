@@ -557,8 +557,8 @@ Path ownership for extraction is:
 | Payment | `api/Concertable.Payment` excluding full-stack E2E helpers |
 | Search | `api/Concertable.Search` excluding full-stack E2E helpers |
 | Auth | `api/Concertable.Auth`; `api/Concertable.Auth.Contracts` |
-| platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared` |
-| platform-frontend | `app/shared`; packageized `app/web/shared`; general frontend build configuration shared across web and mobile |
+| platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared`; `api/Concertable.Frontend.Hosting` |
+| platform-frontend | `app/shared`; packageized `app/web/shared`; `app/mobile/shared`; general frontend build configuration shared across web and mobile |
 | system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; compatibility history |
 | infra | no monorepo source path; reconcile and audit the existing `Concertable/infra` Terraform bootstrap history |
 | config | no monorepo source path; reconcile and audit the existing `Concertable/config` desired-state bootstrap history |
