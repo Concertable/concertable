@@ -7,7 +7,7 @@
 **Review status:** `complete`
 **Reviewed up to commit:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`  _(2026-09-05)_
 **Security-reviewed up to commit:** `db5d4be8cbd65195e0922cf3f648377f9fb31afb`  _(2026-09-05)_
-**Judgment:** `changes-requested`
+**Judgment:** `approved`
 
 ## Legacy review history
 ## Coverage
@@ -891,21 +891,28 @@ about producer behaviour.
 
 ### Open, carried forward
 
-- [ ] **IR18 — MEDIUM — test-coverage** — `TestClientOptions.cs:24`
+- [x] **IR18 — MEDIUM — test-coverage** — `TestClientOptions.cs:24`
   `UseFailingPayment()` has had no caller since `c55c99718`, so `MockEscrowClientFail` is dead and
   `ReleaseEscrowCompleteStep`'s `FinishConcertError.EscrowReleaseFailure` branch has no coverage. Predates
   this change; the branch is reachable and should get a test, or the option should go.
+  **Disposition:** the dead option and `MockEscrowClientFail` are deleted. The uncovered branch is recorded
+  in `Modules/Concert/TECH_DEBT.md` with the test that resolves it.
 
-- [ ] **IR19 — LOW — correctness** — `SettlementPaymentProcessor.cs:41`, `SettlementPaymentFailedProcessor.cs:35`
+- [wontfix] **IR19 — LOW — correctness** — `SettlementPaymentProcessor.cs:41`, `SettlementPaymentFailedProcessor.cs:35`
   Both run the settlement mutation in its own transaction before opening a second one to check and write
   the inbox row, so the envelope-id inbox provides no idempotency on that path; convergence rests on
   `SettlementService`'s state check and `InvoiceIssuer`'s existence check. The shape predates this
   change and the two refund processors do it correctly.
+  **Disposition:** deferred; the fix is a transaction-shape change in the settlement path. Recorded in
+  `Modules/Concert/TECH_DEBT.md` with the redelivery test that resolves it.
 
-- [ ] **IR20 — LOW — test-coverage** — `BookingCancellationApiTests.cs:56,72`, `ConcertCancelApiTests.cs:107`
+- [x] **IR20 — LOW — test-coverage** — `BookingCancellationApiTests.cs:56,72`, `ConcertCancelApiTests.cs:107`
   Negative assertions about staged commands read the transport synchronously, but a command arrives by
   outbox dispatch after the request returns, so a regression that wrongly stages one is still in flight
   at the moment of the read. Pre-existing pattern; needs the waiting counterpart.
+  **Disposition:** `MockPaymentTransport.SettledFinancialCommandsAsync` watches the transport for a bounded
+  window and returns the moment a financial command lands, so the three negative assertions read a snapshot
+  a late outbox dispatch would have reached.
 
 ## Review pass — 2026-09-05 — independent review of the v1 cut-over
 
@@ -952,7 +959,7 @@ Two lenses, correctness and security, over the consumer cut-over, with the produ
   `Verification_FromAPayerOtherThanTheVenue_IsNotRecorded`. The failure arm stays unbound until the
   producer stamps the payer owner (IR23).
 
-- [ ] **IR23 — HIGH — correctness, Payment-owned** — `SetupIntentWebhookHandler.cs`,
+- [x] **IR23 — HIGH — correctness, Payment-owned** — `SetupIntentWebhookHandler.cs`,
   `PaymentSessionProviderRequest.cs:38` at `origin/main`
   The setup-intent webhook reads `operationType` and `clientReference` with the throwing accessor;
   session-created intents carry only `type` and `correlation`. Every B2B verification passes the
@@ -961,34 +968,59 @@ Two lenses, correctness and security, over the consumer cut-over, with the produ
   producer PR must stamp `PaymentMetadataKeys.OperationType`, `ClientReference` and `PayerOwnerId` in
   `PaymentSessionProviderRequest.Create`, with a test that a session-shaped `setup_intent.succeeded`
   publishes; then publish and bump the four Payment pins here.
+  **Disposition:** fixed on this branch, in Payment's source, so it merges with PR #633.
+  `PaymentSessionProviderRequest.Create` stamps `operationType`, `clientReference`, `payerOwnerId` and,
+  when present, `payeeOwnerId` beside the existing keys; `type` is untouched because it routes Payment's
+  own transaction handlers. `FakeStripeSessionClient` keeps the request metadata per provider object, and
+  `PaymentSessionWebhookReconciliationTests` now drives `setup_intent.succeeded` for a
+  `PaymentMethodVerification` session with exactly that metadata and asserts one `PaymentSucceededEvent`,
+  plus a `PaymentMethodSetup` session that publishes nothing. The B2B pins move when the package publishes
+  from `main`.
 
-- [ ] **IR24 — MEDIUM — correctness** — `SettlementPaymentProcessor.cs:39`,
+- [x] **IR24 — MEDIUM — correctness** — `SettlementPaymentProcessor.cs:39`,
   `SettlementPaymentFailedProcessor.cs:33`, `VenueDashboardService.cs:119`
   Both settlement handlers guard only on operation type, then parse with the throwing readers and throw
   on a missing concert, all before the inbox row. `SettlementType` equals Payment's
   `TransactionTypes.Settlement`, so another consumer's settlement passes the guard and is redelivered until
   dead-lettered, blocking the shared subscription. The IR12 class, unfixed for the settlement pair; the
   dashboard's throwing read turns the same reference into a 500.
+  **Disposition:** both processors guard on type, `Reference.TryGetConcertId` and
+  `Metadata.TryGetOperationId` and return on a miss; a B2B-shaped reference naming no concert records the
+  inbox row and logs `SettlementOutcomeForUnknownConcert`. The readers are extension members on
+  `PaymentOperationReference` and on the metadata dictionary; the throwing `Read*` accessors are gone. The
+  dashboard filters with the same reader. Covered by
+  `SettlementOutcome_ForAReferenceThisServiceDidNotMint_IsSkipped` and
+  `SettlementOutcome_WithoutAnOperationId_IsSkipped`.
 
-- [ ] **IR25 — LOW — correctness** — `AcceptanceFinancialOperationOutcomeProcessor.cs:150`,
+- [x] **IR25 — LOW — correctness** — `AcceptanceFinancialOperationOutcomeProcessor.cs:150`,
   `BookingWorkflow.cs:218`
   `Validate` throws inside the inbox transaction on an operation-id or expected-operation mismatch.
   Unreachable for B2B-minted references; a foreign `("escrow", "booking:N")` event dead-letters and blocks
   the subscription. Skip with a warning after the inbox row instead.
+  **Disposition:** `BookingWorkflow` keeps the checks as `Matches` and skips with
+  `FinancialOutcomeSkipped` when the evidence does not match the booking on record, or the booking does not
+  exist, leaving the inbox row committed. Covered by `CaptureSuccess_ForAnotherOperation_IsRecordedAndSkipped`.
 
-- [ ] **IR26 — HIGH — delivery** — `Directory.Packages.props`, `PaymentTopology.cs`,
+- [x] **IR26 — HIGH — delivery** — `Directory.Packages.props`, `PaymentTopology.cs`,
   `Concertable.B2B.E2ETests.csproj`
   CI run 33980757957 on `db5d4be8c` fails `local-platform-pack` on `ConfirmedBooking.cs(18,5) CS0246`,
   because the committed props still pin Payment to platform 1329, and on `PaymentTopology.cs(10,52)
   CS0029`, because the committed file is main's shape. Both fixes are staged, not committed.
   `split-inventory` fails on the `ProjectReference` this range added from the E2E project to
   `Concertable.B2B.Infrastructure`. None of the three is a Customer legacy reference.
+  **Disposition:** the pin and the topology reconciliation landed in `915e8d596`, and `local-platform-pack`
+  went green on that head. The E2E project no longer references any B2B source project: `TestKit` carries
+  `ConcertState`, `ApplicationStatus` and `PaymentOperationReferences` for the E2E tier, each guarded by
+  `TestKitMirrorTests` against the type it mirrors, and `inventory.json` is regenerated with zero blocking
+  E2E edges. The provider-contract inventory was also stale for this branch's call sites and is corrected.
 
-- [ ] **IR27 — LOW — test-coverage** — `PaymentOperationEnvelopes.cs:13`
+- [x] **IR27 — LOW — test-coverage** — `PaymentOperationEnvelopes.cs:13`
   The simulated `PaymentSucceededEvent` metadata carries `operationType` and `clientReference`, which
   Payment stamps on settlement and escrow intents but not on session-created ones. The suites therefore
   prove the verify flow against a shape the producer does not produce, which is how IR23 stayed invisible.
   Align the double with the producer once IR23 lands.
+  **Disposition:** closed by IR23 landing here: the producer now stamps the keys the double assumed, and
+  Payment's own webhook test proves the publish against the real session metadata.
 
 ### Considered and not overturned
 

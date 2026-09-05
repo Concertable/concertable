@@ -335,9 +335,11 @@ close before PR #633 leaves draft.
 - IR7-IR8 are resolved; IR9-IR10 remain active. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`), IR5
   (`c61566685`), and the current IR6 topology checkpoint landed after `b61fc7feb`; a fresh incremental review
   over those fix commits is the remaining review gate. Keep the artifact until PR #633 merges, then delete it.
-- Independent review 2026-09-05 over `39fbbc0..db5d4be8c` added IR21–IR27. IR21 (Booking deferred-refund
-  arm) and IR22 (verify outcome bound to the venue payer) are fixed on the branch; IR23 is a Payment producer
-  PR that blocks DoorSplit/Versus in production; IR24–IR27 are open for the follow-up session.
+- Independent review 2026-09-05 over `39fbbc0..db5d4be8c` added IR21–IR27; all are closed on the branch,
+  including the Payment metadata fix (IR23) in Payment's source here. IR18 and IR20 are closed too; IR19 is
+  `wontfix` with its debt entry in `Modules/Concert/TECH_DEBT.md`. No `[ ]` finding remains. CI on this
+  branch stays red only on Customer's two legacy compile errors and the jobs downstream of them; the merge is
+  Tommy's admin merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
