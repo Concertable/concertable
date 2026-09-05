@@ -145,8 +145,9 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) /
   the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
   execution.
-  Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
-  `platform-web`, `system`, `.github`); seventeen checkpoints; the Payment extraction is proven end to end.
+  Approved and in execution 2026-08-26. Eleven repositories (five services, `platform-dotnet`,
+  `platform-web`, `system`, `infra`, `config`, `.github`); seventeen checkpoints; the Payment extraction is
+  proven end to end.
   **Checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A are delivered** (all 45 test-tier
   cross-repository `ProjectReference`s are now packages, standalone AppHosts consume published Hosting/image
   boundaries, and full-system E2E composition is system-owned). RT3 closed through
@@ -168,6 +169,7 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
+  | Foundation 6B | Active in the isolated topology worktree; owns target-name reconciliation, private-repository policy feasibility, package-ACL preflight, and extraction-map readiness before any target is created or renamed. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
   | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
   | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
   | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
