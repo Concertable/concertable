@@ -14,14 +14,14 @@
       }
     ],
     "blockingTestEdges": [],
-    "crossAreaEdgeCount": 59,
+    "crossAreaEdgeCount": 60,
     "crossAreaEdgesByKind": {
       "apphost": 15,
       "apphost-support": 1,
       "architecture-test": 1,
       "e2e": 26,
       "runtime": 13,
-      "unit-test": 3
+      "unit-test": 4
     },
     "crossTargetEdgeCount": 25,
     "crossTargetEdges": [
