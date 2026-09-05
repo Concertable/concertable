@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `66975737e3d40960481e4bb970445aeb0c04bc48`  `(2026-09-05)`
-**Security-reviewed up to commit:** `66975737e3d40960481e4bb970445aeb0c04bc48`  `(2026-09-05)`
+**Reviewed up to commit:** `6018baa840aac6ae0c493b14fcdcb77a3ab13774`  `(2026-09-05)`
+**Security-reviewed up to commit:** `6018baa840aac6ae0c493b14fcdcb77a3ab13774`  `(2026-09-05)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-03 — full
@@ -276,3 +276,21 @@ logged no-op rather than a provider-ID event.
 
 No findings. The only code change qualifies the two constructor assignments required by PAY-012; it does
 not alter reference normalization, public contract shape, persistence, authorization, or provider isolation.
+
+## Review pass — 2026-09-05 — incremental
+
+**Candidate base:** `66975737e3d40960481e4bb970445aeb0c04bc48`
+**Candidate head:** `6018baa840aac6ae0c493b14fcdcb77a3ab13774`
+**Candidate branch:** `Feature/payment-method-commitments`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:c7aa9031af0bc700952bfbe0da506f92b7ddc575983a9fa4c2c53c31bf4dff39` `(4 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\concertable-review-payment-6a829f46cb0a4fe59ff5e23d544f780b`
+**Candidate bundle identity:** `sha256:b3b50451e08bf4d5c7826626ce8a837df6f01a44ff405992f63d3398b1bc1d41`
+**Work-order path:** `reviews/Feature-payment-method-commitments.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The merge brought in only the already-landed platform topology plan update plus the prior
+review watermark; it did not change Payment code, contracts, persistence, provider handling, or security.
