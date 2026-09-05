@@ -1,7 +1,7 @@
 <Project>
 
-  <!-- Swaps a test project's platform PackageReference for the in-repo project while this file and the
-       platform source are on disk. Rule + rationale: the `packages` skill.
+  <!-- Swaps a test or AppHost project's platform PackageReference for the in-repo project while this file
+       and the platform source are on disk. Rule + rationale: the `packages` skill.
 
        Two invariants a caller can break:
        - Import this AFTER a folder's UseLocalCore swap. That swap removes the same PackageReference ids
@@ -9,6 +9,7 @@
        - A carve must NOT copy this file. Its absence is the cut-over to feed packages. -->
 
   <PropertyGroup>
+    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $(MSBuildProjectName.EndsWith('.AppHost'))">true</_SwapPlatformSourcePackages>
     <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]'))">true</_SwapPlatformSourcePackages>
   </PropertyGroup>
 
@@ -26,6 +27,8 @@
     <PlatformSourcePackage Include="Concertable.B2B.Hosting"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.Hosting\Concertable.B2B.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.Customer.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.Hosting\Concertable.Customer.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.Payment.Hosting"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.Hosting\Concertable.Payment.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Search.Hosting"           Project="$(MSBuildThisFileDirectory)Concertable.Search\src\Concertable.Search.Hosting\Concertable.Search.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Frontend.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Frontend.Hosting\Concertable.Frontend.Hosting.csproj" />
     <PlatformSourcePackage Include="Concertable.B2B.TestKit"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.TestKit\Concertable.B2B.TestKit.csproj" />
     <PlatformSourcePackage Include="Concertable.Customer.TestKit"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.TestKit\Concertable.Customer.TestKit.csproj" />
     <PlatformSourcePackage Include="Concertable.Payment.TestKit"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.TestKit\Concertable.Payment.TestKit.csproj" />
