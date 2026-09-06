@@ -67,6 +67,16 @@ table-stakes items were resolved in the same pass.
 - [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish Payment's final consumer-agnostic surface in one breaking release: durable operation references, provider-identifier ownership, reference-keyed escrow/ledger/settlement, legacy raw-identifier removal, and payment-owned vocabulary. B2B and Customer then migrate directly from the old surface once. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
 - [x] ✅ **Customer payment-reference migration** `launch/customer-payment-reference` — Customer ticket purchase now runs on-session Payment sessions addressed by whole Customer-minted operation references; provider identifiers no longer cross or persist at the Customer boundary. Delivered by PRs #939 and #938.
 
+- [ ] 🟡 **Operation claims and attempt classification** `launch/operation-claims-and-attempts` — deferred
+  until the lifecycle ownership refactor is terminal, because it rewrites members of the same three
+  aggregates. Five operation-id claims across Application/Booking/Concert collapse onto one composed
+  `OperationClaim` mapped as an owned entity type (measured: no migration, and the claim's write keeps the
+  owner's concurrency token), and the six copy-pasted `TryExecuteAsync` conflict blocks plus
+  `SettlementService`'s nested seventh collapse onto a four-way `AttemptVerdict` whose replay budget is
+  owned by the plumbing rather than passed at each call site. Deletes `AcceptOnceAsync`,
+  `IScoped<ApplicationWorkflow>` and the B2B operation-claim debt entry, and fixes a latent cancel-retry
+  double-refund. B2B-internal — no published-package gate. See
+  [IDEMPOTENT_EXECUTION_PLAN.md](IDEMPOTENT_EXECUTION_PLAN.md).
 - [ ] 🟡 **Lifecycle reporting read projections** `launch/lifecycle-read-projections` — deferred until
   the lifecycle ownership refactor is terminal. Replace the Application dashboard's transitive
   Opportunity query with a narrow Application-owned, event-fed availability projection while keeping

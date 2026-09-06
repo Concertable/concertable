@@ -429,3 +429,12 @@ separate Customer/Payment idempotency defect found while reviewing the merged tr
   restoring shared lifecycle ownership.
 - `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md` resumes after PR #633 delivers for its compiler-exhaustive
   native-union/closed-Deal cut-over.
+- `plans/launch/IDEMPOTENT_EXECUTION_PROGRESS.md` (worktree not yet created; branch
+  `Refactor/launch_operation-claims-and-attempts`) resumes when PR #633 is merged **and** its platform-sync
+  PR is green. It rewrites the operation-id members of `ApplicationEntity`, `BookingEntity` and
+  `ConcertEntity` onto one composed `OperationClaim`, and lifts the six copy-pasted
+  `TryExecuteAsync(XCoreAsync, IsXConflict, ClassifyXConflictAsync)` blocks — plus `SettlementService`'s
+  nested seventh — onto a four-way `AttemptVerdict`. It edits the same three lifecycle aggregates this
+  refactor is moving, so it cannot start earlier. It carries the resolution of this branch's
+  operation-claim debt entry and of `AcceptOnceAsync`/`IScoped<ApplicationWorkflow>`, so neither should be
+  addressed here.
