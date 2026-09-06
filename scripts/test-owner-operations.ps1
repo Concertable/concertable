@@ -94,7 +94,7 @@ try {
             Assert (@(Get-ChildItem -LiteralPath $carve -Filter appsettings.Development.json -Recurse).Count -eq 0) 'WhatIf wrote settings.'
         }
     }
-    Assert ($snapshotCount -eq 21) 'Migration inventory changed; reconcile all owner manifests.'
+    Assert ($snapshotCount -eq 24) 'Migration inventory changed; reconcile all owner manifests.'
     $auth = Import-PowerShellDataFile (Join-Path $repoRoot 'api/Concertable.Auth/migrations.psd1')
     Assert ($auth.Environment.Keys.Count -eq 1 -and $auth.Environment.ContainsKey('ConnectionStrings__AuthDb')) 'Auth must own only AuthDb.'
     & (Join-Path $repoRoot 'api/initial-migrations.ps1') -WhatIf
@@ -163,7 +163,7 @@ try {
         Assert ($resolved -eq (Join-Path $caseSibling 'project')) 'Windows containment must remain case-insensitive.'
     }
     [Environment]::SetEnvironmentVariable('OWNER_TEST_CONNECTION', $saved, 'Process')
-    Write-Host 'PASS: 21 contexts, 6 isolated migration carves, 5 isolated bootstraps, root dry runs, System gate, idempotency, rollback, ID stability, environment restoration, path boundary.'
+    Write-Host 'PASS: 24 contexts, 6 isolated migration carves, 5 isolated bootstraps, root dry runs, System gate, idempotency, rollback, ID stability, environment restoration, path boundary.'
 } finally {
     Remove-Item Function:\dotnet -ErrorAction SilentlyContinue
     Remove-Variable OwnerTestCalls, OwnerTestSecrets, OwnerTestMode -Scope Global -ErrorAction SilentlyContinue

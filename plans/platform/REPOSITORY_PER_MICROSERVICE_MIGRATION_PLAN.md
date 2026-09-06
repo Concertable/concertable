@@ -170,19 +170,19 @@ and select that version through a gitignored `Directory.Packages.local.props`. C
 
 ### Databases, migrations, and seeding
 
-There are 20 EF model snapshots:
+There are 24 EF model snapshots:
 
 | Owner | Context migrations |
 |---|---:|
-| B2B | 7 |
+| B2B | 11 |
 | Customer | 7 |
 | Auth | 2 |
 | Payment | 1 |
 | Search | 1 |
 | Platform Messaging | 2 (Inbox and Outbox) |
 
-`api/initial-migrations.ps1` currently re-scaffolds all 20 contexts in one command. It preserves unchanged
-migration IDs to avoid source/package migration collisions. Several runtime programs still call
+`api/initial-migrations.ps1` delegates all 24 contexts to owner-local commands. Those commands preserve
+unchanged migration IDs to avoid source/package migration collisions. Several runtime programs still call
 `MigrateAsync`; the deployment design already requires deploy-time migration bundles/jobs instead.
 
 Seed ownership is mostly aligned already:
