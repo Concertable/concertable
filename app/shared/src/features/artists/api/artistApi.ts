@@ -1,46 +1,7 @@
 import { apiClient } from "../../../lib/apiClient";
-import type {
-  Artist,
-  CreateArtistRequest,
-  UpdateArtistRequest,
-} from "../types";
-
-type FormDataValue = Parameters<FormData["append"]>[1];
-
-function toCreateFormData(request: CreateArtistRequest): FormData {
-  const formData = new FormData();
-  formData.append("Name", request.name);
-  formData.append("About", request.about);
-  formData.append("Latitude", String(request.latitude));
-  formData.append("Longitude", String(request.longitude));
-  request.genres.forEach((genre, index) => {
-    formData.append(`Genres[${index}]`, genre);
-  });
-  formData.append("Banner", request.banner as unknown as FormDataValue);
-  formData.append("Avatar", request.avatar as unknown as FormDataValue);
-  return formData;
-}
-
-function toUpdateFormData(request: UpdateArtistRequest): FormData {
-  const formData = new FormData();
-  formData.append("Name", request.name);
-  formData.append("About", request.about);
-  formData.append("Latitude", String(request.latitude));
-  formData.append("Longitude", String(request.longitude));
-  request.genres.forEach((genre, index) => {
-    formData.append(`Genres[${index}]`, genre);
-  });
-  if (request.banner) {
-    formData.append("Banner", request.banner as unknown as FormDataValue);
-  }
-  if (request.avatar) {
-    formData.append("Avatar", request.avatar as unknown as FormDataValue);
-  }
-  return formData;
-}
+import type { Artist } from "../types";
 
 const BASE = "/artist";
-const ORGANIZATION_BASE = "/organization/artist";
 
 const artistApi = {
   getArtist: async (id: number): Promise<Artist> => {
@@ -50,27 +11,6 @@ const artistApi = {
 
   getArtistById: async (id: number): Promise<Artist> => {
     const { data } = await apiClient.get<Artist>(`${BASE}/${id}`);
-    return data;
-  },
-
-  getMyArtist: async (): Promise<Artist | null> => {
-    const { data } = await apiClient.getOptional<Artist>(ORGANIZATION_BASE);
-    return data;
-  },
-
-  createArtist: async (request: CreateArtistRequest): Promise<Artist> => {
-    const { data } = await apiClient.post<Artist>(
-      ORGANIZATION_BASE,
-      toCreateFormData(request),
-    );
-    return data;
-  },
-
-  updateArtist: async (request: UpdateArtistRequest): Promise<Artist> => {
-    const { data } = await apiClient.put<Artist>(
-      ORGANIZATION_BASE,
-      toUpdateFormData(request),
-    );
     return data;
   },
 };

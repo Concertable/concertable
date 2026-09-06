@@ -7,6 +7,7 @@ const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
+const b2bPackage = path.dirname(require.resolve("@concertable/b2b/package.json"));
 const mobilePackage = path.dirname(require.resolve("@concertable/mobile/package.json"));
 const sharedPackage = path.dirname(require.resolve("@concertable/shared/package.json"));
 const nativeDependenciesNodeModules = path.resolve(
@@ -19,6 +20,7 @@ const mobileNodeModules = path.dirname(
 );
 
 config.watchFolders = [
+  b2bPackage,
   mobilePackage,
   nativeDependenciesNodeModules,
   mobileNodeModules,
