@@ -41,6 +41,19 @@ CI, and PR/remote head equality — is being run separately and is not asserted 
 - ~~Concert infrastructure: make cancellation from `SettlementFailed` return `CancelConcertError.InvalidState` rather than passing through to `ConcertEntity.BeginCancellation` and throwing.~~ Confirmed and tracked by NAT15.
 - ~~Module-owned tests: add regressions for multi-row DTO/response mapping, confirmed-booking dashboard counts, applying to filled opportunities, removing referenced opportunities, missing VenueHire payment methods, failed-accept auxiliary state, exact Application and Booking Deal strategy coverage, cancellation with no escrow before and after Concert creation, a rejection arriving during cancellation, cancellation from `SettlementFailed`, declaring door revenue during cancellation, post-cancellation notification rollback, truly concurrent Accept/payment arrival, cross-context rollback during confirmation, and retained DoorSplit/Versus Invoice creation.~~ At the anchor these gaps remain absent or only partially characterized and are owned by the existing production findings NAT3–NAT17 and MB1–MB5. The post-anchor reconciliation closes the repaired items and leaves the remaining gaps open below.
 
+## Parent finalization
+
+**Cross-area notes status:** `complete`
+**Parent summary status:** `complete`
+
+Every coverage area is `[x]` and every cross-area note is terminal, each struck through with the disposition
+it resolved to and the production finding that owns any remaining work. No `[ ]` or `[~]` item remains in the
+file. Six findings carry `[wontfix]` — IR34 and IR35 are HIGH and owned by Payment and Customer rather than
+this branch, IR36 and IR37 are the split Payment pin and the throwaway accept-checkout operation id, and each
+is transferred to the owning tech-debt file with an objective resolution condition. IR39, the Lifecycle
+outbox flake, is closed rather than deferred: its fix is `c7829b9d2` and its residue is transferred to
+`api/Concertable.Shared/TECH_DEBT.md`.
+
 ## Findings
 
 ## Lifecycle contracts and domain foundation — reviewed 2026-08-23
