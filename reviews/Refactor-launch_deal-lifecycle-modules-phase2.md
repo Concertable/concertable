@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `1ca86b620e66ba3d0b0773d69837cc7254b7e64a`  _(2026-09-06)_
-**Security-reviewed up to commit:** `1ca86b620e66ba3d0b0773d69837cc7254b7e64a`  _(2026-09-06)_
+**Reviewed up to commit:** `e8a889c678c0bac48b8a828a1c3a671ab7e89d79`  _(2026-09-06)_
+**Security-reviewed up to commit:** `e8a889c678c0bac48b8a828a1c3a671ab7e89d79`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1486,3 +1486,43 @@ Reproduced identically in the merge queue (run `34046097585`, failed) and locall
 failed`, `b2b-web: Finished`, then ten `Readiness check timed out` failures. The preceding identity-insert
 failure is gone from the same run — zero `Cannot insert explicit value` entries — which is what allowed
 seeding to reach Order 7 for the first time on this branch. Exact-head CI and the merge queue own the rest.
+## Review pass — 2026-09-06 — scope the identity rewrite to its own insert
+
+**Candidate base:** `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`
+**Candidate head:** `e8a889c678c0bac48b8a828a1c3a671ab7e89d79`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. One file, correcting a regression this branch introduced in `fd3d9a230`.
+
+That commit widened `SeedingIdentityInterceptor` to match `MERGE` as well as `INSERT INTO`, and in doing so
+replaced the per-insert column list with a scan of every bracketed list in the command. Concert's save batches
+an insert into `Concerts`, which carries an explicit `Id`, with one into `SelfBillingAgreements`, which does
+not. The first table's identity column satisfied the check for the second, so the interceptor set
+`IDENTITY_INSERT ON` for a table supplying no identity value and SQL Server rejected the insert from the
+opposite direction.
+
+The previous pass named this exact risk — "a false positive would need a command that both names an
+identity-mapped table and carries that table's identity column inside some bracketed list" — and the change
+shipped anyway, without running the dev seed path. That is the process failure worth recording, not the regex.
+
+The fix restores per-insert scoping with two patterns rather than one permissive one: `INSERT INTO <table>
+(cols)`, and `MERGE <table> ... INSERT (cols)` bounded by `[^;]*?` so a MERGE cannot borrow the column list of
+a later statement in the same batch. Each match now carries the column list of the insert that names its
+table, which is the invariant the original single-pattern implementation had and the widened one lost.
+
+The multi-table hazard noted previously is unchanged and still latent: `On(tables)` can emit more than one
+`SET IDENTITY_INSERT ... ON`, which SQL Server rejects. It is not reachable here because scoping means only
+tables whose own insert carries an identity column are selected, and `BookingFactory` deliberately splits its
+two identity inserts into separate saves. It remains recorded in `api/Concertable.Shared/TECH_DEBT.md`.
+
+### Validation
+
+The dev seed path is being run locally through `./scripts/e2e.ps1 api b2b` for this change, which is what
+found the regression rather than the merge queue — the queue reported it only as ten health-check timeouts on
+run `34049878505`. `Concertable.Seed.Shared` builds with 0 errors. Exact-head CI owns the rest.
