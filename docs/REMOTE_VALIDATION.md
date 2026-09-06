@@ -24,4 +24,20 @@ Some work cannot obtain meaningful remote feedback until a package is published 
 targeted local build against an exact producer artifact is still valid; it does not restore a
 full-local-gate default.
 
+### A change to the dev seed path has no gate cheaper than the merge queue
+
+`IDevSeeder` runs in dev and E2E; `ITestSeeder` runs in integration. Nothing else executes the dev path, so a
+defect in a dev seeder, `DevDbInitializer`, or `SeedingIdentityInterceptor` is invisible to `unit-tests` and
+`integration-tests` and first appears as `e2e-api-tests` in the merge queue — roughly 40 minutes per
+iteration, reported as ten health-check timeouts rather than as the seeder that actually threw.
+
+So a change touching that path earns a local pre-flight before enqueueing, under the same reasoning as the
+package gates above: it is not a full-local-gate default, it is a gate with no cheaper remote feedback. Run
+`./scripts/e2e.ps1 api b2b` and confirm the seeders complete before pushing for the queue. Read the seeder
+outcome directly — `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/api-tests.last.log` carries
+`Seeder <name> failed` and `b2b-web: Finished`, while the wrapper script only prints its summary at the end.
+
+This cost three separate merge-queue cycles on PR #633, each one surfacing the next seeder failure that the
+previous one had masked.
+
 Historical plan/ledger evidence remains historical. Reconcile only outstanding instructions to this policy.
