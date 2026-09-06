@@ -5,15 +5,15 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft [#633](https://github.com/Concertable/concertable/pull/633). The candidate recorded in this
-  commit carries the completed state-machine cutover and the IR1–IR5 fixes. PR/remote head equality is part
-  of the final delivery closure and is not asserted here.
+- PR: [#633](https://github.com/Concertable/concertable/pull/633), out of draft and merging through the
+  merge queue. The candidate carries the completed state-machine cutover, the IR1–IR31 fixes, and the
+  Payment v1 consumer cut-over merged up to `main` at `abd3466e3`.
 - Dependency/package gates: Deal producer PR #678 and platform sync #694 are terminal at
   `Concertable.Platform 0.1.0-alpha.0.1108`. Kernel producer PR #719 published
   `Concertable.Kernel 0.1.0-alpha.0.1133`, and platform sync PR #730 produced the B2B platform pin
   `0.1.0-alpha.0.1158`. B2B consumes the Kernel state machine directly and every consumer directly pins
   `Reunion 0.1.0-alpha.8` rather than relying on Kernel's transitive reference. No producer gate remains.
-- Last reconciled: 2026-08-29 from local Git, GitHub PR #633, the active review work order, and focused
+- Last reconciled: 2026-09-06 from local Git, GitHub PR #633, the active review work order, and focused
   module lifecycle verification.
 
 ## Current state
@@ -196,31 +196,22 @@ placement remains recorded Application technical debt in
 
 ## Next Steps
 
-The producer is delivered and published, so this consumer is no longer delivery-gated on a package. It is
-now one of the two changes that make `main` green again. `main` went red when #933 merged, because CI builds
-`api/Concertable.slnx` against Payment's **source**, and two consumers were still on the removed contract:
+Both consumers of Payment v1 are now delivered. Customer's migration merged to `main` (#939 published the
+`@concertable/customer` package, #938 landed the service and standalone carves), so the two compile errors
+that kept `main` red alongside B2B's are gone from `main` itself. `origin/main` at `abd3466e3` is merged
+into this branch, and the six B2B references this PR owns — `ArtistDashboardService` /
+`VenueDashboardService` (`IManagerPaymentReportingClient`), `Concert.Application/Responses/Checkout.cs`
+(`CheckoutSession`), and `FinishConcertError.cs` (`ManagerPaymentError`) — are resolved against the reviewed
+v1 consumer shapes. No Customer or Payment source was modified to get there.
 
-- **B2B** — `ArtistDashboardService`/`VenueDashboardService` (`IManagerPaymentReportingClient`),
-  `Concert.Application/Responses/Checkout.cs` (`CheckoutSession`), `FinishConcertError.cs`
-  (`ManagerPaymentError`). **This PR fixes all of them**; the invariant sweep over the merged tree returns
-  zero hits for those identifiers in `api/Concertable.B2B/src`.
-- **Customer** — `Ticket.Application/DTOs/TicketDtos.cs` (`CheckoutSession`) and `TicketPayment.cs`
-  (`cannot derive from sealed PaymentOutcome`). Not touched here, by instruction; that consumer is
-  `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md`'s.
+The merged tree therefore builds green as a whole for the first time since #933: `api/Concertable.slnx`
+compiles with 0 errors. **PR #633 no longer needs an admin merge and must not get one** — it goes through
+the merge queue so the E2E tier validates it against current `main`.
 
-So PR #633 is expected to stay structurally red on the whole-solution jobs until Customer lands, and every
-residual failure must be shown to be exclusively an unchanged Customer legacy reference before this is
-handed on.
-
-Immediate actions: push the merge and the published-package sync; take PR #633 out of draft so CI runs on
-the exact head (a draft reports no checks at all, which is why it has never had a verdict); monitor that run
-to terminal; then report the head as ready for independent review, naming the Customer-only failures that
-remain. **Do not merge PR #633** — that needs Tommy's explicit authorization and an admin merge, since it
-cannot go green alone.
-
-Once #633 and the Customer migration are both on `main`, CI goes green, the platform sync bumps
-`ConcertablePlatformVersion` past the split pin recorded above, and only then is this ledger's lifecycle
-terminal and the plan, ledger and review artifact deleted.
+After terminal merge, the causally triggered consequences are the package publish for B2B's published
+contracts and the generated `ConcertablePlatformVersion` sync PR, which finally retires the split Payment
+pin recorded above. Only when those are terminal is this ledger's lifecycle complete and the plan, ledger
+and review artifact deleted.
 
 ## Boundary hardening (MM_BOUNDARY_HARDENING_PROMPT.md)
 
@@ -326,7 +317,30 @@ close before PR #633 leaves draft.
   failures in unchanged HTTP-status and concurrency tests generated nearly 50 MB of captured seed logs. The
   moved Cancel/Complete bodies match `12273b558`; this run is not recorded as a green integration gate.
 - Local E2E deliberately not run. Standalone carve, complete integration matrices, and exact-head CI remain
-  owned by draft-PR CI; PR/remote head equality remains part of final delivery.
+  owned by PR CI and the merge queue; PR/remote head equality is asserted at the pushed head below.
+
+### Merged-tree verification (`origin/main` `abd3466e3` merged in)
+
+- `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release`: **Build succeeded, 0
+  errors**, against a freshly packed local platform. This is the compile floor `main` is currently red on;
+  the merged tree clears it. Four residual warnings are all pre-existing and outside this change: two
+  `MSB3277` EF version conflicts in `Concertable.Auth.ArchitectureTests` and two `CS8632` in generated
+  MSBuild temp sources for `Concertable.B2B.E2ETests.Ui`. The two warnings this branch did own — a duplicate
+  `using` in `B2BHostGraphTests` and an unguarded nullable read in `OpportunityApiTests` — are fixed here.
+- Unit tier, all green, 0 failures: B2B DataAccess 4, Admin 33, Application 20, Artist 12, Booking 9,
+  Concert 105, Conversations 46, Dashboard.Opportunity 7, Deal 47, Tenant 178, User 1, Venue 12,
+  KeyedStrategies 19; Kernel 303, Concertable.DataAccess 31, AppHost.Shared 13.
+- B2B Architecture: 32/32.
+- Frontend compile floor: `npm run test:boundaries` 8/8 and `npm run lint:boundaries` clean across all seven
+  cruised graphs; `npm run build:web-packages`, `build:venue` and `build:artist` all succeeded.
+- Provider-identifier invariant sweep re-run over the merged tree: zero hits in `api/Concertable.B2B/src`.
+  The only survivors are the ones already documented above — `Concertable.B2B.E2ETests` /
+  `.Ui` reading provider ids back from Payment's own database, `api/Concertable.B2B/TECH_DEBT.md`, and the
+  browser's own Stripe adapter in `app/web/shared`. The retired client and error identifiers
+  (`IManagerPayment*Client`, `ManagerPaymentError`, `FindHeldIntentAsync`) return zero hits across `api/`
+  and `app/` except Payment's own deliberately baseline-pinned `PublishedContractFixture`, which is in no
+  solution and consumes `0.1.0-alpha.0.1254` on purpose.
+- `git diff --check`: clean.
 
 ## Reviews
 
