@@ -5,12 +5,14 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
 - Branch: `Refactor/M1-Platform-Expand`
-- PR: not opened; first stage of the four-branch M1 stack above monorepo PR #633
-- Dependency/package gates: M1 delivery is gated on PR #633 landing; package inventory and ACLs require a
-  credential with `read:packages`; private-repository merge-queue rulesets are unavailable on the current
-  GitHub entitlement.
-- Last reconciled: 2026-09-06 — corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the fixed M1
-  repository topology, and PR #633 head `3f89818c7c91b5cf9d658fbe7e8460163de06d78`.
+- PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
+- Dependency/package gates: PR #633 landed on `origin/main`; Platform Expand and Owner Hosting Sync may now
+  enter exact-head validation. AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
+  Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
+  inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
+  remain unavailable on the current GitHub entitlement.
+- Last reconciled: 2026-09-07 — PR #633 landing commit `516f4cc25936289744babef3f98b1a297035fbb6`,
+  the corrective topology commits `82bf5dbbb` and `bb59d9ba3`, and the fixed M1 repository topology.
 
 ## Current state
 
@@ -19,20 +21,20 @@ public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is
 `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
 The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
 creation is part of M1. Four clean M1 branches preserve the Platform Expand, Owner Hosting Sync, AppHost Sync,
-and Platform Contract boundaries above PR #633 head `3f89818c7`; Git owns their current rewritten heads. Local
+and Platform Contract boundaries above landed `origin/main` commit `516f4cc25`; Git owns their current
+rewritten heads. Local
 review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
 retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
 associations into the B2B and Customer owners before system composition consumes their combined roster.
 
 ## Next Steps
 
-- Keep the candidate frozen at the immutable head recorded by the local review work order. Any content change
-  requires a new artifact and watermark; repair any finding on its owning M1 stage without changing the four
+- Complete landed-base package-clean and composition validation, then establish a current-head review
+  watermark for the restacked candidate. Repair any finding on its owning M1 stage without changing the four
   publication boundaries.
-- When PR #633 lands, restack the four stages onto the exact landed `origin/main` if necessary. Re-run the
-  Customer and system composition suites that are currently blocked by #633, plus the package-clean gates.
-- Deliver Platform Expand, Owner Hosting Sync, AppHost Sync, and Platform Contract in that order only after the
-  landed-base validation and review are terminal.
+- Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
+  publication caused by Owner Hosting Sync to its immutable digest.
+- Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
 
 ## Completed work
 
@@ -40,10 +42,11 @@ associations into the B2B and Customer owners before system composition consumes
   PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
 - Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
   their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
-- Extraction-map preflight reports 4,766 tracked paths, 4,766 target claims, 79 unclaimed tracked paths, and
+- Extraction-map preflight reports 4,769 tracked paths, 4,769 target claims, 79 unclaimed tracked paths, and
   zero multiply-claimed paths; 6C is not ready.
-- The complete four-stage M1 chain was rebased without conflicts onto PR #633 head `3f89818c7` and retains its
-  staged package expansion, owner migration, composition migration, and contract-removal boundaries.
+- The complete four-stage M1 chain was rebased without conflicts onto PR #633 landing commit `516f4cc25`.
+  Range-diff verification preserves every staged package expansion, owner migration, composition migration,
+  and contract-removal patch and boundary.
 - Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
   and normalized resource names, so the B2B mobile API tunnel is emitted correctly.
 - Review remediation added exact Auth SPA replacement and unknown-client fail-closed coverage, retained legacy
@@ -54,7 +57,8 @@ associations into the B2B and Customer owners before system composition consumes
 
 ## Verification
 
-- Ancestry from PR #633 head `3f89818c7` through the complete M1 stack is verified after each local restack.
+- Ancestry from landed `origin/main` commit `516f4cc25` through the complete M1 stack is verified after the
+  final local restack; landed-base package and composition revalidation is in progress.
 - Package inventory and local platform preparation pass with 57 packages. Auth Hosting, B2B Hosting, Auth
   AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
   form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
@@ -63,19 +67,16 @@ associations into the B2B and Customer owners before system composition consumes
   Search architecture passes 4/4 and Payment architecture passes 13/13. B2B and Customer Hosting also build
   independently against the locally prepared platform packages. Customer's current Hosting and architecture-test
   assemblies compile in isolation and the two extracted/monorepo frontend-layout cases pass 2/2.
-- Customer and umbrella system execution remain blocked by #633's Customer compile errors (`PaymentOutcome` is
-  sealed and `CheckoutSession` is missing). Exact immutable B2B package qualification remains a delivery gate
-  until #633 publishes or advances its pinned Payment.Hosting producer: the currently published pinned binary
-  expects the previous `AsbTopology.WithService` contract, while the current producer passes locally at that slot.
+- The former #633 Customer compile blocker and Payment.Hosting package slot are now eligible for exact landed-base
+  revalidation; their previous blocked result is not carried forward as current evidence.
 - No local E2E suite was run; E2E remains a remote merge-queue diagnostic gate.
 
 ## Reviews
 
-The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its immutable full pass requested changes;
-all four newly reported findings are repaired on their owning stages. B2B, Search, and Payment composition
-verification is complete, while the Customer and system executions retain the observable #633 resume condition
-above. Because remediation restacked the candidate, the next full pass establishes the frozen review watermark
-rather than treating the rewritten history as an incremental review.
+The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its last immutable full pass requested one
+delivery-gated change: publish and pin the Owner Hosting Auth image before AppHost Sync. All other findings are
+repaired on their owning stages. The landed-base candidate requires a new frozen review watermark after current
+package and composition validation completes.
 
 ## Decisions, discoveries, blockers, and deviations
 
