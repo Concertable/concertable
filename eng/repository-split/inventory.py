@@ -334,6 +334,16 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
+        blocking_runtime = inventory["dotnet"]["blockingRuntimeEdges"]
+        if blocking_runtime:
+            print(
+                "RUNTIME CROSS-REPOSITORY ProjectReference(s) — consume the dependency as a "
+                "published PackageReference:",
+                file=sys.stderr,
+            )
+            for e in blocking_runtime:
+                print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
+            return 1
         regressed = inventory["dotnet"]["blockingTestEdges"]
         if regressed:
             print(
@@ -362,7 +372,7 @@ def main() -> int:
             for e in forbidden_tooling:
                 print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
             return 1
-        print("inventory.json is current; no test-tier cross-repository ProjectReference")
+        print("inventory.json is current; no blocking runtime or test-tier cross-repository ProjectReference")
         return 0
 
     OUTPUT.write_text(current, encoding="utf-8")
