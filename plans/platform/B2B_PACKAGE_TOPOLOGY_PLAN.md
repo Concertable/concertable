@@ -43,7 +43,7 @@ first-class package identities are available from the feed. Every intermediate m
 Gate: alias-packer unit test, ordered web-package build/tests, workflow syntax, and `git diff --check`
 pass. Exact-head PR CI owns the complete frontend package, boundary, and carve matrices.
 
-## Phase 2 - establish the web and cross-platform packages — in progress
+## Phase 2 - establish the web and cross-platform packages — complete
 
 - Make `app/web/b2b/shared` the first-class `@concertable/web-b2b` package and migrate every
   manager-web-only dependency/import/build reference that must follow it.
