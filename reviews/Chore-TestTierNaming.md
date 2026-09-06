@@ -735,8 +735,8 @@ needing a host, HTTP or a database is an integration test" — these need the re
 ---
 
 **Review status:** `complete`
-**Reviewed up to commit:** `e3595f5c95f75cfa10a7511bf2db653679ca363b`  `(2026-09-06)`
-**Security-reviewed up to commit:** `e3595f5c95f75cfa10a7511bf2db653679ca363b`  `(2026-09-06)`
+**Reviewed up to commit:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`  `(2026-09-06)`
+**Security-reviewed up to commit:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`  `(2026-09-06)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -896,3 +896,36 @@ taken on trust; the verification log separates what was executed from what was o
 - `.agents/hooks/docs_reachability.py` reports 10 errors, none in this branch's paths — all six new
   project directories carry both `AGENTS.md` and `CLAUDE.md`. Pre-existing on the base, so not carried
   here.
+
+## Review pass — 2026-09-06 — incremental
+
+**Candidate base:** `d65161935d239b8130ac7cc1cd4082ca10ac2d12`
+**Candidate head:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`
+**Candidate branch:** `Chore/TestTierNaming`
+**Candidate scope:** `.github/workflows/test.yml`
+**Candidate path-set:** `sha256:faff1af3d8ff408964a57b2e475f69a6b7c7b71c9978cccc8f471798caac2c88` `(1 path)`
+**Candidate bundle:** `(single-path delta; reviewed directly from the frozen commit)`
+**Candidate bundle identity:** `(not materialized — one file, one hunk)`
+**Work-order path:** `reviews/Chore-TestTierNaming.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Opened by the first pass's own remote-validation step: the PR was created, a monitor was bound to its
+checks, and it reported nothing for an hour. The cause was not this branch's `startup-tests` job.
+
+### Findings
+
+- [x] **F10 — HIGH — ci** — `.github/workflows/test.yml:7`
+  On `pull_request` the `branches` filter matches the **base** branch, so `branches: [main]` meant the CI
+  workflow never fired at all on a PR stacked on another PR. Confirmed against the live repository rather
+  than inferred: `gh pr checks` returns *"no checks reported"* for **all four** PRs currently based on
+  `Refactor/launch_deal-lifecycle-modules-phase2` — #942, #946, #947 and #948. No build, no carve, no
+  unit, no architecture, no integration, no `split-inventory`. Four PRs would merge into #633 wholly
+  unvalidated and only be checked when #633 itself reached the queue, on top of a 1052-file refactor —
+  the find-it-late-at-maximum-cost pattern the tier in this same PR exists to end, one level up.
+  This branch did not cause it, but it is the branch that exposed it and cannot be validated remotely
+  until it is fixed, so it is repaired here rather than deferred. The filter is dropped from
+  `pull_request` only; `push` and `merge_group` keep theirs, since only `main` is push-validated and the
+  merge queue only ever targets `main`. E2E is unaffected, being gated on
+  `github.event_name == 'merge_group'`, so a stacked PR gets the intended PR tier — build, carve, unit,
+  architecture, startup, integration — and not the 25-minute suite.
