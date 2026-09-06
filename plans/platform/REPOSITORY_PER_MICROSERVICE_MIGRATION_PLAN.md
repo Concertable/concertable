@@ -567,6 +567,28 @@ Path ownership for extraction is:
 Files needed by more than one target may legitimately have history in more than one filtered repository, but
 only one target owns the live file after cutover.
 
+### Dependency-ordered agent packets
+
+Packets in one wave may run concurrently in separate worktrees. A later wave may be prepared but cannot merge
+before its dependencies are green.
+
+| Packet | Owner and exact scope | Depends on | Completion evidence |
+|---|---|---|---|
+| G0 | package administrator captures package/GHCR inventory and repository/team grants; Azure administrator captures both repositories' state lists | credentials with `read:packages`, `admin:org`, and read access to the Azure backends | complete ACL/high-water report and state-empty or state-move manifest |
+| M1 | monorepo hosting boundary: deliver an additive generic platform API, sync the Auth/B2B/Customer hosting packages, sync standalone and aggregate System AppHosts, then contract the legacy product-aware platform API | no unresolved overlapping AppHost PR; each published package layer must advance before its consumer sync | package-clean builds; standalone B2B/Customer and umbrella composition tests; resolved Expo/Auth tunnel URLs; final package-only closure |
+| M2 | monorepo owner-local operations: split `api/initial-migrations.ps1` and `scripts/setup-local-dev.ps1` into five service migration owners plus platform-owned Messaging, service-local bootstrap, and container-only System bootstrap | current AuthDb migration state on main | empty-database migration proof and each standalone bootstrap dry run |
+| M3 | monorepo frontend boundary: split product workspace declarations out of `app/.dependency-cruiser.cjs`; package generic build configuration and keep product packages in B2B/Customer | none | boundary lint plus all web/mobile typecheck/build gates |
+| M4 | monorepo closure repair: replace Auth.Contracts-to-Messaging source coupling with its published package seam and fix B2B/Customer standalone Payment HTTPS discovery | M1 package/API shape; package baseline from G0 before publication | inventory has no blocking runtime edge; Auth/B2B/Customer clean carve builds and standalone composition tests |
+| C1 | retained `infra` and `config`: preserve both histories, implement the ownership table above, and remove duplicated Terraform resource/state ownership | G0 Azure state result | fmt/validate; zero create/destroy migration plan if state exists; config schema/promotion dry run |
+| F0 | freeze one exact post-M1-M4/C1 monorepo SHA; regenerate map/inventory and produce signed bundle, per-target filter commands, commit/path maps, object counts, secret scans, and sampled blame | M1-M4 merged; relevant open PRs resolved | 0 unclaimed/duplicates/blocking edges and reviewed history audit |
+| R1 | import `platform-dotnet` and `platform-frontend` in parallel and prove independent publishers | G0, F0, explicit repository-creation authorization | clean clones, non-conflicting versions, registry-only consumer fixtures |
+| R2 | import `system` as container-only composition and black-box qualification | R1 published artifacts, owner images/TestKits, F0, explicit repository-creation authorization | service source absent; immutable compatibility set passes health/API/UI/mobile gates |
+| R3 | refresh/import Auth, Payment, and Search concurrently into their retained IDs; prepare Customer and B2B concurrently but preserve final delivery order | R1-R2 and F0 | per-target history audit, clean clone, package/image publication proof, System qualification |
+
+The first implementation dispatch may contain M1, M2, and M3 plus the read-only G0 probes. C1 joins that wave
+only after the Azure state result. M4 follows M1. Repository import packets R1-R3 remain separately gated by
+repository-creation/import authority and the exact frozen SHA.
+
 ## Compatibility, rollback, and archive policy
 
 ### Compatibility windows

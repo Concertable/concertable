@@ -3,88 +3,83 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
-- Branch: `Refactor/M1-Platform-Expand`
-- PR: not opened; first stage of the four-branch M1 stack above monorepo PR #633
-- Dependency/package gates: M1 delivery is gated on PR #633 landing; package inventory and ACLs require a
-  credential with `read:packages`; private-repository merge-queue rulesets are unavailable on the current
-  GitHub entitlement.
-- Last reconciled: 2026-09-06 — corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the fixed M1
-  repository topology, and PR #633 head `3f89818c7c91b5cf9d658fbe7e8460163de06d78`.
+- Active packet: M4, monorepo closure repair
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M4-Closure-Repair`
+- Branch: `Refactor/RepoSplit-M4-Closure-Repair`
+- PR: not opened; local preparation only
+- Base: exact M1 P4 candidate and PR #945 head
+  `4f2681974c914a15e50c6292e724e42900d3d20b` (`Refactor/M1-Platform-Contract`)
+- Dependency/package gates: the M1 package/API shape is present locally. M4 publication or delivery remains
+  gated on the ordered M1 package releases and the G0 package baseline; this packet does not publish packages.
+- Last reconciled: 2026-09-06 — canonical M4 packet metadata, corrective topology commits `82bf5dbbb`
+  and `bb59d9ba3`, and live PR #945 head `4f2681974c914a15e50c6292e724e42900d3d20b`.
 
 ## Current state
 
-Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
-public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Existing private
-`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
-The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
-creation is part of M1. Four clean M1 branches preserve the Platform Expand, Owner Hosting Sync, AppHost Sync,
-and Platform Contract boundaries above PR #633 head `3f89818c7`; Git owns their current rewritten heads. Local
-review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
-retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
-associations into the B2B and Customer owners before system composition consumes their combined roster.
+Checkpoint 6A is terminal. M1 P4 provides the exact local platform package/API boundary required to prepare M4.
+The M4 candidate replaces the final Auth.Contracts-to-Messaging cross-repository runtime source edge with the
+`Concertable.Messaging.Contracts` package seam, exposes Payment through an HTTPS proxy endpoint in the B2B and
+Customer standalone AppHosts, and makes inventory validation reject blocking runtime edges as well as test-tier
+edges. The Auth carve gate now includes both Auth-owned source roots, so it proves Auth.Contracts restores
+Messaging from the package feed rather than silently omitting the contract project.
+
+Existing `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their
+identities. The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`.
+General shared frontend code covers web and mobile; web and mobile are package tiers, not repositories. M4
+creates no repository and makes no topology decision.
 
 ## Next Steps
 
-- Keep the candidate frozen at the immutable head recorded by the local review work order. Any content change
-  requires a new artifact and watermark; repair any finding on its owning M1 stage without changing the four
-  publication boundaries.
-- When PR #633 lands, restack the four stages onto the exact landed `origin/main` if necessary. Re-run the
-  Customer and system composition suites that are currently blocked by #633, plus the package-clean gates.
-- Deliver Platform Expand, Owner Hosting Sync, AppHost Sync, and Platform Contract in that order only after the
-  landed-base validation and review are terminal.
+- Hand the immutable M4 candidate to the owning workflow for independent review and eventual stacking on the
+  landed M1 P4 commit. Repair any finding in M4 rather than in an M1 stage.
+- Keep the candidate local. Do not publish, push, or open an M4 PR until the M1 publication sequence and G0
+  package baseline authorize the consumer transition.
 
 ## Completed work
 
-- Checkpoint 6A closed through `.github` PR #1 (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and policy repair
-  PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
-- Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
-  their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
-- Extraction-map preflight reports 4,766 tracked paths, 4,766 target claims, 79 unclaimed tracked paths, and
-  zero multiply-claimed paths; 6C is not ready.
-- The complete four-stage M1 chain was rebased without conflicts onto PR #633 head `3f89818c7` and retains its
-  staged package expansion, owner migration, composition migration, and contract-removal boundaries.
-- Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
-  and normalized resource names, so the B2B mobile API tunnel is emitted correctly.
-- Review remediation added exact Auth SPA replacement and unknown-client fail-closed coverage, retained legacy
-  hosting compatibility until the final contract stage, made resolver assertions portable across Windows and
-  Linux, completed the exact platform extraction table, added owner Auth-roster assertions to the B2B,
-  Customer, and system graphs, and added deterministic coverage that exercises every owner frontend path through
-  the production B2B and Customer hosting extensions in both extracted-only and monorepo-preferred layouts.
+- Reconciled the active ledger against the corrected repository topology and restored the canonical
+  dependency-ordered packet table without importing divergent pre-correction topology text.
+- Based the isolated M4 branch on exact PR #945 head `4f2681974c914a15e50c6292e724e42900d3d20b`.
+- Replaced the Auth.Contracts `ProjectReference` to Messaging.Contracts with a centrally pinned package reference.
+- Corrected the B2B and Customer Payment resource endpoints to terminate HTTPS at the Aspire proxy while keeping
+  container target port 8080, and updated the owner host-graph assertions.
+- Extended the split-inventory check to fail for blocking runtime edges and regenerated the inventory.
+- Extended the Auth carve workflow to include and build the Auth.Contracts owner root.
 
 ## Verification
 
-- Ancestry from PR #633 head `3f89818c7` through the complete M1 stack is verified after each local restack.
-- Package inventory and local platform preparation pass with 57 packages. Auth Hosting, B2B Hosting, Auth
-  AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
-  form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
-- `Concertable.AppHost.Shared` passes 16/16 tests. Auth architecture passes 9/9 tests. B2B package-mode
-  architecture passes 35/35 against the current Payment.Hosting producer placed at #633's pinned package slot;
-  Search architecture passes 4/4 and Payment architecture passes 13/13. B2B and Customer Hosting also build
-  independently against the locally prepared platform packages. Customer's current Hosting and architecture-test
-  assemblies compile in isolation and the two extracted/monorepo frontend-layout cases pass 2/2.
-- Customer and umbrella system execution remain blocked by #633's Customer compile errors (`PaymentOutcome` is
-  sealed and `CheckoutSession` is missing). Exact immutable B2B package qualification remains a delivery gate
-  until #633 publishes or advances its pinned Payment.Hosting producer: the currently published pinned binary
-  expects the previous `AsbTopology.WithService` contract, while the current producer passes locally at that slot.
+- `scripts/local-platform.ps1 prepare` produced exact local version `0.1.0-local.1788721241736` with 57 packages,
+  including the modified Auth.Contracts package and its Messaging.Contracts dependency.
+- `eng/repository-split/inventory.py --check` passes with zero blocking runtime edges and zero blocking test-tier
+  edges.
+- `eng/repository-split/validate_map.py` reports 4,766 tracked paths, 4,766 claims, 79 unclaimed paths, and zero
+  multiply claimed paths. The 79 unclaimed paths remain the pre-existing F0 map-admission work; M4 does not cross
+  that gate.
+- The Auth clean carve builds both Auth-owned roots plus the runtime/unit/integration closure with zero errors.
+  Its restored asset graph resolves `Concertable.Messaging.Contracts/0.1.0-local.1788721241736` as a package and
+  contains no project reference.
+- The B2B clean carve builds its 104-project package-only solution with zero errors, and all 13 B2B standalone
+  host-graph tests pass against the same exact local M1 package set.
+- The Customer clean carve builds its 54-project package-only solution with zero errors, and all 9 Customer
+  standalone architecture tests pass against the same exact local M1 package set.
+- Windows verification used a temporary short drive mapping because the isolated worktree plus the longest B2B
+  project path is 265 characters. Fresh archive carves eliminated the path-length artifact; no source workaround
+  or reduced graph was used.
 - No local E2E suite was run; E2E remains a remote merge-queue diagnostic gate.
 
 ## Reviews
 
-The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its immutable full pass requested changes;
-all five newly reported findings are repaired on their owning stages. B2B, Search, and Payment composition
-verification is complete, while the Customer and system executions retain the observable #633 resume condition
-above. Because remediation restacked the candidate, the next full pass establishes the frozen review watermark
-rather than treating the rewritten history as an incremental review.
+The base-to-tip implementation review of the immutable local candidate found no code or plan findings after the
+clean-carve and standalone-composition evidence was captured. The owning workflow should perform its independent
+review after handoff; any resulting finding remains M4-owned.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Existing service, `infra`, and `config` repository IDs and active owner ledgers override historical labels;
-  they are not renamed or replaced.
-- Shared packages have two repository owners: `platform-dotnet` and `platform-frontend`. The frontend owner
-  contains general shared web/mobile code; web and mobile remain package tiers, not repositories.
-- `system` is a separate container-composition and black-box qualification boundary.
-- M1 creates no repositories and makes no further topology decision.
-- The current GitHub entitlement returns 403 for private-repository ruleset, merge-queue, and branch-protection
-  reads. There is no technical private-main enforcement substitute on this entitlement: targets remain private
-  and non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade is verified.
+- The Payment container continues to listen on target port 8080. `WithHttpsEndpoint` changes the Aspire proxy
+  discovery scheme to HTTPS; it does not require TLS inside the Payment container.
+- Auth.Contracts owns its package pin because it is a separately mapped root in the retained Auth repository.
+  Local M1 validation overrides that pin with the exact locally prepared platform version.
+- Initial in-worktree B2B/Customer build attempts failed in MSBuild copy targets because the 265-character B2B
+  path crossed the Windows path limit. Short-mounted clean archive carves proved the identical candidate; this
+  was an execution-environment artifact, not a test assertion or repository-closure failure.
+- Package publication, repository creation/import, and G0, C1, F0, or R1 gate execution are outside M4.
