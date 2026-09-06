@@ -1,3 +1,4 @@
+#requires -Version 7.0
 # Offline behavior checks: no real SDK, secrets, database, or service process is invoked.
 [CmdletBinding()]
 param()
@@ -20,6 +21,13 @@ function Assert-Throws([scriptblock]$Action, [string]$Pattern) {
 function Write-Fixture([string]$Path, [string]$Value) {
     New-Item -ItemType Directory -Path (Split-Path $Path -Parent) -Force | Out-Null
     [IO.File]::WriteAllText($Path, $Value)
+}
+function Get-CompatibleRelativePath([string]$BasePath, [string]$Path) {
+    $separator = [IO.Path]::DirectorySeparatorChar
+    $base = [IO.Path]::GetFullPath($BasePath).TrimEnd($separator, [IO.Path]::AltDirectorySeparatorChar) + $separator
+    $target = [IO.Path]::GetFullPath($Path)
+    $relative = ([Uri]$base).MakeRelativeUri([Uri]$target).ToString()
+    return [Uri]::UnescapeDataString($relative).Replace('/', $separator)
 }
 function global:dotnet {
     $arguments = @($args)
@@ -87,7 +95,7 @@ try {
             Write-Fixture (Join-Path $carve $appHost) (Get-Content -LiteralPath (Join-Path $source $appHost) -Raw)
             Copy-Item -LiteralPath (Join-Path $source 'setup-local-dev.ps1') -Destination $carve
             foreach ($template in Get-ChildItem -LiteralPath $source -Filter 'appsettings.Development.json.example' -Recurse -File) {
-                $relative = [IO.Path]::GetRelativePath($source, $template.FullName)
+                $relative = Get-CompatibleRelativePath $source $template.FullName
                 Write-Fixture (Join-Path $carve $relative) (Get-Content -LiteralPath $template.FullName -Raw)
             }
             & (Join-Path $carve 'setup-local-dev.ps1') -WhatIf
@@ -151,6 +159,16 @@ try {
     Invoke-OwnerMigrations -Root $fixture -Manifest $manifest -Check
     $manifest.Migrations[0].Project = '../escape'
     Assert-Throws { Invoke-OwnerMigrations -Root $fixture -Manifest $manifest -WhatIf } 'inside owner root'
+    $external = Join-Path $temporaryRoot 'external-migrations'
+    $externalMarker = Join-Path $external 'do-not-touch.txt'
+    Write-Fixture $externalMarker 'preserved'
+    $linkedProject = Join-Path $fixture 'linked-project'
+    $linkType = if ([IO.Path]::DirectorySeparatorChar -eq '\') { 'Junction' } else { 'SymbolicLink' }
+    New-Item -ItemType $linkType -Path $linkedProject -Target $external | Out-Null
+    $manifest.Migrations[0].Project = 'linked-project'
+    Assert-Throws { Invoke-OwnerMigrations -Root $fixture -Manifest $manifest -WhatIf } 'cannot traverse a link'
+    Assert ((Get-Content -LiteralPath $externalMarker -Raw) -eq 'preserved') 'Rejected link traversal changed external content.'
+    Remove-Item -LiteralPath $linkedProject -Force
     $caseRoot = Join-Path $temporaryRoot 'caseowner'
     $caseSibling = Join-Path $temporaryRoot 'CASEOWNER'
     New-Item -ItemType Directory -Path (Join-Path $caseRoot 'project') -Force | Out-Null
@@ -163,7 +181,7 @@ try {
         Assert ($resolved -eq (Join-Path $caseSibling 'project')) 'Windows containment must remain case-insensitive.'
     }
     [Environment]::SetEnvironmentVariable('OWNER_TEST_CONNECTION', $saved, 'Process')
-    Write-Host 'PASS: 24 contexts, 6 isolated migration carves, 5 isolated bootstraps, root dry runs, System gate, idempotency, rollback, ID stability, environment restoration, path boundary.'
+    Write-Host 'PASS: 24 contexts, 6 isolated migration carves, 5 isolated bootstraps, root dry runs, System gate, idempotency, rollback, ID stability, environment restoration, lexical and link path boundaries.'
 } finally {
     Remove-Item Function:\dotnet -ErrorAction SilentlyContinue
     Remove-Variable OwnerTestCalls, OwnerTestSecrets, OwnerTestMode -Scope Global -ErrorAction SilentlyContinue
