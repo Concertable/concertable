@@ -427,3 +427,23 @@ endpoints) would each re-open it.
 access-differentiated prefixes), so an anonymous read endpoint is scoped to the public store by construction and
 can never resolve to a private document regardless of route shape or name exposure.
 
+
+---
+
+### Two hosts still build to `bin/` within 14 characters of the native-path limit
+
+`docs/LOCAL_DEV.md` records the measured 250-character cap on native DLL loading and the `BaseOutputPath`
+redirect that moved the four E2E host executables to `artifacts/e2e/`. The projects that still emit
+`runtimes/*/native` assets under `bin/` come closest at `Concertable.B2B.E2ETests` (236 characters) and
+`Concertable.Customer.AppHost` (234), measured from a 101-character worktree root — so a branch folder 15
+characters longer than `Refactor-launch_deal-lifecycle-modules-phase2` reproduces the same
+`DllNotFoundException ... (0x800700CE)` on a project the redirect does not cover.
+
+`Concertable.B2B.E2ETests` cannot simply follow the other four: `scripts/local-platform.ps1`'s
+`Assert-DataAccessAssembly` scans `<project>/bin/<configuration>` for the `Concertable.DataAccess.Infrastructure`
+version check, and `.github/workflows/test.yml` invokes `playwright.ps1` at a literal
+`.../Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/` path. Both address build output by its default location.
+
+**Resolves when:** every project emitting `runtimes/*/native` assets is either under the cap by construction or
+built through a short artifacts root, with those two output-addressing consumers resolving the path from MSBuild
+rather than assuming `bin/<configuration>/<tfm>`.
