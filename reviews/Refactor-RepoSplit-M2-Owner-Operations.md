@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `d98622e69008cce293806095841ab28f482c4647`  `(2026-09-06)`
-**Security-reviewed up to commit:** `d98622e69008cce293806095841ab28f482c4647`  `(2026-09-06)`
+**Reviewed up to commit:** `97b447bcfa679be55d4c6ec666b5909c287ceb5c`  `(2026-09-06)`
+**Security-reviewed up to commit:** `97b447bcfa679be55d4c6ec666b5909c287ceb5c`  `(2026-09-06)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -108,3 +108,22 @@ No findings. The exact platform-tool rename precedes and escapes the generic `ap
 gate asserts the resulting root-level path, and the generated frontend inventory consistently uses the
 authoritative `platform-frontend` target. The checkpoint now resumes at publication rather than replaying
 already committed repairs. Security lens found no new risk in this metadata, validator, or documentation delta.
+
+## Review pass — 2026-09-06 — incremental publication checkpoint
+
+**Candidate base:** `d98622e69008cce293806095841ab28f482c4647`
+**Candidate head:** `97b447bcfa679be55d4c6ec666b5909c287ceb5c`
+**Candidate branch:** `Refactor/RepoSplit-M2-Owner-Operations`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:1d12273e008395251ba1d9f7f9b4fb4f226077a9e40fd4d5266ff59383441ab8` `(2 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m2-publication-eb80be6260a14bcd932a40dc6bf74872`
+**Candidate bundle identity:** `sha256:e1e14c65ec562a9249ed2de23c4d92f9c4960d2474d88a7dfc9421a6e6a7540e`
+**Work-order path:** `reviews/Refactor-RepoSplit-M2-Owner-Operations.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The tracked review transition and PR #947 checkpoint accurately record the published draft,
+explicit #633 base, Docker resume condition, and completed M2 review state. Security lens found no risk in
+the review-only and plan-only tail.
