@@ -3,9 +3,10 @@
 - Plan: `plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/b2b-package-topology`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Producer`
-- Branch: `Refactor/B2bPackageTopologyPhase3-Producer`
-- PR: not opened; this is the Phase 3 package-producer stage based on PR #633
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Consumers`
+- Branch: `Refactor/B2bPackageTopologyPhase3-Consumers`
+- PR: not opened; this consumer/contraction stage is stacked on
+  `Refactor/B2bPackageTopologyPhase3-Producer`
 - Dependency/package gates: satisfied by feed-verified `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314` from terminal Phase 2 publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
 - Last reconciled: 2026-09-06 against exact PR #633 head
   `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`, merged Phase 2 PR
@@ -25,19 +26,21 @@ passed the frontend package, boundary, carve, build, unit, and integration gates
 [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572) then published and
 feed-verified both first-class package identities at `0.1.0-alpha.0.4314`.
 
-Phase 3 is split at the real publication boundary. This producer stage expands the retained
+Phase 3 is split at the real publication boundary. The producer stage expands the retained
 `@concertable/b2b` package with the active-profile implementation and the optional/all-membership tenant
-contract required by mobile. The consumer/contraction stage remains local until this producer is reviewed,
-merged, published, and feed-verified at an exact version. The original combined local branch is retained only
-as a recovery reference; it is not a publication candidate. The historical B2B repository handoff is
-superseded and is not an execution target.
+contract required by mobile. This stacked consumer/contraction stage migrates web and mobile consumers,
+removes the duplicate universal and manager-web implementations, repairs the mobile tenant edge, and closes
+the organization-profile route integration. It may be reviewed and published as a draft, but cannot complete
+its feed carves or merge until the producer is merged, published, and feed-verified at an exact version. The
+original combined local branch is retained only as a recovery reference; it is not a publication candidate.
 
 ## Next Steps
 
-Validate and review this producer-only stage, then publish it as a draft PR based on #633. Do not publish the
-package before that PR merges. After merge, publish and feed-verify an exact `@concertable/b2b` version; only
-then rebase and deliver the stacked consumer/contraction stage and require its standalone feed carves. Do not
-substitute the moving `alpha` tag for the exact package dependency gate.
+Validate and review this consumer/contraction stage, then publish it as a draft PR stacked on the producer
+stage. Do not merge it before the producer PR merges and an exact new `@concertable/b2b` version is published
+and feed-verified. At that gate, replace the draft's workspace proof with exact-version package verification,
+run the affected standalone carves and exact-head CI, then deliver. Do not substitute the moving `alpha` tag
+for the exact package dependency gate.
 
 ## Completed work
 
@@ -66,6 +69,9 @@ substitute the moving `alpha` tag for the exact package dependency gate.
   producer can be published and exact-version verified ahead of its consumers.
 - **Phase 3 producer stage:** contains only the cross-platform package implementation, dependency manifest
   and lockfile closure, focused tests, and package verification assertion required for publication.
+- **Phase 3 consumer/contraction stage:** is stacked on the producer and contains only the web/mobile consumer
+  migration, duplicate deletion, platform adapters, mobile tenant/session wiring, dependency closure, and
+  organization-profile route consumers.
 - **Mobile B2B tenant edge:** replaced the unsafe identity cast and venue-presence routing with typed
   identity data, all-artist-and-venue membership resolution, SecureStore persistence, chooser/switcher
   composition, validated `X-Tenant-Id` wiring for API and payment clients, and logout/401 clearing.
@@ -105,6 +111,11 @@ substitute the moving `alpha` tag for the exact package dependency gate.
 - After the publication-safe split and restack onto #633 head `5e2dcf604`, the producer-only stage passed
   the universal package build/tests (9 files/26 tests), cross-platform B2B build/tests (7 files/25 tests),
   boundary tests (8/8), and dependency/entrypoint lint across all 13 workspaces.
+- The stacked consumer stage's complete `app/` tree is byte-identical to the already validated combined
+  candidate. Its fresh lockfile install, all six ordered package builds/tests, all five production web builds,
+  both mobile TypeScript checks, boundary tests (8/8), and dependency/entrypoint lint across all 13 workspaces
+  passed after the split. The earlier identical-tree Android/Hermes exports remain green evidence; the
+  terminal standalone carves remain gated on the producer's exact published version.
 - Feed carves of the combined artist and venue consumers restored the current `alpha`
   (`0.1.0-alpha.0.5913`) and correctly failed because that moving tag lacks Phase 2's active-profile
   exports. The exact feed-verified Phase 2 artifact `0.1.0-alpha.0.4314` remains resolvable, but
@@ -120,8 +131,8 @@ substitute the moving `alpha` tag for the exact package dependency gate.
   `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
   of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
   `6e87fcf36`.
-- Phase 3 producer review has not started. The combined local proof is validation evidence, not the candidate
-  that will be published.
+- Phase 3 producer and consumer-stage reviews have not started. The combined local proof is validation
+  evidence, not a candidate that will be published as one indivisible change.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -144,6 +155,6 @@ substitute the moving `alpha` tag for the exact package dependency gate.
 ## Resume prompt
 
 ```
-cd C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Producer
-Validate and review the producer-only Phase 3 candidate, read @plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md and @plans/platform/B2B_PACKAGE_TOPOLOGY_PROGRESS.md, and do what its `## Next Steps` says without publishing the package or consumer cutover ahead of its delivery gates.
+cd C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Consumers
+Validate and review the consumer/contraction Phase 3 candidate, read @plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md and @plans/platform/B2B_PACKAGE_TOPOLOGY_PROGRESS.md, and do what its `## Next Steps` says without merging or delivering consumers ahead of the exact producer package gate.
 ```
