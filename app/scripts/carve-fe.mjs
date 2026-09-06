@@ -9,7 +9,7 @@ import { join } from "node:path";
 // here at install; a shared import absent from the feed fails at restore; a build that only resolves
 // via monorepo-root config fails standalone.
 //
-//   node scripts/carve-fe.mjs <surface> [--worktree] [--prepare-only] [--keep]
+//   node scripts/carve-fe.mjs <surface> [--package-version=<exact-version>] [--worktree] [--prepare-only] [--keep]
 //
 // Requires GITHUB_PACKAGES_TOKEN (a PAT with read:packages) in the environment — same credential the
 // feed restore uses everywhere else.
@@ -32,10 +32,23 @@ const surface = argv.find((a) => !a.startsWith("--"));
 const useWorktree = argv.includes("--worktree");
 const prepareOnly = argv.includes("--prepare-only");
 const keep = argv.includes("--keep");
+const packageVersionArgument = argv.find((argument) =>
+  argument.startsWith("--package-version="),
+);
+const packageVersion = packageVersionArgument?.slice(
+  "--package-version=".length,
+) ?? "alpha";
+const exactVersionPattern =
+  /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 if (!surface || !SURFACES[surface]) {
   throw new Error(
-    `Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--worktree] [--prepare-only] [--keep]`,
+    `Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--package-version=<exact-version>] [--worktree] [--prepare-only] [--keep]`,
+  );
+}
+if (packageVersion !== "alpha" && !exactVersionPattern.test(packageVersion)) {
+  throw new Error(
+    `--package-version must be an exact npm version, received: ${packageVersion}`,
   );
 }
 if (!prepareOnly && !process.env.GITHUB_PACKAGES_TOKEN) {
@@ -87,16 +100,16 @@ try {
   // remote host ("Cannot connect to C:"). Portable across the Linux CI and Windows tars.
   run("tar", ["-xf", "surface.tar", "-C", "repo"], { cwd: work });
 
-  // 2. Rewrite intra-@concertable specifiers "*" -> "alpha": "*" links the workspace copy in-monorepo
-  //    but is unresolvable from the feed (the tiers publish only alpha-tagged prereleases). The tag
-  //    resolves the current lockstep publish; the surface's own source is unchanged.
+  // 2. Rewrite intra-@concertable specifiers to the selected feed version. The default alpha tag keeps
+  //    normal CI on the current lockstep publish; --package-version pins a terminal consumer proof to
+  //    the exact producer publication. The surface's own source is unchanged.
   const pkgPath = join(dir, "package.json");
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
   for (const field of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
     const deps = pkg[field];
     if (!deps) continue;
     for (const name of Object.keys(deps)) {
-      if (name.startsWith("@concertable/")) deps[name] = "alpha";
+      if (name.startsWith("@concertable/")) deps[name] = packageVersion;
     }
   }
 

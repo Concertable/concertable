@@ -34,6 +34,7 @@
     "build:web-packages": "npm -w @concertable/shared run build && npm -w @concertable/web run build && npm -w @concertable/customer run build && npm -w @concertable/b2b run build && npm -w @concertable/web-b2b run build",
     "lint:boundaries": "node scripts/check-fe-boundaries.mjs",
     "test:boundaries": "node --test scripts/check-fe-boundaries.test.mjs scripts/carve-fe.test.mjs",
+    "validate:b2b-phase3-consumers": "node scripts/validate-b2b-phase3-consumers.mjs",
     "postinstall": "node scripts/patch-nativewind.js"
   },
   "overrides": {
