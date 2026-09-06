@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `ed4ff99c8a604a93dfaf2022551284a6541348a3`  _(2026-09-06)_
-**Security-reviewed up to commit:** `ed4ff99c8a604a93dfaf2022551284a6541348a3`  _(2026-09-06)_
+**Reviewed up to commit:** `4285ff3bbcfe88317e75c149c3fb360e87b33b8e`  _(2026-09-06)_
+**Security-reviewed up to commit:** `4285ff3bbcfe88317e75c149c3fb360e87b33b8e`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1282,7 +1282,7 @@ failure — the one IR38 fixes. Frontend `test:boundaries` 8/8,
 ## Review pass — 2026-09-06 — request-scoped tenant carrier
 
 **Candidate base:** `0cf710c7e05855a7ed906ee0c9f2c7f7811d4c3b`
-**Candidate head:** `PENDING_HEAD2`
+**Candidate head:** `4285ff3bbcfe88317e75c149c3fb360e87b33b8e`
 **Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
 **Candidate scope:** `all`
 **Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
