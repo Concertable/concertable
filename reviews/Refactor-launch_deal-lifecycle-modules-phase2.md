@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `fca97df53696b0f17a90966e19655dfa35a7a6b0`  _(2026-09-06)_
-**Security-reviewed up to commit:** `fca97df53696b0f17a90966e19655dfa35a7a6b0`  _(2026-09-06)_
+**Reviewed up to commit:** `d9a328d2d3a5b87d0c0c663f72ef1844dcf82a7c`  _(2026-09-06)_
+**Security-reviewed up to commit:** `d9a328d2d3a5b87d0c0c663f72ef1844dcf82a7c`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1147,7 +1147,7 @@ dispositions and both review watermarks cover the final fixing head.
 ## Review pass — 2026-09-06 — origin/main merge and first-ever green CI matrix
 
 **Candidate base:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`
-**Candidate head:** `fca97df53696b0f17a90966e19655dfa35a7a6b0`
+**Candidate head:** `d9a328d2d3a5b87d0c0c663f72ef1844dcf82a7c`
 **Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
 **Candidate scope:** `all`
 **Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
