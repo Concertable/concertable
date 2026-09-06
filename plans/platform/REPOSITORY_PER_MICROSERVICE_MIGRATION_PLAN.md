@@ -190,8 +190,8 @@ Seed ownership is mostly aligned already:
 
 - B2B owns its canonical seed catalog, `B2B.Seed.Contracts`, and `B2B.Seed.Simulator`.
 - Customer and Search build projections from B2B seed events.
-- Customer has local seed infrastructure but no producer simulator package/image for its own outbound
-  review/rating events; Search's standalone topology therefore has an acknowledged gap.
+- Search's rating inputs are B2B-owned events. Its standalone topology consumes the B2B simulator image and
+  published Contracts; it has no direct Customer simulator or runtime dependency.
 - Payment owns Stripe-specific E2E seeding and local test seeding, but has no cross-service catalog.
 - Projection test seeders are confined to integration tests; production-like local/full-stack composition
   must use producer events.
@@ -552,7 +552,7 @@ Path ownership for extraction is:
 
 | Target | Included source paths |
 |---|---|
-| B2B | `api/Concertable.B2B` excluding full-stack E2E; `app/web/b2b`; `app/mobile/b2b` |
+| B2B | `api/Concertable.B2B` excluding full-stack E2E; `app/web/b2b`; `app/web/admin`; `app/mobile/b2b`; `app/b2b/shared` |
 | Customer | `api/Concertable.Customer` excluding full-stack E2E; `app/web/customer`; `app/mobile/customer`; `app/customer/shared` |
 | Payment | `api/Concertable.Payment` excluding full-stack E2E helpers |
 | Search | `api/Concertable.Search` excluding full-stack E2E helpers |
