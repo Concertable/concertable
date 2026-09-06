@@ -96,6 +96,8 @@ const CHECKS = {
       'if (!customerClient) throw new Error("Missing @concertable/customer customerClient export");',
       'const reference: PaymentOperationReference = { operationType: "ticket-purchase", clientReference: "buyer" };',
       'if (!paymentOperationReferencesMatch(reference, reference)) throw new Error("Payment reference comparison failed");',
+      'if (paymentOperationReferencesMatch(reference, { ...reference, operationType: "other" })) throw new Error("Payment operation type comparison failed");',
+      'if (paymentOperationReferencesMatch(reference, { ...reference, clientReference: "other" })) throw new Error("Payment client reference comparison failed");',
       'const checkout = {} as TicketCheckout;',
       'const failure = {} as TicketPurchaseFailedPayload;',
       'const request = {} as CreateReviewRequest;',
