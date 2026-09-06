@@ -88,6 +88,13 @@ No review yet — no implementation exists to review.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **Do not run a full `api/Concertable.slnx` build in this environment.** It fails with `CS0041` /
+  `MSB3021` — *"There is not enough space on the disk"*, not a code error — and burns ten minutes doing
+  it. C: has ~0.9 GB free, with 34.7 GB in `.worktrees` (`Refactor-launch_deal-lifecycle-modules-phase2`
+  16.3, `Chore-TestTierNaming` 10.3, this one 6.8) and 6.5 GB in the NuGet cache. The phase gate is the
+  smallest affected project build plus focused tests; exact-head CI owns the full solution and the
+  complete matrix. Phase 1 passed that gate before the disk filled.
+
 - **`Claim()` must resume, not re-mint.** `OperationId ?? Claim(Guid.NewGuid())`. The first draft minted
   a fresh id and then hit the rival check, which throws — that breaks `BeginSettlement`'s documented
   reuse and its unit test `BeginSettlement_WhenPreviousAttemptFailed_ReusesTheOperation`. Found by
