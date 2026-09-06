@@ -10,7 +10,7 @@
   blocked by the local Docker Desktop backend failing during WSL bootstrap; private-repository merge-queue
   rulesets remain unavailable on the current GitHub entitlement.
 - Last reconciled: 2026-09-06 against corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the preserved
-  M1-M3 preparation record at `f4709fe4b`, and PR #633 head `b0be763edaf36026b8a28a8acc28475900737e4c`.
+  M1-M3 preparation record at `f4709fe4b`, and PR #633 head `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`.
 
 ## Current state
 
@@ -43,8 +43,9 @@ on M1 or M2.
 - Corrective commits `82bf5dbbb` and `bb59d9ba3` established the retained target identities and the fixed
   `platform-dotnet`, `platform-frontend`, and `system` topology.
 - M1 is represented by draft PRs #942-#945 and creates no repository.
-- M2 commits `a26a3cc6f` and `d670e3383` were restacked as `f067de36f` and `6d6f20324` onto #633. The rebase
-  retained the owner delegator and assigned the three new B2B contexts introduced by #633.
+- M2 commits `a26a3cc6f` and `d670e3383` were restacked as `99d0f2a33` and `ea17ae511` onto #633. The rebase
+  retained the owner delegator and assigned the three new B2B contexts introduced by #633. The reconciliation
+  checkpoint is `1182b90d2` before this exact-head metadata refresh.
 - M3 commits `9654935ae` and `62772dc20` were restacked as `b12104de7` and `7f834b9d3`; its generic Metro
   resolver preserves #633's Stripe and React Native package visibility without product-specific platform code.
 
