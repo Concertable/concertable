@@ -18,9 +18,9 @@
     "crossAreaEdgesByKind": {
       "apphost": 15,
       "apphost-support": 1,
-      "architecture-test": 1,
       "e2e": 26,
       "runtime": 13,
+      "startup-test": 1,
       "unit-test": 3
     },
     "crossTargetEdgeCount": 25,
@@ -316,7 +316,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 270,
+    "projectCount": 275,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -360,13 +360,6 @@
         "packable": false,
         "target": "auth"
       },
-      "api/Concertable.Auth/tests/Concertable.Auth.ArchitectureTests/Concertable.Auth.ArchitectureTests.csproj": {
-        "area": "Concertable.Auth",
-        "kind": "architecture-test",
-        "name": "Concertable.Auth.ArchitectureTests",
-        "packable": false,
-        "target": "auth"
-      },
       "api/Concertable.Auth/tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj": {
         "area": "Concertable.Auth",
         "kind": "fixture",
@@ -378,6 +371,13 @@
         "area": "Concertable.Auth",
         "kind": "integration-test",
         "name": "Concertable.Auth.IntegrationTests",
+        "packable": false,
+        "target": "auth"
+      },
+      "api/Concertable.Auth/tests/Concertable.Auth.StartupTests/Concertable.Auth.StartupTests.csproj": {
+        "area": "Concertable.Auth",
+        "kind": "startup-test",
+        "name": "Concertable.Auth.StartupTests",
         "packable": false,
         "target": "auth"
       },
@@ -1137,6 +1137,13 @@
         "packable": false,
         "target": "b2b"
       },
+      "api/Concertable.B2B/tests/Concertable.B2B.StartupTests/Concertable.B2B.StartupTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "startup-test",
+        "name": "Concertable.B2B.StartupTests",
+        "packable": false,
+        "target": "b2b"
+      },
       "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Server/Concertable.B2B.E2ETests.Server.csproj": {
         "area": "Concertable.B2B",
         "kind": "e2e",
@@ -1557,6 +1564,13 @@
         "packable": false,
         "target": "customer"
       },
+      "api/Concertable.Customer/tests/Concertable.Customer.StartupTests/Concertable.Customer.StartupTests.csproj": {
+        "area": "Concertable.Customer",
+        "kind": "startup-test",
+        "name": "Concertable.Customer.StartupTests",
+        "packable": false,
+        "target": "customer"
+      },
       "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile/Concertable.Customer.E2ETests.Mobile.csproj": {
         "area": "Concertable.Customer",
         "kind": "e2e",
@@ -1788,6 +1802,13 @@
         "packable": false,
         "target": "payment"
       },
+      "api/Concertable.Payment/tests/Concertable.Payment.StartupTests/Concertable.Payment.StartupTests.csproj": {
+        "area": "Concertable.Payment",
+        "kind": "startup-test",
+        "name": "Concertable.Payment.StartupTests",
+        "packable": false,
+        "target": "payment"
+      },
       "api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj": {
         "area": "Concertable.Payment",
         "kind": "unit-test",
@@ -1925,6 +1946,13 @@
         "area": "Concertable.Search",
         "kind": "integration-test",
         "name": "Concertable.Search.IntegrationTests",
+        "packable": false,
+        "target": "search"
+      },
+      "api/Concertable.Search/tests/Concertable.Search.StartupTests/Concertable.Search.StartupTests.csproj": {
+        "area": "Concertable.Search",
+        "kind": "startup-test",
+        "name": "Concertable.Search.StartupTests",
         "packable": false,
         "target": "search"
       },
@@ -2184,6 +2212,13 @@
         "area": "tests",
         "kind": "architecture-test",
         "name": "Concertable.AppHost.ArchitectureTests",
+        "packable": false,
+        "target": "system"
+      },
+      "api/tests/Concertable.AppHost.StartupTests/Concertable.AppHost.StartupTests.csproj": {
+        "area": "tests",
+        "kind": "startup-test",
+        "name": "Concertable.AppHost.StartupTests",
         "packable": false,
         "target": "system"
       },
