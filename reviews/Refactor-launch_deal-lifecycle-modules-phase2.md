@@ -1248,6 +1248,28 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   package reference after this branch's A2 boundary hardening deleted the union it was there for. Reference removed;
   the project declares and uses no union. Shared.Api unit tier 83/83.
 
+- [x] **IR39 — HIGH — correctness (test isolation)** — `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/ApiFixture.cs:165`
+  `Concertable.B2B.Lifecycle.IntegrationTests` failed on CI at a head whose only delta from a fully green run
+  was four markdown files, so the suite is non-deterministic. `ResetAsync` Respawns the database between
+  tests while `OutboxDispatcher` — a `BackgroundService` polling every second — may already hold a leased
+  batch in memory: `GetPendingAsync` marks rows `Dispatching` and returns them, and delivery happens after.
+  Wiping the table does not recall that batch, so the previous test's messages are delivered *into the next
+  test*. That is how `Accept_ShouldNotConfirmBooking_WhenWebhookFails` saw a concert-draft notification: its
+  three product assertions all passed (booking `ConfirmationFailed`, concert `404`), and the run log shows a
+  `booking-confirmed.v1` dispatch inside a test that confirms no booking — a message that can only have come
+  from its predecessor. That dispatch threw `KeyNotFoundException` because the in-memory transport's map had
+  already been reset, and it appears zero times in the green run. Locally the suite failed 1 run in 2 before
+  the fix, on a *different* test (`BookingCancellation_RetryUsesNewOperationAndCompletes`) — a different
+  victim each time is the signature of bleed rather than one bad test, and at that rate it would have jammed
+  the merge queue repeatedly. `ResetAsync` now waits for zero `Pending`/`Dispatching` rows before Respawn:
+  because a batch is marked `Dispatching` in the database before any of it is delivered and `Dispatched`
+  after, an empty set is proof no batch is in the dispatcher's hands. Bounded at 30s and it throws with the
+  stuck count rather than proceeding, so an undrainable row is a loud failure instead of a silent flake. No
+  sleep, no production change, no test behaviour changed. `runDispatcher: false` was rejected as the lever:
+  it also strips the dispatch resolver, so tests could not dispatch at all. Customer, Payment and Auth
+  register the same dispatcher and their fixtures carry the same latent hole; they are green and out of this
+  PR, recorded in `api/Concertable.B2B/TECH_DEBT.md`.
+
 ### Validation
 
 Full `api/Concertable.slnx` build 0 errors. **Every unit and architecture suite in the repository — all 42 projects,
