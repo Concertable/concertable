@@ -138,6 +138,11 @@ targets:
       - api/Concertable.Search/tests/E2ETests
       - eng/repository-split/carve-e2e.ps1
       - scripts
+    exclude:
+      # Monorepo compatibility entrypoints dissolve at cut; they require sibling owner trees.
+      - scripts/setup-local-dev.ps1
+      - scripts/sync-owner-tooling.ps1
+      - scripts/test-owner-operations.ps1
     rename:
       api/Concertable.AppHost/: "src/Concertable.AppHost/"
       api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
@@ -150,6 +155,7 @@ targets:
       - "Composes and ships the system: umbrella AppHost, cross-service E2E, system manifest, IaC, deployment and rollback."
       - "System names the repository responsibility, not a .NET namespace; code artifacts avoid the framework System root."
       - "E2E must lose service-implementation references (checkpoint 4) before this extraction can build standalone."
+      - "Only scripts/system and System/E2E support commands survive; monorepo owner routing and copy-parity commands dissolve."
 
   org-github:
     repo: Concertable/.github
@@ -164,6 +170,9 @@ dissolves:
   - app/package.json
   - app/package-lock.json
   - api/Concertable.slnx
+  - scripts/setup-local-dev.ps1
+  - scripts/sync-owner-tooling.ps1
+  - scripts/test-owner-operations.ps1
   - AGENTS.md
   - CLAUDE.md
   - ARCHITECTURE.md

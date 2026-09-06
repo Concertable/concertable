@@ -31,8 +31,8 @@ on M1 or M2.
 
 - When Docker Desktop reaches a running backend, require `scripts/docker-health.ps1` to pass, then run
   `scripts/integration.ps1 run` for the fresh-container migration proof.
-- Complete the frozen-head review, commit this checkpoint, and open M2 as a draft sibling PR with #633 as
-  its explicit base. Do not represent it as merge-ready until the Docker proof is green.
+- Commit the frozen-head review repairs, complete the incremental review, and open M2 as a draft sibling PR
+  with #633 as its explicit base. Do not represent it as merge-ready until the Docker proof is green.
 - Keep M1, M2, and M3 as separate packets. After #633 lands, move each packet to the exact landed
   `origin/main`, revalidate its own gates, and preserve producer/package and final service cutover ordering.
 
@@ -46,6 +46,9 @@ on M1 or M2.
 - M2 commits `a26a3cc6f` and `d670e3383` were restacked as `99d0f2a33` and `ea17ae511` onto #633. The rebase
   retained the owner delegator and assigned the three new B2B contexts introduced by #633. The reconciliation
   checkpoint is `1182b90d2` before this exact-head metadata refresh.
+- The full M2 review found four publication defects: an implicit PowerShell runtime assumption, missing CI
+  invocation, missing reparse-point coverage, and monorepo-only scripts leaking into the System extraction.
+  All four are repaired in the current worktree and await the required incremental review watermark.
 - M3 commits `9654935ae` and `62772dc20` were restacked as `b12104de7` and `7f834b9d3`; its generic Metro
   resolver preserves #633's Stripe and React Native package visibility without product-specific platform code.
 
@@ -56,6 +59,10 @@ on M1 or M2.
   and path containment.
 - `scripts/test-system-bootstrap.ps1`: pass; real MSBuild evaluation rejects runtime references introduced
   by props, targets, and explicit imports while ignoring an inactive reference.
+- `eng/repository-split/validate_map.py --owner-operations-only`: pass; monorepo compatibility commands
+  dissolve and only System-owned operation commands survive the System extraction map.
+- Mandatory CI: `workflow-tests` runs both PowerShell gates; `split-inventory` enforces the focused extraction
+  ownership contract. The edited workflow parses successfully as YAML.
 - `git diff --check`: pass after the #633 inventory reconciliation.
 - Docker proof: externally blocked. Docker Desktop remains in `state:starting`; WSL bootstrap reports a
   missing virtual disk and `/_ping` returns HTTP 500. Resume only when `scripts/docker-health.ps1` is green.
@@ -63,8 +70,9 @@ on M1 or M2.
 ## Reviews
 
 The original M2 review found three safety defects, all repaired by `d670e3383`; its incremental review found
-no regression. The rebased candidate requires a fresh frozen-head review covering the #633 context inventory
-and the new 24-context assertion before publication.
+no regression. The rebased frozen-head review at `a2115afc5` requested four further changes, including one
+filesystem-safety and one extraction-correctness defect. All findings now have local fixes; a clean incremental
+review over the fixing commit is required before publication.
 
 ## Decisions, discoveries, blockers, and deviations
 

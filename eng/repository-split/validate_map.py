@@ -9,6 +9,7 @@ migration-blocking defects, so this runs as a gate rather than a report.
 
 from __future__ import annotations
 
+import argparse
 import subprocess
 import sys
 from collections import defaultdict
@@ -18,6 +19,17 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAP = Path(__file__).resolve().parent / "map.yaml"
+
+MONOREPO_ONLY_OWNER_SCRIPTS = {
+    "scripts/setup-local-dev.ps1",
+    "scripts/sync-owner-tooling.ps1",
+    "scripts/test-owner-operations.ps1",
+}
+SYSTEM_OWNER_SCRIPTS = {
+    "scripts/system/OwnerOperations.psm1",
+    "scripts/system/setup-local-dev.ps1",
+    "scripts/test-system-bootstrap.ps1",
+}
 
 
 def tracked() -> list[str]:
@@ -32,6 +44,13 @@ def matches(path: str, prefix: str) -> bool:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--owner-operations-only",
+        action="store_true",
+        help="check only the M2 owner-operation extraction contract",
+    )
+    args = parser.parse_args()
     spec = yaml.safe_load(MAP.read_text(encoding="utf-8"))
     targets = spec["targets"]
     dissolves = spec.get("dissolves") or []
@@ -57,11 +76,29 @@ def main() -> int:
         unclaimed.append(path)
 
     duplicated = {p: t for p, t in claims.items() if len(t) > 1}
+    semantic_errors: list[str] = []
+    for path in sorted(MONOREPO_ONLY_OWNER_SCRIPTS):
+        targets_for_path = claims.get(path, [])
+        if targets_for_path:
+            semantic_errors.append(f"monorepo-only owner script is extracted: {path} -> {targets_for_path}")
+        if not any(matches(path, item) for item in dissolves):
+            semantic_errors.append(f"monorepo-only owner script has no dissolve disposition: {path}")
+    for path in sorted(SYSTEM_OWNER_SCRIPTS):
+        targets_for_path = claims.get(path, [])
+        if targets_for_path != ["system"]:
+            semantic_errors.append(f"System owner script must be claimed only by system: {path} -> {targets_for_path}")
+
+    if args.owner_operations_only:
+        print(f"owner-operation map errors: {len(semantic_errors)}")
+        for error in semantic_errors:
+            print(f"  {error}")
+        return 1 if semantic_errors else 0
 
     print(f"tracked paths        : {len(tracked())}")
     print(f"claimed by a target  : {len(claims)}")
     print(f"unclaimed            : {len(unclaimed)}")
     print(f"claimed by >1 target : {len(duplicated)}")
+    print(f"semantic errors      : {len(semantic_errors)}")
 
     if duplicated:
         print("\nDUPLICATE CLAIMS (a path would land in two repositories):")
@@ -77,7 +114,12 @@ def main() -> int:
         for g, n in sorted(groups.items(), key=lambda kv: -kv[1]):
             print(f"  {n:5}  {g}")
 
-    return 1 if (unclaimed or duplicated) else 0
+    if semantic_errors:
+        print("\nSEMANTIC MAP ERRORS:")
+        for error in semantic_errors:
+            print(f"  {error}")
+
+    return 1 if (unclaimed or duplicated or semantic_errors) else 0
 
 
 if __name__ == "__main__":
