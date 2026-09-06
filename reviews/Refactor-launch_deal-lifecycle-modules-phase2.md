@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `5b4280f804600ea5516714b3ac09be2ab2ce6595`  _(2026-09-07)_
-**Security-reviewed up to commit:** `5b4280f804600ea5516714b3ac09be2ab2ce6595`  _(2026-09-07)_
+**Reviewed up to commit:** `a98a4e5ff96416cb1e9bd8e379441964c21c5950`  _(2026-09-07)_
+**Security-reviewed up to commit:** `a98a4e5ff96416cb1e9bd8e379441964c21c5950`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1691,3 +1691,27 @@ provisioning halves, through a Db class Payment owns, and re-runs after each res
 the registration chain.
 
 UI E2E is being validated separately and is not asserted here. Exact-head CI owns the rest.
+
+## Review pass — 2026-09-07 — repair the test construction sites the signature changes broke
+
+**Candidate base:** `814e1ece5209f5219ce556427056baa4a0131e8e`
+**Candidate head:** `a98a4e5ff96416cb1e9bd8e379441964c21c5950`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Three test fixtures construct `EscrowService` and `StripeSessionClient` directly and were
+not updated when those constructors gained `IPaymentSessionService` and `ILogger`. The preceding passes were
+verified by building only the projects that changed and by running the B2B API E2E suite, neither of which
+compiles Payment's own unit and integration projects — so the break reached CI. The corrective action is
+procedural, not a code change: verify a signature change with a whole-solution build, which is what CI runs.
+
+### Validation
+
+`local-platform.ps1 build api/Concertable.slnx --configuration Release` — build succeeded, exit 0, zero
+errors, matching the configuration and scope of the CI job that failed. The B2B API E2E result from the
+preceding pass stands; these edits touch test construction only and no production path.
