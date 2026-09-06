@@ -5,9 +5,9 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `7a561adbe1d5f32a0e6a562323859fa4039117a8`  `(2026-09-06)`
-**Security-reviewed up to commit:** `7a561adbe1d5f32a0e6a562323859fa4039117a8`  `(2026-09-06)`
-**Judgment:** `changes-requested`
+**Reviewed up to commit:** `d98622e69008cce293806095841ab28f482c4647`  `(2026-09-06)`
+**Security-reviewed up to commit:** `d98622e69008cce293806095841ab28f482c4647`  `(2026-09-06)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
 
@@ -77,7 +77,8 @@ secrets rather than in tracked runtime configuration.
   `tools/OwnerOperations.psm1` in `platform-dotnet`, but the extraction map's generic `api/` rename places it
   at `src/Concertable.Shared/tools/OwnerOperations.psm1`. Align and validate the actual rename destination.
   Resolved with an exact path rename before the generic `api/` rule and a validator assertion for the final
-  root-level destination. The same touched map now uses the authoritative `platform-frontend` target name.
+  root-level destination. The touched map and generated inventory now use the authoritative
+  `platform-frontend` target name.
 - [x] **M2-006 — LOW — plan resumability** — `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md:22`
   The checkpoint describes a three-commit head and tells the next owner to commit review repairs already
   present in this candidate. Record the actual fixing head and make final review/publication the resume action.
@@ -87,3 +88,23 @@ secrets rather than in tracked runtime configuration.
 This is a new full pass because the exact #633 restack rewrote the earlier watermark's ancestry; the prior
 candidate descriptor, findings, severities, and dispositions remain preserved above. Security lens: no new
 findings in the CI, extraction-map, test, or documentation remediation delta.
+
+## Review pass — 2026-09-06 — incremental
+
+**Candidate base:** `7a561adbe1d5f32a0e6a562323859fa4039117a8`
+**Candidate head:** `d98622e69008cce293806095841ab28f482c4647`
+**Candidate branch:** `Refactor/RepoSplit-M2-Owner-Operations`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:c81927bcc0309d726465c224759589549c1d95db76bb77c5503dcec936ae4a66` `(6 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m2-incremental-final2-65537ca2c85c40e4b0f443ff2e1bdf3f`
+**Candidate bundle identity:** `sha256:1fabdc58f220e2062d8f2df9a8b70c3f2d7be9ba2a5ffbf50ca18e18d6c782f9`
+**Work-order path:** `reviews/Refactor-RepoSplit-M2-Owner-Operations.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The exact platform-tool rename precedes and escapes the generic `api/` rename, the focused map
+gate asserts the resulting root-level path, and the generated frontend inventory consistently uses the
+authoritative `platform-frontend` target. The checkpoint now resumes at publication rather than replaying
+already committed repairs. Security lens found no new risk in this metadata, validator, or documentation delta.

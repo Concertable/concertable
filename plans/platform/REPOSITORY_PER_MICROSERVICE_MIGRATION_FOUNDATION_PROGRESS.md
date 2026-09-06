@@ -32,9 +32,8 @@ both are fixed in the final remediation commit. M3 is active independently and d
 
 - When Docker Desktop reaches a running backend, require `scripts/docker-health.ps1` to pass, then run
   `scripts/integration.ps1 run` for the fresh-container migration proof.
-- Complete the final remediation commit's incremental review, then open M2 as a draft sibling PR with #633
-  as its explicit base. Do not recreate or recommit resolved M2-001 through M2-004, and do not represent M2
-  as merge-ready until the Docker proof is green.
+- Open M2 as a draft sibling PR with #633 as its explicit base. Do not recreate or recommit resolved M2-001
+  through M2-004, and do not represent M2 as merge-ready until the Docker proof is green.
 - Keep M1, M2, and M3 as separate packets. After #633 lands, move each packet to the exact landed
   `origin/main`, revalidate its own gates, and preserve producer/package and final service cutover ordering.
 
@@ -74,8 +73,8 @@ both are fixed in the final remediation commit. M3 is active independently and d
 The original M2 review found three safety defects, all repaired by `d670e3383`; its incremental review found
 no regression. The rebased frozen-head review at `a2115afc5` requested four further changes, all repaired by
 `7a561adbe`. The final full review of that fixing head requested the platform-tool destination and checkpoint
-corrections, both fixed by the final remediation commit. A clean incremental review over that commit is the
-remaining review gate before publication.
+corrections, both fixed by `d98622e69`. The incremental review over that commit found no further defects and
+advanced both the general and security watermarks. M2 is review-complete for draft publication.
 
 ## Decisions, discoveries, blockers, and deviations
 
