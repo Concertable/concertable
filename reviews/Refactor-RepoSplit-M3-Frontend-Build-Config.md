@@ -29,3 +29,21 @@ package-export consumption, both mobile applications use the shared Metro packag
 and the product workspaces retain their web/mobile package tiers under the authoritative
 `platform-frontend` boundary. The full package, web, mobile, isolation, boundary, and plan-graph gates
 passed. Security review found no new trust-boundary or dependency-resolution risk in the frozen delta.
+
+## Review pass — 2026-09-06 — incremental publication checkpoint
+
+**Candidate base:** `9216a0883ff407224af93b14ac69eff9ecd3041a`
+**Candidate head:** `84bb9f3a44f01530d14e102201827d393edba957`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The plan-only checkpoint records draft PR #948, its direct #633 branch base, the retained-service,
+`platform-dotnet`, `platform-frontend`, and separate `system` topology, and the delivery-time landed-main
+restack gate. Security review found no risk in the publication metadata. PR #633 advanced after the reviewed
+commit from the locally restacked `ad4ad986f` snapshot to `5e2dcf604`; the follow-up ledger correction records
+that moving-base fact without changing the reviewed implementation delta.
