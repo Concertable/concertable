@@ -40,7 +40,8 @@ associations into the B2B and Customer owners before system composition consumes
   PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
 - Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
   their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
-- Extraction-map preflight found no duplicate claims but 70 unclaimed tracked paths; 6C is not ready.
+- Extraction-map preflight reports 4,766 tracked paths, 4,766 target claims, 79 unclaimed tracked paths, and
+  zero multiply-claimed paths; 6C is not ready.
 - The complete four-stage M1 chain was rebased without conflicts onto PR #633 head `3f89818c7` and retains its
   staged package expansion, owner migration, composition migration, and contract-removal boundaries.
 - Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
