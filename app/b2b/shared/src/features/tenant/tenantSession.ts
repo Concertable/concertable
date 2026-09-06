@@ -80,6 +80,8 @@ export function createTenantSession(store: StoreApi<TenantStoreState>) {
           if (selection === latestSelection)
             store.getState().selectTenant(tenantId);
         });
+      } catch (error) {
+        if (selection === latestSelection) throw error;
       } finally {
         if (selection === latestSelection) store.getState().endSelection();
       }

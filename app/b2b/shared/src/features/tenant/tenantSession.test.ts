@@ -100,6 +100,29 @@ describe("tenant session", () => {
     expect(useTenantStore.getState().isSelectionPending).toBe(false);
   });
 
+  it("suppresses an older failure after a newer selection succeeds", async () => {
+    let rejectFirstSave: ((error: Error) => void) | undefined;
+    const firstSave = new Promise<void>((_, reject) => {
+      rejectFirstSave = reject;
+    });
+    const { session, storage } = await createSession(venueMemberships);
+    vi.mocked(storage.saveActiveTenantId)
+      .mockImplementationOnce(() => firstSave)
+      .mockResolvedValueOnce(undefined);
+
+    const olderSelection = session.select("venue-one");
+    await vi.waitFor(() =>
+      expect(storage.saveActiveTenantId).toHaveBeenCalledWith("venue-one"),
+    );
+    const latestSelection = session.select("venue-two");
+    rejectFirstSave?.(new Error("stale write failed"));
+
+    await expect(olderSelection).resolves.toBeUndefined();
+    await expect(latestSelection).resolves.toBeUndefined();
+    expect(session.tenantIdForRequest()).toBe("venue-two");
+    expect(useTenantStore.getState().isSelectionPending).toBe(false);
+  });
+
   it("recovers from a failed hydration when configuration is retried", async () => {
     const storage = createStorage("venue-one");
     vi.mocked(storage.loadActiveTenantId)

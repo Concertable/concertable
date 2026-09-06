@@ -35,9 +35,10 @@ const keep = argv.includes("--keep");
 const packageVersionArgument = argv.find((argument) =>
   argument.startsWith("--package-version="),
 );
-const packageVersion = packageVersionArgument?.slice(
+const packageVersionOverride = packageVersionArgument?.slice(
   "--package-version=".length,
-) ?? "alpha";
+);
+const packageVersion = packageVersionOverride ?? "alpha";
 const exactVersionPattern =
   /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
@@ -46,7 +47,10 @@ if (!surface || !SURFACES[surface]) {
     `Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--package-version=<exact-version>] [--worktree] [--prepare-only] [--keep]`,
   );
 }
-if (packageVersion !== "alpha" && !exactVersionPattern.test(packageVersion)) {
+if (
+  packageVersionOverride !== undefined &&
+  !exactVersionPattern.test(packageVersionOverride)
+) {
   throw new Error(
     `--package-version must be an exact npm version, received: ${packageVersion}`,
   );
