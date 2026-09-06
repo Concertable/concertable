@@ -86,6 +86,7 @@ Product & system narrative lives in the central [`Concertable/docs`](https://git
 | Behaviour that varies by a closed key | skill `keyed-strategies` |
 | Project layering, reference graph, visibility cascade, cross-module rules, module facades | skill `dotnet-standards:module-structure` |
 | Endpoint contracts — DTO vs `Response`, `Request` records, route vocabulary | skill `dotnet-standards:http-api` |
+| Rate limiting — the trust/cost decision, per-IP vs per-subject partitioning | skill `rate-limiting`; this system's policy roster [`RATE_LIMITING.md`](./RATE_LIMITING.md) |
 | Result and Option carriers; typed errors; transport terminals | skills `result-carriers`, `result-errors`, `dotnet-standards:result-terminals` |
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
 | Seeding — drive the trigger, never write the row | skill `dotnet-standards:seeding` |
