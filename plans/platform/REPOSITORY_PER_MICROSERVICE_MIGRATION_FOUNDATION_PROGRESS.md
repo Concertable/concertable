@@ -5,11 +5,14 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M3-Frontend-Build-Config`
 - Branch: `Refactor/RepoSplit-M3-Frontend-Build-Config`
-- PR: draft monorepo PR #948, explicitly based on monorepo PR #633
-- Dependency/package gates: M3 delivery waits for PR #633 and the real
+- PR: [#948](https://github.com/Concertable/concertable/pull/948), draft; independent sibling based on
+  monorepo PR #633 snapshot `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`, at exact local, upstream, and PR
+  head `35cc942836469d298415edf37c1ecc805a32d1c6`
+- Dependency/package gates: M3 delivery waits for PR #633, an exact landed-main restack and review, and the real
   `@concertable/build-config` publication; preparation and review do not depend on M1 or M2.
-- Last reconciled: 2026-09-06 against corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the preserved
-  M1-M3 preparation record at `f4709fe4b`, and the moving PR #633 branch, currently observed at
+- Last reconciled: 2026-09-06 against corrective topology commits `82bf5dbbb` and `bb59d9ba3`, current M3
+  head `35cc942836469d298415edf37c1ecc805a32d1c6`, PR #633 base snapshot
+  `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`, and live PR #633 head
   `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`.
 
 ## Current state
@@ -21,9 +24,11 @@ this packet. General shared frontend code covers web and mobile while those rema
 repository boundaries.
 
 M1 is published as four draft stacked PRs #942-#945. M2 is published as independent sibling draft PR #947.
-M3 is published as independent sibling draft PR #948, based on the live #633 branch and last locally
-restacked at #633 snapshot `ad4ad986f`. #633 advanced to `5e2dcf604` during publication verification; its
-moving base remains clean on GitHub, and the exact landed-main restack is still required before delivery.
+M3 is published as independent sibling draft PR #948 at exact local, upstream, and PR head `35cc94283`, with
+six commits above #633 snapshot `ad4ad986f`. Live #633 is two commits ahead at `5e2dcf604`; M3 is prepared
+but not current, and the exact landed-main restack is still required before delivery. The implementation
+review is approved through `11b322e92`, publication metadata through `84bb9f3a4`, and current head
+`35cc94283` carries the ledger correction and review record.
 M3 extracts the product-neutral `@concertable/build-config` package, makes product workspaces own their
 package lists, and uses the shared Metro resolver for both mobile applications without encoding product
 ownership into the platform tier.
@@ -31,7 +36,8 @@ ownership into the platform tier.
 ## Next Steps
 
 - Keep draft PR #948 based directly on #633 while the dependency remains open; do not merge it ahead of #633.
-- After #633 lands, move M3 to the exact landed `origin/main` if necessary and revalidate the focused delta.
+- After #633 lands, restack M3 exactly once onto the exact landed `origin/main`, revalidate the focused delta,
+  and refresh exact-head review and CI.
 - Before delivery, publish and feed-verify the real `@concertable/build-config` package, replace local
   validation artifacts with the real pin, then rerun both packed mobile carves and the independent consumer.
 - Keep M1, M2, and M3 separate. Do not create repositories, import history, publish packages, or perform a
@@ -50,7 +56,8 @@ ownership into the platform tier.
   Metro resolver preserves #633's Stripe and React Native package visibility without product-specific
   platform code.
 - M3 checkpoint commit `11b322e92` and approved review commit `9216a0883` were published as draft PR #948
-  with #633 as its explicit base.
+  with #633 as its explicit base. Publication metadata is approved through `84bb9f3a4`; current head
+  `35cc94283` carries the ledger correction and review record.
 
 ## Verification
 
@@ -61,15 +68,17 @@ ownership into the platform tier.
   assets resolved from `node_modules/@concertable/mobile` and source package directories absent.
 - Independent packed consumer: CommonJS dependency-cruiser/Metro, ESM Vite/Vitest, TypeScript, and package
   subpath resolution passed; the tarball contained only the eight intended files.
-- `git diff --check`: pass before the exact-head restack; the upstream delta contains only the #633 Concert
-  seeder repair and its review artifact, so no M3 path overlaps.
+- `git diff --check`: pass at the `ad4ad986f` snapshot. Live #633 is two commits ahead; no post-landed-main
+  validation is claimed until the required restack.
 
 ## Reviews
 
 The original M3 full review over `c6240ecea..62772dc20` found no defects. The implementation agent supplied
 the artifact-producing carve and Expo evidence omitted by that read-only pass. The fresh frozen-head review
 over `ad4ad986f..11b322e92` approved the complete 27-path candidate with no functional or security findings;
-its durable work order is `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`.
+publication metadata is approved through `84bb9f3a4`, and current head `35cc94283` adds only the ledger and
+review record. Its durable work order is `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`. The
+mandatory landed-main restack changes ancestry and therefore requires a refreshed exact-head review.
 
 ## Decisions, discoveries, blockers, and deviations
 
