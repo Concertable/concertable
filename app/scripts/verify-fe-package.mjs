@@ -28,9 +28,9 @@ function b2bChecks(
   const activeProfileNodeChecks = verifyActiveProfiles
     ? [
         `import { artistApi, useMyArtist } from "${name}/features/artists";`,
-        `import type { CreateArtistRequest } from "${name}/features/artists";`,
+        `import type { CreateArtistRequest } from "${name}/features/artists/types";`,
         `import { venueApi, useMyVenue } from "${name}/features/venues";`,
-        `import type { CreateVenueRequest } from "${name}/features/venues";`,
+        `import type { CreateVenueRequest } from "${name}/features/venues/types";`,
         'if (typeof artistApi.createArtist !== "function" || typeof useMyArtist !== "function") throw new Error("Missing B2B artist facade");',
         'if (typeof venueApi.createVenue !== "function" || typeof useMyVenue !== "function") throw new Error("Missing B2B venue facade");',
         "const artistRequest = {} as CreateArtistRequest;",
