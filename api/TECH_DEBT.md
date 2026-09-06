@@ -181,6 +181,31 @@ When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the 
 
 **Resolves when:** a real breaking migration makes the local red painful enough to justify extending the `UseLocalCore` swap to cross-service adapter packages (local/inner-loop only — CI + the carve gates always build against packages).
 
+### PR CI proves the platform builds from source, never that services build against their pinned packages
+
+Every service consumes the shared platform as `PackageReference` pinned to `$(ConcertablePlatformVersion)`,
+but CI's unit, architecture, integration and E2E jobs all run through `scripts/local-platform.ps1`, which
+packs the platform from HEAD source into a local feed and tests against that. So a green PR proves the
+services build against **this commit's** shared source, and proves nothing about the versions they are
+actually pinned to. The published closure is only exercised by the `verify-restore` job in
+`publish-packages.yml`, which runs post-merge on `main` — after the point where a break is cheap to fix.
+
+The source build is the right inner loop and should stay: without it a cross-cutting shared fix would need a
+publish-then-bump across two PRs, and the whole point of the local-platform pack is that such a change can
+land atomically. The gap is that nothing checks the other side of the boundary before merge.
+
+The drift this permits is not hypothetical. `api/Concertable.B2B/Directory.Packages.props` carries a split
+pin — `ConcertablePaymentVersion 0.1.0-alpha.0.1322` against `ConcertablePlatformVersion 0.1.0-alpha.0.1329`
+— and `api/Concertable.Shared/Directory.Packages.props:63` pins `Concertable.Payment.Hosting` to the platform
+version rather than the Payment one. Both are live today and neither is caught by a green PR, because no CI
+job ever restores what those pins name. See also the stale sibling entry above describing the pre-cut-over
+version of this problem, which should be reconciled or deleted when this is addressed.
+
+**Resolves when:** one CI job restores and builds each service against the versions its own
+`Directory.Packages.props` pins — the published closure, not the source pack — and fails the PR when a pinned
+version cannot satisfy the service's source. Automating the pin bump so it cannot lag a shared-source change
+would subsume it.
+
 ### CI feed restore assumes a same-repo `GITHUB_TOKEN` — fork / Dependabot PRs can't read the org feed
 
 `.github/workflows/test.yml` authenticates the GitHub Packages feed with `secrets.GITHUB_TOKEN` in the `build`, `carve-auth`, and merge-queue E2E jobs. A PR opened from a **fork** (or a Dependabot PR) runs with a read-only token scoped to the fork, which cannot read the `Concertable` org's private packages, so those PRs would 401 at restore regardless of the change. Not a problem for the current same-repo branch + merge-queue workflow (no fork PRs), logged in case the repo is ever opened to external contributors.
