@@ -9,7 +9,8 @@
 - Dependency/package gates: M3 delivery waits for PR #633 and the real
   `@concertable/build-config` publication; preparation and review do not depend on M1 or M2.
 - Last reconciled: 2026-09-06 against corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the preserved
-  M1-M3 preparation record at `f4709fe4b`, and PR #633 head `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`.
+  M1-M3 preparation record at `f4709fe4b`, and the moving PR #633 branch, currently observed at
+  `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`.
 
 ## Current state
 
@@ -20,10 +21,12 @@ this packet. General shared frontend code covers web and mobile while those rema
 repository boundaries.
 
 M1 is published as four draft stacked PRs #942-#945. M2 is published as independent sibling draft PR #947.
-M3 is published as independent sibling draft PR #948, restacked onto the exact live #633 head. It extracts the
-product-neutral `@concertable/build-config` package, makes product workspaces own their package lists, and
-uses the shared Metro resolver for both mobile applications without encoding product ownership into the
-platform tier.
+M3 is published as independent sibling draft PR #948, based on the live #633 branch and last locally
+restacked at #633 snapshot `ad4ad986f`. #633 advanced to `5e2dcf604` during publication verification; its
+moving base remains clean on GitHub, and the exact landed-main restack is still required before delivery.
+M3 extracts the product-neutral `@concertable/build-config` package, makes product workspaces own their
+package lists, and uses the shared Metro resolver for both mobile applications without encoding product
+ownership into the platform tier.
 
 ## Next Steps
 
