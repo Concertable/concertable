@@ -108,8 +108,8 @@ targets:
       api/: "src/"
     notes:
       - Owns Messaging Inbox/Outbox migrations.
-      - AppHost.Shared still mixes generic primitives with Auth-specific
-        composition; the Auth-specific half re-homes to auth before extraction.
+      - AppHost.Shared owns only product-neutral resource and topology primitives;
+        Auth owns SPA registration behavior and B2B/Customer own their surface rosters.
 
   platform-frontend:
     repo: Concertable/platform-frontend

@@ -72,7 +72,7 @@ associations into the B2B and Customer owners before system composition consumes
 ## Reviews
 
 The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its immutable full pass requested changes;
-all four newly reported findings are repaired on their owning stages. B2B, Search, and Payment composition
+all five newly reported findings are repaired on their owning stages. B2B, Search, and Payment composition
 verification is complete, while the Customer and system executions retain the observable #633 resume condition
 above. Because remediation restacked the candidate, the next full pass establishes the frozen review watermark
 rather than treating the rewritten history as an incremental review.

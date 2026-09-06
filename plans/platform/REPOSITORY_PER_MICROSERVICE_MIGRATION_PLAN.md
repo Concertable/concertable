@@ -160,9 +160,9 @@ The foreign `B2BDb` entries are caused by Auth's persisted-grant-store coupling,
 service dependency. The umbrella host currently runs all source projects; the standalone hosts are already
 the canonical architecture and must remain so.
 
-`Concertable.AppHost.Shared` currently mixes generic resource/topology helpers with Auth-specific
-composition. Generic primitives move to the .NET platform; service-specific hosting metadata moves to the
-owning service.
+`Concertable.AppHost.Shared` now contains only product-neutral resource and topology primitives. Auth owns
+SPA registration behavior; B2B and Customer own their surface-to-client rosters; umbrella system composition
+only aggregates those owner rosters.
 
 The current `UseLocalCore` switch replaces selected `PackageReference`s with sibling
 `ProjectReference`s. It cannot cross canonical repository boundaries and is removed. Its replacement is a
@@ -557,7 +557,7 @@ Path ownership for extraction is:
 | Payment | `api/Concertable.Payment` excluding full-stack E2E helpers |
 | Search | `api/Concertable.Search` excluding full-stack E2E helpers |
 | Auth | `api/Concertable.Auth`; `api/Concertable.Auth.Contracts` |
-| platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared`; `api/Concertable.Frontend.Hosting` |
+| platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; `api/Concertable.AppHost.Shared`; `api/Concertable.Frontend.Hosting` |
 | platform-frontend | `app/shared`; packageized `app/web/shared`; `app/mobile/shared`; general frontend build configuration shared across web and mobile |
 | system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; compatibility history |
 | infra | no monorepo source path; reconcile and audit the existing `Concertable/infra` Terraform bootstrap history |
@@ -651,8 +651,9 @@ private extraction proof.
 
 ### 2. Publish the container-hosting seam (`concertable`)
 
-- Split generic `AppHost.Shared` code into package-clean `Concertable.Hosting` and service-owned
-  `*.Hosting` projects.
+- Keep product-neutral resource/topology primitives in `Concertable.AppHost.Shared` and product-neutral
+  frontend launch mechanics in `Concertable.Frontend.Hosting`; service-owned `*.Hosting` packages carry Auth
+  registration metadata and surface rosters.
 - Add source-vs-image switches to standalone hosts; own service stays `AddProject`, foreign services use
   `AddContainer` with explicit image digests.
 - Publish all service runtime, worker, SPA-preview where needed, migration, and simulator images from the
