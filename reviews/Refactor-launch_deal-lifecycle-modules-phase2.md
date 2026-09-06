@@ -1233,8 +1233,23 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   Payment's fallback rather than on the reference B2B already owns. Left for a focused change rather than a late edit
   to the accept money path.
 
+- [x] **IR38 — HIGH — correctness** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:335` and `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Contracts/Concertable.B2B.Application.Contracts.csproj:14`
+  The next CI run, with the matrix finally reaching the Shared tier for the first time, failed three more
+  self-verifying architecture assertions. Two were the transitional typed-result allowlist naming
+  `Concertable.Payment.Infrastructure/CustomerPaymentService.cs` and `ManagerPaymentService.cs`, both deleted by
+  Payment v1 on `main`; the guard `Single()`s on the path and threw `Sequence contains no matching element`. With both
+  slices gone the transitional exemption has actually completed, so the allowlist, the theory guarding it, and the
+  `IsTransitionalTypedResultSlice` exclusion are all removed — `TypedResultSlices_DoNotUseHttpExceptions` now scans
+  every production file with no exemption and still passes. The third was
+  `DunetReferences_BelongToProjectsDeclaringUnions`: `Concertable.B2B.Application.Contracts` still carried a `Dunet`
+  package reference after this branch's A2 boundary hardening deleted the union it was there for. Reference removed;
+  the project declares and uses no union. Shared.Api unit tier 83/83.
+
 ### Validation
 
-Full `api/Concertable.slnx` build 0 errors. Opportunity integration 14/14; Payment unit 551/551; B2B Architecture
-32/32; Concert 105, Artist 12, Dashboard.Opportunity 7, Kernel 303 — all 0 failures. Frontend `test:boundaries` 8/8,
+Full `api/Concertable.slnx` build 0 errors. **Every unit and architecture suite in the repository — all 42 projects,
+~1,895 tests — run locally with 0 failures**, rather than discovering them one fail-fast CI round-trip at a time.
+CI run `34031270386` at head `418a1568b` proves the whole integration tier green: **all 27 integration jobs
+succeeded** (14 B2B, 8 Customer, 2 Payment, Search, DataAccess, Auth), with `Shared.Api.UnitTests` its only
+failure — the one IR38 fixes. Frontend `test:boundaries` 8/8,
 `lint:boundaries` clean, `build:web-packages`/`build:venue`/`build:artist` all succeeded. `git diff --check` clean.
