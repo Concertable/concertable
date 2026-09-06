@@ -24,7 +24,8 @@ implementation mechanics.
 The durable target is eleven canonical repositories:
 
 1. five service repositories: B2B, Customer, Payment, Search, and Auth;
-2. two platform repositories: one for shared .NET packages and one for shared frontend packages;
+2. two platform repositories: `Concertable/platform-dotnet` for shared .NET packages and
+   `Concertable/platform-frontend` for general shared frontend packages across web and mobile;
 3. one system repository for `Concertable.System.AppHost`, compatibility manifests, and black-box E2E;
 4. one infrastructure repository, `Concertable/infra`, for Terraform and Azure resource topology;
 5. one configuration repository, `Concertable/config`, for environment desired state, deployment promotion,
@@ -159,9 +160,9 @@ The foreign `B2BDb` entries are caused by Auth's persisted-grant-store coupling,
 service dependency. The umbrella host currently runs all source projects; the standalone hosts are already
 the canonical architecture and must remain so.
 
-`Concertable.AppHost.Shared` currently mixes generic resource/topology helpers with Auth-specific
-composition. Generic primitives move to the .NET platform; service-specific hosting metadata moves to the
-owning service.
+`Concertable.AppHost.Shared` now contains only product-neutral resource and topology primitives. Auth owns
+SPA registration behavior; B2B and Customer own their surface-to-client rosters; umbrella system composition
+only aggregates those owner rosters.
 
 The current `UseLocalCore` switch replaces selected `PackageReference`s with sibling
 `ProjectReference`s. It cannot cross canonical repository boundaries and is removed. Its replacement is a
@@ -189,8 +190,8 @@ Seed ownership is mostly aligned already:
 
 - B2B owns its canonical seed catalog, `B2B.Seed.Contracts`, and `B2B.Seed.Simulator`.
 - Customer and Search build projections from B2B seed events.
-- Customer has local seed infrastructure but no producer simulator package/image for its own outbound
-  review/rating events; Search's standalone topology therefore has an acknowledged gap.
+- Search's rating inputs are B2B-owned events. Its standalone topology consumes the B2B simulator image and
+  published Contracts; it has no direct Customer simulator or runtime dependency.
 - Payment owns Stripe-specific E2E seeding and local test seeding, but has no cross-service catalog.
 - Projection test seeders are confined to integration tests; production-like local/full-stack composition
   must use producer events.
@@ -226,13 +227,14 @@ Repository secrets currently mix CI, E2E, mirroring, package sync, and abandoned
 credentials. No secret values were read. The planning credential lacks `read:packages`, so package ACL and
 repository-linkage verification is an explicit preflight gate rather than an assumption.
 
-Live 6B inventory on 2026-09-04 found private staging repositories at `auth`, `b2b`, `customer`, `payment`,
-`search`, `infra`, and `config`; they are bootstrap inputs, not canonical cutover targets. `infra` already
-contains Terraform modules and `config` contains configuration bootstrap work plus Terraform that must be
-reconciled into the sole `infra` ownership boundary before cutover. `system`,
-`platform-dotnet`, and `platform-web` do not exist. No `*-next` service URL is available: each redirects to
-its legacy final-name staging repository. Preparation must preserve these histories and free final names
-before creating fresh `*-next` repositories; it must never force-push or overwrite an existing repository.
+Live 6B inventory on 2026-09-04 found the active private carve repositories at `auth`, `b2b`, `customer`,
+`payment`, `search`, `infra`, and `config`. They are the extraction targets: their repository IDs, active
+owner ledgers, and worktrees decide ownership. Earlier alternate repository labels are not target-inventory
+evidence and never authorize creating a replacement. `infra` already contains Terraform modules and
+`config` contains configuration work plus Terraform that must be reconciled into the sole `infra` ownership
+boundary. `platform-dotnet`, `platform-frontend`, and `system` are the three missing repository identities;
+their creation remains a separately authorized delivery action. No existing repository default branch is
+force-pushed, renamed, or replaced.
 
 ## Target repository topology and ownership
 
@@ -244,7 +246,7 @@ before creating fresh `*-next` repositories; it must never force-push or overwri
 | `Concertable/search` | Search Web/Workers, projections, Search DB migrations, standalone AppHost | producer write models/databases | `@Concertable/search-maintainers` |
 | `Concertable/auth` | Auth runtime, `Auth.Contracts`, Auth DB and both Auth/Duende migrations, standalone AppHost | B2B DB or tenant/business persistence | `@Concertable/auth-maintainers` |
 | `Concertable/platform-dotnet` | Kernel, generic Contracts, Messaging, DataAccess, ServiceDefaults, shared capabilities, seed primitives, test primitives, generic Aspire hosting primitives, `Concertable.Build` | service DTOs, service topology, service runtime | `@Concertable/platform-maintainers` |
-| `Concertable/platform-web` | `@concertable/shared`, `@concertable/web-shared`, shared ESLint/TypeScript/Vite conventions | B2B- or Customer-only UI/domain code | `@Concertable/frontend-platform-maintainers` |
+| `Concertable/platform-frontend` | General shared frontend packages and build conventions consumed across web and mobile, including `@concertable/shared` and `@concertable/web-shared` | B2B- or Customer-only UI/domain code; web- or mobile-tier repositories | `@Concertable/frontend-platform-maintainers` |
 | `Concertable/system` | `Concertable.System.AppHost`, compatibility manifests/attestations, API/UI/mobile E2E, system testkits and Docker health tooling | service implementations, production desired state, Terraform, secret values | `@Concertable/system-maintainers` |
 | `Concertable/infra` | Terraform modules and root stacks for Azure resource topology, identities, networking, data services, Container Apps and shared platform resources | application source, environment image promotion, application settings or secret values | `@Concertable/infrastructure-maintainers` |
 | `Concertable/config` | test/production desired state, immutable image digests, Azure App Configuration declarations, Key Vault references, deployment/promotion/rollback workflows | Terraform modules, application source, plaintext secret values | `@Concertable/configuration-maintainers` |
@@ -254,9 +256,9 @@ Tommy is bootstrap administrator. Teams and `CODEOWNERS` express the durable own
 one person fills multiple roles.
 
 The source repository and historical generated mirrors are public. Canonical repositories preserve that
-public visibility, but every mirror/archive action is conditional on the live repository inventory rather
-than an assumed roster. Temporary `*-next` repositories remain private until their history, settings, and
-artifacts pass the cutover review. `Concertable/.github` is public from creation so public repositories can
+public visibility, but every historical-mirror action is conditional on the live repository inventory rather
+than an assumed roster. Active carve repositories and directly created missing targets remain private until
+their history, settings, and artifacts pass the cutover review. `Concertable/.github` is public from creation so public repositories can
 call its reusable workflows. Canonical GHCR runtime, migration, and simulator images are public and
 anonymously pullable after image-layer secret scanning; this avoids a long-lived registry credential in Azure
 and in local AppHosts. NuGet and npm packages retain explicit package/repository access grants because they
@@ -537,26 +539,26 @@ The extraction is reproducible and audited:
    merge topology where representable, and tags relevant to the selected paths.
 4. Emit and retain filter-repo commit maps, path maps, object counts, earliest/latest commit checks, and
    sampled blame comparisons.
-5. Push every result to a temporary `*-next` repository first. Existing final-name staging repositories are
-   first renamed to `<name>-staging-archive-<date>` only with explicit authorization, retaining their IDs and
-   histories; no existing default branch is force-pushed.
+5. Push every filtered result to its existing active target on a dedicated import branch, or to the directly
+   created final-name `platform-dotnet`, `platform-frontend`, or `system` target once creation is explicitly
+   authorized. Merge through the target's ordinary PR flow; no active carve repository is renamed, replaced,
+   or force-pushed.
 6. Verify clean clone/build/test/package restore, history counts, LFS/submodule absence, secret scan, and the
    exact cutover tree against the source mapping.
-7. At the approved cutover, rename the old generated mirror to
-   `<name>-mirror-archive-<date>` and rename `<name>-next` to the canonical name. This keeps the old repository
-   and repo ID recoverable without destructive rewriting.
+7. At the approved cutover, retire only a verified generated mirror where one exists. Each active carve
+   repository keeps its identity and repository ID throughout; no service-target rename is part of cutover.
 
 Path ownership for extraction is:
 
 | Target | Included source paths |
 |---|---|
-| B2B | `api/Concertable.B2B` excluding full-stack E2E; `app/web/b2b`; `app/mobile/b2b` |
+| B2B | `api/Concertable.B2B` excluding full-stack E2E; `app/web/b2b`; `app/web/admin`; `app/mobile/b2b`; `app/b2b/shared` |
 | Customer | `api/Concertable.Customer` excluding full-stack E2E; `app/web/customer`; `app/mobile/customer`; `app/customer/shared` |
 | Payment | `api/Concertable.Payment` excluding full-stack E2E helpers |
 | Search | `api/Concertable.Search` excluding full-stack E2E helpers |
 | Auth | `api/Concertable.Auth`; `api/Concertable.Auth.Contracts` |
-| platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared` |
-| platform-web | `app/shared`; packageized `app/web/shared`; frontend build configuration |
+| platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; `api/Concertable.AppHost.Shared`; `api/Concertable.Frontend.Hosting` |
+| platform-frontend | `app/shared`; packageized `app/web/shared`; `app/mobile/shared`; general frontend build configuration shared across web and mobile |
 | system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; compatibility history |
 | infra | no monorepo source path; reconcile and audit the existing `Concertable/infra` Terraform bootstrap history |
 | config | no monorepo source path; reconcile and audit the existing `Concertable/config` desired-state bootstrap history |
@@ -564,6 +566,28 @@ Path ownership for extraction is:
 
 Files needed by more than one target may legitimately have history in more than one filtered repository, but
 only one target owns the live file after cutover.
+
+### Dependency-ordered agent packets
+
+Packets in one wave may run concurrently in separate worktrees. A later wave may be prepared but cannot merge
+before its dependencies are green.
+
+| Packet | Owner and exact scope | Depends on | Completion evidence |
+|---|---|---|---|
+| G0 | package administrator captures package/GHCR inventory and repository/team grants; Azure administrator captures both repositories' state lists | credentials with `read:packages`, `admin:org`, and read access to the Azure backends | complete ACL/high-water report and state-empty or state-move manifest |
+| M1 | monorepo hosting boundary: deliver an additive generic platform API, sync the Auth/B2B/Customer hosting packages, sync standalone and aggregate System AppHosts, then contract the legacy product-aware platform API | no unresolved overlapping AppHost PR; each published package layer must advance before its consumer sync | package-clean builds; standalone B2B/Customer and umbrella composition tests; resolved Expo/Auth tunnel URLs; final package-only closure |
+| M2 | monorepo owner-local operations: split `api/initial-migrations.ps1` and `scripts/setup-local-dev.ps1` into five service migration owners plus platform-owned Messaging, service-local bootstrap, and container-only System bootstrap | current AuthDb migration state on main | empty-database migration proof and each standalone bootstrap dry run |
+| M3 | monorepo frontend boundary: split product workspace declarations out of `app/.dependency-cruiser.cjs`; package generic build configuration and keep product packages in B2B/Customer | none | boundary lint plus all web/mobile typecheck/build gates |
+| M4 | monorepo closure repair: replace Auth.Contracts-to-Messaging source coupling with its published package seam and fix B2B/Customer standalone Payment HTTPS discovery | M1 package/API shape; package baseline from G0 before publication | inventory has no blocking runtime edge; Auth/B2B/Customer clean carve builds and standalone composition tests |
+| C1 | retained `infra` and `config`: preserve both histories, implement the ownership table above, and remove duplicated Terraform resource/state ownership | G0 Azure state result | fmt/validate; zero create/destroy migration plan if state exists; config schema/promotion dry run |
+| F0 | freeze one exact post-M1-M4/C1 monorepo SHA; regenerate map/inventory and produce signed bundle, per-target filter commands, commit/path maps, object counts, secret scans, and sampled blame | M1-M4 merged; relevant open PRs resolved | 0 unclaimed/duplicates/blocking edges and reviewed history audit |
+| R1 | import `platform-dotnet` and `platform-frontend` in parallel and prove independent publishers | G0, F0, explicit repository-creation authorization | clean clones, non-conflicting versions, registry-only consumer fixtures |
+| R2 | import `system` as container-only composition and black-box qualification | R1 published artifacts, owner images/TestKits, F0, explicit repository-creation authorization | service source absent; immutable compatibility set passes health/API/UI/mobile gates |
+| R3 | refresh/import Auth, Payment, and Search concurrently into their retained IDs; prepare Customer and B2B concurrently but preserve final delivery order | R1-R2 and F0 | per-target history audit, clean clone, package/image publication proof, System qualification |
+
+The first implementation dispatch may contain M1, M2, and M3 plus the read-only G0 probes. C1 joins that wave
+only after the Azure state result. M4 follows M1. Repository import packets R1-R3 remain separately gated by
+repository-creation/import authority and the exact frozen SHA.
 
 ## Compatibility, rollback, and archive policy
 
@@ -579,8 +603,8 @@ only one target owns the live file after cutover.
 
 ### Rollback levels
 
-1. Before a target repository's first canonical commit, rollback is a repository rename swap plus re-enabling
-   the mirror. No source reconciliation is needed.
+1. Before a target repository's first canonical commit, rollback is re-enabling the verified mirror/source
+   path. No service-target repository rename is involved.
 2. After canonical commits but before monorepo source removal, cherry-pick/replay those commits back into the
    frozen monorepo path, verify, then explicitly re-enable mirroring. Never overwrite canonical work with the
    old force-push workflow.
@@ -606,8 +630,8 @@ update the PR, and stop. Cross-repository letters within a checkpoint are also o
 never merge a later letter before the earlier one is green. Tommy must explicitly instruct every merge.
 
 **Checkpoint numbering is final delivery order, not permission to idle.** Preparation for checkpoints
-10–14 runs in parallel whenever the target repository and exact producer artifacts exist. Each `*-next`
-owner may independently land repository-local CI, build/test entry points, package and image publication
+10–14 runs in parallel whenever the target repository and exact producer artifacts exist. Each active carve
+repository owner may independently land repository-local CI, build/test entry points, package and image publication
 setup, migrations, Hosting/TestKit, seed contracts/simulators, documentation, and repository-settings
 evidence. Record implementation dependencies separately from delivery gates and keep the result
 `implementable, delivery-gated` until its published-baseline revalidation is possible.
@@ -649,8 +673,9 @@ private extraction proof.
 
 ### 2. Publish the container-hosting seam (`concertable`)
 
-- Split generic `AppHost.Shared` code into package-clean `Concertable.Hosting` and service-owned
-  `*.Hosting` projects.
+- Keep product-neutral resource/topology primitives in `Concertable.AppHost.Shared` and product-neutral
+  frontend launch mechanics in `Concertable.Frontend.Hosting`; service-owned `*.Hosting` packages carry Auth
+  registration metadata and surface rosters.
 - Add source-vs-image switches to standalone hosts; own service stays `AddProject`, foreign services use
   `AddContainer` with explicit image digests.
 - Publish all service runtime, worker, SPA-preview where needed, migration, and simulator images from the
@@ -692,62 +717,58 @@ private extraction proof.
   Behavior-preserving package extraction does not require E2E.
 - **Hard stop:** product frontends contain no source alias escaping their future repository.
 
-### 6. Organization repository and workflow foundation (`.github` then target `*-next` repos)
+### 6. Organization repository and workflow foundation (`.github` then live target repos)
 
 - 6A: create public `Concertable/.github`, reusable workflows, Renovate preset, ruleset/environment templates,
   teams, and bootstrap CODEOWNERS. Verify a disposable public fixture consumes every reusable workflow.
-- 6B: inventory every active branch, PR, owner worktree, and exact head in the seven legacy final-name staging
-  repositories (`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, `config`). Before an approved archival
-  rename, create a preserved-ref/bundle handoff for each active preparation branch and record the new-target
-  remote/rehome command; renamed-repository PRs are not treated as transferable. After Tommy approves the
-  archival renames, create ten private `*-next` targets: five services, `platform-dotnet-next`,
-  `platform-web-next`, `system-next`, `infra-next`, and `config-next`; transfer each recorded preparation ref
-  to a named `prep/*` preservation branch in its new target. That direct ref transfer is preservation, not
-  integration. After 6C imports the filtered target base, use the retained filter-repo commit map to rebase or
-  cherry-pick the recorded preparation commits onto that base, recreate the PR in the new repository, and
-  require green target CI before retiring the archive branch. Apply least-privilege Actions/package settings
-  and CODEOWNERS/team access. Because the present entitlement cannot enforce private `main`, do not represent
+- 6B: treat the seven live carve repositories (`auth`, `b2b`, `customer`, `payment`, `search`, `infra`,
+  `config`) as the service/configuration targets. Bind their repository IDs, active owner ledgers, and exact
+  heads into the target inventory; historical aliases are non-authoritative. The remaining fixed identities
+  are `platform-dotnet`, `platform-frontend`, and `system`; their creation is an explicit later delivery action,
+  not part of preparation. Apply least-privilege Actions/package settings and CODEOWNERS/team access to existing
+  targets. Because the present entitlement cannot enforce private `main`, do not represent
   a target as protected or canonical until an entitlement upgrade makes rulesets/merge queue verifiable.
-- 6C: push filtered histories and reports; reconcile the `infra` and `config` bootstrap inputs so Terraform
-  has one owner; run secret scans and clean-clone builds. Resolve every extraction-map claim, generate retained
-  history/audit reports, and do not make a target canonical.
-- Each approved canonical rename also changes the verified `*-next` repository to public and makes its
-  scanned GHCR images public. Visibility promotion never happens during preparation or implicitly on publish.
+- 6C: import filtered history through reviewed branches in the existing target repositories and the three
+  explicitly created missing targets; reconcile `infra` and `config` so Terraform has one owner; run secret
+  scans and clean-clone builds. Resolve every extraction-map claim, generate retained history/audit reports,
+  and do not make a target canonical.
+- A target becomes public only after its own history, settings, and scanned artifacts pass cutover review.
+  Visibility promotion never happens during preparation or implicitly on publish.
 - Verification: history audit, package-auth probe, workflow fixture, all target clean-clone builds.
-- **Hard stop:** Tommy reviews every history/ACL/repository-settings report before any canonical name swap.
+- **Hard stop:** Tommy reviews every history/ACL/repository-settings report before any target is declared
+  canonical.
 
 ### 7. Cut over the .NET platform publisher
 
-- 7A (`platform-dotnet-next`): land platform source, `Concertable.Build`, CI, and package publication under a
+- 7A (`platform-dotnet`): land platform source, `Concertable.Build`, CI, and package publication under a
   new repository release train; apply the checkpoint-0 bootstrap baseline, publish the first non-conflicting
   version, and prove clean restore.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
-- 7C (GitHub): rename `platform-dotnet-next` to `platform-dotnet`; update package links/Actions access. If
-  a legacy `shared` mirror exists in the verified live inventory, preserve it as
-  `shared-mirror-archive-<date>`; do not assume that repository exists.
+- 7C (GitHub): apply the `platform-dotnet` repository policy, then update package links and Actions access.
+  Any unrelated historical mirror is excluded from this publisher cutover.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
 
 ### 8. Cut over the frontend platform publisher
 
-- 8A (`platform-web-next`): land history, CI, Changesets publication, and publish initial package versions.
+- 8A (`platform-frontend`): land general web/mobile shared history, CI, Changesets publication, and publish
+  initial package versions. Web and mobile remain package tiers rather than repository boundaries.
 - 8B (`concertable`): switch every product workspace to registry packages, generate stable per-repo-ready
   lockfiles, and remove monorepo publication for those IDs.
-- 8C (GitHub): rename `platform-web-next` to `platform-web` and update package links.
+- 8C (GitHub): apply the `platform-frontend` repository policy and update package links.
 - Verification: clean npm installs, package tests, all four SPA builds, both mobile builds/tests.
 - **Hard stop:** product builds succeed with the platform source directories absent.
 
 ### 9. Make the system repository canonical
 
-- 9A (`system-next`): land filtered full-stack AppHost/E2E history, container-only composition,
+- 9A (`system`): land filtered full-stack AppHost/E2E history, container-only composition,
   `compatibility/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
-- 9B (`system-next`): qualify compatibility manifests and Docker health/API/UI/mobile evidence. In parallel,
-  `infra-next` owns Terraform format/validate/plan and `config-next` owns desired-state, promotion, and
+- 9B (`system`): qualify compatibility manifests and Docker health/API/UI/mobile evidence. In parallel,
+  `infra` owns Terraform format/validate/plan and `config` owns desired-state, promotion, and
   rollback validation; neither may deploy an unqualified compatibility set.
-- 9C (GitHub): rename `system-next` to `system`, `infra-next` to `infra`, and `config-next` to `config`;
-  transfer the respective package/image/environment access and enable Renovate image/package PRs.
+- 9C (GitHub): transfer the respective package/image/environment access and enable Renovate image/package PRs.
 - 9D (`concertable`): remove the umbrella AppHost/full-stack E2E ownership and retain only a pointer during
   the remaining service cutovers.
 - Verification: clean-clone system build; full container API then UI E2E; mobile affected test; `infra`
@@ -759,11 +780,9 @@ private extraction proof.
 
 - 10A (`concertable`): refresh Auth's extraction at the approved SHA, freeze Auth source, and remove Auth from
   mirror automation. Do not delete source yet.
-- 10B (`auth-next`): rebase the verified extraction on that SHA; land CI, Auth-owned publication/images,
+- 10B (`auth`): rebase the verified extraction on that SHA; land CI, Auth-owned publication/images,
   standalone AppHost, migrations, Hosting/TestKit, rules, and main branch.
-- 10C (GitHub): promote `auth-next` to `auth`, retaining the dated staging archive established in 6B;
-  transfer package/image permissions and publish a canonical Auth release. The final-name target is already
-  free at this point and is never overwritten.
+- 10C (GitHub): transfer package/image permissions and publish a canonical Auth release from `auth`.
 - 10D (`system`): Renovate/manual PR updates Auth packages and image digest; run full affected E2E and record
   the qualified compatibility set.
 - 10E (`config`): promote that exact set to test and prove the Auth/login deployment smoke.
