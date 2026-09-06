@@ -342,6 +342,31 @@ close before PR #633 leaves draft.
   solution and consumes `0.1.0-alpha.0.1254` on purpose.
 - `git diff --check`: clean.
 
+### First-ever CI test matrix, and the two defects it revealed
+
+Every previous CI run on this branch died at `build`, which gates the whole test matrix — so no unit, architecture
+or integration job had ever executed on it. The merge makes `api/Concertable.slnx` compile, the matrix ran, and two
+real defects surfaced. Both are this branch's own and both are fixed here (review findings IR32 and IR33).
+
+- **Opportunity lost every genre on persistence.** The module carve regressed `OpportunityEntity.Genres` from
+  `EfSet<Genre>` to a `HashSet<Genre>` behind a computed `List<Genre> PersistedGenres` shim — the exact shape
+  `b610d9eeb` had already rejected as unusable under EF 10. Artist and Concert kept `EfSet<Genre>`; Opportunity alone
+  did not. The HTTP response looked right because it maps the in-memory aggregate, but the JSON column never
+  round-tripped, so every Opportunity re-materialised with no genres at all. Restored to `EfSet<Genre>` with
+  `builder.PrimitiveCollection(o => o.Genres)`, the shadow property and its single-use query helper deleted, and the
+  migration re-scaffolded (same `Genres nvarchar(max)` column; only its ordinal position moves).
+- **The provider-contract inventory no longer described the tree.** Four committed entry points had been retired by
+  Customer's migration on `main` and two live ones were unclassified — Customer's new `paymentSessions.CreateAsync`
+  and this branch's `VerifyPaymentFailedProcessor` status read. Neither side could have caught it alone: CI scopes the
+  test matrix to the changed service, so Customer's PRs never ran Payment's unit tier. Reconciled, with the orphaned
+  `frontend-ticket-web-correlation` decision removed.
+
+A third, confirmed defect is **not** fixed here and is recorded as HIGH tech debt in `api/Concertable.B2B/TECH_DEBT.md`
+plus review finding IR34: the venue dashboard's revenue KPI and chart are structurally zero, because
+`GetPaymentRevenueAsync` sums a table whose only writer is keyed on a `type` value nothing in the system emits. The
+fix is Payment-side or belongs to the open `ConcertSalesProjection`; both are outside this PR. IR35 records a
+separate Customer/Payment idempotency defect found while reviewing the merged tree.
+
 ## Reviews
 
 - Work order: `reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md`. Fixed-anchor review

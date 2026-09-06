@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`  _(2026-09-05)_
-**Security-reviewed up to commit:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`  _(2026-09-05)_
+**Reviewed up to commit:** `PENDING_HEAD`  _(2026-09-06)_
+**Security-reviewed up to commit:** `PENDING_HEAD`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1143,3 +1143,98 @@ local-platform-only Payment version override. Its default remains published vers
 integration runs. The remediation diff closes IR28–IR31 and introduces no compatibility surface, provider
 identifier, loose payment reference, Customer change, or added source comment. All findings have terminal
 dispositions and both review watermarks cover the final fixing head.
+
+## Review pass — 2026-09-06 — origin/main merge and first-ever green CI matrix
+
+**Candidate base:** `17ad067e154616d853a59879d8d9dc8dd4f7faa2`
+**Candidate head:** `PENDING_HEAD`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The range merges `origin/main` `abd3466e3` (Customer's delivered payment-reference migration) into the branch.
+The merge is mechanically clean: `git diff-tree --cc` over the merge commit contains no source file at all, only
+`plans/launch/LAUNCH_ROADMAP.md`, where both sides' edits survive. Every Customer-owned path in the merged tree is
+byte-identical to `main` except two files this branch already owned inside the previous watermark —
+`Concertable.Customer.Hosting/CustomerTopology.cs`, forced by this branch's own `AsbTopology.WithService` scoping
+API, and `api/Concertable.Customer/TECH_DEBT.md`. No Customer or Payment behaviour was changed to resolve the merge.
+
+With the merge in place `api/Concertable.slnx` compiles for the first time since #933, which meant CI ran this
+branch's test matrix for the first time ever — every previous run on this branch died at `build`, gating the whole
+matrix off. Two real defects surfaced immediately. Both are this branch's and both are fixed here.
+
+### Findings
+
+- [x] **IR32 — HIGH — correctness** — `api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Domain/Entities/OpportunityEntity.cs:11`
+  The module carve regressed `Genres` from `EfSet<Genre>` to a `HashSet<Genre>` field behind a computed
+  `List<Genre> PersistedGenres` shim — exactly the shape commit `b610d9eeb` had already rejected and documented as
+  unusable ("EF 10's materializer/comparer/JSON-reader hard-cast to `IList<T>`"). Artist and Concert kept `EfSet<Genre>`;
+  Opportunity alone did not. The consequence is not a throw but silent data loss: the HTTP response carries the right
+  genres because it is mapped from the in-memory aggregate, while the JSON column never round-trips, so **every
+  Opportunity re-materialises with zero genres**. That empties genre-based opportunity matching
+  (`GetMatchCandidatesAsync` treats an empty set as "matches everything") and every genre a venue ever set on an
+  opportunity. Reproduced locally and in CI by the branch's own
+  `OpportunityApiTests.Create_DuplicateGenres_PersistDistinct_AndReMaterialiseFromJsonColumn`, which failed on the
+  *persisted* assertion while the response assertion passed. Fixed by restoring `EfSet<Genre>` and mapping it the way
+  Artist and Concert do (`builder.PrimitiveCollection(o => o.Genres)`); the string-named shadow property and the
+  `QueryablePrimitiveCollectionExtensions` helper that existed only to reach it are deleted, and the genre-overlap
+  predicate is inlined at its single call site. The Opportunity migration is re-scaffolded: same `Genres`
+  `nvarchar(max)` column, only its ordinal position in `CreateTable` moves. Opportunity integration 14/14.
+
+- [x] **IR33 — HIGH — correctness** — `api/Concertable.Payment/provider-contract-inventory.json`
+  `ProviderContractInventoryTests` failed five ways. Four committed entry points no longer exist (Customer's two
+  `customerPaymentClient` calls and the two frontend `client-secret-id-split` parsers, all retired by main's
+  migration) and two live entry points were unclassified: Customer's new `paymentSessions.CreateAsync` and **this
+  branch's** `VerifyPaymentFailedProcessor.HandleAsync` to `paymentSessions.GetStatusAsync`. Neither side's own CI could
+  catch it — the classifier scopes the test matrix to the changed service, so Customer's PRs never ran Payment's unit
+  tier and this branch never got past `build`. The inventory is reconciled to the merged tree: the four dead entries
+  removed, the two live ones classified (`customer-ticket-payment` and `b2b-save-or-verify-method`), and the now
+  orphaned `frontend-ticket-web-correlation` decision deleted so `Decisions_AreUniqueAndReferenced` still holds.
+  `customer-ticket-payment`'s `identity`/`compatibility` prose still described the retired Stripe-intent-id
+  correlation and is corrected to the delivered operation-reference shape. Payment unit tier 551/551.
+
+- [ ] **IR34 — HIGH — correctness — `wontfix` in this PR, debt recorded** — `api/Concertable.B2B/src/Modules/Dashboard/Venue/Concertable.B2B.Dashboard.Venue.Infrastructure/VenueDashboardService.cs:61`
+  The venue revenue KPI and its six-month chart are structurally, permanently zero. `GetPaymentRevenueAsync` sums
+  `PaymentTransactionEntity`, whose only writer is registered under `TransactionTypes.Payment` (`"payment"`), and
+  nothing in the system emits that key — `PaymentSessionProviderRequest` stamps `type` with the operation's own
+  `OperationType`, and the only payment-kind operation is Customer's `"ticket-purchase"`. Verified end to end.
+  This is not a renaming artefact: the pre-v1 `GetTicketRevenueAsync` summed the same table against the
+  `TransactionTypes.Ticket` key that v1 deleted, and v1 offers B2B no ticket-scoped replacement. The fix is either
+  Payment-side (key the recorder on the operation kind, and stamp `AmountMinor`, which the recorder reads and nothing
+  writes) or B2B-side via the already-open `ConcertSalesProjection`. Both are out of this PR's scope — Payment source
+  is explicitly excluded and `ConcertSalesProjection` is its own piece of work — so this lands as a HIGH entry in
+  `api/Concertable.B2B/TECH_DEBT.md` rather than a silent regression.
+
+- [ ] **IR35 — HIGH — correctness — out of scope, Customer + Payment owned** — `api/Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Application/Payments/TicketPaymentOperationReferences.cs:27`
+  Customer's purchase reference is `buyer:{id}:concert:{id}:quantity:{n}` — a repeatable user action with no
+  per-attempt discriminator — while Payment enforces `(OperationType, ClientReference)` as a unique idempotency key and
+  normalizes the caller's fresh `OperationId` out of the replay fingerprint. A buyer's *second* single-ticket purchase
+  for the same concert composes a byte-identical reference and every other fingerprint term matches, so Payment
+  replays the first, already-succeeded intent: the API returns a valid-looking checkout, the buyer is never charged,
+  and no second ticket is minted. This is entirely Customer and Payment code, already merged to `main`, and explicitly
+  outside this PR. Recorded here because the branch's own reference scheme was reviewed against the same contract and
+  is *not* affected — B2B keys every reference on an entity id that exists once per intended operation, so its replay
+  is deliberate. Needs its own ticket against Customer.
+
+- [ ] **IR36 — LOW — package coherence — deferred** — `api/Concertable.Shared/Directory.Packages.props:63`
+  `Concertable.Payment.Hosting` is pinned at `$(ConcertablePlatformVersion)` (1329) while B2B and Customer pin every
+  Payment package at 1322 through the split `ConcertablePaymentVersion`. Inert today because its only consumer is a
+  `tests/`-path project, which `PlatformSourcePackages.targets` swaps to a project reference. It becomes a restore
+  failure the moment a carve or a non-test consumer resolves it from the feed. Not changed here: confirming whether
+  `Payment.Hosting` exists on the feed at 1329 needs feed access this session does not have, and blind-editing a pin
+  during delivery is the wrong trade. The correction is to give Shared the same `ConcertablePaymentVersion` block.
+
+- [ ] **IR37 — MEDIUM — correctness — deferred** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationCheckoutService.cs:111`
+  The accept checkout passes `Guid.CreateVersion7()` as the FlatFee authorization's `OperationId`, minting a fresh id
+  on every GET of the checkout page, where every other operation-id site in B2B is `??=`-stable. It does not
+  double-charge today only because Payment's duplicate-key fallback re-resolves by reference. Correctness rests on
+  Payment's fallback rather than on the reference B2B already owns. Left for a focused change rather than a late edit
+  to the accept money path.
+
+### Validation
+
+Full `api/Concertable.slnx` build 0 errors. Opportunity integration 14/14; Payment unit 551/551; B2B Architecture
+32/32; Concert 105, Artist 12, Dashboard.Opportunity 7, Kernel 303 — all 0 failures. Frontend `test:boundaries` 8/8,
+`lint:boundaries` clean, `build:web-packages`/`build:venue`/`build:artist` all succeeded. `git diff --check` clean.
