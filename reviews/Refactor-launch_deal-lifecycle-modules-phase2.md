@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a88321bf536dd5a3ba0481c299482bb80fe3f7ae`  _(2026-09-06)_
-**Security-reviewed up to commit:** `a88321bf536dd5a3ba0481c299482bb80fe3f7ae`  _(2026-09-06)_
+**Reviewed up to commit:** `2030c3ee36b00fe55fb522374ab9f72f5423742a`  _(2026-09-06)_
+**Security-reviewed up to commit:** `2030c3ee36b00fe55fb522374ab9f72f5423742a`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1587,3 +1587,42 @@ Three of the four redirected hosts were exercised by that run: `b2b-web`, `payme
 `payment-workers-e2e` all reached `Running` from their new output paths. `Concertable.Customer.E2ETests.Web`
 builds and emits its executable there but is only booted by `./scripts/e2e.ps1 api customer`, which this pass
 did not run. Exact-head CI owns the rest.
+## Review pass — 2026-09-06 — file the native-path debt under its owning services
+
+**Candidate base:** `0bd4b6d36482ee0366c2cf4f4411eb530c18ee6b`
+**Candidate head:** `2030c3ee36b00fe55fb522374ab9f72f5423742a`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:6822519bf6f967cf9ee4941fb587ffdc6265f0f4b9a02bf17bb7d3f201c2d69a` `(3 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-launch-deal-lifecycle-modules-phase2\32880e0b-1527-45aa-a4c6-0107603eb71c\scratchpad\candidate-bundle-2030c3ee3`
+**Candidate bundle identity:** `sha256:ae126dd085da03189b0df2c8f4dbe43a95a24c2b6bce40bcacb2ed0c22975b77`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Three tech-debt files; no source of any kind.
+
+Corrects the previous pass's own placement error rather than anything on the branch. `a88321bf5` recorded the
+residual native-path exposure as a single combined entry in `api/TECH_DEBT.md`, covering
+`Concertable.B2B.E2ETests` and `Concertable.Customer.AppHost` together. `docs-and-debt` requires debt in the
+`TECH_DEBT.md` of the area that owns the problem, and `api/TECH_DEBT.md` states its own scope as debt spanning
+services — which this is not. The two projects share a cause but not a fix: they sit in different services, are
+independently repairable, and only one of them is blocked.
+
+Splitting them makes that asymmetry visible where each owner will read it. `Concertable.B2B.E2ETests` is blocked
+by two consumers reading its output at a literal `bin/` path, so its entry records that constraint;
+`Concertable.Customer.AppHost` has no such consumer — verified, not assumed: every reference to it in
+`scripts/setup-local-dev.ps1` and `.github/workflows/test.yml` names the project directory, not the build
+output — so its entry records that it was omitted for scope alone and can take the same redirect whenever it is
+picked up. The combined entry stated neither, because a single entry could not.
+
+The measured 250-character cap and the per-host budget stay in `docs/LOCAL_DEV.md` and are linked from both
+entries rather than restated, so the two copies cannot drift.
+
+### Validation
+
+Documentation only — no build or test surface is touched, and `api/TECH_DEBT.md` is byte-identical to its state
+before `a88321bf5`. The fix this pass reorganizes remains verified by the `./scripts/e2e.ps1 api b2b` run
+recorded in the preceding pass. Exact-head CI owns the rest.
