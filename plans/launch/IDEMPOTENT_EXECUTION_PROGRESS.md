@@ -17,46 +17,41 @@
 
 ## Current state
 
-**Phase 1 (the operation claim) is implemented and its gates are green. Phase 2 has not started.**
+**Both phases are implemented. Phase 1 is committed; Phase 2 is committed on top.**
 
-Five claims across three aggregates now share one composed `OperationClaim`
-(`Concertable.B2B.DataAccess.Application`), mapped as an EF owned entity type. The decisive result:
-`dotnet ef migrations has-pending-model-changes` reports **"No changes have been made to the model since
-the last migration"** for all three of `ApplicationDbContext`, `BookingDbContext` and `ConcertDbContext`.
-That is the whole mapping hypothesis validated against the real model rather than a probe — same columns,
-same unique filtered indexes, same index names, and Booking's non-nullable `OperationId` preserved via
-`OwnsRequiredClaim`'s `IsRequired()`.
+Phase 1 put five claims across three aggregates onto one composed `OperationClaim` mapped as an EF owned
+entity type, with `has-pending-model-changes` clean on all three contexts — no migration.
 
-Encapsulation is stronger than the shape first drafted: `OperationClaim.Claim` is **`internal`**, with
-`InternalsVisibleTo` for the three module Domain assemblies and the DataAccess unit tests, so only an
-owning aggregate can take a claim — behind whatever transition gates it — while `OperationId` and
-`IsHeldBy` stay public so the mapped path remains queryable. An earlier draft exposed a publicly mutable
-claim, which would have let any caller bypass `BeginCancellation`.
+Phase 2 replaced the seven copy-pasted conflict blocks with one four-way `AttemptVerdict` and two
+`AttemptAsync` executors. The shape that matters: **which interface you are on decides whether a replay is
+possible at all.** `IUnitOfWorkBehavior<TContext>.AttemptAsync` takes no budget and runs once, because its
+change tracker belongs to the ambient DI scope; `IUnitOfWorkBoundary<TContext>.AttemptAsync` takes one,
+because each attempt gets its own context. So accept cannot accidentally regain an in-process rerun, and
+`SettlementService` keeps its two attempts by declaring them instead of nesting `TryExecuteAsync` inside
+its own classifier.
 
-The capability interface is `IHasCancellationClaim`, with `WithCancellationClaim(operationId)` binding to
-it. Both duplicated correlation queries — Booking's and Concert's `FinancialOperationOutcomeProcessor` —
-now go through it.
+`AcceptOnceAsync`, `IScoped<ApplicationWorkflow>`, the concrete `AddScoped<ApplicationWorkflow>()` and the
+design-narration comment are gone from source. Accept's third classifier branch now reports
+`AcceptApplicationError.Contended` — `application.accept.contended`, 409 — instead of rerunning.
+
+The constraint `where TContext : DbContextBase` was dropped from both executors: neither
+`IUnitOfWorkBehavior<TContext>` nor `IUnitOfWorkBoundary<TContext>` constrains its context, so copying the
+constraint from the implementations only made the loop harder to test.
 
 ## Next Steps
 
-**State: implementable, delivery-gated.** The stack's base carries the code, so implementation proceeds
-now; only the merge waits on PR #633. Do **not** push to #633 itself — it is out of draft in the merge
-queue, and a push there resets its review watermark and re-runs its full E2E tier.
+**State: implementable work is complete; delivery-gated.** Both phases are committed on
+`Refactor/launch_operation-claims-and-attempts`. Do **not** push to `Refactor/launch_deal-lifecycle-modules-phase2` —
+PR #633 is out of draft in the merge queue, and a push there resets its review watermark.
 
-Phase 1 is committed. The current action is **Phase 2 (plan §6)**, which needs no further design:
+1. Push the branch and open a PR **with `Refactor/launch_deal-lifecycle-modules-phase2` as its base**, so
+   it stacks. GitHub retargets it to the default branch when #633 merges.
+2. `/review` the branch — this is a cross-cutting change to three lifecycle aggregates and the accept
+   error contract, so expect the correctness lens on the concurrency story.
+3. Merge only after #633 is terminal.
 
-1. Add `AttemptVerdict<TOutcome>` to `Concertable.B2B.DataAccess.Application` as nested abstract records
-   (`Settled` / `Transient` / `Recoverable` / `Unrecoverable`).
-2. Add the two `AttemptAsync` extension members to `Concertable.B2B.DataAccess.Infrastructure` — no budget
-   parameter on `IUnitOfWorkBehavior<TContext>`, a budget on `IUnitOfWorkBoundary<TContext>`.
-3. Add `AcceptApplicationError.Contended(int ApplicationId)`, code `application.accept.contended`.
-4. Migrate the six scope-backed classifiers, then `SettlementService.ReserveAsync` at budget 2.
-5. Delete `AcceptOnceAsync`, `IScoped<ApplicationWorkflow>` and the concrete
-   `AddScoped<ApplicationWorkflow>()` registration.
-6. Update `Accept_WhenPaymentVerificationWinsTheRace_StillConfirmsTheBooking` to expect 409
-   `application.accept.contended` then a successful re-POST.
-
-Phase 1 and Phase 2 are independent, so a red Phase 2 never invalidates Phase 1.
+Not yet run locally, deliberately: the B2B integration and E2E tiers. Exact-head CI owns them, and this
+environment cannot build the full solution (see the disk note below).
 
 ## Completed work
 
@@ -67,6 +62,14 @@ Phase 1 and Phase 2 are independent, so a red Phase 2 never invalidates Phase 1.
   (`ApplicationWorkflow`, `BookingWorkflow.Matches`, `BookingRepository`, `BookingService` x2, the two
   confirm steps, both outcome processors, `SettlementService`); the `api/Concertable.B2B/TECH_DEBT.md`
   operation-claim entry **deleted**; `OperationClaimTests` added.
+- 2026-09-06 — **Phase 2: attempt classification.** `AttemptVerdict<TOutcome>` +
+  `AttemptExtensions.AttemptAsync` on both plumbings; all seven conflict sites migrated
+  (`ApplicationService` Withdraw/Reject/Cancel, `ApplicationWorkflow` Accept, `BookingWorkflow` Cancel,
+  `ConcertWorkflow` Cancel, `SettlementService` Reserve at budget 2);
+  `AcceptApplicationError.Contended` added; `AcceptOnceAsync`, `IScoped<ApplicationWorkflow>` and the
+  concrete `AddScoped<ApplicationWorkflow>()` deleted;
+  `Accept_WhenPaymentVerificationWinsTheRace_ReportsContendedAndSucceedsOnRetry` updated;
+  `AttemptExtensionsTests` added.
 
 ## Verification
 
@@ -75,7 +78,8 @@ Phase 1, all local:
 - **`has-pending-model-changes`: "No changes" on `ApplicationDbContext`, `BookingDbContext` and
   `ConcertDbContext`.** The authoritative no-migration check, and the one that would have caught a wrong
   column name, a wrong index name or the missing `IsRequired()`.
-- Unit suites green: `DataAccess.UnitTests` 14/14 (11 of them the new `OperationClaimTests`),
+- Unit suites green after Phase 2: `DataAccess.UnitTests` 24/24 (11 `OperationClaimTests` +
+  13 `AttemptExtensionsTests`),
   `Application.UnitTests` 20/20, `Booking.UnitTests` 9/9, `Concert.UnitTests` 105/105.
 - Module builds green with 0 warnings: Application, Booking and Concert Infrastructure, plus
   `Concertable.B2B.Web`.
