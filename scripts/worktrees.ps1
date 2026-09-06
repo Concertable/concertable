@@ -23,7 +23,10 @@ function Run {
     try {
         $ErrorActionPreference = 'Continue'
         # No ".exe": Windows resolves it through PATHEXT, and hard-coding it makes every call fail on Linux.
-        $executable = (Get-Command $Program -CommandType Application -ErrorAction Stop).Source
+        # -First 1: a duplicated PATH (e.g. Git for Windows' cmd/ and mingw64/bin/ both resolving git.exe)
+        # makes Get-Command return multiple matches; .Source on that array space-joins every path into one
+        # unusable string instead of picking the one PATH would actually invoke.
+        $executable = (Get-Command $Program -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
         $output = @(& $executable @Arguments 2>&1)
         $exitCode = $LASTEXITCODE
     }
