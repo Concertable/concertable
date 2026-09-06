@@ -681,7 +681,7 @@ Every suite the range touches is green: `Concertable.DataAccess.UnitTests` 31/31
 ## Security pass - 2026-09-01
 
 **Span:** `3f6d85aaa..3c474d8be` - 916 files, +26221/-8329 under `api/`
-**Judgment:** `no vulnerabilities found`
+**Pass judgment:** `no vulnerabilities found`
 
 The span is effectively the whole module carve, so the pass was scoped to the surfaces a carve can actually
 break: who may call an endpoint, whose rows a query returns, what crosses a trust boundary, and what reaches
@@ -1195,7 +1195,7 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   `customer-ticket-payment`'s `identity`/`compatibility` prose still described the retired Stripe-intent-id
   correlation and is corrected to the delivered operation-reference shape. Payment unit tier 551/551.
 
-- [ ] **IR34 — HIGH — correctness — `wontfix` in this PR, debt recorded** — `api/Concertable.B2B/src/Modules/Dashboard/Venue/Concertable.B2B.Dashboard.Venue.Infrastructure/VenueDashboardService.cs:61`
+- [wontfix] **IR34 — HIGH — correctness** — `api/Concertable.B2B/src/Modules/Dashboard/Venue/Concertable.B2B.Dashboard.Venue.Infrastructure/VenueDashboardService.cs:61`
   The venue revenue KPI and its six-month chart are structurally, permanently zero. `GetPaymentRevenueAsync` sums
   `PaymentTransactionEntity`, whose only writer is registered under `TransactionTypes.Payment` (`"payment"`), and
   nothing in the system emits that key — `PaymentSessionProviderRequest` stamps `type` with the operation's own
@@ -1205,9 +1205,10 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   Payment-side (key the recorder on the operation kind, and stamp `AmountMinor`, which the recorder reads and nothing
   writes) or B2B-side via the already-open `ConcertSalesProjection`. Both are out of this PR's scope — Payment source
   is explicitly excluded and `ConcertSalesProjection` is its own piece of work — so this lands as a HIGH entry in
-  `api/Concertable.B2B/TECH_DEBT.md` rather than a silent regression.
+  `api/Concertable.B2B/TECH_DEBT.md` ("Venue dashboard revenue reads a table nothing writes") rather than a
+  silent regression.
 
-- [ ] **IR35 — HIGH — correctness — out of scope, Customer + Payment owned** — `api/Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Application/Payments/TicketPaymentOperationReferences.cs:27`
+- [wontfix] **IR35 — HIGH — correctness** — `api/Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Application/Payments/TicketPaymentOperationReferences.cs:27`
   Customer's purchase reference is `buyer:{id}:concert:{id}:quantity:{n}` — a repeatable user action with no
   per-attempt discriminator — while Payment enforces `(OperationType, ClientReference)` as a unique idempotency key and
   normalizes the caller's fresh `OperationId` out of the replay fingerprint. A buyer's *second* single-ticket purchase
@@ -1216,22 +1217,24 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   and no second ticket is minted. This is entirely Customer and Payment code, already merged to `main`, and explicitly
   outside this PR. Recorded here because the branch's own reference scheme was reviewed against the same contract and
   is *not* affected — B2B keys every reference on an entity id that exists once per intended operation, so its replay
-  is deliberate. Needs its own ticket against Customer.
+  is deliberate. Transferred to `api/Concertable.Customer/TECH_DEBT.md` (HIGH, "A repeat ticket purchase replays
+  the first payment instead of charging again").
 
-- [ ] **IR36 — LOW — package coherence — deferred** — `api/Concertable.Shared/Directory.Packages.props:63`
+- [wontfix] **IR36 — LOW — package coherence** — `api/Concertable.Shared/Directory.Packages.props:63`
   `Concertable.Payment.Hosting` is pinned at `$(ConcertablePlatformVersion)` (1329) while B2B and Customer pin every
   Payment package at 1322 through the split `ConcertablePaymentVersion`. Inert today because its only consumer is a
   `tests/`-path project, which `PlatformSourcePackages.targets` swaps to a project reference. It becomes a restore
   failure the moment a carve or a non-test consumer resolves it from the feed. Not changed here: confirming whether
   `Payment.Hosting` exists on the feed at 1329 needs feed access this session does not have, and blind-editing a pin
-  during delivery is the wrong trade. The correction is to give Shared the same `ConcertablePaymentVersion` block.
+  during delivery is the wrong trade. Transferred to `api/Concertable.Shared/TECH_DEBT.md`, whose resolution condition is to give Shared the same
+  `ConcertablePaymentVersion` block after confirming the published Payment heights against the feed.
 
-- [ ] **IR37 — MEDIUM — correctness — deferred** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationCheckoutService.cs:111`
+- [wontfix] **IR37 — MEDIUM — correctness** — `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Services/ApplicationCheckoutService.cs:111`
   The accept checkout passes `Guid.CreateVersion7()` as the FlatFee authorization's `OperationId`, minting a fresh id
   on every GET of the checkout page, where every other operation-id site in B2B is `??=`-stable. It does not
   double-charge today only because Payment's duplicate-key fallback re-resolves by reference. Correctness rests on
-  Payment's fallback rather than on the reference B2B already owns. Left for a focused change rather than a late edit
-  to the accept money path.
+  Payment's fallback rather than on the reference B2B already owns. Transferred to `api/Concertable.B2B/TECH_DEBT.md` ("Accept checkout mints a throwaway authorization operation
+  id") rather than a late edit to the accept money path.
 
 - [x] **IR38 — HIGH — correctness** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:335` and `api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Contracts/Concertable.B2B.Application.Contracts.csproj:14`
   The next CI run, with the matrix finally reaching the Shared tier for the first time, failed three more
