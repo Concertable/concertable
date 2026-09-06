@@ -7,8 +7,4 @@ export { useVenue } from "./hooks/useVenue";
 export type { UseVenueResult } from "./hooks/useVenue";
 export { useVenueById } from "./hooks/useVenueById";
 export type { UseVenueByIdResult } from "./hooks/useVenueById";
-export { Venue } from "./types";
-export type {
-  CreateVenueRequest,
-  UpdateVenueRequest,
-} from "./types";
+export type { Venue } from "./types";
