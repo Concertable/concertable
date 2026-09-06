@@ -5,7 +5,8 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M2-Owner-Operations`
 - Branch: `Refactor/RepoSplit-M2-Owner-Operations`
-- PR: not opened; M2 is an independent sibling candidate based on monorepo PR #633
+- PR: [#947](https://github.com/Concertable/concertable/pull/947), draft; independent sibling based explicitly
+  on monorepo PR #633
 - Dependency/package gates: M2 delivery waits for PR #633 to land. Its Docker-backed integration proof is
   blocked by the local Docker Desktop backend failing during WSL bootstrap; private-repository merge-queue
   rulesets remain unavailable on the current GitHub entitlement.
@@ -32,8 +33,9 @@ both are fixed in the final remediation commit. M3 is active independently and d
 
 - When Docker Desktop reaches a running backend, require `scripts/docker-health.ps1` to pass, then run
   `scripts/integration.ps1 run` for the fresh-container migration proof.
-- Open M2 as a draft sibling PR with #633 as its explicit base. Do not recreate or recommit resolved M2-001
-  through M2-004, and do not represent M2 as merge-ready until the Docker proof is green.
+- Keep PR #947 in draft while #633 is open and while the Docker proof is unavailable. After #633 lands, move
+  #947 to the exact landed `origin/main`, rerun the owner-operation gates, then require the fresh-container
+  migration proof before representing M2 as merge-ready.
 - Keep M1, M2, and M3 as separate packets. After #633 lands, move each packet to the exact landed
   `origin/main`, revalidate its own gates, and preserve producer/package and final service cutover ordering.
 
@@ -74,7 +76,7 @@ The original M2 review found three safety defects, all repaired by `d670e3383`; 
 no regression. The rebased frozen-head review at `a2115afc5` requested four further changes, all repaired by
 `7a561adbe`. The final full review of that fixing head requested the platform-tool destination and checkpoint
 corrections, both fixed by `d98622e69`. The incremental review over that commit found no further defects and
-advanced both the general and security watermarks. M2 is review-complete for draft publication.
+advanced both the general and security watermarks. M2 is review-complete and published as draft PR #947.
 
 ## Decisions, discoveries, blockers, and deviations
 
