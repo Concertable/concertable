@@ -2,7 +2,9 @@
 
 **Status:** APPROVED by Tommy 2026-08-26 and in execution. Current state and next steps live in the
 exclusive stream ledgers named by the `platform/polyrepo-cut` active-owner table in
-`POLYREPO_ROADMAP.md`; those ledgers override any status or inventory figure in this document.
+`POLYREPO_ROADMAP.md`; those ledgers override any status or inventory figure in this document. The active
+foundation ledger owns checkpoint 6B topology reconciliation before any target repository is created or
+renamed.
 
 **This document's inventory is a 2026-08-02 snapshot and has drifted.** Four audits re-verified every
 checkpoint against current `main` on 2026-08-26; Git history retains that rescope evidence. Known corrections:
@@ -19,19 +21,23 @@ implementation mechanics.
 
 ## Decision summary
 
-The durable target is nine canonical repositories:
+The durable target is eleven canonical repositories:
 
 1. five service repositories: B2B, Customer, Payment, Search, and Auth;
 2. two platform repositories: one for shared .NET packages and one for shared frontend packages;
-3. one system repository for `Concertable.AppHost`, the system manifest, infrastructure, deployment, and
-   black-box E2E; and
-4. the conventional organization `.github` repository for reusable workflows and repository policy.
+3. one system repository for `Concertable.System.AppHost`, compatibility manifests, and black-box E2E;
+4. one infrastructure repository, `Concertable/infra`, for Terraform and Azure resource topology;
+5. one configuration repository, `Concertable/config`, for environment desired state, deployment promotion,
+   and rollback; and
+6. the conventional organization `.github` repository for reusable workflows and repository policy.
 
 Every service owns its runtime, database migrations, development seeding, public Contracts, container
 images, and canonical standalone AppHost. Runtime service code may consume another service only through
 that service's published Contracts or purpose-built client SDK. Cross-repository source references are
-forbidden. The system repository composes immutable container images and published test/hosting artifacts;
-it does not compile service implementations.
+forbidden. The system repository composes immutable container images and published test/hosting artifacts to
+qualify a compatibility set; it does not compile service implementations or own production deployment.
+Infrastructure provisions the destination, and configuration promotes a system-qualified image set into an
+environment.
 
 B2B Workers remains an Azure Functions v4 isolated runtime, but its production artifact is a container and
 its production host is native Azure Functions on Azure Container Apps. Functions Consumption is not part of
@@ -54,7 +60,11 @@ sequence. There is never a repository-wide forced bump that can strand every ser
 - Each service's standalone AppHost is canonical for service development. It runs that service from source
   and foreign dependencies from pinned images.
 - The full-stack AppHost and E2E suite live in `Concertable/system` and run only published images at the
-  compatibility versions recorded in the system manifest.
+  versions recorded in a compatibility manifest.
+- `Concertable/infra` is the only Terraform owner. `Concertable/config` owns deployable environment state and
+  promotes only a compatibility set already proven by `Concertable/system`.
+- Secret values never live in Git. Configuration stores non-secret values, secret names, and Key Vault
+  references; Azure Key Vault stores the values.
 - A service runtime may reference only platform packages and published boundary packages. Build-time
   AppHost and test tooling packages are allowed only in AppHost/test projects and are rejected from runtime
   closures.
@@ -216,10 +226,13 @@ Repository secrets currently mix CI, E2E, mirroring, package sync, and abandoned
 credentials. No secret values were read. The planning credential lacks `read:packages`, so package ACL and
 repository-linkage verification is an explicit preflight gate rather than an assumption.
 
-No `Concertable/config`, `Concertable/system`, `Concertable/platform-dotnet`, or
-`Concertable/platform-web` repository currently exists. The deployment plan's earlier assumption that a
-config repo had been authored is not true in GitHub. The target places system IaC and config-as-code in the
-system repo so desired images, infrastructure, migrations, and E2E promotion stay atomic.
+Live 6B inventory on 2026-09-04 found private staging repositories at `auth`, `b2b`, `customer`, `payment`,
+`search`, `infra`, and `config`; they are bootstrap inputs, not canonical cutover targets. `infra` already
+contains Terraform modules and `config` contains configuration bootstrap work plus Terraform that must be
+reconciled into the sole `infra` ownership boundary before cutover. `system`,
+`platform-dotnet`, and `platform-web` do not exist. No `*-next` service URL is available: each redirects to
+its legacy final-name staging repository. Preparation must preserve these histories and free final names
+before creating fresh `*-next` repositories; it must never force-push or overwrite an existing repository.
 
 ## Target repository topology and ownership
 
@@ -232,19 +245,22 @@ system repo so desired images, infrastructure, migrations, and E2E promotion sta
 | `Concertable/auth` | Auth runtime, `Auth.Contracts`, Auth DB and both Auth/Duende migrations, standalone AppHost | B2B DB or tenant/business persistence | `@Concertable/auth-maintainers` |
 | `Concertable/platform-dotnet` | Kernel, generic Contracts, Messaging, DataAccess, ServiceDefaults, shared capabilities, seed primitives, test primitives, generic Aspire hosting primitives, `Concertable.Build` | service DTOs, service topology, service runtime | `@Concertable/platform-maintainers` |
 | `Concertable/platform-web` | `@concertable/shared`, `@concertable/web-shared`, shared ESLint/TypeScript/Vite conventions | B2B- or Customer-only UI/domain code | `@Concertable/frontend-platform-maintainers` |
-| `Concertable/system` | `Concertable.AppHost`, immutable system manifest, API/UI/mobile E2E, Terraform, App Configuration declarations, deployment/promotion/rollback workflows | service implementations, EF models, private domain code | `@Concertable/system-maintainers` |
+| `Concertable/system` | `Concertable.System.AppHost`, compatibility manifests/attestations, API/UI/mobile E2E, system testkits and Docker health tooling | service implementations, production desired state, Terraform, secret values | `@Concertable/system-maintainers` |
+| `Concertable/infra` | Terraform modules and root stacks for Azure resource topology, identities, networking, data services, Container Apps and shared platform resources | application source, environment image promotion, application settings or secret values | `@Concertable/infrastructure-maintainers` |
+| `Concertable/config` | test/production desired state, immutable image digests, Azure App Configuration declarations, Key Vault references, deployment/promotion/rollback workflows | Terraform modules, application source, plaintext secret values | `@Concertable/configuration-maintainers` |
 | `Concertable/.github` | reusable CI workflows, hardened composite actions, shared Renovate preset, PR/repository policy templates | application/runtime libraries | `@Concertable/platform-maintainers` |
 
 Tommy is bootstrap administrator. Teams and `CODEOWNERS` express the durable ownership boundary even while
 one person fills multiple roles.
 
-The current source and generated mirrors are public, and the canonical repositories preserve that public
-visibility. Temporary `*-next` repositories remain private until their history, settings, and artifacts pass
-the cutover review. `Concertable/.github` is public from creation so public repositories can call its reusable
-workflows. Canonical GHCR runtime, migration, and simulator images are public and anonymously pullable after
-image-layer secret scanning; this avoids a long-lived registry credential in Azure and in local AppHosts.
-NuGet and npm packages retain explicit package/repository access grants because they do not share GHCR's
-anonymous public-pull behavior.
+The source repository and historical generated mirrors are public. Canonical repositories preserve that
+public visibility, but every mirror/archive action is conditional on the live repository inventory rather
+than an assumed roster. Temporary `*-next` repositories remain private until their history, settings, and
+artifacts pass the cutover review. `Concertable/.github` is public from creation so public repositories can
+call its reusable workflows. Canonical GHCR runtime, migration, and simulator images are public and
+anonymously pullable after image-layer secret scanning; this avoids a long-lived registry credential in Azure
+and in local AppHosts. NuGet and npm packages retain explicit package/repository access grants because they
+do not share GHCR's anonymous public-pull behavior.
 
 ### Repository layout contracts
 
@@ -265,17 +281,18 @@ nuget.config
 `system` uses:
 
 ```text
-src/Concertable.AppHost/ full system from containers
+src/Concertable.System.AppHost/ complete system from containers
 tests/api/
 tests/ui/
 tests/mobile/
 testkits/            system-only generic harness code
-manifests/           image digests and compatible package/testkit versions
-infra/modules/
-infra/environments/{test,production}/
-config/{test,production}/
+compatibility/       candidate and last-known-green image/package/testkit sets
 scripts/
 ```
+
+`infra` uses `modules/`, `environments/{test,production}/`, and `scripts/`. `config` uses
+`environments/{test,production}/` for immutable release state, `app-configuration/{test,production}/` for
+non-secret values/Key Vault references, and `deployments/` for promotion, migration, rollout, and rollback.
 
 ## Contracts, hosting metadata, and shared packages
 
@@ -402,10 +419,11 @@ Before extraction, E2E must lose all service implementation ProjectReferences. T
 - Stripe test-mode APIs; and
 - generic SQL readiness/reset infrastructure that does not compile service EF models.
 
-`Concertable.AppHost` reads `manifests/local.yaml`, pulls images by digest, provisions the five databases and shared
-emulators, applies migrations, seeds through owners/simulators, and starts the four SPAs or their preview
-images. `manifests/test.yaml` and `manifests/production.yaml` are desired-state manifests for deployment. A dependency
-PR is green only when the full-stack AppHost becomes healthy and affected E2E passes.
+`Concertable.System.AppHost` reads a compatibility manifest, pulls images by digest, provisions the five
+databases and shared emulators, applies migrations, seeds through owners/simulators, and starts the four SPAs
+or their preview images. A dependency PR is green only when the full-stack AppHost becomes healthy and
+affected E2E passes. The resulting exact image/package set is qualification evidence consumed by a separate
+configuration promotion PR; the AppHost does not deploy production.
 
 ## CI/CD, environments, secrets, and deployment
 
@@ -418,11 +436,16 @@ PR is green only when the full-stack AppHost becomes healthy and affected E2E pa
 - NuGet/npm publication with clean-consumer verification;
 - OCI build, vulnerability scan, SBOM/provenance, sign, and push;
 - standalone AppHost boot smoke; and
-- Terraform plan/apply policy.
+- Terraform plan/apply policy; and
+- compatibility/configuration-manifest, promotion, and rollback validation.
 
 Each repository owns a thin calling workflow and its final `ci-complete` aggregation job. Required rulesets,
-merge queue, dependency review, secret scanning, and branch naming are applied uniformly. Reusable workflow
-updates arrive through Renovate rather than floating tags.
+merge queue, dependency review, secret scanning, and branch naming are applied uniformly where the GitHub
+entitlement supports them. The current entitlement also rejects private-repository branch-protection reads,
+so it has no technical substitute for private target `main` enforcement: those targets remain private and
+non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade makes the intended
+ruleset/merge-queue policy verifiable. Reusable workflow updates arrive through Renovate rather than floating
+tags.
 
 ### Service CI and release
 
@@ -432,25 +455,34 @@ the service publishes changed boundary packages, migration artifact/image, and r
 deploy itself to a shared environment. B2B publishes its Workers project as an Azure Functions container;
 the same digest is used by standalone/system composition and Azure Functions on Container Apps.
 
-### System CI and deployment
+### System CI
 
-The system repo runs the full Docker health preflight, composes the system, and executes API then UI/mobile
-E2E according to the existing risk-tier policy. A merged system-manifest PR is the only source of a deployable
-multi-service release.
+The system repo runs the full Docker health preflight, composes the system from published images, and executes
+API then UI/mobile E2E according to the existing risk-tier policy. A merged compatibility PR records a
+candidate or last-known-green set but does not deploy it.
 
-Terraform remains the cloud owner, consistent with `CONFIG_AND_DEPLOYMENT.md` and `DEPLOYMENT.md`:
+### Infrastructure CI
+
+`Concertable/infra` is the only Terraform owner. Pull requests run format, validate, policy, and environment
+plans; protected applies provision or change the Azure destination independently of an application release.
+
+### Configuration CI and deployment
+
+`Concertable/config` accepts only an exact compatibility set already proven by system CI. Its promotion
+workflow owns environment rollout and rollback:
 
 1. GitHub OIDC authenticates to Azure; no long-lived Azure client secret is stored.
-2. Terraform applies the ACA environment, five databases, Service Bus topology, storage, Key Vault, App
-   Configuration, Static Web Apps, and the native Azure Functions-on-Container-Apps B2B Workers resource.
-3. The workflow runs the owning service's migration job against only that service database and waits.
-4. The workflow rolls container revisions to the manifest digests and verifies health.
-5. SPAs deploy with environment-specific build-time public configuration.
-6. A smoke journey proves Auth, a B2B write, event propagation into Customer/Search, and Payment/Stripe.
+2. The workflow verifies infrastructure outputs and required managed identities/Key Vault references.
+3. It applies non-secret App Configuration declarations and secret references, never secret values.
+4. It runs the owning service's migration job against only that service database and waits.
+5. It rolls Azure Container Apps revisions to the promoted image digests and verifies health.
+6. SPAs deploy with environment-specific build-time public configuration.
+7. A smoke journey proves Auth, a B2B write, event propagation into Customer/Search, and Payment/Stripe.
 
 GitHub environments become `test` and `production`. `production` requires Tommy/production-owner review,
 allows only protected release refs, prevents self-review where supported, and serializes deployments.
-`test` may deploy automatically from a green system manifest. Azure permissions are separate per environment.
+`test` may deploy automatically from a green configuration promotion backed by current system evidence. Azure
+permissions are separate per environment.
 
 Secrets are redistributed by least privilege:
 
@@ -505,7 +537,9 @@ The extraction is reproducible and audited:
    merge topology where representable, and tags relevant to the selected paths.
 4. Emit and retain filter-repo commit maps, path maps, object counts, earliest/latest commit checks, and
    sampled blame comparisons.
-5. Push every result to a temporary `*-next` repository first. No existing default branch is force-pushed.
+5. Push every result to a temporary `*-next` repository first. Existing final-name staging repositories are
+   first renamed to `<name>-staging-archive-<date>` only with explicit authorization, retaining their IDs and
+   histories; no existing default branch is force-pushed.
 6. Verify clean clone/build/test/package restore, history counts, LFS/submodule absence, secret scan, and the
    exact cutover tree against the source mapping.
 7. At the approved cutover, rename the old generated mirror to
@@ -523,7 +557,9 @@ Path ownership for extraction is:
 | Auth | `api/Concertable.Auth`; `api/Concertable.Auth.Contracts` |
 | platform-dotnet | `api/Concertable.Shared`; `api/Concertable.Messaging`; `api/Concertable.DataAccess`; `api/Concertable.ServiceDefaults`; generic portions of `api/Concertable.AppHost.Shared` |
 | platform-web | `app/shared`; packageized `app/web/shared`; frontend build configuration |
-| system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; system IaC/config/deployment history |
+| system | `Concertable.AppHost`; all current full-system E2E/helper paths; E2E/docker scripts; compatibility history |
+| infra | no monorepo source path; reconcile and audit the existing `Concertable/infra` Terraform bootstrap history |
+| config | no monorepo source path; reconcile and audit the existing `Concertable/config` desired-state bootstrap history |
 | `.github` | reusable portions of current workflows and policy files, with monorepo-specific jobs excluded |
 
 Files needed by more than one target may legitimately have history in more than one filtered repository, but
@@ -548,8 +584,9 @@ only one target owns the live file after cutover.
 2. After canonical commits but before monorepo source removal, cherry-pick/replay those commits back into the
    frozen monorepo path, verify, then explicitly re-enable mirroring. Never overwrite canonical work with the
    old force-push workflow.
-3. After source removal, operational rollback is a system-manifest PR to the last known-green image digests
-   and compatible migration/schema state. Repository topology is not automatically reversed.
+3. After source removal, operational rollback is a configuration rollback to the last known-green
+   system-qualified image set and compatible migration/schema state. Repository topology is not
+   automatically reversed.
 4. Break-glass source rollback restores the signed monorepo bundle/tag into a new recovery repository; it
    never unarchives and force-pushes the historical monorepo silently.
 
@@ -659,10 +696,21 @@ private extraction proof.
 
 - 6A: create public `Concertable/.github`, reusable workflows, Renovate preset, ruleset/environment templates,
   teams, and bootstrap CODEOWNERS. Verify a disposable public fixture consumes every reusable workflow.
-- 6B: create private `platform-dotnet-next`, `platform-web-next`, `system-next`, and five service `*-next`
-  repositories. Apply least-privilege Actions/package settings and `main` merge-queue rulesets.
-- 6C: push filtered histories and reports; run secret scans and clean-clone builds. Do not rename an existing
-  repository or make a target canonical.
+- 6B: inventory every active branch, PR, owner worktree, and exact head in the seven legacy final-name staging
+  repositories (`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, `config`). Before an approved archival
+  rename, create a preserved-ref/bundle handoff for each active preparation branch and record the new-target
+  remote/rehome command; renamed-repository PRs are not treated as transferable. After Tommy approves the
+  archival renames, create ten private `*-next` targets: five services, `platform-dotnet-next`,
+  `platform-web-next`, `system-next`, `infra-next`, and `config-next`; transfer each recorded preparation ref
+  to a named `prep/*` preservation branch in its new target. That direct ref transfer is preservation, not
+  integration. After 6C imports the filtered target base, use the retained filter-repo commit map to rebase or
+  cherry-pick the recorded preparation commits onto that base, recreate the PR in the new repository, and
+  require green target CI before retiring the archive branch. Apply least-privilege Actions/package settings
+  and CODEOWNERS/team access. Because the present entitlement cannot enforce private `main`, do not represent
+  a target as protected or canonical until an entitlement upgrade makes rulesets/merge queue verifiable.
+- 6C: push filtered histories and reports; reconcile the `infra` and `config` bootstrap inputs so Terraform
+  has one owner; run secret scans and clean-clone builds. Resolve every extraction-map claim, generate retained
+  history/audit reports, and do not make a target canonical.
 - Each approved canonical rename also changes the verified `*-next` repository to public and makes its
   scanned GHCR images public. Visibility promotion never happens during preparation or implicitly on publish.
 - Verification: history audit, package-auth probe, workflow fixture, all target clean-clone builds.
@@ -675,8 +723,9 @@ private extraction proof.
   version, and prove clean restore.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
-- 7C (GitHub): rename the stale `shared` mirror to `shared-mirror-archive-<date>` and
-  `platform-dotnet-next` to `platform-dotnet`; update package links/Actions access.
+- 7C (GitHub): rename `platform-dotnet-next` to `platform-dotnet`; update package links/Actions access. If
+  a legacy `shared` mirror exists in the verified live inventory, preserve it as
+  `shared-mirror-archive-<date>`; do not assume that repository exists.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
@@ -693,15 +742,17 @@ private extraction proof.
 ### 9. Make the system repository canonical
 
 - 9A (`system-next`): land filtered full-stack AppHost/E2E history, container-only composition,
-  `manifests/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
-- 9B (`system-next`): land the existing Terraform/config/deployment design under system ownership, validate
-  plans for test/production, create protected GitHub environments, and perform a test-environment plan or
-  ephemeral deployment when Azure credentials/resources are available.
-- 9C (GitHub): rename `system-next` to `system`; enable Renovate image/package PRs.
+  `compatibility/local.yaml`, Docker health gate, and black-box API/UI/mobile tests.
+- 9B (`system-next`): qualify compatibility manifests and Docker health/API/UI/mobile evidence. In parallel,
+  `infra-next` owns Terraform format/validate/plan and `config-next` owns desired-state, promotion, and
+  rollback validation; neither may deploy an unqualified compatibility set.
+- 9C (GitHub): rename `system-next` to `system`, `infra-next` to `infra`, and `config-next` to `config`;
+  transfer the respective package/image/environment access and enable Renovate image/package PRs.
 - 9D (`concertable`): remove the umbrella AppHost/full-stack E2E ownership and retain only a pointer during
   the remaining service cutovers.
-- Verification: clean-clone system build; full container API then UI E2E; mobile affected test; Terraform
-  fmt/validate/plan; deployment smoke if an environment is available.
+- Verification: clean-clone system build; full container API then UI E2E; mobile affected test; `infra`
+  Terraform fmt/validate/plan; `config` promotion/rollback validation; deployment smoke if an environment is
+  available.
 - **Hard stop:** `system` is green using monorepo-produced images before the first service source cut.
 
 ### 10. Promote Auth
@@ -710,10 +761,13 @@ private extraction proof.
   mirror automation. Do not delete source yet.
 - 10B (`auth-next`): rebase the verified extraction on that SHA; land CI, Auth-owned publication/images,
   standalone AppHost, migrations, Hosting/TestKit, rules, and main branch.
-- 10C (GitHub): rename `auth` to `auth-mirror-archive-<date>` and `auth-next` to `auth`; transfer package/image
-  permissions; publish a canonical Auth release.
-- 10D (`system`): Renovate/manual PR updates Auth packages and image digest; run full affected E2E.
-- 10E (`concertable`): consume canonical Auth Contracts where still needed, stop duplicate Auth publication,
+- 10C (GitHub): promote `auth-next` to `auth`, retaining the dated staging archive established in 6B;
+  transfer package/image permissions and publish a canonical Auth release. The final-name target is already
+  free at this point and is never overwritten.
+- 10D (`system`): Renovate/manual PR updates Auth packages and image digest; run full affected E2E and record
+  the qualified compatibility set.
+- 10E (`config`): promote that exact set to test and prove the Auth/login deployment smoke.
+- 10F (`concertable`): consume canonical Auth Contracts where still needed, stop duplicate Auth publication,
   then remove frozen Auth source.
 - Verification: Auth build/unit/integration/AppHost/migrations; every remaining service build; system Auth and
   login flows, API/UI E2E.
@@ -721,7 +775,7 @@ private extraction proof.
 
 ### 11. Promote Payment
 
-Repeat 10A-10E for Payment. Its target owns Web, Workers, Contracts, Client, migrations, Stripe tooling,
+Repeat 10A-10F for Payment. Its target owns Web, Workers, Contracts, Client, migrations, Stripe tooling,
 images, and AppHost. Update B2B/Customer/system independently through published Payment artifacts.
 
 - Verification: Payment build/unit/integration/AppHost/migrations; B2B and Customer builds/integration;
@@ -730,7 +784,7 @@ images, and AppHost. Update B2B/Customer/system independently through published 
 
 ### 12. Promote Search
 
-Repeat 10A-10E for Search. Its standalone host consumes Auth plus B2B simulator images and published
+Repeat 10A-10F for Search. Its standalone host consumes Auth plus B2B simulator images and published
 Contracts; no producer source or database. Search's rating inputs are B2B-owned events, so the B2B simulator
 must replay them; do not add a direct Customer simulator dependency unless a separately approved contract
 change makes Customer the producer Search actually consumes.
@@ -741,7 +795,7 @@ change makes Customer the producer Search actually consumes.
 
 ### 13. Promote Customer
 
-Repeat 10A-10E for Customer, including customer web/mobile, `@customer/shared`, Review/Ticket/Seed Contracts,
+Repeat 10A-10F for Customer, including customer web/mobile, `@customer/shared`, Review/Ticket/Seed Contracts,
 simulator, and all Customer migrations. B2B remains compatible with the published Customer contract train.
 
 Customer preparation starts from the reviewed private `customer` extraction proof and runs in parallel
@@ -755,18 +809,19 @@ publication setup, migration/simulator closure, or standalone verification from 
 
 ### 14. Promote B2B
 
-Repeat 10A-10E for B2B last because it has the widest Contract/seed fan-out. Include all manager web apps,
+Repeat 10A-10F for B2B last because it has the widest Contract/seed fan-out. Include all manager web apps,
 B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
 
 - Verification: full B2B backend/frontend/mobile build and unit/integration; standalone AppHost; all B2B
   migrations and simulator parity; full system API and UI E2E plus affected mobile tests.
-- **Hard stop:** the system repository contains no monorepo-built service image.
+- **Hard stop:** the system compatibility set and deployed test configuration contain no monorepo-built service
+  image.
 
-### 15. Prove deployment and rollback from canonical repositories (`system`)
+### 15. Prove deployment and rollback from canonical repositories (`infra` + `config`)
 
-- Deploy an ephemeral test environment from canonical image digests, run all migration jobs in owner order,
-  seed through owner jobs/simulators, run smoke plus full E2E, then exercise rollback to the prior system
-  manifest and destroy if using ephemeral mode.
+- Provision an ephemeral test environment from canonical Terraform, promote a system-qualified configuration
+  set, run all migration jobs in owner order, seed through owner jobs/simulators, run smoke plus full E2E,
+  then exercise rollback to the prior configuration manifest and destroy if using ephemeral mode.
 - Verify production environment protection, OIDC, Key Vault/App Configuration access, migration logs, image
   provenance, and rollback runbook without exposing secrets.
 - **Hard stop:** Tommy reviews the deployment/rollback evidence before monorepo archival.
@@ -777,9 +832,9 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
   topology/history/package map and cutover tag/bundle reference.
 - Confirm no package, image, workflow, AppHost, E2E, environment, or deployment still depends on the
   monorepo.
-- Archive `Concertable/concertable` and the six dated mirror archives. Retain package/image versions and
-  signed source bundles.
-- Verification: clean clones/builds of all nine canonical repos; Renovate dry-run/dashboard; full system E2E;
+- Archive `Concertable/concertable` and only the dated staging/mirror archives recorded in the final live
+  inventory. Retain package/image versions and signed source bundles.
+- Verification: clean clones/builds of all eleven canonical repos; Renovate dry-run/dashboard; full system E2E;
   test deployment smoke; GitHub audit of rulesets/environments/secrets/package ACLs.
 - **Hard stop:** archival is the terminal checkpoint. The plan is deleted in the commit that records the
   completed, verified migration in its final owning repository.
@@ -790,8 +845,9 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
   it now.
 - At each boundary, pull current defaults, prove no red dependency-sync/migration state, implement, run the
   listed build and affected tests, commit, and stop with the next exact resume prompt.
-- Package producer changes publish before consumer changes. Image producer releases precede system-manifest
-  updates. Schema expansion precedes runtime adoption.
+- Package producer changes publish before consumer changes. Image producer releases precede system
+  compatibility updates, and configuration promotion follows green system evidence. Schema expansion precedes
+  runtime adoption.
 - A red build/test/package/deployment gate stops the checkpoint. Do not paper over it with a path reference,
   mutable image tag, copied source, disabled check, or global version pin.
 - Never merge, auto-merge, rename a canonical repository, archive a repository, rotate/delete a credential,

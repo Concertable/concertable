@@ -265,7 +265,9 @@
       "api/Concertable.B2B/src/Concertable.B2B.TestKit/Concertable.B2B.TestKit.csproj",
       "api/Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Contracts/Concertable.B2B.Admin.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Contracts/Concertable.B2B.Artist.Contracts.csproj",
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Contracts/Concertable.B2B.Booking.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Contracts/Concertable.B2B.Concert.Contracts.csproj",
+      "api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Contracts/Concertable.B2B.Deal.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Contracts/Concertable.B2B.Tenant.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Contracts/Concertable.B2B.User.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Contracts/Concertable.B2B.Venue.Contracts.csproj",
@@ -314,7 +316,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 236,
+    "projectCount": 270,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -512,6 +514,55 @@
         "packable": false,
         "target": "b2b"
       },
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Api/Concertable.B2B.Application.Api.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Application.Api",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Application/Concertable.B2B.Application.Application.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Application.Application",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Contracts/Concertable.B2B.Application.Contracts.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Application.Contracts",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Concertable.B2B.Application.Domain.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Application.Domain",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Concertable.B2B.Application.Infrastructure.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Application.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Application/Tests/Concertable.B2B.Application.IntegrationTests/Concertable.B2B.Application.IntegrationTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.Application.IntegrationTests",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Application/Tests/Concertable.B2B.Application.UnitTests/Concertable.B2B.Application.UnitTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "unit-test",
+        "name": "Concertable.B2B.Application.UnitTests",
+        "packable": false,
+        "target": "b2b"
+      },
       "api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Api/Concertable.B2B.Artist.Api.csproj": {
         "area": "Concertable.B2B",
         "kind": "runtime",
@@ -558,6 +609,55 @@
         "area": "Concertable.B2B",
         "kind": "unit-test",
         "name": "Concertable.B2B.Artist.UnitTests",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Api/Concertable.B2B.Booking.Api.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Booking.Api",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Application/Concertable.B2B.Booking.Application.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Booking.Application",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Contracts/Concertable.B2B.Booking.Contracts.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Booking.Contracts",
+        "packable": true,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Domain/Concertable.B2B.Booking.Domain.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Booking.Domain",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure/Concertable.B2B.Booking.Infrastructure.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Booking.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Tests/Concertable.B2B.Booking.IntegrationTests/Concertable.B2B.Booking.IntegrationTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.Booking.IntegrationTests",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Booking/Tests/Concertable.B2B.Booking.UnitTests/Concertable.B2B.Booking.UnitTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "unit-test",
+        "name": "Concertable.B2B.Booking.UnitTests",
         "packable": false,
         "target": "b2b"
       },
@@ -659,6 +759,90 @@
         "packable": false,
         "target": "b2b"
       },
+      "api/Concertable.B2B/src/Modules/Dashboard/Artist/Concertable.B2B.Dashboard.Artist.Api/Concertable.B2B.Dashboard.Artist.Api.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Artist.Api",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Artist/Concertable.B2B.Dashboard.Artist.Application/Concertable.B2B.Dashboard.Artist.Application.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Artist.Application",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Artist/Concertable.B2B.Dashboard.Artist.Infrastructure/Concertable.B2B.Dashboard.Artist.Infrastructure.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Artist.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Concertable.B2B.Dashboard.Contracts/Concertable.B2B.Dashboard.Contracts.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Contracts",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Opportunity/Concertable.B2B.Dashboard.Opportunity.Api/Concertable.B2B.Dashboard.Opportunity.Api.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Opportunity.Api",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Opportunity/Concertable.B2B.Dashboard.Opportunity.Application/Concertable.B2B.Dashboard.Opportunity.Application.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Opportunity.Application",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Opportunity/Concertable.B2B.Dashboard.Opportunity.Infrastructure/Concertable.B2B.Dashboard.Opportunity.Infrastructure.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Opportunity.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Tests/Concertable.B2B.Dashboard.IntegrationTests/Concertable.B2B.Dashboard.IntegrationTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.Dashboard.IntegrationTests",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Tests/Concertable.B2B.Dashboard.Opportunity.UnitTests/Concertable.B2B.Dashboard.Opportunity.UnitTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "unit-test",
+        "name": "Concertable.B2B.Dashboard.Opportunity.UnitTests",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Venue/Concertable.B2B.Dashboard.Venue.Api/Concertable.B2B.Dashboard.Venue.Api.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Venue.Api",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Venue/Concertable.B2B.Dashboard.Venue.Application/Concertable.B2B.Dashboard.Venue.Application.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Venue.Application",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Dashboard/Venue/Concertable.B2B.Dashboard.Venue.Infrastructure/Concertable.B2B.Dashboard.Venue.Infrastructure.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Dashboard.Venue.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
       "api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Api/Concertable.B2B.Deal.Api.csproj": {
         "area": "Concertable.B2B",
         "kind": "runtime",
@@ -677,7 +861,7 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.Deal.Contracts",
-        "packable": false,
+        "packable": true,
         "target": "b2b"
       },
       "api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Domain/Concertable.B2B.Deal.Domain.csproj": {
@@ -694,10 +878,59 @@
         "packable": false,
         "target": "b2b"
       },
+      "api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.IntegrationTests/Concertable.B2B.Deal.IntegrationTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.Deal.IntegrationTests",
+        "packable": false,
+        "target": "b2b"
+      },
       "api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/Concertable.B2B.Deal.UnitTests.csproj": {
         "area": "Concertable.B2B",
         "kind": "unit-test",
         "name": "Concertable.B2B.Deal.UnitTests",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Api/Concertable.B2B.Opportunity.Api.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Opportunity.Api",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Application/Concertable.B2B.Opportunity.Application.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Opportunity.Application",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Contracts/Concertable.B2B.Opportunity.Contracts.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Opportunity.Contracts",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Domain/Concertable.B2B.Opportunity.Domain.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Opportunity.Domain",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Infrastructure/Concertable.B2B.Opportunity.Infrastructure.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "runtime",
+        "name": "Concertable.B2B.Opportunity.Infrastructure",
+        "packable": false,
+        "target": "b2b"
+      },
+      "api/Concertable.B2B/src/Modules/Opportunity/Tests/Concertable.B2B.Opportunity.IntegrationTests/Concertable.B2B.Opportunity.IntegrationTests.csproj": {
+        "area": "Concertable.B2B",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.Opportunity.IntegrationTests",
         "packable": false,
         "target": "b2b"
       },
@@ -897,10 +1130,10 @@
         "packable": false,
         "target": "b2b"
       },
-      "api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj": {
+      "api/Concertable.B2B/tests/Concertable.B2B.Lifecycle.IntegrationTests/Concertable.B2B.Lifecycle.IntegrationTests.csproj": {
         "area": "Concertable.B2B",
-        "kind": "unit-test",
-        "name": "Concertable.B2B.Workers.UnitTests",
+        "kind": "integration-test",
+        "name": "Concertable.B2B.Lifecycle.IntegrationTests",
         "packable": false,
         "target": "b2b"
       },
@@ -1538,6 +1771,13 @@
         "area": "Concertable.Payment",
         "kind": "integration-test",
         "name": "Concertable.Payment.E2EAdmin.IntegrationTests",
+        "packable": false,
+        "target": "payment"
+      },
+      "api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests.Fixtures/Concertable.Payment.IntegrationTests.Fixtures.csproj": {
+        "area": "Concertable.Payment",
+        "kind": "fixture",
+        "name": "Concertable.Payment.IntegrationTests.Fixtures",
         "packable": false,
         "target": "payment"
       },
@@ -2186,10 +2426,13 @@
       ],
       "Concertable.B2B": [
         "AdminDbContextModelSnapshot",
+        "ApplicationDbContextModelSnapshot",
         "ArtistDbContextModelSnapshot",
+        "BookingDbContextModelSnapshot",
         "ConcertDbContextModelSnapshot",
         "ConversationsDbContextModelSnapshot",
         "DealDbContextModelSnapshot",
+        "OpportunityDbContextModelSnapshot",
         "TenantDbContextModelSnapshot",
         "UserDbContextModelSnapshot",
         "VenueDbContextModelSnapshot"
@@ -2214,7 +2457,7 @@
         "SearchDbContextModelSnapshot"
       ]
     },
-    "snapshotCount": 21
+    "snapshotCount": 24
   },
   "unassigned": {
     "dotnetAreas": [],

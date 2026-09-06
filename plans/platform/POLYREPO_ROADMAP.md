@@ -35,8 +35,8 @@ collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first
 `EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · the extraction mechanism, proven end to end on
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
-**In flight:** the **cut** (§6) — stages 1 and 2 delivered, extraction unblocked; and the **frontend
-full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
+**In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A delivered;
+extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
 `AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
@@ -145,26 +145,40 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) /
   the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
   execution.
-  Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
-  `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
-  **Stages 1–2 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages).
+  Approved and in execution 2026-08-26. Eleven repositories (five services, `platform-dotnet`,
+  `platform-web`, `system`, `infra`, `config`, `.github`); seventeen checkpoints; the Payment extraction is
+  proven end to end.
+  **Checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A are delivered** (all 45 test-tier
+  cross-repository `ProjectReference`s are now packages, standalone AppHosts consume published Hosting/image
+  boundaries, and full-system E2E composition is system-owned). RT3 closed through
+  [PR #897](https://github.com/Concertable/concertable/pull/897)
+  (`2979ab78f4204eeed07cca06654777a37965f007`) and Stage 4 closed through
+  [PR #912](https://github.com/Concertable/concertable/pull/912)
+  (`62390281b4191a7166136d69163a2c6482f6a463`); Git history retains their deleted ledgers. The public
+  organization workflow foundation closed through
+  [`.github` PR #1](https://github.com/Concertable/.github/pull/1)
+  (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and its live-policy verification repair through
+  [`.github` PR #2](https://github.com/Concertable/.github/pull/2)
+  (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`). All eleven reusable workflows passed from the exact-head
+  public fixture in [run 33894314188](https://github.com/Concertable/workflow-fixture/actions/runs/33894314188);
+  teams, owner access, release-environment policy, the main merge queue, and immutable-tag protection were
+  then applied and read back successfully.
   Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
   parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
   remain ordered and require explicit authorization.
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
-  | Stage 3 RT3 | In flight only on `Plan/RepoSplit-Stage3-Hosting-rt3`; no sibling may edit its AppHosts, composition tests, review work order, or stream state. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md) |
+  | Foundation 6B | Active in the isolated topology worktree; owns target-name reconciliation, private-repository policy feasibility, package-ACL preflight, and extraction-map readiness before any target is created or renamed. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
   | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
-  | Stage 4 Fleet E2E | Paused on draft [PR #896](https://github.com/Concertable/concertable/pull/896); owns only fleet/TestKit/E2E source-boundary removal. | PR #896 carries `REPOSITORY_PER_MICROSERVICE_MIGRATION_STAGE4_FLEET_PROGRESS.md`. |
   | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
   | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
   | Search-next | Reserved exclusively to the Search preparation stream at `C:\Users\tommy\source\repos\search-next` / `Chore/search-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
 
   Agents read this table and the named ledger before acting. One stream never edits a sibling ledger or
   worktree. B2B-next preparation remains unassigned until its existing
-  `wip/b2b-frontend-fold-handoff` checkout is reconciled; system/fleet extraction remains with Stage 4 until
-  that composition boundary lands.
+  `wip/b2b-frontend-fold-handoff` checkout is reconciled; the completed Stage 4 boundary leaves system
+  extraction available for its later repository-foundation checkpoint.
 
   **Post-cut development-fixture terminology.** Keep the current `SeedCatalog`, `Seed.Contracts`,
   `SeedState`, and `Seed.Simulator` names stable while repository ownership and publication boundaries are
