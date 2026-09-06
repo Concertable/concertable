@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`  _(2026-09-06)_
-**Security-reviewed up to commit:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`  _(2026-09-06)_
+**Reviewed up to commit:** `1ca86b620e66ba3d0b0773d69837cc7254b7e64a`  _(2026-09-06)_
+**Security-reviewed up to commit:** `1ca86b620e66ba3d0b0773d69837cc7254b7e64a`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1450,3 +1450,39 @@ variable between those two runs, which is what makes this evidence rather than a
 `api/Concertable.B2B/Concertable.B2B.slnx` build: 0 errors. B2B API E2E is running at the time of writing and
 had already cleared the seeding failure — zero `Seeder ... failed` and zero `Cannot insert explicit value`
 entries, against ten of each before the fix. Exact-head CI and the merge queue own the rest.
+## Review pass — 2026-09-06 — concert dev seeder publish window
+
+**Candidate base:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`
+**Candidate head:** `1ca86b620e66ba3d0b0773d69837cc7254b7e64a`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. One seeder change, no HTTP surface, no authorisation path, no tenant-scoped query — the
+security watermark moves with it.
+
+`ConcertDevSeeder` published `ConcertCreatedEvent` after `SaveChangesAsync`. An outbox write resolves its
+context through `IDbContextAccessor`, and under seeding that accessor is set only inside
+`SeedingDomainEventDispatchInterceptor`'s post-save dispatch window, so the publish threw and took `b2b-web`
+down with it. `ConcertService` performs the same post-save publish correctly because outside a seeding scope
+the accessor is set — the pattern is invalid only in a seeder, which is why copying it here failed.
+
+Removal rather than rework is the right call: `origin/main`'s seeder has no publish, so this restores
+known-good behaviour rather than inventing a new mechanism. The `IBus` dependency is removed with it, leaving
+no unused constructor parameter.
+
+Checked rather than assumed, because a second instance would cost another merge-queue cycle: **no other dev
+seeder in the repository publishes from a seed body.** A sweep of every `*DevSeeder.cs` for `PublishAsync` and
+`SendAsync` returns this file alone, now cleared. `ConcertDevSeeder` is `Order => 7`, the last B2B seeder, so
+no later seeder was masked behind this failure.
+
+### Validation
+
+Reproduced identically in the merge queue (run `34046097585`, failed) and locally: `Seeder ConcertDevSeeder
+failed`, `b2b-web: Finished`, then ten `Readiness check timed out` failures. The preceding identity-insert
+failure is gone from the same run — zero `Cannot insert explicit value` entries — which is what allowed
+seeding to reach Order 7 for the first time on this branch. Exact-head CI and the merge queue own the rest.
