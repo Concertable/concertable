@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a10f1c5874affc4acaabf0f12ffe94f91aabedd4`  _(2026-09-06)_
-**Security-reviewed up to commit:** `a10f1c5874affc4acaabf0f12ffe94f91aabedd4`  _(2026-09-06)_
+**Reviewed up to commit:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`  _(2026-09-06)_
+**Security-reviewed up to commit:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1402,3 +1402,51 @@ a base failure rate of roughly one run in two: 40/40 at 3m52s, 3m22s and 3m30s, 
 speed-up is corroborating evidence rather than a bonus — it is the leaked dispatchers no longer competing.
 The remaining B2B integration projects were run through `./scripts/integration.ps1 b2b`, which packs the
 platform locally exactly as the CI matrix does. Exact-head CI owns the rest.
+## Review pass — 2026-09-06 — seeding identity insert for TPH tables
+
+**Candidate base:** `1067753ce6ba609ebf42f49f9a811c468e836fee`
+**Candidate head:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. The range is one production fix in `Concertable.Seed.Shared`, the deletion of three
+now-redundant workarounds, and a debt entry. No HTTP surface, no authorisation path and no tenant-scoped
+query is touched, so the security watermark moves with it.
+
+`SeedingIdentityInterceptor` exists precisely so that no seeder hand-writes `SET IDENTITY_INSERT`. It matched
+only a literal `INSERT INTO <table> (cols)`, and EF emits a `MERGE` for a batched insert into a
+table-per-hierarchy table, so it silently rewrote nothing for exactly the three modules carrying a
+discriminator. The correlation is exact and was checked rather than inferred: Application, Booking and Concert
+have `HasDiscriminator`; Artist, Venue and Opportunity have none and seed correctly; Deal has base types but no
+discriminator and also seeds correctly.
+
+The fix is in the shared abstraction, not in its callers, which is why the three pasted `IDENTITY_INSERT`
+blocks in `ApplicationTestSeeder`, `BookingTestSeeder` and `ConcertTestSeeder` are deleted in the same stroke.
+Those blocks were the reason the defect was invisible: they held the integration tier green while the dev
+seeders stayed broken, and `IDevSeeder` runs only in dev and E2E.
+
+Two aspects of the widened match were considered rather than waved through:
+
+- The statement filter loosens from `INSERT INTO` to `INSERT`, and the column-list check now scans every
+  parenthesised list in the command rather than the one captured beside `INSERT INTO`. A false positive would
+  need a command that both names an identity-mapped table and carries that table's identity column inside some
+  bracketed list, while a seeding scope is active. `scope.IsActive` bounds the blast radius to seeding.
+- `On(tables)` can still emit more than one `SET IDENTITY_INSERT ... ON`, which SQL Server rejects — it permits
+  one table at a time. That limit predates this change and is why `BookingFactory` nulls the contract
+  navigation so bookings and contracts save in separate windows. The widened match makes more statements
+  eligible, so the constraint is now recorded in the debt entry with a test to pin it, rather than surviving
+  only as a comment in a factory.
+
+### Validation
+
+`Concertable.B2B.Application.IntegrationTests` fails 74/74 with the workaround removed and the old
+interceptor, and passes with the workaround removed and the fixed interceptor — the regex is the only
+variable between those two runs, which is what makes this evidence rather than an assertion. Full
+`api/Concertable.B2B/Concertable.B2B.slnx` build: 0 errors. B2B API E2E is running at the time of writing and
+had already cleared the seeding failure — zero `Seeder ... failed` and zero `Cannot insert explicit value`
+entries, against ten of each before the fix. Exact-head CI and the merge queue own the rest.
