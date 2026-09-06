@@ -109,20 +109,22 @@ test("an exact package version replaces every Concertable dependency", () => {
 });
 
 test("a moving tag or range cannot masquerade as an exact package version", () => {
-  const result = spawnSync(
-    process.execPath,
-    [
-      "scripts/carve-fe.mjs",
-      "mobile/b2b",
-      "--package-version=^0.1.0",
-      "--prepare-only",
-    ],
-    { cwd: appRoot, encoding: "utf8" },
-  );
+  for (const packageVersion of ["alpha", "^0.1.0"]) {
+    const result = spawnSync(
+      process.execPath,
+      [
+        "scripts/carve-fe.mjs",
+        "mobile/b2b",
+        `--package-version=${packageVersion}`,
+        "--prepare-only",
+      ],
+      { cwd: appRoot, encoding: "utf8" },
+    );
 
-  assert.notEqual(result.status, 0);
-  assert.match(
-    `${result.stdout ?? ""}\n${result.stderr ?? ""}`,
-    /must be an exact npm version/,
-  );
+    assert.notEqual(result.status, 0);
+    assert.match(
+      `${result.stdout ?? ""}\n${result.stderr ?? ""}`,
+      /must be an exact npm version/,
+    );
+  }
 });
