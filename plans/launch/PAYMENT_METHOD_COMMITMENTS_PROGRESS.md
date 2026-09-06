@@ -50,7 +50,6 @@ The canonical producer review is `reviews/Feature-payment-method-commitments.md`
 ## Downstream handoffs
 
 - `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` — worktree `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`, PR [#633](https://github.com/Concertable/concertable/pull/633). Gate: the final Payment Contracts and Client packages publish and B2B's platform pin advances; B2B then migrates directly from the raw surface to the final reference surface.
-- `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md` — no worktree yet. Gate: the same package publish; Customer then migrates its on-session purchase flow directly to the final session-operation surface.
 
 ## Decisions, discoveries, blockers, and deviations
 
