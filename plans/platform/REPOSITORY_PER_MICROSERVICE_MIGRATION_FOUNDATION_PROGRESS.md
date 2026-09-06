@@ -3,57 +3,74 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Plan-RepoSplit-6B-Topology`
-- Branch: `Plan/RepoSplit-6B-Topology`
-- PR: not opened
-- Dependency/package gates: package inventory and ACLs require a credential with `read:packages`; private-repository
-  merge-queue rulesets are unavailable on the current GitHub entitlement.
-- Last reconciled: 2026-09-04 — live repository, policy, and extraction-map preflights after checkpoint 6A.
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M3-Frontend-Build-Config`
+- Branch: `Refactor/RepoSplit-M3-Frontend-Build-Config`
+- PR: not opened; M3 is an independent sibling candidate based on monorepo PR #633
+- Dependency/package gates: M3 delivery waits for PR #633 and the real
+  `@concertable/build-config` publication; preparation and review do not depend on M1 or M2.
+- Last reconciled: 2026-09-06 against corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the preserved
+  M1-M3 preparation record at `f4709fe4b`, and PR #633 head `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`.
 
 ## Current state
 
-Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
-public fixture, and shared policy was applied and read back. Checkpoint 6B is active. Existing private
-`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories are legacy/bootstrap
-inputs under final names; they must be preserved and reconciled, never overwritten. Missing targets are
-`platform-dotnet`, `platform-web`, and `system`.
+Checkpoint 6A is terminal and checkpoint 6B preparation is active. Existing private `auth`, `b2b`,
+`customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities. The remaining
+selected repositories are `platform-dotnet`, `platform-frontend`, and separate `system`; none is created by
+this packet. General shared frontend code covers web and mobile while those remain package tiers, not
+repository boundaries.
+
+M1 is published as four draft stacked PRs #942-#945. M2 remains an independent sibling packet. M3 is
+restacked onto the exact live #633 head as two commits ending at the current work head. It extracts the
+product-neutral `@concertable/build-config` package, makes product workspaces own their package lists, and
+uses the shared Metro resolver for both mobile applications without encoding product ownership into the
+platform tier.
 
 ## Next Steps
 
-- Obtain a package-read credential, then record package ACLs and repository linkage without reading secret values.
-- Record every active legacy-repository branch, PR, worktree, and exact head. Before any rename, create a
-  preserved-ref/bundle handoff and a rehome command for each active preparation branch; GitHub PRs do not
-  transfer to a new repository.
-- Preserve the seven legacy final-name staging repositories by renaming each to its dated
-  `<name>-staging-archive-<date>` identity, then create the ten fresh private `*-next` targets and transfer
-  the recorded preparation refs to named `prep/*` preservation branches. After 6C imports filtered history,
-  use the filter-repo commit map to rebase or cherry-pick the recorded commits onto the target base, recreate
-  each PR there, and require target CI green before retiring the archive branch. The exact rename set is
-  `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config`; no force-push or repository overwrite
-  is allowed.
-- Reconcile the existing `config` bootstrap Terraform into the sole `infra` ownership boundary before the
-  filtered-history handoff. Then resolve all 70 extraction-map claims and generate the 6C audit reports.
+- Complete the frozen-head M3 review and open it as a draft sibling PR with #633 as its explicit base.
+- After #633 lands, move M3 to the exact landed `origin/main` if necessary and revalidate the focused delta.
+- Before delivery, publish and feed-verify the real `@concertable/build-config` package, replace local
+  validation artifacts with the real pin, then rerun both packed mobile carves and the independent consumer.
+- Keep M1, M2, and M3 separate. Do not create repositories, import history, publish packages, or perform a
+  service cutover from this preparation branch.
 
 ## Completed work
 
-- Checkpoint 6A closed through `.github` PR #1 (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and policy repair
-  PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
-- Live 6B inventory established the eleven-repository topology using `infra` and `config` names.
-- Extraction-map preflight found no duplicate claims but 70 unclaimed tracked paths; 6C is not ready.
+- Checkpoint 6A closed through `.github` PRs #1 and #2; all eleven reusable workflows passed from the public
+  fixture before shared policy was applied and read back.
+- Corrective commits `82bf5dbbb` and `bb59d9ba3` established the retained target identities; the later
+  `f4709fe4b` record preserves the selected `platform-dotnet`, `platform-frontend`, and `system` topology.
+- M1 is represented by draft PRs #942-#945 and creates no repository.
+- M2 is active in its sibling worktree and remains delivery-gated by #633 and its Docker-backed migration
+  proof.
+- M3 commits `9654935ae` and `62772dc20` were restacked as `9a87b3235` and `96aa1b987` onto #633. The generic
+  Metro resolver preserves #633's Stripe and React Native package visibility without product-specific
+  platform code.
 
 ## Verification
 
-- `eng/repository-split/validate_map.py` currently fails only on the 70 unclaimed paths; no duplicate claims.
-- No open red generated platform-sync PR at branch creation.
+- Frontend boundaries: 10/10 tests passed; dependency lint reported zero violations across 13 workspaces.
+- Package matrix: all six packages built; 109 package tests passed across the five packages with test scripts.
+- Product builds: all five web builds, both mobile TypeScript checks, and both Android/Hermes exports passed.
+- Isolation: both fresh feed-restored mobile carves passed typecheck and Android/Hermes export with the shared
+  assets resolved from `node_modules/@concertable/mobile` and source package directories absent.
+- Independent packed consumer: CommonJS dependency-cruiser/Metro, ESM Vite/Vitest, TypeScript, and package
+  subpath resolution passed; the tarball contained only the eight intended files.
+- `git diff --check`: pass before the exact-head restack; the upstream delta contains only the #633 Concert
+  seeder repair and its review artifact, so no M3 path overlaps.
 
 ## Reviews
 
-Not started for this planning candidate.
+The original M3 full review over `c6240ecea..62772dc20` found no defects. The implementation agent supplied
+the artifact-producing carve and Expo evidence omitted by that read-only pass. A fresh frozen-head review of
+the rebased candidate and this checkpoint is required before publication.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Do not create `configuration-next` or `infrastructure-next`: live `config` and `infra` are established
-  bootstrap repositories and duplicating their identities would destroy the cutover's recoverability.
-- The current GitHub entitlement returns 403 for private-repository ruleset, merge-queue, and branch-protection
-  reads. There is no technical private-main enforcement substitute on this entitlement: targets remain private
-  and non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade is verified.
+- `platform-frontend` owns general shared web/mobile packages and tooling. Web and mobile remain package
+  tiers within that repository; they are not separate repositories.
+- Product packages own their workspace membership. Shared build helpers accept explicit caller-owned inputs
+  and do not import B2B or Customer manifests.
+- The shared Metro helper discovers project and package `node_modules` roots generically, preserving native
+  package visibility introduced by #633 without a Stripe-specific platform rule.
+- No repository creation, history import, visibility change, package publication, or cutover was performed.
