@@ -105,14 +105,15 @@ targets:
       # Cross-service test infrastructure belongs with the suites it serves.
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
     rename:
+      api/Concertable.Shared/tools/OwnerOperations.psm1: "tools/OwnerOperations.psm1"
       api/: "src/"
     notes:
       - Owns Messaging Inbox/Outbox migrations.
       - AppHost.Shared still mixes generic primitives with Auth-specific
         composition; the Auth-specific half re-homes to auth before extraction.
 
-  platform-web:
-    repo: Concertable/platform-web
+  platform-frontend:
+    repo: Concertable/platform-frontend
     include:
       - app/shared
       - app/web/shared

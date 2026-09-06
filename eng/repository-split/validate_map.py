@@ -30,6 +30,8 @@ SYSTEM_OWNER_SCRIPTS = {
     "scripts/system/setup-local-dev.ps1",
     "scripts/test-system-bootstrap.ps1",
 }
+PLATFORM_OWNER_MODULE = "api/Concertable.Shared/tools/OwnerOperations.psm1"
+PLATFORM_OWNER_MODULE_DESTINATION = "tools/OwnerOperations.psm1"
 
 
 def tracked() -> list[str]:
@@ -41,6 +43,16 @@ def tracked() -> list[str]:
 
 def matches(path: str, prefix: str) -> bool:
     return path == prefix or path.startswith(prefix.rstrip("/") + "/")
+
+
+def renamed_path(path: str, renames: dict[str, str]) -> str:
+    result = path
+    for source, destination in renames.items():
+        if not matches(result, source):
+            continue
+        suffix = result[len(source.rstrip("/")) :].lstrip("/")
+        result = "/".join(part for part in (destination.rstrip("/"), suffix) if part)
+    return result
 
 
 def main() -> int:
@@ -87,6 +99,15 @@ def main() -> int:
         targets_for_path = claims.get(path, [])
         if targets_for_path != ["system"]:
             semantic_errors.append(f"System owner script must be claimed only by system: {path} -> {targets_for_path}")
+    platform_destination = renamed_path(
+        PLATFORM_OWNER_MODULE,
+        targets["platform-dotnet"].get("rename") or {},
+    )
+    if platform_destination != PLATFORM_OWNER_MODULE_DESTINATION:
+        semantic_errors.append(
+            "platform owner module has the wrong extraction destination: "
+            f"{PLATFORM_OWNER_MODULE} -> {platform_destination}"
+        )
 
     if args.owner_operations_only:
         print(f"owner-operation map errors: {len(semantic_errors)}")

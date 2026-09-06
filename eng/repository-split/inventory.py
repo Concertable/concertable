@@ -43,9 +43,9 @@ AREA_TARGETS = {
 }
 
 FRONTEND_TARGETS = {
-    "app/shared": "platform-web",
-    "app/web/shared": "platform-web",
-    "app/mobile/shared": "platform-web",
+    "app/shared": "platform-frontend",
+    "app/web/shared": "platform-frontend",
+    "app/mobile/shared": "platform-frontend",
     "app/web/b2b": "b2b",
     "app/b2b/shared": "b2b",
     "app/mobile/b2b": "b2b",

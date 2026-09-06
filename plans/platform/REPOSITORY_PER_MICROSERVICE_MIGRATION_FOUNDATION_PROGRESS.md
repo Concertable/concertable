@@ -20,19 +20,21 @@ repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; 
 part of these preparation packets.
 
 M1 is published as four draft stacked PRs #942-#945. M2 is independently restacked onto the exact live #633
-head as three commits ending at the current work head: the original owner-operation implementation, its
-review hardening, and the #633 inventory reconciliation. All 24 EF contexts are assigned to owner-local
-manifests, including #633's Opportunity, Application, and Booking contexts under B2B. The root migration and
-local-development scripts are compatibility delegators only. Offline ownership, rollback, path, bootstrap,
-and evaluated-reference gates pass. M3 is active in its sibling worktree at `7f834b9d3` and does not depend
-on M1 or M2.
+head as five commits through `7a561adbe`: the original owner-operation implementation, its prior review
+hardening, the #633 inventory reconciliation, exact-base metadata, and the completed M2-001 through M2-004
+review repairs. All 24 EF contexts are assigned to owner-local manifests, including #633's Opportunity,
+Application, and Booking contexts under B2B. The root migration and local-development scripts are
+compatibility delegators only. Offline ownership, rollback, path, bootstrap, and evaluated-reference gates
+pass. The final full review requested only an exact platform-tool rename and this resume-record correction;
+both are fixed in the final remediation commit. M3 is active independently and does not depend on M1 or M2.
 
 ## Next Steps
 
 - When Docker Desktop reaches a running backend, require `scripts/docker-health.ps1` to pass, then run
   `scripts/integration.ps1 run` for the fresh-container migration proof.
-- Commit the frozen-head review repairs, complete the incremental review, and open M2 as a draft sibling PR
-  with #633 as its explicit base. Do not represent it as merge-ready until the Docker proof is green.
+- Complete the final remediation commit's incremental review, then open M2 as a draft sibling PR with #633
+  as its explicit base. Do not recreate or recommit resolved M2-001 through M2-004, and do not represent M2
+  as merge-ready until the Docker proof is green.
 - Keep M1, M2, and M3 as separate packets. After #633 lands, move each packet to the exact landed
   `origin/main`, revalidate its own gates, and preserve producer/package and final service cutover ordering.
 
@@ -70,9 +72,10 @@ on M1 or M2.
 ## Reviews
 
 The original M2 review found three safety defects, all repaired by `d670e3383`; its incremental review found
-no regression. The rebased frozen-head review at `a2115afc5` requested four further changes, including one
-filesystem-safety and one extraction-correctness defect. All findings now have local fixes; a clean incremental
-review over the fixing commit is required before publication.
+no regression. The rebased frozen-head review at `a2115afc5` requested four further changes, all repaired by
+`7a561adbe`. The final full review of that fixing head requested the platform-tool destination and checkpoint
+corrections, both fixed by the final remediation commit. A clean incremental review over that commit is the
+remaining review gate before publication.
 
 ## Decisions, discoveries, blockers, and deviations
 
