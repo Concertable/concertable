@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `25ca2c422550f354b07b23acae71c7640f267eff`  _(2026-09-06)_
-**Security-reviewed up to commit:** `25ca2c422550f354b07b23acae71c7640f267eff`  _(2026-09-06)_
+**Reviewed up to commit:** `a10f1c5874affc4acaabf0f12ffe94f91aabedd4`  _(2026-09-06)_
+**Security-reviewed up to commit:** `a10f1c5874affc4acaabf0f12ffe94f91aabedd4`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1248,7 +1248,7 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   package reference after this branch's A2 boundary hardening deleted the union it was there for. Reference removed;
   the project declares and uses no union. Shared.Api unit tier 83/83.
 
-- [wontfix] **IR39 — HIGH — correctness (test isolation)** — `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/ApiFixture.cs:165`
+- [x] **IR39 — HIGH — correctness (test isolation)** — `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/ApiFixture.cs:165`
   `Concertable.B2B.Lifecycle.IntegrationTests` is non-deterministic: it failed on CI at a head whose only
   delta from a fully green run was four markdown files, and locally it failed 1 run in 2 on a *different*
   test each time (`Accept_ShouldNotConfirmBooking_WhenWebhookFails` on CI,
@@ -1272,7 +1272,13 @@ matrix off. Two real defects surfaced immediately. Both are this branch's and bo
   future fix must first establish which rows never drain and why, rather than assuming the outbox reaches
   quiescence.
 
-  Left as a known flake rather than a worse breakage. Recorded in `api/Concertable.B2B/TECH_DEBT.md`.
+  **Fixed** in `c7829b9d2`. The fixture now stops every live host's background services before Respawn and
+  starts the base host's again after seeding, so no claimed batch can survive into the next test. A second
+  and larger source of the same bleed was found and closed with it: `CreateClient(user, configure)` builds an
+  extra host per call, each with its own dispatcher against the same database and the same singleton mocks,
+  and nothing stopped it. Verified by three consecutive clean 40/40 runs. The residual debt — lifting the
+  step into the shared integration-testing library so Customer, Payment and Auth get it — is transferred to
+  `api/Concertable.Shared/TECH_DEBT.md`, and the B2B entry is deleted.
 
 ### Validation
 
@@ -1327,3 +1333,59 @@ required for this pass.
 ### Validation
 
 Exact-head CI owns this range. The pass records the reachability analysis above; it asserts no local run.
+## Review pass — 2026-09-06 — outbox bleed across the integration reset
+
+**Candidate base:** `25ca2c422550f354b07b23acae71c7640f267eff`
+**Candidate head:** `a10f1c5874affc4acaabf0f12ffe94f91aabedd4`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. The range is one debt entry (`api/Concertable.B2B/TECH_DEBT.md`, recording the per-entity
+operation-claim duplication) and the IR39 flake fix in `ApiFixture`. Test-fixture code only; no production
+file is touched, so there is no security surface in the range and the security watermark moves with it.
+
+IR39 is closed by the fix and is retired from the deferred list below.
+
+The fix states an invariant the fixture was missing: it owns when background work runs, because it owns when
+the database is truncated. `ResetAsync` stops every live host's `BackgroundService` before Respawn and starts
+the base host's again after seeding. Four things were verified rather than assumed:
+
+- `BackgroundService.StopAsync(CancellationToken.None)` awaits `ExecuteAsync` to completion rather than
+  returning at the cancellation request. Measured against .NET 10 with a body holding a non-cancellable
+  500ms operation: `StopAsync` returned after 401ms, with the work finished and the loop exited. This is the
+  whole guarantee — without it a claimed batch could still be delivered after Respawn.
+- `BackgroundService` restarts. `StartAsync` reassigns both `_stoppingCts` and `_executeTask`, so a stopped
+  service resumes on the next call; measured, two executions and a loop count that advances after restart.
+  The handoff asserted the opposite, and that assertion is wrong for .NET 10.
+- The second bleed source is larger than the one in the original diagnosis and is what made the suite fail
+  on a different test each run. `CreateClient(user, configure)` builds a whole extra host per call through
+  `WithWebHostBuilder`, each with its own `OutboxDispatcher` polling the same database and delivering into
+  the same singleton mocks, and nothing ever stopped it. Four Lifecycle tests take that path, so from the
+  first one onwards the suite ran with extra dispatchers no reset could reach. They are now tracked, stopped
+  at the next reset and deliberately not restarted, which also retires the host leak.
+- `BackgroundServiceExceptionBehavior.Ignore` is required, not cosmetic. Both `OutboxDispatcher` (an
+  `OperationCanceledException` out of `DrainOnceAsync`, whose `catch` filter excludes it) and
+  `QueueHostedService` (`DequeueAsync` on a cancelled channel) let cancellation escape `ExecuteAsync`, and
+  the default `StopHost` turns that into a disposed service provider. Observed directly: the first attempt
+  without it failed all 40 tests with `ObjectDisposedException: IServiceProvider` out of `ResetAsync`. Both
+  types ship in published packages, so neither can be fixed from this branch.
+
+The alternative the handoff ranked first — a quiescence wait before Respawn — stays rejected. A failed row
+returns to `Pending` with a backoff, so zero `Pending`/`Dispatching` is not a reachable condition; that is
+what `25ca2c422` reverted. The alternative it ranked second, deterministic in-host dispatch, would need
+`IMessageDispatchResolver` and the dispatchers, all `internal` to `Concertable.Messaging.Infrastructure`,
+which B2B consumes from the feed. Publishing runs only on `main`, so no such change could reach this branch
+before it merges. Stopping the loop from the fixture needs neither.
+
+### Validation
+
+Three consecutive clean runs of the full 40-test `Concertable.B2B.Lifecycle.IntegrationTests` suite, against
+a base failure rate of roughly one run in two: 40/40 at 3m52s, 3m22s and 3m30s, versus a 4m41s baseline. The
+speed-up is corroborating evidence rather than a bonus — it is the leaked dispatchers no longer competing.
+The remaining B2B integration projects were run through `./scripts/integration.ps1 b2b`, which packs the
+platform locally exactly as the CI matrix does. Exact-head CI owns the rest.
