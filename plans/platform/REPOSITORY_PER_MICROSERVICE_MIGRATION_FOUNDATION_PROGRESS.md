@@ -25,6 +25,10 @@ HTTP/1-capable port 8080 for REST, webhook, and mobile callers, and adds an HTTP
 separate HTTP/2-only port 8081. Payment.Client prefers that h2c endpoint and retains the legacy `https` discovery
 fallback for TLS-backed project hosts. The Auth carve gate now includes both Auth-owned source roots, so it proves
 Auth.Contracts restores Messaging from the package feed rather than silently omitting the contract project.
+Cleartext Payment call credentials are default-deny: the B2B and Customer AppHosts inject the explicit opt-in only
+for local run-mode resources, while publish-mode manifests omit it.
+The complete candidate is independently reviewed and security-reviewed through `this commit` with an
+approved judgment and no open findings.
 
 Existing `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their
 identities. The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`.
@@ -33,12 +37,13 @@ creates no repository and makes no topology decision.
 
 ## Next Steps
 
-- Run an incremental review of the M4R2 repair, then hand the reviewed candidate to the owning workflow for
-  eventual stacking on the landed M1 P4 commit. Keep any further finding in M4 rather than in an M1 stage.
-- Keep the candidate local. Do not publish, push, or open an M4 PR until the M1 publication sequence and G0
-  package baseline authorize the consumer transition. Publish the repaired Payment.Client and Payment.Hosting
-  packages plus the dual-port Payment.Web image before updating the pinned B2B/Customer image digest and delivering
-  either consumer AppHost.
+- Blocked by: the ordered M1 package releases and the G0 package baseline. M4 may exist remotely only as a
+  `[skip ci]` portability checkpoint; it must not be opened as a PR or treated as a delivery candidate before
+  those gates authorize the consumer transition.
+- Unblock action: after M1 P4 lands, restack this reviewed range onto the exact landed P4 head, publish and verify
+  Payment.Client and Payment.Hosting plus the dual-port Payment.Web image, then pin that immutable image digest.
+- Resume when: the exact M1 package versions are feed-visible and G0 supplies the accepted package baseline;
+  revalidate the restacked M4 head before delivering either B2B or Customer AppHost consumer.
 
 ## Completed work
 
@@ -49,8 +54,10 @@ creates no repository and makes no topology decision.
 - Restored HTTP-schemed Payment discovery in the B2B and Customer hosts while retaining the `https` endpoint name
   for REST/mobile compatibility, added a separately named h2c-only gRPC endpoint, and made Payment.Hosting own the
   container endpoint and listener-environment contract.
-- Made Payment.Client prefer the `grpc` discovery key, preserve the legacy `https` fallback for project hosts, and
-  explicitly permit call credentials only when the resolved channel is cleartext HTTP.
+- Made Payment.Client prefer the `grpc` discovery key, preserve the legacy `https` fallback for project hosts,
+  and fail closed before registering call credentials for cleartext HTTP unless the owning composition explicitly
+  opts in through `PaymentClient:AllowInsecureHttp=true`. B2B and Customer set that opt-in only in local run mode;
+  their published manifests omit it.
 - Extended the split-inventory check to fail for blocking runtime edges and regenerated the inventory.
 - Extended the Auth carve workflow to include and build the Auth.Contracts owner root.
 
@@ -78,6 +85,10 @@ creates no repository and makes no topology decision.
 - Local platform version `0.1.0-local.1788730449876` was freshly prepared with all 57 packages, including the
   repaired Payment.Client and Payment.Hosting. Against that feed, all 4 B2B and all 4 Customer `AppHost_` tests
   pass, covering production, Stripe publish, and mobile tunnel graphs; all 13 Payment architecture tests pass.
+- M4R3 validation prepared a new exact 57-package set at `0.1.0-local.1788732761225`. Against that feed,
+  Payment architecture passes 13/13, B2B architecture passes 13/13, and Customer architecture passes 9/9.
+  The focused Payment transport suite passes 2/2: the explicit composition opt-in completes a real generated
+  client/server bearer handshake, while the default cleartext path is rejected before client registration.
 - Payment.Web builds with zero warnings and zero errors after the split-listener change.
 - Evaluated SDK container metadata exposes TCP ports 8080 and 8081 and bakes the matching
   `ASPNETCORE_HTTP_PORTS` and `PaymentTransport__GrpcPort` defaults into the Payment.Web image.
@@ -88,19 +99,16 @@ creates no repository and makes no topology decision.
 
 ## Reviews
 
-Independent review of exact head `512e317e4a756d0b472b524fe1e981008d12614c` found M4R1: the Payment image's
-HTTP-only port 8080 was incorrectly advertised as HTTPS. This commit restores the honest scheme and corrects the
-host-graph assertions and ledger. Incremental review of exact head
-`ff11898c6380564035328aa722b7556c402e780d` found M4R2: cleartext port 8080 negotiated HTTP/1.1, so the Payment.Client
-gRPC calls could not use the honest endpoint. The current repair splits HTTP/1.1 and h2c transport and adds a live
-wire-level regression; incremental review remains required before handoff.
+[`reviews/Refactor-RepoSplit-M4-Closure-Repair.md`](../../reviews/Refactor-RepoSplit-M4-Closure-Repair.md) is
+complete and approved through `this commit`; native and security review have no open findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
 - The Payment container terminates no TLS. Port 8080 remains HTTP/1-capable for REST, webhooks, mobile tunnelling,
   and the `https` compatibility endpoint name. Port 8081 is a distinct HTTP/2-only h2c listener exposed as `grpc`.
-  Payment.Client enables insecure-channel call credentials only for an `http` address; Aspire does not terminate
-  TLS on behalf of either cleartext container target.
+  Payment.Client enables insecure-channel call credentials only for an `http` address carrying the explicit
+  `PaymentClient:AllowInsecureHttp=true` composition opt-in; otherwise registration fails closed. Aspire does not
+  terminate TLS on behalf of either cleartext container target.
 - M4 delivery requires a coordinated Payment publication: consumers must not receive the new `grpc`-preferring
   Payment.Client/Hosting packages until a Payment.Web image containing the 8081 listener exists, and B2B/Customer
   must pin that immutable image digest before their standalone AppHosts are delivered.
