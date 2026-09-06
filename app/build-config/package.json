@@ -1,0 +1,29 @@
+{
+  "name": "@concertable/build-config",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "files": [
+    "*.cjs",
+    "*.d.mts",
+    "*.mjs",
+    "*.json"
+  ],
+  "exports": {
+    "./dependency-cruiser": "./dependency-cruiser.cjs",
+    "./metro": "./metro.cjs",
+    "./typescript": "./tsconfig.json",
+    "./vite": "./vite.mjs",
+    "./vitest": "./vitest.mjs",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concertable/concertable.git",
+    "directory": "app/build-config"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  }
+}
