@@ -1278,3 +1278,48 @@ CI run `34031270386` at head `418a1568b` proves the whole integration tier green
 succeeded** (14 B2B, 8 Customer, 2 Payment, Search, DataAccess, Auth), with `Shared.Api.UnitTests` its only
 failure — the one IR38 fixes. Frontend `test:boundaries` 8/8,
 `lint:boundaries` clean, `build:web-packages`/`build:venue`/`build:artist` all succeeded. `git diff --check` clean.
+
+## Review pass — 2026-09-06 — request-scoped tenant carrier
+
+**Candidate base:** `0cf710c7e05855a7ed906ee0c9f2c7f7811d4c3b`
+**Candidate head:** `PENDING_HEAD2`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. The range moves the resolved tenant off `TenantContext`'s scoped fields onto the request, so
+every dependency-injection scope opened inside a request reads the same resolution instead of a blank one.
+That closes the defect `AcceptOnceAsync`'s re-resolve was compensating for, and the re-resolve, its
+`ITenantResolver` dependency and its explanatory comment are deleted with it.
+
+Three things were checked rather than assumed, because the new accessor's setter throws when there is no
+request and a reachable throw would be a live fault on every non-HTTP path:
+
+- `ITenantContextAccessor.Resolution` is assigned in exactly two places, both inside
+  `TenantContext.ResolveAsync`, which returns early when `accessor.Resolution is not null || IsHost`. With
+  `IsHost` true precisely when there is no `HttpContext`, the throwing setter is unreachable off the request
+  path; a worker, the outbox dispatcher and an event handler all return before it.
+- `AcceptOnceAsync` has one caller — the retry at `ApplicationWorkflow.cs:192`, which opens a fresh
+  dependency-injection scope inside the same request, not a new request. `IHttpContextAccessor` flows into
+  that scope, so dropping the re-resolve leaves the retry reading the tenant the middleware resolved.
+- `ITenantResolver.ResolveAsync` has two remaining callers, `TenantResolutionMiddleware` and
+  `PermissionAuthorizationHandler`, both on the HTTP path.
+
+Registering the accessor as a singleton over `IHttpContextAccessor` is the right lifetime: the state lives in
+`HttpContext.Items`, so the accessor itself holds none. The commit message records that an `AsyncLocal`
+holder was tried first and rejected because a value assigned inside an async method is invisible to its
+caller — the resolution happens one frame below the middleware, which is exactly where that carrier loses it.
+
+`IsHost => httpContextAccessor.HttpContext is null` keeps a non-HTTP caller bypassing every tenant row
+filter. That is unchanged pre-existing behaviour, deliberate and documented on the member (an anonymous HTTP
+request keeps `IsHost` false and so fails closed), and not introduced by this range. Making the host stance
+an explicit flag rather than an inference from a missing `HttpContext` is a separate change and is not
+required for this pass.
+
+### Validation
+
+Exact-head CI owns this range. The pass records the reachability analysis above; it asserts no local run.
