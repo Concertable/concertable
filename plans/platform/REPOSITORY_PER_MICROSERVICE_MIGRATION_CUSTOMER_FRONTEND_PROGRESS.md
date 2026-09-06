@@ -5,60 +5,46 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\customer`
 - Branch: `Chore/customer-promotion-preparation`
-- PR: draft [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1), exact head
-  `79cb07d6dab684a75cba60012374ac76c41c4b0c`
-- Dependency/package gates: the canonical solution's package closure, artifact retention, TestKit,
-  CODEOWNERS, immutable action refs, and repository SHA enforcement are green. The separately retained
-  ArchitectureTests project cannot restore `Concertable.Testing.Architecture` under Customer's package ACL
-  and remains outside the canonical solution as before; final publication and delivery remain unauthorized
-- Last reconciled: **2026-09-02** from reviewed Customer head
-  `79cb07d6dab684a75cba60012374ac76c41c4b0c`, successful CI run `33636812070`, and the canonical
-  standalone-solution audit
+- PR: [`Concertable/customer#1`](https://github.com/Concertable/customer/pull/1) merged normally from exact
+  source head `79cb07d6dab684a75cba60012374ac76c41c4b0c` as `6eb1226958732f29cc5fecb866461faf594e0e67`
+- Dependency/package gates, including the restored service-local ArchitectureTests suite, are green.
+- Last reconciled: **2026-09-04** from Customer PR #3 head
+  `d94cbb9a4f21ee9c81d6069f682a08e765257452`, merge commit
+  `5f34731785f786ad9cf6864ddae59fef2fac6337`, exact-head CI run `33879657287`, and post-merge CI
+  run `33880491018`.
 
 ## Current state
 
-State: **repository preparation active; inert promotion preflight green**. GitHub repository `Concertable/customer-next`
+State: **repository preparation and ArchitectureTests restoration merged; inert promotion preflight green**. GitHub repository `Concertable/customer-next`
 was renamed in place to canonical `Concertable/customer`; repository ID `1351337130`, PR #1, branches, and
 history were preserved. The inactive local checkout moved from `customer-next` to `customer`, and its origin
 now uses `https://github.com/Concertable/customer.git`.
 
 The extraction proof at `e21ae9079ca2fdd3a0063a252f05499159d608ff` contains the Customer backend,
-web, mobile, customer-only shared package, and standalone support closure. Draft PR #1 validates the owned
+web, mobile, customer-only shared package, and standalone support closure. Customer PR #1 validates the owned
 build, tests, migration snapshots, package candidates, and Customer Web, migrations, and seed-simulator OCI
-candidates. Package-level Actions read access is granted for the exact closure recorded below, except the
-separately retained ArchitectureTests dependency. No package or image was published or pushed.
+candidates. Package-level Actions read access now includes `Concertable.Testing.Architecture`. The Customer
+workflow did not publish or push a package or image.
 
-At exact head `c83169dd2a3d172d765425b12e032e704fcdc4fa`, Customer gained a machine-readable
-promotion manifest for exactly four NuGet and three OCI candidates. CI validates actual NuGet metadata and
-each Docker archive's embedded repository, selected SHA tag, and config-digest shape. Manual dispatch remains
-read-only and requires an existing annotated v-prefixed tag that resolves to the exact selected commit; its
-NuGet versions and OCI tags must match that release tag. The workflow contains no package/image publish or
-push operation and has only `contents: read` and `packages: read` permissions.
+Reviewed source head `79cb07d6dab684a75cba60012374ac76c41c4b0c` contains the five-package/three-image
+read-only promotion preflight and Customer-only TestKit. `Db.Name` owns service-local connection lookups;
+the AppHost-facing `CustomerConstants.Database` remains the composition alias, and all seven modules retain
+their `Schema` constants. `Concertable.Customer.slnx` is canonical, carve/`UseLocalCore` residue is removed,
+the packaged TestKit README and compile-use consumer gate are green, checkout credentials are disabled after
+fetch, and standalone guidance now reflects the extracted .NET 10 repository.
 
-At exact head `08ddbd812fd037544be47da2530098c49b278e86`, the manifest and every package and
-integrity gate now cover five NuGet candidates, adding the black-box `Concertable.Customer.TestKit`.
-The package exposes an injected-`HttpClient` client and Customer-owned ticket purchase/upcoming-ticket wire
-models only; it has no runtime implementation, DbContext, entity, Hosting, or foreign-service reference.
-Its focused contract tests, clean-consumer closure, and the complete Customer CI gate are green without any
-package or image publication.
+Customer PR #1 merged normally as `6eb1226958732f29cc5fecb866461faf594e0e67`. It carries repository-wide
+bootstrap ownership for `@tomjseery` and immutable SHAs for all five action invocations. Exact post-merge CI
+run [`33646229860`](https://github.com/Concertable/customer/actions/runs/33646229860) is green. The repository
+Actions policy reads back `sha_pinning_required: true`; default workflow permissions remain `read` and
+`can_approve_pull_request_reviews` remains `false`.
 
-At exact head `a12ab4574858743ddc30432cc0bedf567a8303c2`, all hand-written Customer runtime,
-design-time, and integration-fixture connection-name lookups use the service-local `Db.Name` constant. The
-AppHost-facing `CustomerConstants.Database` remains the composition-side alias. All seven modules already
-use their local `Schema.Name` and `Schema.Tables.*` constants for hand-written EF mappings; generated
-migrations and snapshots remain unchanged.
-
-At exact head `79cb07d6dab684a75cba60012374ac76c41c4b0c`, `Concertable.Customer.slnx` is the sole
-canonical solution and the carve-era duplicate is removed. The broken monorepo-only `UseLocalCore` swap is
-gone. CI restores, builds, tests, and packs the canonical solution with checkout credentials disabled after
-fetch. `Concertable.Customer.TestKit` now packages its README, and the clean-consumer gate compiles concrete
-uses of every Customer package. Standalone guidance now names this repository as canonical, uses the real
-solution and .NET 10, and no longer claims the absent standalone AppHost or broken parent guidance paths.
-
-Customer PR #1 carries repository-wide bootstrap ownership for `@tomjseery` and immutable SHAs for all five
-action invocations. Exact-head CI run [`33636812070`](https://github.com/Concertable/customer/actions/runs/33636812070)
-is green, and the repository Actions policy reads back `sha_pinning_required: true` while preserving
-`allowed_actions: all`, default read-only workflow permissions, and disabled PR approvals.
+Merging required Concertable ledger-only PR #922 as `ac74fdf9a0687a436872a7c1c4da622126e7885b`
+automatically ran [packages workflow `33644847202`](https://github.com/Concertable/concertable/actions/runs/33644847202)
+and [images workflow `33644847172`](https://github.com/Concertable/concertable/actions/runs/33644847172).
+Both succeeded, including their package-push and image-push steps, contrary to this stream's no-publication
+constraint. Tommy explicitly authorized the remaining Customer closeout delivery on 2026-09-04 after this
+consequence was disclosed; this ledger records the violation rather than treating it as a Customer publication.
 
 No agent following this ledger may monitor or edit RT3, Stage 4 fleet E2E, Auth, Payment, Search, or another
 stream's ledger. This file is the exclusive durable record for Customer; the temporary Customer promotion
@@ -66,10 +52,11 @@ ledger was retired after its live evidence was consolidated here.
 
 ## Next Steps
 
-Blocked: Customer Actions receives a package-specific `403` for `Concertable.Testing.Architecture`, keeping `Concertable.Customer.ArchitectureTests` outside the canonical Customer solution.
-Blocked by: the `Concertable.Testing.Architecture` platform package owner.
-Unblock action: grant `Concertable/customer` Actions read access to the `Concertable.Testing.Architecture` package.
-Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Customer.slnx` and require exact-head Customer CI to pass.
+No further Customer-only ledger step is independently implementable. Customer Actions now has read access to
+`Concertable.Testing.Architecture`; Customer PR #3 restored the service-local suite to
+`Concertable.Customer.slnx`, passed exact-head CI, merged, and passed post-merge CI. The preserved
+AppHost composition suite remains outside that solution until the AppHost's ten foreign monorepo references
+are available as published hosting artifacts; do not suppress the assertion or reintroduce source fallback.
 
 ## Completed work
 
@@ -101,14 +88,20 @@ Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Cu
   TestKit README, compiles package usage in the consumer preflight, hardens checkout credential handling,
   and corrects standalone guidance. `79cb07d` retains the previously validated ArchitectureTests boundary
   after its package-specific ACL failure.
+- Customer PR #1 merged normally from reviewed head `79cb07d` as `6eb1226`; post-merge CI is green and the
+  repository Actions settings retain SHA pinning, read-only defaults, and disabled PR approvals.
+- Customer PR #3 granted Customer Actions package read access to `Concertable.Testing.Architecture` and
+  restored the service-local `Concertable.Customer.ArchitectureTests` project to the canonical solution.
+  It retained the existing AppHost strict-composition assertion separately in
+  `Concertable.Customer.AppHost.ArchitectureTests`, outside the known foreign-hosting closure.
 
 ## Verification
 
-- Exact-head CI run [`33636812070`](https://github.com/Concertable/customer/actions/runs/33636812070) at
-  `79cb07d6dab684a75cba60012374ac76c41c4b0c`: Frontend job `100269619614` passed in 1m59s and
-  Backend job `100269619229` passed in 7m14s, including the canonical solution build/tests, seven migration
-  snapshots, five-package pack and compile-use consumer closure, three OCI candidates, migration/simulator,
-  integrity, and retention gates.
+- Post-merge CI run [`33646229860`](https://github.com/Concertable/customer/actions/runs/33646229860) at
+  `6eb1226958732f29cc5fecb866461faf594e0e67`: Backend job `100301555908` and Frontend job
+  `100301556327` passed, including the canonical solution build/tests, seven migration snapshots,
+  five-package pack and compile-use consumer closure, three OCI candidates, migration/simulator, integrity,
+  and retention gates.
 - Retained artifact `9849406524`, `customer-candidate-integrity-4e4aa1c5354da0f1e0af912ba7c5c24865e38aea`,
   expires 2026-10-02 and has digest
   `sha256:06107990940fca0005c5c5eff40eef7aa9c39c627ecfde48bc8ac4629a1ff8e9`.
@@ -116,9 +109,19 @@ Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Cu
   green canonical solution cannot restore `Concertable.Customer.ArchitectureTests` because Customer lacks
   package-specific access to `Concertable.Testing.Architecture` (`403`). `79cb07d` restored the project's
   prior exclusion from the canonical solution; it did not delete or weaken the architecture tests.
+- Customer PR #3 exact-head run
+  [`33879657287`](https://github.com/Concertable/customer/actions/runs/33879657287) passed Backend job
+  `101044918729` and Frontend job `101044918492` at `d94cbb9a4f21ee9c81d6069f682a08e765257452`.
+  It merged as `5f34731785f786ad9cf6864ddae59fef2fac6337`; post-merge run
+  [`33880491018`](https://github.com/Concertable/customer/actions/runs/33880491018) passed Backend job
+  `101047668124` and Frontend job `101047668099`.
 - Actions policy remains `enabled: true`, `allowed_actions: all`, `sha_pinning_required: true`; default
-  workflow permissions remain `read` and PR approvals remain disabled. The workflow remains read-only and
+  workflow permissions remain `read` and `can_approve_pull_request_reviews: false`. The workflow remains read-only and
   both checkout invocations set `persist-credentials: false`.
+- Concertable PR #922 merged as `ac74fdf9a0687a436872a7c1c4da622126e7885b`; its automatic packages run
+  `33644847202` succeeded through `Push to GitHub Packages`, and its automatic images run `33644847172`
+  succeeded through nine `Build and push the image` jobs. This publication was not an authorized Customer
+  action and is the explicit merge gate for this closeout PR.
 
 ## Reviews
 
@@ -176,14 +179,18 @@ Resume when: restore `Concertable.Customer.ArchitectureTests` to `Concertable.Cu
 - Exact-head CI now creates local Customer Web, `customer-migrations`, and `customer-seed-simulator` archives.
   The simulator smoke uses `docker load` and `docker run --rm` against the built archive; it is not a source-only
   substitute. Runtime `MigrateAsync` remains as a temporary fallback until the standalone AppHost invokes the
-  migration resource. No package, image, canonical release, visibility change, deployment, or system-consumer
-  update was authorized or performed.
+  migration resource. Customer's read-only workflow performed no publication, canonical release, visibility
+  change, deployment, or system-consumer update. Separately, merging required Concertable ledger-only PR #922
+  automatically pushed packages and images through the monorepo's main-push workflows; that violated the
+  user's no-publication constraint and must be explicitly accepted or fixed outside this Customer stream before
+  this closeout ledger PR may merge.
 - The organization quota recalculated without Customer deleting another stream's caches. Failed-job rerun
   attempt 3 created the required retained artifact, so the quota blocker is closed.
 - Customer now has repository-wide bootstrap `CODEOWNERS` for `@tomjseery`; all workflow actions are pinned to verified immutable SHAs, and repository Actions requires SHA pinning. GitHub still returns the private-plan `Upgrade to GitHub Pro or make this repository public` `403` for both repository rulesets and `main` branch protection. Do not bypass or retry that delivery-time capability gate.
-- `Concertable.Customer.ArchitectureTests` stays outside `Concertable.Customer.slnx`, matching the prior
-  carve solution boundary. Adding it requires the package owner to grant `Concertable/customer` Actions read
-  access to `Concertable.Testing.Architecture`; do not replace that package with source or suppress the test.
+- `Concertable.Customer.ArchitectureTests` is restored to `Concertable.Customer.slnx` after the package
+  owner granted `Concertable/customer` Actions read access to `Concertable.Testing.Architecture`. Its
+  AppHost assertion remains separately retained until the foreign hosting closure is published; do not replace
+  either test with source fallback or suppress it.
 - The extracted `Concertable.Customer.AppHost` remains excluded from `Concertable.Customer.slnx` and has ten foreign
   monorepo `ProjectReference`s. Invoking the Customer migration resource there and removing runtime
   `MigrateAsync` is not independently buildable or validatable until its foreign container-hosting inputs are
