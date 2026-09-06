@@ -1,5 +1,5 @@
 name: Set up Stripe CLI
-description: Install a pinned Stripe CLI from Stripe's official apt repository
+description: Install a pinned Stripe CLI from Stripe's official GitHub release
 
 runs:
   using: composite
@@ -8,12 +8,19 @@ runs:
       env:
         STRIPE_CLI_VERSION: 1.45.2
       run: |
-        curl -fsSL https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public \
-          | gpg --dearmor --yes --output /tmp/stripe.gpg
-        sudo install -m 0644 /tmp/stripe.gpg /usr/share/keyrings/stripe.gpg
-        echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" \
-          | sudo tee /etc/apt/sources.list.d/stripe.list > /dev/null
-        sudo apt-get update
-        sudo apt-get install --yes "stripe=$STRIPE_CLI_VERSION"
-        test "$(dpkg-query --show --showformat='${Version}' stripe)" = "$STRIPE_CLI_VERSION"
+        case "$(uname -m)" in
+          x86_64) stripe_arch=x86_64 ;;
+          aarch64|arm64) stripe_arch=arm64 ;;
+          *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+        esac
+
+        stripe_asset="stripe_${STRIPE_CLI_VERSION}_linux_${stripe_arch}.tar.gz"
+        stripe_release="https://github.com/stripe/stripe-cli/releases/download/v${STRIPE_CLI_VERSION}"
+
+        curl -fsSLo "/tmp/${stripe_asset}" "${stripe_release}/${stripe_asset}"
+        curl -fsSLo /tmp/stripe-linux-checksums.txt "${stripe_release}/stripe-linux-checksums.txt"
+        grep " ${stripe_asset}$" /tmp/stripe-linux-checksums.txt | (cd /tmp && sha256sum --check -)
+        tar -xzf "/tmp/${stripe_asset}" -C /tmp stripe
+        sudo install -m 0755 /tmp/stripe /usr/local/bin/stripe
+        test "$(stripe version)" = "stripe version $STRIPE_CLI_VERSION"
         stripe version
