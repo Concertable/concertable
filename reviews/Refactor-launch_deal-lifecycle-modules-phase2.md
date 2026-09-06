@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `e8a889c678c0bac48b8a828a1c3a671ab7e89d79`  _(2026-09-06)_
-**Security-reviewed up to commit:** `e8a889c678c0bac48b8a828a1c3a671ab7e89d79`  _(2026-09-06)_
+**Reviewed up to commit:** `a88321bf536dd5a3ba0481c299482bb80fe3f7ae`  _(2026-09-06)_
+**Security-reviewed up to commit:** `a88321bf536dd5a3ba0481c299482bb80fe3f7ae`  _(2026-09-06)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1526,3 +1526,64 @@ two identity inserts into separate saves. It remains recorded in `api/Concertabl
 The dev seed path is being run locally through `./scripts/e2e.ps1 api b2b` for this change, which is what
 found the regression rather than the merge queue — the queue reported it only as ten health-check timeouts on
 run `34049878505`. `Concertable.Seed.Shared` builds with 0 errors. Exact-head CI owns the rest.
+## Review pass — 2026-09-06 — redirect the E2E host output off the native-path limit
+
+**Candidate base:** `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`
+**Candidate head:** `a88321bf536dd5a3ba0481c299482bb80fe3f7ae`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:001b4d225cce11cbdb19220f1028a258988da88738f6279f5eb7a921ba954b7f` `(6 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-launch-deal-lifecycle-modules-phase2\32880e0b-1527-45aa-a4c6-0107603eb71c\scratchpad\candidate-bundle-a88321bf5`
+**Candidate bundle identity:** `sha256:53fa1c2303d86fe8c807c1c78d2287611d15d66b69474e419a692711955b6c27`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Four `BaseOutputPath` declarations and two documentation entries; no production source and
+no test source is touched, so the branch's reviewed behaviour is unchanged.
+
+The pass worth recording is that the prescribed fix was wrong and measurement caught it. The handoff diagnosed
+`payment-workers-e2e`'s `DllNotFoundException ... (0x800700CE)` as a missing `longPathAware` application
+manifest, reasoning that `LongPathsEnabled=1` is inert for native module loading without one. The first half is
+true; the conclusion is not. A manifest was wired in and **verified present in the emitted apphost** — the SDK's
+`CreateAppHost` copies Win32 resources from the managed assembly, so `<ApplicationManifest>` does reach the
+executable — and the host failed identically. Had the manifest been spread across the sibling hosts on the
+strength of the hypothesis, the branch would have carried four inert files and the local loop would still be
+dead.
+
+What the failure actually is: the Windows DLL loader caps a native asset path at **250 characters**, found by
+bisecting the load through junctions of varying length rather than inferred from `MAX_PATH`. That number
+explains the whole observation, which the 260 assumption could not — `Concertable.Payment.E2ETests.Workers`
+sits at 252 and dies, while `Concertable.Customer.E2ETests.Web` (250) and `Concertable.Payment.E2ETests.Web`
+(248) start, which is why exactly one host of the four failed.
+
+`BaseOutputPath` to `artifacts/e2e/<host>/` takes the longest from 252 to 202. The alternative of a repo-wide
+artifacts layout was rejected: it would re-address build output for every project to fix a Windows-local
+failure, and two consumers (`scripts/local-platform.ps1`'s `Assert-DataAccessAssembly`, and
+`.github/workflows/test.yml`'s literal `playwright.ps1` path) read output from its default location. That same
+constraint is why `Concertable.B2B.E2ETests` (236) and `Concertable.Customer.AppHost` (234) keep their `bin/`
+output despite sitting only 14 characters from the cap; the residual exposure is recorded in
+`api/TECH_DEBT.md`, and `docs/LOCAL_DEV.md` now carries the cap, the disproven manifest, and the
+output-directory-plus-57 budget a new host has to meet.
+
+The four declarations are deliberately per-csproj rather than hoisted into a shared props file. Each service
+folder is independently buildable by design — its `Directory.Build.targets` reaches `api/`-level shared files
+only through `Exists()` guards — so a shared import would add cross-folder wiring to carry one property, and a
+fifth E2E host is caught by the documented budget instead.
+
+### Validation
+
+`./scripts/e2e.ps1 api b2b` was run to completion on this head. The stack boots, `payment-workers-e2e` reaches
+`Running` and stays there, every seeder completes (zero `Seeder ... failed`, zero `0x800700CE`), and all ten
+B2B API E2E tests execute and report individually: **5 passed, 5 failed**. The five failures are exactly the
+five money-movement timeouts the handoff predicted — both `ConcertCancelledTests` escrow refunds,
+`ConcertDraftTests.ShouldCreateDraftAndPayVenue_WhenVenueHireApplicationAccepted`, and both
+`ConcertFinishedTests` artist payouts — which are pre-existing on this branch and owned by a separate session.
+Restoring the loop, not fixing those, was this change's job.
+
+Three of the four redirected hosts were exercised by that run: `b2b-web`, `payment-web-e2e` and
+`payment-workers-e2e` all reached `Running` from their new output paths. `Concertable.Customer.E2ETests.Web`
+builds and emits its executable there but is only booted by `./scripts/e2e.ps1 api customer`, which this pass
+did not run. Exact-head CI owns the rest.
