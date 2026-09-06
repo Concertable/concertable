@@ -731,3 +731,168 @@ needing a host, HTTP or a database is an integration test" — these need the re
    identity and `[ ]` findings. This file is neither, and it collides with that path. If a review pass
    later lands on `Chore/TestTierNaming` it must append rather than overwrite. `plans/` or a
    `research/` sibling may be the correct home for this shape of document.
+
+---
+
+**Review status:** `complete`
+**Reviewed up to commit:** `e3595f5c95f75cfa10a7511bf2db653679ca363b`  `(2026-09-06)`
+**Security-reviewed up to commit:** `e3595f5c95f75cfa10a7511bf2db653679ca363b`  `(2026-09-06)`
+**Judgment:** `approved`
+
+## Review pass — 2026-09-06 — full
+
+**Candidate base:** `b0be763edaf36026b8a28a8acc28475900737e4c`
+**Candidate head:** `e3595f5c95f75cfa10a7511bf2db653679ca363b`
+**Candidate branch:** `Chore/TestTierNaming`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:018ca73ecb663f9558da073ccb4323af81e9f7c10fdbf0c1125ce6522cb10dcc` `(78 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable--worktrees-Chore-TestTierNaming/d223007b-4e38-4258-b5cc-0552d4273713/scratchpad/review-bundle`
+**Candidate bundle identity:** `sha256:6117967e037c2a4f5a0596ef7618ca220262213bebd703771fa633366cff44b5`
+**Work-order path:** `reviews/Chore-TestTierNaming.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The candidate base is #633's head rather than `main`: this PR is stacked on
+`Refactor/launch_deal-lifecycle-modules-phase2` and GitHub retargets it to `main` when #633 merges.
+The implementation reviewed here was written by a session whose brief was read-only, so none of it was
+taken on trust; the verification log separates what was executed from what was only read.
+
+### Findings
+
+- [x] **F1 — HIGH — ci** — `.github/workflows/test.yml:918,963`
+  `Concertable.Auth` was the one service whose architecture project held nothing but startup content, so
+  the branch renamed it to `Concertable.Auth.StartupTests` and Auth now has no `*.ArchitectureTests`
+  project at all. An Auth-only PR therefore scopes `architecture_projects` to `[]`, `architecture-tests`
+  skips on its own `if:`, and a skipped `needs:` cascades — `integration-tests` and `e2e-api-tests` would
+  both silently skip, so an Auth-only change would merge having run neither its integration suite nor the
+  merge queue's E2E gate. Every service had an architecture project before this branch, so the hole is
+  new. Fixed by gating both jobs on no need having **failed**
+  (`!cancelled() && !contains(needs.*.result, 'failure')`) rather than on all needs having run: ordering
+  still holds, a failed cheap gate still stops the expensive one, and an inapplicable tier no longer
+  suppresses a later one.
+
+- [x] **F2 — HIGH — ci** — `eng/repository-split/inventory.json`
+  The committed generated inventory was never regenerated for the six new projects or the Auth rename, so
+  `python eng/repository-split/inventory.py --check` exited 1 and the `split-inventory` job would have
+  failed the PR outright. This is RT3 defect #6 verbatim — the one the case study records as *"already
+  gated correctly"* — reintroduced by the change that cites it. Regenerated.
+
+- [x] **F3 — MEDIUM — ci** — `eng/repository-split/inventory.py:81,90`
+  `classify()` knew four tiers and `*.StartupTests` fell through to `"runtime"`; `is_runtime_closure()`
+  excludes anything under `/tests/`, so the new projects sat outside **both** cross-repository
+  `ProjectReference` rules. The `split-inventory` job's own comment claims it catches *"no test-tier
+  project declares a cross-repository ProjectReference"* repo-wide, and that claim was false for the very
+  tier this branch introduces. `classify()` now returns `startup-test` and `TEST_KINDS` carries it, which
+  moves the AppHost suite's cross-area edge back out of `apphost-support` and brings all six projects
+  within `blockingTestEdges`' reach. No live violation exists today (`blockingTestEdges: []`) — the gate
+  was simply blind to them.
+
+- [x] **F4 — LOW — docs** — `docs/INDEX.md:158`
+  The enforcement table credited *"`ExecutableHostInventory` + the `architecture-tests` CI matrix"* with
+  proving every executable host has real coverage. The split moved the host graphs into `startup-tests`
+  and left only the inventory behind, so the row named a matrix that no longer runs what it claimed.
+  Corrected, and the row the new tier actually buys was added beside it.
+
+- [wontfix] **F5 — MEDIUM — correctness** — `api/Concertable.*/tests/*.StartupTests/AppModelStartupContractTests.cs`
+  Every case ends `app.Services.GetService<IStartupValidator>()?.Validate()`. That service exists only
+  once something has called `ValidateOnStart()`, and the only three calls in `api/` are in
+  `Concertable.Payment.Infrastructure` — so in Auth and Search the line asserts nothing, and the gate's
+  real bite is the eager `?? throw` in each host's `Configure` lambda firing during `builder.Build()`.
+  The null-conditional is deliberate forward-compatibility, but it also means deleting a
+  `ValidateOnStart()` weakens the gate without turning anything red, which is the exact shape this tier
+  exists to end. Tightening it to `GetRequiredService` needs research §4.2's options-pattern conversion
+  across 20 escape hatches in 8 production host files, explicitly not in this change.
+  Transferred: `api/Concertable.AppHost.Shared/TECH_DEBT.md`, LOW, with its resolution condition.
+
+- [wontfix] **F6 — MEDIUM — duplication** — `api/Concertable.{Auth,Payment,Search}/tests/*.StartupTests/AppModelConfiguration.cs`
+  Three byte-identical 49-line copies differing only in the namespace declaration — verified by hash. This
+  is the file that decides what every gate is fed, so its `Secrets` allowlist can drift per service, and a
+  topology key wrongly added to one copy blinds only that service while the other two still read correct.
+  The branch logged the *smaller* duplication (`AssertImageEndpoint` and siblings) as debt and left this
+  one silent. Deduplicating means moving it into `Concertable.Testing.Architecture`, a published package
+  that would take a new `Aspire.Hosting` dependency — the same publish-then-consume two-step the existing
+  entry describes, so it belongs beside it rather than in this PR.
+  Transferred: `api/Concertable.AppHost.Shared/TECH_DEBT.md`, LOW, with its resolution condition.
+
+- [wontfix] **F7 — LOW — tests** — `api/Concertable.B2B/tests/Concertable.B2B.StartupTests/ResourceGraphTests.cs:150`
+  `AssertImageEndpoint` asserts `Assert.Equal(8080, endpoint.TargetPort)` against a literal where
+  `AuthConstants.ContainerPort` is the source of truth for the Auth call site, and its
+  `Assert.Equal(endpointName, endpoint.Name)` is redundant after the `Assert.Single(..., e => e.Name ==
+  endpointName)` predicate above it. Left as-is deliberately: the helper serves both Auth and
+  `payment-web`, and the AppHost itself writes `8080` as a literal for `payment-web` (there is no
+  `PaymentConstants.ContainerPort`), so deriving only the Auth half would leave one shared helper
+  inconsistent with itself. Resolves with F6, when the helper gets one home and can take the port per
+  resource.
+
+- [wontfix] **F8 — LOW — docs** — external repository `Concertable/agent-standards`
+  Two skills go stale the moment this merges. `dotnet:unit-testing` documents the tier table with four
+  rows and states *"`EndsWith` is tested before `Contains`"*, so a `.StartupTests` project reads as a
+  build failure to any agent consulting it. `dotnet:composition-testing` names
+  `AppHostCompositionTests.Inventory_AllExecutableProjectsDeclareCoverageOrExclusion`, which this branch
+  renames to `InventoryTests.AllExecutableProjects_DeclareCoverageOrExclusion` — the skill was already
+  wrong about the class name (research §5.1) and this makes it wrong about the method too. Both live in a
+  separate repository and cannot be fixed from this PR; per the owner's decision they are recorded here
+  rather than landed as a companion PR, and they must not be updated before this merges, or the skills
+  would describe a tier that does not exist yet.
+
+- [wontfix] **F9 — HIGH — live defect, not introduced here** — `api/Concertable.B2B/src/Concertable.B2B.AppHost/AppHost.cs:31`, `api/Concertable.Customer/src/Concertable.Customer.AppHost/AppHost.cs:34`
+  Research §5.4a's claim is **confirmed by execution**, not merely statically. A temporary B2B
+  `AppModelStartupContractTests` fed from the standalone B2B app model failed both cases with
+  `System.InvalidOperationException : Payment service address (services:payment-web:https:0) is not
+  configured.` — b2b-web in 2 s, b2b-workers in 7 s. `WithHttpEndpoint(targetPort: 8080, name: "https")`
+  sets `UriScheme` to `http` whatever the name says, so Aspire emits `services:payment-web:http:0` and
+  `:http:1` and never the key `AddPaymentClient` requires. The gate is correct and the topology is not,
+  which is why B2B's and Customer's contract tests are deliberately absent rather than written against the
+  broken state — asserting a defect as correct is precisely the `AssertImageEndpoint` mistake research
+  §5.3 documents.
+  It cannot be repaired in this PR: `AddPaymentClient` ships inside the published
+  `Concertable.Payment.Client` package, which B2B and Customer consume by `PackageReference`, so changing
+  the key it reads needs publish-then-bump — two PRs minimum, three to retire the old key. The one-PR
+  alternative (running Payment from source in the standalone AppHosts, as `PinPaymentWeb` already does
+  for E2E) would require `Concertable.B2B.AppHost` to take a project reference on
+  `Concertable.Payment.Web`, crossing the carve boundary the repository split exists to protect.
+  Carried by: `api/Concertable.AppHost.Shared/TECH_DEBT.md`, HIGH, whose resolution condition is that
+  B2B's and Customer's `AppModelStartupContractTests` exist and pass without the E2E harness's three
+  manual `services__payment-web__https__0` overrides.
+
+### Verification log — executed, not read
+
+- **Full solution build** — `dotnet build api/Concertable.slnx -c Release`: 0 errors.
+- **All eleven suites green** — 31 tests across six `*.StartupTests` (Auth 3, B2B 10, Customer 4,
+  Payment 6, Search 6, AppHost 2) and 40 across five `*.ArchitectureTests` (B2B 22, Customer 1,
+  Payment 9, Search 7, AppHost 1).
+- **The tier gate classifies correctly** — `dotnet build -getProperty:ConcertableTestTier` returns
+  `Startup` for the sampled `.StartupTests` projects, `Architecture` for `B2B.ArchitectureTests`, and
+  `Unit` for `Concertable.Search.E2ETests.Helpers.UnitTests`, so the new `EndsWith` did not disturb the
+  `EndsWith`-before-`Contains` ordering the targets file depends on.
+- **G1 bites** — deleting `auth.WithEnvironment("ServiceAuth__AuthClientId", ...)` from the Auth AppHost
+  made `WebHost_StartsOnTheConfigurationTheAppModelSupplies` fail in 65 ms with
+  `System.InvalidOperationException : ServiceAuth:AuthClientId is required.` That is RT3 defect #8
+  exactly, which originally surfaced as all 32 UI scenarios dying on a `:7086/health` timeout. Reverted.
+- **`AssertImageEndpoint` bites** — changing `payment-web`'s first endpoint to `WithHttpsEndpoint` made
+  B2B's `ResourceGraphTests` fail with `Expected: "http" / Actual: "https"`. The helper's `scheme`
+  parameter is required (the `= "http"` default that asserted defect #4's condition as correct is gone)
+  and all nine call sites across the four suites pass the truthful value. Reverted.
+- **§5.4a reproduced** — see F9.
+- **The `split-inventory` gate** — `inventory.py --check` exited 1 before F2 and exits 0 after.
+- **Nothing was dropped by the split** — all 27 test methods across the six pre-split suites were located
+  in their new homes (Auth 2, B2B 9, Customer 5, Payment 8, Search 4, AppHost 3), plus #633's
+  `Web_MessageTopology_HandlesDurableCommandsWithoutSelfSubscriptions` carried into `WebHostTests`, and
+  all seven architecture classes #633 touches still exist and still assert what they did.
+- **Security review** — no HIGH or MEDIUM findings, scoped to this branch's 78-path delta against #633.
+
+### Read but not executed
+
+- Whether `dotnet run` on the standalone B2B/Customer AppHosts fails end to end. F9 proves those hosts
+  throw on the configuration their app models supply, which is the same defect one layer in, but no
+  AppHost was actually started.
+- Research §5.6's count of duplicated image/digest constants. The claim of twelve is wrong — there are
+  **20** across the four standalone AppHosts (B2B 6, Customer 8, Payment 2, Search 4), all agreeing today.
+  The finding stands; the number does not.
+- Research §5.5's two divergent `PinHttpsEndpoint` implementations — both confirmed present, at
+  `Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs:251` and
+  `Concertable.Search.E2ETests.Helpers/DistributedApplicationBuilderExtensions.cs:102`. Their behaviour
+  was not differentially exercised.
+- `.agents/hooks/docs_reachability.py` reports 10 errors, none in this branch's paths — all six new
+  project directories carry both `AGENTS.md` and `CLAUDE.md`. Pre-existing on the base, so not carried
+  here.
