@@ -5,7 +5,7 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M3-Frontend-Build-Config`
 - Branch: `Refactor/RepoSplit-M3-Frontend-Build-Config`
-- PR: not opened; M3 is an independent sibling candidate based on monorepo PR #633
+- PR: draft monorepo PR #948, explicitly based on monorepo PR #633
 - Dependency/package gates: M3 delivery waits for PR #633 and the real
   `@concertable/build-config` publication; preparation and review do not depend on M1 or M2.
 - Last reconciled: 2026-09-06 against corrective topology commits `82bf5dbbb` and `bb59d9ba3`, the preserved
@@ -19,15 +19,15 @@ selected repositories are `platform-dotnet`, `platform-frontend`, and separate `
 this packet. General shared frontend code covers web and mobile while those remain package tiers, not
 repository boundaries.
 
-M1 is published as four draft stacked PRs #942-#945. M2 remains an independent sibling packet. M3 is
-restacked onto the exact live #633 head as two commits ending at the current work head. It extracts the
+M1 is published as four draft stacked PRs #942-#945. M2 is published as independent sibling draft PR #947.
+M3 is published as independent sibling draft PR #948, restacked onto the exact live #633 head. It extracts the
 product-neutral `@concertable/build-config` package, makes product workspaces own their package lists, and
 uses the shared Metro resolver for both mobile applications without encoding product ownership into the
 platform tier.
 
 ## Next Steps
 
-- Complete the frozen-head M3 review and open it as a draft sibling PR with #633 as its explicit base.
+- Keep draft PR #948 based directly on #633 while the dependency remains open; do not merge it ahead of #633.
 - After #633 lands, move M3 to the exact landed `origin/main` if necessary and revalidate the focused delta.
 - Before delivery, publish and feed-verify the real `@concertable/build-config` package, replace local
   validation artifacts with the real pin, then rerun both packed mobile carves and the independent consumer.
@@ -46,6 +46,8 @@ platform tier.
 - M3 commits `9654935ae` and `62772dc20` were restacked as `9a87b3235` and `96aa1b987` onto #633. The generic
   Metro resolver preserves #633's Stripe and React Native package visibility without product-specific
   platform code.
+- M3 checkpoint commit `11b322e92` and approved review commit `9216a0883` were published as draft PR #948
+  with #633 as its explicit base.
 
 ## Verification
 
@@ -62,8 +64,9 @@ platform tier.
 ## Reviews
 
 The original M3 full review over `c6240ecea..62772dc20` found no defects. The implementation agent supplied
-the artifact-producing carve and Expo evidence omitted by that read-only pass. A fresh frozen-head review of
-the rebased candidate and this checkpoint is required before publication.
+the artifact-producing carve and Expo evidence omitted by that read-only pass. The fresh frozen-head review
+over `ad4ad986f..11b322e92` approved the complete 27-path candidate with no functional or security findings;
+its durable work order is `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`.
 
 ## Decisions, discoveries, blockers, and deviations
 
