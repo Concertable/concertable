@@ -6,11 +6,15 @@
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Consumers`
 - Branch: `Refactor/B2bPackageTopologyPhase3-Consumers`
 - PR: not opened; this consumer/contraction stage is stacked on
-  `Refactor/B2bPackageTopologyPhase3-Producer`
-- Dependency/package gates: satisfied by feed-verified `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314` from terminal Phase 2 publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
-- Last reconciled: 2026-09-06 against exact PR #633 head
-  `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`, merged Phase 2 PR
-  [#653](https://github.com/Concertable/concertable/pull/653), and its successful publication run.
+  `Refactor/B2bPackageTopologyPhase3-Producer` at exact candidate
+  `f083bba15f85feef944180e5a5fb3d51097ca186`.
+- Dependency/package gates: Phase 2 is satisfied by feed-verified
+  `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314`
+  from terminal publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
+  The Phase 3 exact producer-publication gate is explicitly **unsatisfied**: producer candidate
+  `f083bba15` has not merged, published, or produced a feed-verified exact version.
+- Last reconciled: 2026-09-06 against producer candidate `f083bba15`, consumer base
+  `16a4d2fbd`, and the still-unsatisfied Phase 3 exact-publication gate.
 
 ## Current state
 
@@ -36,10 +40,11 @@ original combined local branch is retained only as a recovery reference; it is n
 
 ## Next Steps
 
-Validate and review this consumer/contraction stage, then publish it as a draft PR stacked on the producer
-stage. Do not merge it before the producer PR merges and an exact new `@concertable/b2b` version is published
-and feed-verified. At that gate, replace the draft's workspace proof with exact-version package verification,
-run the affected standalone carves and exact-head CI, then deliver. Do not substitute the moving `alpha` tag
+Finish incremental review of the consumer repair candidate, then publish it as a draft PR stacked on the
+producer stage. Do not merge it before the producer PR merges and an exact new `@concertable/b2b` version is
+published and feed-verified. At that gate, set `B2B_PHASE3_PRODUCER_VERSION` to that exact version and run
+`npm run validate:b2b-phase3-consumers` from `app/`; this pins the venue, artist, and mobile B2B carves to
+the named producer publication. Run exact-head CI, then deliver. Do not substitute the moving `alpha` tag
 for the exact package dependency gate.
 
 ## Completed work
@@ -77,6 +82,10 @@ for the exact package dependency gate.
   composition, validated `X-Tenant-Id` wiring for API and payment clients, and logout/401 clearing.
 - **Organization-profile contraction:** consumers and route guards now use only
   `/organization/artist` and `/organization/venue`; no compatibility route was added.
+- **Consumer review repairs:** active artist/venue profile caches and drafts are tenant-scoped, the mobile
+  navigation/editor subtree remounts on tenant changes, tenant selections are serialized with latest-wins
+  persistence and pending controls, failed tenant-session hydration exposes a retry path, and terminal B2B
+  consumer carves accept only a named exact package version.
 
 ## Verification
 
@@ -122,6 +131,13 @@ for the exact package dependency gate.
   `carve-fe.mjs` has no exact-version option and always rewrites dependencies to `alpha`. Mobile also
   requires this candidate's new all-membership tenant-core API, so its terminal carve must follow
   publication of the Phase 3 package expansion.
+- Consumer repair verification passed the cross-platform B2B suite (9 files/33 tests), including focused
+  tenant cache/draft scope, concurrent latest-wins persistence, pending state, and hydration retry cases.
+  The cross-platform package build, mobile B2B TypeScript and Android export gates, artist and venue
+  production builds,
+  manager-web suite (10 files/17 tests), frontend boundary tests (10/10), and dependency/entrypoint lint
+  across all 13 workspaces passed. Exact-version carve tooling tests passed 7/7; the actual feed-restored
+  terminal carves remain blocked on the explicitly unsatisfied Phase 3 producer-publication gate.
 
 ## Reviews
 
@@ -131,8 +147,9 @@ for the exact package dependency gate.
   `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
   of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
   `6e87fcf36`.
-- Phase 3 producer and consumer-stage reviews have not started. The combined local proof is validation
-  evidence, not a candidate that will be published as one indivisible change.
+- Phase 3 producer and consumer-stage reviews are independent. The consumer review has findings under
+  repair and must receive an incremental clean pass before publication; the combined local proof remains
+  validation evidence, not a candidate that will be published as one indivisible change.
 
 ## Decisions, discoveries, blockers, and deviations
 
