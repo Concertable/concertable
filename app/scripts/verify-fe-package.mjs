@@ -26,7 +26,7 @@ function b2bChecks(name, tenantExport = "features/tenant") {
       `import { TENANT_HEADER } from "${tenantModule}";`,
       `import type { TenantRole } from "${name}/features/tenant/types";`,
       `if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected ${name} TENANT_HEADER");`,
-      `const role = "Admin" as TenantRole;`,
+      `const role = "owner" as TenantRole;`,
       "void role;",
     ],
     metro: [
