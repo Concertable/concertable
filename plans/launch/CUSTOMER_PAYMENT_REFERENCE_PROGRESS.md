@@ -13,13 +13,15 @@
 
 ## Current state
 
-Implementation and focused verification are complete. Customer now creates Payment v1 sessions and
-correlates purchase outcomes through the whole `PaymentOperationReference`; the old provider identifier,
-Payment metadata, and legacy Customer payment-client surfaces are gone. Review and PR delivery remain.
+Implementation, focused verification, and full review remediation are complete. Customer now creates
+Payment v1 sessions and correlates purchase outcomes through the whole `PaymentOperationReference`; the
+old provider identifier, Payment metadata, and legacy Customer payment-client surfaces are gone. A clean
+incremental review and PR delivery remain.
 
 ## Next Steps
 
-1. Run the review workflow, address findings, commit, push, and open the PR against `main`.
+1. Commit the review fixes, run the incremental review and remaining frontend gates, then push and open
+   the PR against `main`.
 
 ## Completed work
 
@@ -36,13 +38,17 @@ Payment metadata, and legacy Customer payment-client surfaces are gone. Review a
 - Removed the mocked `TicketService` unit suite. Deterministic reference encoding is unit-tested; purchase
   and outcome orchestration are covered through HTTP and integration-event tests.
 - Migrated customer shared, web, and mobile checkout correlation away from provider-derived ids.
+- Replaced every Ticket integration assertion with Shouldly and removed the project-level mixed assertion
+  style; the unit tier remains on xUnit assertions.
+- Updated Customer's active guidance and architecture to describe Payment v1 sessions and guarded whole-
+  reference outcome handling instead of the retired PaymentIntent/metadata flow.
 
 ## Verification
 
 - `dotnet test` with `--no-build`: all seven Customer module integration suites passed, 71 tests total
   (Artist 2, Concert 11, Preference 7, Review 14, Ticket 29, User 6, Venue 2).
 - Ticket unit suite passed, 32 tests; the focused Ticket integration suite passed again after the final
-  inbox-ordering and reference-validation changes, 29 tests.
+  inbox-ordering and reference-validation changes and after the Shouldly conversion, 29 tests.
 - Shared foundation tests passed, 26 tests; Customer shared tests passed, 3 tests. Customer shared, web
   shared, customer web, and mobile builds passed; mobile customer TypeScript checking passed.
 - Case-insensitive forbidden-identifier sweep passed with zero matches in `api/Concertable.Customer`,
@@ -58,7 +64,10 @@ Payment metadata, and legacy Customer payment-client surfaces are gone. Review a
 
 ## Reviews
 
-- No review yet; the branch does not exist.
+- Full review at `df5c5156` found two low-severity issues: the Ticket integration project mixed assertion
+  libraries, and Customer's active guidance still described the retired PaymentIntent/metadata flow.
+  Both are fixed and the Ticket integration suite is green; incremental review of the fixing commit is
+  pending.
 
 ## Decisions, discoveries, blockers, and deviations
 
