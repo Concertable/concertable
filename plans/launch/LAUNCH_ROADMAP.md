@@ -65,7 +65,7 @@ table-stakes items were resolved in the same pass.
   union performs service resolution or restores the global workflow. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 - [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish Payment's final consumer-agnostic surface in one breaking release: durable operation references, provider-identifier ownership, reference-keyed escrow/ledger/settlement, legacy raw-identifier removal, and payment-owned vocabulary. B2B and Customer then migrate directly from the old surface once. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
-- [ ] 🟡 **Customer payment-reference migration** `launch/customer-payment-reference` — Customer stops relaying client-supplied Stripe payment-method ids (`TicketPurchaseParams.PaymentMethodId` and the customer web/mobile checkout); ticket purchase runs on-session sessions by a Customer-minted operation reference. Gated on the published packages from the payment-operation-ownership producer (PR #933). See [CUSTOMER_PAYMENT_REFERENCE_PLAN.md](CUSTOMER_PAYMENT_REFERENCE_PLAN.md).
+- [x] ✅ **Customer payment-reference migration** `launch/customer-payment-reference` — Customer ticket purchase now runs on-session Payment sessions addressed by whole Customer-minted operation references; provider identifiers no longer cross or persist at the Customer boundary. Delivered by PRs #939 and #938.
 
 - [ ] 🟡 **Lifecycle reporting read projections** `launch/lifecycle-read-projections` — deferred until
   the lifecycle ownership refactor is terminal. Replace the Application dashboard's transitive
