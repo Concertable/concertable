@@ -1,12 +1,12 @@
-# Code review — Refactor/launch_deal-lifecycle-modules-phase2
+﻿# Code review — Refactor/launch_deal-lifecycle-modules-phase2
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `2030c3ee36b00fe55fb522374ab9f72f5423742a`  _(2026-09-06)_
-**Security-reviewed up to commit:** `2030c3ee36b00fe55fb522374ab9f72f5423742a`  _(2026-09-06)_
+**Reviewed up to commit:** `5b4280f804600ea5516714b3ac09be2ab2ce6595`  _(2026-09-07)_
+**Security-reviewed up to commit:** `5b4280f804600ea5516714b3ac09be2ab2ce6595`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1626,3 +1626,68 @@ entries rather than restated, so the two copies cannot drift.
 Documentation only — no build or test surface is touched, and `api/TECH_DEBT.md` is byte-identical to its state
 before `a88321bf5`. The fix this pass reorganizes remains verified by the `./scripts/e2e.ps1 api b2b` run
 recorded in the preceding pass. Exact-head CI owns the rest.
+
+## Review pass — 2026-09-07 — drive the five E2E payment failures to green
+
+**Candidate base:** `027b513365d1e2b3d0e64b4a5c3f8e9a7b6c4d21`
+**Candidate head:** `5b4280f804600ea5516714b3ac09be2ab2ce6595`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Five defects were found and fixed; each is stated with the evidence that identified it.
+
+`538bbc568` — **escrow authorization under-sized.** `98b56896a` made payment sessions consumer-agnostic and
+deleted `ManagerPaymentService.CreateHoldSessionAsync`, whose last act was to hold `amount + platformFee`.
+`PaymentSessionService.CreateAsync` authorizes exactly what its caller names and nothing carried the uplift
+across, while `EscrowService` still records the fee on top of the payee's gross. A flat-fee escrow therefore
+claimed a payer total of fee + £10 against a charge of fee alone and Stripe refused the refund. The deposit
+path kept the uplift, so only authorize-then-capture lost it, and no test asserted an escrow amount.
+`Escrow.Authorize` sizes the hold where the platform fee already lives.
+
+`ccad3f460` — **seeded applications carried no Payment method commitment.** The carve moved VenueHire and the
+door-split deals onto Payment-owned method references; nothing creates that operation for a seeded
+application, so the deposit was rejected `PaymentMethodRequired` and settlement failed
+`A usable payment method is required`. Provider state cannot be seeded, so the arrange creates each
+commitment through its real production API and confirms a real Stripe setup intent. Two harness defects
+surfaced with it: `PinPaymentWeb` never set `ServiceBus__ServiceName` — unlike `PinPaymentWorkers`, which
+sets it explicitly because `SubstituteE2EProject` carries reference wiring but not static environment values
+— so the payment web host crash-looped and every test failed on a health timeout rather than a test result;
+and the payout gate counted rows with a connect account, which is satisfied by demo users the tests never
+touch and says nothing about the payer half.
+
+`69a556476` — **swallowed Stripe failures.** `StripeSessionClient` caught `StripeException` at four sites and
+returned `ProviderUnavailable` with no record. Four full E2E runs diagnosing a 409 produced no evidence
+because none existed. This was the change that made the remaining two defects findable in one run.
+
+`90e55a7ab` — **the Stripe key was set by constructor side effect.** Stripe.net reads it from a global that
+`StripeApiClient` and `StripeAccountClient` assign in their own constructors. `StripeSessionClient` holds no
+client, so whether a payment session could reach Stripe depended on some other service being constructed
+first: the first session of a process failed `No API key provided`, surfacing as an opaque
+`provider_unavailable`, while the identical call later in the run succeeded. The same hazard exists in the
+deployed host. Injecting an `IStripeClient` is the real fix and is filed as debt.
+
+`5b4280f80` — **v4 operation ids where Payment requires v7.** `ConcertEntity` minted both operation ids with
+`Guid.NewGuid()`; `SettlementOperationFingerprint.ValidateOperationId` rejects anything but v7, so every
+settlement that actually charges threw inside Payment's gRPC handler. The two `ShouldCompleteConcert_*` tests
+passed throughout because they assert concert state and never reach the charge. B2B mints v7 everywhere else.
+
+Three of the five — the authorization sizing, the Stripe key, and the operation-id version — are production
+defects on real money paths, not harness issues.
+
+### Validation
+
+`./scripts/e2e.ps1 api b2b` — **10 of 10 passed**, exit 0, with zero Stripe rejections and zero UUIDv7
+errors in the forwarded resource logs. The suite ran in its natural order, which matters: the key defect was
+an initialisation-ordering one, so a filtered run could have passed for the wrong reason.
+
+Nothing was skipped, quarantined, or given a longer timeout. The payout readiness gate keeps its original
+three-minute budget and only became stricter — it now waits for the owners the suite transacts as, on both
+provisioning halves, through a Db class Payment owns, and re-runs after each reset because the reset replays
+the registration chain.
+
+UI E2E is being validated separately and is not asserted here. Exact-head CI owns the rest.
