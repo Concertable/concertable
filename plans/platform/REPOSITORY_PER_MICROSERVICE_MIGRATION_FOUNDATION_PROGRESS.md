@@ -48,8 +48,9 @@ associations into the B2B and Customer owners before system composition consumes
   and normalized resource names, so the B2B mobile API tunnel is emitted correctly.
 - Review remediation added exact Auth SPA replacement and unknown-client fail-closed coverage, retained legacy
   hosting compatibility until the final contract stage, made resolver assertions portable across Windows and
-  Linux, completed the exact platform extraction table, and added owner Auth-roster assertions to the B2B,
-  Customer, and system graphs.
+  Linux, completed the exact platform extraction table, added owner Auth-roster assertions to the B2B,
+  Customer, and system graphs, and added deterministic coverage that exercises every owner frontend path through
+  the production B2B and Customer hosting extensions in both extracted-only and monorepo-preferred layouts.
 
 ## Verification
 
@@ -58,9 +59,10 @@ associations into the B2B and Customer owners before system composition consumes
   AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
   form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
 - `Concertable.AppHost.Shared` passes 16/16 tests. Auth architecture passes 9/9 tests. B2B package-mode
-  architecture passes 33/33 against the current Payment.Hosting producer placed at #633's pinned package slot;
+  architecture passes 35/35 against the current Payment.Hosting producer placed at #633's pinned package slot;
   Search architecture passes 4/4 and Payment architecture passes 13/13. B2B and Customer Hosting also build
-  independently against the locally prepared platform packages.
+  independently against the locally prepared platform packages. Customer's current Hosting and architecture-test
+  assemblies compile in isolation and the two extracted/monorepo frontend-layout cases pass 2/2.
 - Customer and umbrella system execution remain blocked by #633's Customer compile errors (`PaymentOutcome` is
   sealed and `CheckoutSession` is missing). Exact immutable B2B package qualification remains a delivery gate
   until #633 publishes or advances its pinned Payment.Hosting producer: the currently published pinned binary
