@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a2115afc5c061edfdc00cb5cf3b55d2e0307eda5`  `(2026-09-06)`
-**Security-reviewed up to commit:** `a2115afc5c061edfdc00cb5cf3b55d2e0307eda5`  `(2026-09-06)`
+**Reviewed up to commit:** `7a561adbe1d5f32a0e6a562323859fa4039117a8`  `(2026-09-06)`
+**Security-reviewed up to commit:** `7a561adbe1d5f32a0e6a562323859fa4039117a8`  `(2026-09-06)`
 **Judgment:** `changes-requested`
 
 ## Review pass — 2026-09-06 — full
@@ -56,3 +56,34 @@ Security lens: no additional findings. Destructive paths are rooted through `Res
 lexical escapes and reparse traversal, and restore the caller's process environment. The fixed local-only
 service-auth value preserves the pre-existing localhost bootstrap contract and is stored through .NET user
 secrets rather than in tracked runtime configuration.
+
+## Review pass — 2026-09-06 — full after upstream restack and remediation
+
+**Candidate base:** `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`
+**Candidate head:** `7a561adbe1d5f32a0e6a562323859fa4039117a8`
+**Candidate branch:** `Refactor/RepoSplit-M2-Owner-Operations`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:95f5d610e302b8ba1f889ed79cebe2f030f4c7b4c962f66c3e39b231f807f2a5` `(41 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m2-final-d266c107aa7246afb4c46a2c430aa1de`
+**Candidate bundle identity:** `sha256:daff06c88343d2c3e126021e41ee72d6148bc840fc71408b35991cc10fbceda8`
+**Work-order path:** `reviews/Refactor-RepoSplit-M2-Owner-Operations.md`
+**Work-order mode:** `append`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **M2-005 — MEDIUM — extraction correctness** — `eng/repository-split/map.yaml:95`
+  The module and local-development documentation declare its canonical destination as root-level
+  `tools/OwnerOperations.psm1` in `platform-dotnet`, but the extraction map's generic `api/` rename places it
+  at `src/Concertable.Shared/tools/OwnerOperations.psm1`. Align and validate the actual rename destination.
+  Resolved with an exact path rename before the generic `api/` rule and a validator assertion for the final
+  root-level destination. The same touched map now uses the authoritative `platform-frontend` target name.
+- [x] **M2-006 — LOW — plan resumability** — `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md:22`
+  The checkpoint describes a three-commit head and tells the next owner to commit review repairs already
+  present in this candidate. Record the actual fixing head and make final review/publication the resume action.
+  Resolved by recording the five-commit stack through `7a561adbe`, distinguishing the two current final-pass
+  corrections, and making their incremental review plus draft publication the sole resume action.
+
+This is a new full pass because the exact #633 restack rewrote the earlier watermark's ancestry; the prior
+candidate descriptor, findings, severities, and dispositions remain preserved above. Security lens: no new
+findings in the CI, extraction-map, test, or documentation remediation delta.

@@ -2343,13 +2343,13 @@
         ],
         "packageName": "@concertable/mobile",
         "private": false,
-        "target": "platform-web"
+        "target": "platform-frontend"
       },
       "app/shared": {
         "concertableDeps": [],
         "packageName": "@concertable/shared",
         "private": false,
-        "target": "platform-web"
+        "target": "platform-frontend"
       },
       "app/web/admin": {
         "concertableDeps": [
@@ -2414,7 +2414,7 @@
         ],
         "packageName": "@concertable/web",
         "private": false,
-        "target": "platform-web"
+        "target": "platform-frontend"
       }
     }
   },
