@@ -17,6 +17,24 @@ is true of *this* repo:
 - Local E2E runs only through `./scripts/e2e.ps1` and its `e2e-*` skills, and only to diagnose a queue
   failure — root [`AGENTS.md`](../AGENTS.md).
 
+## The debug loop — the order that avoids a 40-minute round trip
+
+- **E2E runs only on the `merge_group` event** (`test.yml:183`; jobs at `:908` and `:1004`), never on the PR.
+  A green PR is silent about E2E, and it does not show in `gh pr checks`. The queue is where E2E speaks, and
+  a queue failure re-spends the whole cycle — so run the affected E2E suites locally *before* enqueuing.
+- Failing test → its `e2e-*`/`integration-debug` skill → fix → re-run **only that test**. Never re-run a
+  suite to reconfirm failures you already know about.
+- Before pushing, run the gate that covers what changed, picked by what *consumes* the change rather than by
+  the files you opened: a signature → whole-solution build; a package or reference-graph edit → that
+  service's `ArchitectureTests`; a `src/` edit → that service's unit + integration.
+- `local-platform prepare` caches on a content hash of `api/` + `local-platform.ps1`: unchanged inputs skip
+  the ~15-minute pack in about a second. Repack deliberately with `prepare --force`.
+- **Never abort a `prepare` mid-run.** It deletes the package root before packing, so an abort leaves zero
+  packages and costs a full repack.
+- One E2E application at a time — the host-capacity gate and a single shared Stripe test account.
+- `main` is behind a merge queue, so it owns the strategy: no `--squash`/`--merge` flag, and
+  `gh pr merge <n>` enqueues rather than merging.
+
 ## Exceptions — delivery gates with no remote feedback yet
 
 Some work cannot obtain meaningful remote feedback until a package is published or a
