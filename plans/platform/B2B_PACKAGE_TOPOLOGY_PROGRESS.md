@@ -5,11 +5,19 @@
 - Roadmap item: `platform/b2b-package-topology`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Producer`
 - Branch: `Refactor/B2bPackageTopologyPhase3-Producer`
-- PR: not opened; this is the Phase 3 package-producer stage based on PR #633
-- Dependency/package gates: satisfied by feed-verified `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314` from terminal Phase 2 publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
-- Last reconciled: 2026-09-06 against exact PR #633 head
-  `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`, merged Phase 2 PR
-  [#653](https://github.com/Concertable/concertable/pull/653), and its successful publication run.
+- PR: producer PR [#949](https://github.com/Concertable/concertable/pull/949) merged as
+  `15ce7946f0e8ffd1376d599d15639426c9076527`; its package-only tenant-scope follow-up is being prepared on
+  the same producer branch from that landed `main`.
+- Dependency/package gates: the Phase 2 baseline is satisfied by feed-verified
+  `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314` from terminal
+  publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
+  Publication run [34165141235](https://github.com/Concertable/concertable/actions/runs/34165141235)
+  feed-verified `0.1.0-alpha.0.6301`, but the exact consumer carve proved that tenant-scoped public hook and
+  store changes were still in the consumer stage. The Phase 3 consumer gate therefore remains unsatisfied
+  until the package-only follow-up publishes and feed-verifies those declarations at a newer exact version.
+- Last reconciled: 2026-09-07 against landed `origin/main`
+  `15ce7946f0e8ffd1376d599d15639426c9076527`, successful producer publication run 34165141235, and the
+  deterministic exact-feed failure that selected this follow-up producer expansion.
 
 ## Current state
 
@@ -32,12 +40,28 @@ merged, published, and feed-verified at an exact version. The original combined 
 as a recovery reference; it is not a publication candidate. The historical B2B repository handoff is
 superseded and is not an execution target.
 
+The producer's four-commit stage was replayed without conflict onto the exact landed PR #633 merge. Stable
+patch identity `1597d8a4ac07e1377a2540bf17313784d5cb0817` and one-for-one `range-diff` prove the
+stage boundary was preserved. PR #949 landed through the full-E2E merge queue and publication run 34165141235
+successfully published and feed-verified `0.1.0-alpha.0.6301`. The first exact-version venue carve then
+exposed an incomplete publication boundary: its source calls tenant-scoped `useVenueQuery` and `useMyVenue`
+signatures, while the published declarations correctly contain the pre-tenant signatures because the public
+package changes remained in the consumer stage. A package-only follow-up now extracts the complete
+tenant-scoped `app/b2b/shared` delta, including serialized tenant selection, onto the landed producer baseline.
+
 ## Next Steps
 
-Validate and review this producer-only stage, then publish it as a draft PR based on #633. Do not publish the
-package before that PR merges. After merge, publish and feed-verify an exact `@concertable/b2b` version; only
-then rebase and deliver the stacked consumer/contraction stage and require its standalone feed carves. Do not
-substitute the moving `alpha` tag for the exact package dependency gate.
+Review and deliver the package-only tenant-scope follow-up through the full-E2E merge queue, then bind its
+frontend publication to the landing SHA and feed-verify the newly emitted exact `@concertable/b2b` version.
+Only that newer exact version may unlock the consumer/contraction stage's standalone feed carves; do not
+substitute the moving `alpha` tag.
+
+## Superseded Next Steps
+
+Paused: authorized delivery owner — make green draft PR #949 ready and merge it, then allow the frontend
+publication workflow to publish and feed-verify one exact `@concertable/b2b` version. Only after that gate may
+the consumer/contraction stage run its exact-version standalone feed carves and proceed toward delivery. Do
+not substitute the moving `alpha` tag for the exact package dependency gate.
 
 ## Completed work
 
@@ -102,9 +126,22 @@ substitute the moving `alpha` tag for the exact package dependency gate.
 - Both B2B packages passed prepack build/tests and produced local tarballs. Clean-consumer verification
   remains publication-gated because unversioned source tarballs retain workspace `*` dependencies;
   the publication workflow pins all intra-Concertable dependencies before packing.
-- After the publication-safe split and restack onto #633 head `5e2dcf604`, the producer-only stage passed
-  the universal package build/tests (9 files/26 tests), cross-platform B2B build/tests (7 files/25 tests),
-  boundary tests (8/8), and dependency/entrypoint lint across all 13 workspaces.
+- At rebased producer head `e1dc7a380`, the ordered web-package build passed, including universal package
+  tests (9 files/26 tests), cross-platform B2B tests (7 files/27 tests), and manager-web B2B tests
+  (13 files/28 tests). Boundary tests passed 8/8 and dependency/entrypoint lint passed across all 13
+  workspaces. Publication-equivalent exact local packages at `0.1.0-alpha.0.6300` passed clean Node and
+  Metro/Android consumer verification: `@concertable/b2b` SHA-256
+  `dd07afac9032015419bf983d5443d604d6c6be24e8748d7964df0ef4133cb429` and
+  `@concertable/web-b2b` SHA-256 `080b4f9f473afc6370c64de99c260a81f49e1760068977903f00ce450343eaad`.
+- Exact-head PR CI run 34161321266 passed, including `fe-boundaries` job 101863614281, all seven frontend
+  carve jobs 101863614328/329/339/370/375/409/438, and aggregate `ci-complete` job 101864711068.
+- PR #949 merged as `15ce7946f0e8ffd1376d599d15639426c9076527` after full-E2E merge-group run
+  34164789818 passed. Frontend publication run 34165141235 then published and feed-verified
+  `@concertable/b2b@0.1.0-alpha.0.6301`.
+- Exact-version consumer validation against `0.1.0-alpha.0.6301` failed deterministically in the venue carve:
+  the published `useVenueQuery()` and `useMyVenue(options?)` declarations did not yet contain the tenant
+  arguments used by the prepared consumer. The extracted follow-up package passes 9 files/34 tests, its
+  build, boundary tests 8/8, and dependency/entrypoint lint across all 13 workspaces.
 - Feed carves of the combined artist and venue consumers restored the current `alpha`
   (`0.1.0-alpha.0.5913`) and correctly failed because that moving tag lacks Phase 2's active-profile
   exports. The exact feed-verified Phase 2 artifact `0.1.0-alpha.0.4314` remains resolvable, but
@@ -120,8 +157,11 @@ substitute the moving `alpha` tag for the exact package dependency gate.
   `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
   of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
   `6e87fcf36`.
-- Phase 3 producer review has not started. The combined local proof is validation evidence, not the candidate
-  that will be published.
+- Phase 3 producer review is complete through rebased head `e1dc7a380`. Four findings were resolved across the producer
+  commits, including B2B ownership of write contracts, active-profile publication verification, corrected
+  phase status, and real artist/venue `features/*/types` exports. Final functional and security review found
+  no remaining issue; the canonical work order is
+  `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`.
 
 ## Decisions, discoveries, blockers, and deviations
 
