@@ -111,13 +111,15 @@ targets:
       - AppHost.Shared still mixes generic primitives with Auth-specific
         composition; the Auth-specific half re-homes to auth before extraction.
 
-  platform-web:
-    repo: Concertable/platform-web
+  platform-frontend:
+    repo: Concertable/platform-frontend
     include:
+      - app/build-config
       - app/shared
       - app/web/shared
       - app/mobile/shared
     rename:
+      app/build-config/: "packages/build-config/"
       app/shared/: "packages/shared/"
       app/web/shared/: "packages/web/"
       app/mobile/shared/: "packages/mobile/"

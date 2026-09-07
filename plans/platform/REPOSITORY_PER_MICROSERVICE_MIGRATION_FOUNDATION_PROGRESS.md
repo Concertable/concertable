@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M3-Frontend-Build-Config`
 - Branch: `Refactor/RepoSplit-M3-Frontend-Build-Config`
 - PR: [#948](https://github.com/Concertable/concertable/pull/948), draft; restacked directly onto exact landed
-  `origin/main` `516f4cc25936289744babef3f98b1a297035fbb6`. This commit carries the reviewed local
-  checkpoint; the upstream and PR still point at old head `28b756cae6455f98c1a7848dc8e453597cb9d0d6`
-  until the authorized force-with-lease push.
+  `origin/main` `516f4cc25936289744babef3f98b1a297035fbb6`. Local, upstream, and PR head were proven equal
+  at `b6596ca8573d0dd4b3f398248190f1d3a64b48ac`; this commit carries the focused split-inventory
+  repair found by that head's CI.
 - Dependency/package gates: PR #633 and the exact landed-main restack/review are complete. M3 delivery still
   waits for the real `@concertable/build-config` publication and feed verification; preparation does not
   depend on M1 or M2.
@@ -27,9 +27,10 @@ repository boundaries.
 M1 is published as four draft stacked PRs #942-#945. M2 is published as independent sibling draft PR #947.
 M3's seven commits were restacked without conflict from #633 snapshot `ad4ad986f` onto the exact landed-main
 merge `516f4cc25`; `git range-diff` reports every old/new pair as patch-equivalent (`=`) and preserves the
-original order. The reviewed pre-checkpoint candidate is `93d102222`; this commit adds only the landed-main
-review and current delivery metadata. Draft PR #948 still carries old head `28b756cae` until the authorized
-force-with-lease push.
+original order. The reviewed pre-checkpoint candidate is `93d102222`, and draft PR #948 was force-with-lease
+updated to checkpoint `b6596ca85`. Its first exact-head CI exposed a stale generated split inventory: the
+generator still named the obsolete `platform-web` target and did not assign the new build-config workspace.
+This commit repairs that owned topology and regenerates the inventory.
 M3 extracts the product-neutral `@concertable/build-config` package, makes product workspaces own their
 package lists, and uses the shared Metro resolver for both mobile applications without encoding product
 ownership into the platform tier.
@@ -56,7 +57,10 @@ ownership into the platform tier.
   preserves #633's Stripe and React Native package visibility without product-specific platform code.
 - The original seven-commit sequence was preserved as `9a4e894f8`, `901b27c72`, `b53944dfd`, `cdecab835`,
   `0cdf50364`, `2dbd0a7ac`, and `93d102222`; the exact old/new range-diff is patch-equivalent throughout.
-- This commit carries the refreshed landed-main review and preparation checkpoint for draft PR #948.
+- Checkpoint `b6596ca85` carried the refreshed landed-main review and preparation metadata and was published
+  to draft PR #948 with local/upstream/PR head equality proven.
+- This commit assigns `app/build-config` to the corrected `platform-frontend` extraction target, replaces the
+  obsolete `platform-web` generator/map label, and refreshes the generated inventory.
 
 ## Verification
 
@@ -70,13 +74,16 @@ ownership into the platform tier.
   assets resolved from `node_modules/@concertable/mobile` and source package directories absent.
 - Independent packed consumer: CommonJS dependency-cruiser/Metro, ESM Vite/Vitest, TypeScript config and
   package subpath resolution passed; the tarball contained only the eight intended files.
+- Split inventory: `python eng/repository-split/inventory.py --check` passes; a focused assertion proves
+  `app/build-config` targets `platform-frontend` and no frontend workspace remains unassigned.
 
 ## Reviews
 
 The fresh frozen-head full review over `516f4cc25936289744babef3f98b1a297035fbb6..93d102222f9cc25b5f4b68af97e6f08df59f16b0`
 approved the complete 30-path landed-main candidate with no functional or security findings. This commit adds
-only that review record and current ledger/roadmap metadata. The durable work order is
-`reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`.
+the CI-driven inventory/map repair; the durable work order
+`reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md` owns its required incremental watermark before the
+next push.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -84,6 +91,8 @@ only that review record and current ledger/roadmap metadata. The durable work or
   tiers within that repository; they are not separate repositories.
 - Product packages own their workspace membership. Shared build helpers accept explicit caller-owned inputs
   and do not import B2B or Customer manifests.
+- The extraction generator and map use the selected `platform-frontend` identity and assign
+  `app/build-config` to that target; the superseded `platform-web` label must not return.
 - The shared Metro helper discovers project and package `node_modules` roots generically, preserving native
   package visibility introduced by #633 without a Stripe-specific platform rule.
 - No repository creation, history import, visibility change, package publication, or cutover was performed.
