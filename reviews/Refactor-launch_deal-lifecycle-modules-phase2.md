@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a98a4e5ff96416cb1e9bd8e379441964c21c5950`  _(2026-09-07)_
-**Security-reviewed up to commit:** `a98a4e5ff96416cb1e9bd8e379441964c21c5950`  _(2026-09-07)_
+**Reviewed up to commit:** `9e08250dcf681980d50dc1c6df5a492fe32db2f8`  _(2026-09-07)_
+**Security-reviewed up to commit:** `9e08250dcf681980d50dc1c6df5a492fe32db2f8`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1715,3 +1715,34 @@ procedural, not a code change: verify a signature change with a whole-solution b
 `local-platform.ps1 build api/Concertable.slnx --configuration Release` — build succeeded, exit 0, zero
 errors, matching the configuration and scope of the CI job that failed. The B2B API E2E result from the
 preceding pass stands; these edits touch test construction only and no production path.
+
+## Review pass — 2026-09-07 — declare the Reunion carriers the E2E admin surface consumes
+
+**Candidate base:** `ff5ee2a600000000000000000000000000000000`
+**Candidate head:** `9e08250dcf681980d50dc1c6df5a492fe32db2f8`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. `ReunionPackages_AreOwnedDirectlyByTheirSourceConsumers` enforces that a project's Reunion
+package references match what its own source declares, in both directions, keying on the literal `using`.
+The method-verification endpoint observes a `Result` via `TryGetValue` on an inferred local, so it consumed
+a carrier without naming Reunion anywhere, while the csproj claimed both `Reunion` and `Reunion.Errors`.
+The `Reunion` reference is correct and the source now declares it; `Reunion.Errors` was never needed and is
+dropped rather than kept alive by an unused using.
+
+Two CI failures in a row came from verifying a change against the projects I had edited instead of the gates
+that own the rule. The whole-solution build catches signature changes; the owning architecture suite catches
+reference-graph changes. Both are cheap and both are now run before pushing.
+
+### Validation
+
+`local-platform.ps1 test Concertable.B2B.ArchitectureTests --configuration Release` — **32 of 32 passed**,
+exit 0, including the test that failed in CI. `Concertable.B2B.E2ETests.Server` builds clean in Release
+without `Reunion.Errors`, confirming the dropped reference was genuinely unused. The B2B API E2E result and
+the whole-solution Release build from the preceding passes stand; this change touches one using and one
+package reference.
