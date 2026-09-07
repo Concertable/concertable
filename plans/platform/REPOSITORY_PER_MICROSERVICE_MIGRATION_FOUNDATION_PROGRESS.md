@@ -6,8 +6,9 @@
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
 - Branch: `Refactor/M1-Platform-Expand`
 - PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
-- Dependency/package gates: PR #633 landed on `origin/main`; Platform Expand and Owner Hosting Sync may now
-  enter exact-head validation. AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
+- Dependency/package gates: PR #633 landed on `origin/main`; Platform Expand has passed exact-head package,
+  composition, and targeted browser validation. Owner Hosting Sync may now enter exact-head validation.
+  AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
   remain unavailable on the current GitHub entitlement.
@@ -29,9 +30,8 @@ associations into the B2B and Customer owners before system composition consumes
 
 ## Next Steps
 
-- Complete landed-base package-clean and composition validation, then establish a current-head review
-  watermark for the restacked candidate. Repair any finding on its owning M1 stage without changing the four
-  publication boundaries.
+- Commit and publish the validated Platform Expand repair, restack the three dependent M1 stages without
+  changing their publication boundaries, and establish a current-head review watermark.
 - Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
   publication caused by Owner Hosting Sync to its immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
@@ -59,7 +59,7 @@ associations into the B2B and Customer owners before system composition consumes
 
 - Ancestry from landed `origin/main` commit `516f4cc25` through the complete M1 stack is verified after the
   final local restack; landed-base package and composition revalidation is in progress.
-- Package inventory and local platform preparation pass with 57 packages. Auth Hosting, B2B Hosting, Auth
+- Package inventory and local platform preparation pass with 58 packages. Auth Hosting, B2B Hosting, Auth
   AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
   form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
 - `Concertable.AppHost.Shared` passes 16/16 tests. Auth architecture passes 9/9 tests. B2B package-mode
@@ -69,7 +69,12 @@ associations into the B2B and Customer owners before system composition consumes
   assemblies compile in isolation and the two extracted/monorepo frontend-layout cases pass 2/2.
 - The former #633 Customer compile blocker and Payment.Hosting package slot are now eligible for exact landed-base
   revalidation; their previous blocked result is not carried forward as current evidence.
-- No local E2E suite was run; E2E remains a remote merge-queue diagnostic gate.
+- The targeted local 3DS UI E2E suite passes 8/8. This includes the formerly failing venue-manager flat-fee
+  successful-challenge scenario. Its deterministic cause was a missing `ApplicationAcceptedEvent` B2B
+  subscription in `B2BTopology`; the repair provisions the exact
+  `concertable-b2b-application-accepted` subscription and locks it down with composition coverage. The
+  scenario URL wait is 30 seconds so a genuine failure terminates sooner. Remote merge-group E2E remains the
+  authoritative delivery gate.
 
 ## Reviews
 
