@@ -11,8 +11,12 @@ dependency-free.
 
 - [ ] Deal vocabulary split and DI-mapper collapse — `layering/deal-vocabulary-and-mapper-collapse`.
   Introduces the B2B-local vocabulary project, cuts `Deal.Domain`'s reference to `Deal.Contracts`, and
-  collapses the `IDealMapper`, `IDealUpdater`, `IPaymentAmountMapper`, `ITransactionMapper` and `IUserMapper`
-  families. Deal is the proving ground for the template the remaining modules follow.
+  collapses the `IDealMapper`, `IDealUpdater`, `ITransactionMapper` and `IUserMapper` families. Deal is the
+  proving ground for the template the remaining modules follow.
+
+  `DealTerms` in `Deal.Contracts` is the epic's reference shape: an abstract record whose four arms each
+  override `Render()`, having replaced a keyed `IDealTerms` family. Match it wherever an arm is a pure per-arm
+  computation and the owning type is permitted to see its input.
 
 - [ ] Remaining `*.Domain` → `*.Contracts` references — `layering/remaining-domain-contracts-references`.
   The other 11 modules (Admin, Artist, Concert, Conversations, Tenant, User, Venue in B2B; Messaging; Payment;
