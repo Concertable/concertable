@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `fb1046be8`  _(2026-09-07)_
-**Security-reviewed up to commit:** `fb1046be8`  _(2026-09-07)_
+**Reviewed up to commit:** `95161fc14`  _(2026-09-07)_
+**Security-reviewed up to commit:** `95161fc14`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1788,3 +1788,45 @@ not relaunched. The failure it targets is reproduced and understood — 409 `pro
 seconds, twice — and the change is confined to test-tier code with no production path, but the green run is
 outstanding and is owed before this suite can be called verified. B2B API E2E remains 10/10 on this branch.
 CI runs no B2B or Customer E2E gate, so exact-head CI does not cover this.
+
+## Review pass — 2026-09-07 — announce a new customer as a payment-method owner
+
+**Candidate base:** `866571dd3`
+**Candidate head:** `95161fc14`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Nothing published `PaymentMethodOwnerRegisteredEvent`, so no customer ever held a
+`payment.PayoutAccounts` row and `PaymentSessionService` refused every ticket purchase as
+`ProviderUnavailable`. The chain now matches the one B2B already uses for tenants: raise on the entity in
+`FromRegistration`, translate in a single pre-commit handler, register against the closed
+`IDomainEventHandler<T>` interface, declare the publish on both the topology and the web host.
+
+Two deliberate departures from the B2B template, both narrower rather than wider. Payment's own event type
+is published instead of a wire-compatible mirror, because Customer already compiles against
+`Payment.Contracts` for the ticket flow and a second copy of the record buys only a hand-sync liability;
+B2B's mirror exists to keep B2B off that dependency entirely. And the fixture gate asserts the buyer and
+that one concert's payee rather than every wired Stripe account — the first attempt required all four, which
+is unsatisfiable in a stack whose payout owners come from the B2B simulator, and it failed in the queue
+before this was understood.
+
+**Provenance.** This is not a regression from this branch. Customer API E2E last passed on 2026-09-04
+(merge-queue run `33860333526`, step *Run Customer API E2E tests* = success). `21bc9f9c7` then migrated the
+ticket flow onto payment operation references on main, routing it through a service that requires a
+provisioned payer. `e2e-api-tests` is gated on `github.event_name == 'merge_group'`, so the 50 commits that
+followed had no suite to catch it, and this branch took eight queue failures for a defect it did not
+introduce. `PaymentSessionService.cs` and `TicketService.cs` are byte-identical to main here.
+
+### Validation
+
+`./scripts/e2e.ps1 api customer` — exit 0,
+`[PASS] Concertable.Customer.E2ETests.Payments.TicketPurchaseTests.Purchase_PaymentSucceeds_CreatesTicket`.
+B2B API E2E remains 10/10 on this branch and passes in the merge queue. The remediation owed by the
+preceding pass is discharged: the gate is now green rather than merely diagnostic.
+
+Browser-tier E2E is unverified locally and runs only in the queue; it is the one gate outstanding.
