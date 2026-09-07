@@ -1,4 +1,4 @@
-# Deal vocabulary split and DI-mapper collapse plan
+# Deal layering and DI-mapper collapse plan
 
 ## Outcome
 
@@ -110,20 +110,32 @@ latest stable). The `entity → DTO` direction needs none of it: entity getters 
 
 ## Phases
 
-### Phase 1 — B2B vocabulary project, Deal layering fix
+### Phase 1 — relocate the two enums, Deal layering fix
 
-- Add `api/Concertable.B2B/src/Concertable.B2B.Vocabulary` (`net10.0`). Service-local: no cross-folder escape,
-  so the standalone carve is unaffected and nothing needs publishing.
-- Move `DealType`, `DealTypeNames` and `PaymentMethod` out of `Deal.Contracts/Enums/` into it. Update the
-  `global using` in each consuming project's `GlobalUsings.cs`.
-- `Deal.Domain`: drop the `ProjectReference` to `Deal.Contracts`, add one to `Vocabulary`.
-- `Deal.Contracts`: add a `ProjectReference` to `Vocabulary`.
+The two enums are not one concern and do not share a home.
+
+- **`DealType` and `DealTypeNames` are Deal's own domain vocabulary** — the domain owns what kinds of deal
+  exist; Contracts merely exposes that on the wire. They move into `Concertable.B2B.Deal.Domain`, and
+  `Deal.Contracts` takes a `ProjectReference` on `Deal.Domain` to reach them. The dependency then points
+  inward, which is the direction the layer graph wants.
+- **`PaymentMethod` is not deal-specific** — 66 B2B files use it and nothing about it belongs to a deal. It
+  moves to `api/Concertable.B2B/src/Concertable.B2B.Enums` (`net10.0`), a service-local project: no
+  cross-folder escape, so the standalone carve is unaffected and nothing needs publishing. It is B2B-only
+  today; the Payment service's `PaymentMethod` hits are Stripe's own types, not this enum.
+- `Deal.Domain`: drop the `ProjectReference` to `Deal.Contracts`, add one to `Concertable.B2B.Enums`.
 - Add an architecture test asserting no B2B `*.Domain` project references a `*.Contracts` project, with the
   remaining modules on an explicit allowlist the test also asserts is still accurate.
 
-**Consumption contract:** `Concertable.B2B.Vocabulary` is the home for B2B enums that both a domain and a
-contract need. It holds no DTOs, no interfaces and no behaviour. Consumers reference it by `ProjectReference`
-from inside `api/Concertable.B2B/`; nothing outside that folder may reference it.
+**Consumption contract:** `Concertable.B2B.Enums` is the home for B2B enums that no single module owns. It
+holds no DTOs, no interfaces and no behaviour. Consumers reference it by `ProjectReference` from inside
+`api/Concertable.B2B/`; nothing outside that folder may reference it. Enums a module *does* own live in that
+module's Domain project.
+
+**Known cost, deliberately accepted:** `Deal.Contracts → Deal.Domain` makes `Deal.Domain`'s public types
+transitively visible to the 18 projects that reference `Deal.Contracts`, up from 6. The correct fix is the
+visibility cascade — `internal` entities with `InternalsVisibleTo` — which was attempted and reverted: the
+seed layer exposes `DealEntity` through public members (`SeedState.Deals`, the deal factories) that every
+module's integration fixture consumes. Tracked as its own item rather than bundled here.
 
 **Gate:** `api/Concertable.slnx` builds; `Concertable.B2B.Deal.UnitTests` green; the new layering test green
 with Deal absent from the allowlist. Build/integration verification inherits `docs/REMOTE_VALIDATION.md`.

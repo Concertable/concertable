@@ -28,7 +28,7 @@
     <Project Path="Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Infrastructure/Concertable.B2B.Infrastructure.csproj" />
-    <Project Path="Concertable.B2B/src/Concertable.B2B.Vocabulary/Concertable.B2B.Vocabulary.csproj" />
+    <Project Path="Concertable.B2B/src/Concertable.B2B.Enums/Concertable.B2B.Enums.csproj" />
   </Folder>
   <Folder Name="/B2B/DataAccess/">
     <Project Path="Concertable.B2B/src/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.Application/Concertable.B2B.DataAccess.Application.csproj" />
