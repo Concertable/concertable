@@ -14,8 +14,8 @@
   PR #949 published and feed-verified `0.1.0-alpha.0.6301`, but exact consumer validation proved its
   public hooks still lacked the tenant-scoped signatures. The Phase 3 exact producer-publication gate is
   therefore explicitly **unsatisfied** until PR #951 publishes and feed-verifies a newer exact version.
-- Last reconciled: 2026-09-08 against producer candidate `420345df0`, locally restacked consumer head
-  `0fcdd340255a65c6a013df2ac730c31004776ecf`, green focused validation, and the coordinated hold keeping
+- Last reconciled: 2026-09-08 against producer candidate `420345df0`, the locally restacked five-commit
+  consumer stage plus delivery checkpoint, green focused validation, and the coordinated hold keeping
   PRs #951/#950 out of the merge queue until the ordered M1 stack PRs #942-#945 is terminal.
 
 ## Current state
@@ -162,9 +162,9 @@ tag for the exact package dependency gate.
   `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
   of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
   `6e87fcf36`.
-- Phase 3 producer and consumer-stage reviews are independent. The consumer review is complete through
-  rebased head `33f797195`: all six findings are resolved and the final functional/security pass found no
-  new issue. The canonical work order is
+- Phase 3 producer and consumer-stage reviews are independent. All six historical consumer findings remain
+  resolved, and a fresh full review of the corrected `420345df0..cb42b7810` consumer boundary found no new
+  functional, security, tier, or rebase-resolution issue. The canonical work order is
   `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md`; the combined local proof remains validation
   evidence, not a candidate published as one indivisible change.
 
