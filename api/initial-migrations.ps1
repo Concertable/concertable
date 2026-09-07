@@ -89,6 +89,12 @@ Invoke-ScaffoldIfChanged -Context ArtistDbContext -Project Concertable.B2B/src/M
 
 Invoke-ScaffoldIfChanged -Context VenueDbContext -Project Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
+Invoke-ScaffoldIfChanged -Context OpportunityDbContext -Project Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
+
+Invoke-ScaffoldIfChanged -Context ApplicationDbContext -Project Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
+
+Invoke-ScaffoldIfChanged -Context BookingDbContext -Project Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
+
 Invoke-ScaffoldIfChanged -Context ConcertDbContext -Project Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
 Invoke-ScaffoldIfChanged -Context DealDbContext -Project Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations

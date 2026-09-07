@@ -154,7 +154,7 @@ diagnostic or test name, not an argument.
 | `IgnoreQueryFilters` banned | `RS0030` = error + `api/BannedSymbols.txt` | Yes |
 | Private instance fields camelCase, no underscore | `.editorconfig` naming rule | **No** — IDE only; no `EnforceCodeStyleInBuild` is set |
 | File-scoped namespaces, `IDE0130` | `.editorconfig` | **No** — same reason |
-| Keyed-strategy coverage and no service location | `DealStrategyArchitectureTests`, plus `RequireAll`/`RequireExactly` at composition | Yes |
+| Deal-strategy coverage and no service location | `DealStrategyBuilder` / `DealUnionBuilder<TUnion>` composition validation plus `DealStrategyArchitectureTests` | Yes |
 | Every executable .NET host has strict provider validation and real composition-test coverage or a reviewed exclusion | `ExecutableHostInventory` + the `architecture-tests` CI matrix | Yes |
 | No legacy Result carriers; no Dunet in shared production | `ReunionArchitectureTests`, `TypedResultArchitectureTests` | Yes |
 | One read-context contract, one generic read repository | `RepositoryArchitectureTests` | Yes |

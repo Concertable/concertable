@@ -48,20 +48,31 @@ table-stakes items were resolved in the same pass.
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
 - [ ] 🟡 **Deal representation and common-interface dispatch** `launch/deal-closed-sum-model` — immediate architecture owner before lifecycle PR #633 resumes. First land the B2B-local generator/analyzer and Deal-owned mapper/updater net10 foundation from current `main`; then PR #633 consumes it for Application terms and heterogeneous operation factories. One reusable generator template emits invariant common-interface factories and dedicated union factories while each runtime factory remains module-owned. Heterogeneous operations use Dunet implementation unions on net10 and native implementation unions on C# 15; consumers match operation kind and multiple Deals may share one implementation. The later .NET 11 cut-over closes the published Deal hierarchy without changing consumer factory APIs. Plan: [DEAL_CLOSED_SUM_MODEL_PLAN.md](DEAL_CLOSED_SUM_MODEL_PLAN.md).
-- [ ] 🔴 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16; draft PR #633 is suspended until the Deal generator/mapper/updater foundation is terminal on `main`, then resumes its preserved compile-recovery frontier and consumes that machinery directly. Split the current
+- [ ] 🔴 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16; PR #633 carries the whole decomposition and is merging through the merge queue, consuming the now-terminal Deal generator/mapper/updater foundation (#678/#694) and Kernel state machine (#719/#730) directly. Split the current
   Concert umbrella into honest Opportunity, Application, Booking/Contract, and Concert ownership;
   each lifecycle aggregate owns independent state, transitions, and contextual operations. Its current
   keyed selectors are provisional delivery seams owned for replacement by the Deal dispatch plan:
   honest same-interface mapper/updater/terms families use generated invariant factories, while
-  heterogeneous lifecycle executors/steps use unions and matches; identical behavior is direct and
+  heterogeneous lifecycle operations use dedicated typed factories plus implementation-union matches;
+  multiple Deals may share one operation implementation; identical behavior is direct and
   static variation is data. The fixed
   stage order never varies by `DealType`; no umbrella process entity, shared
   workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
-  allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
-  dispatch. See
+  allowed. The remaining decomposition lands as one complete PR; its implementation phases are draft-
+  branch checkpoints, not separately mergeable slices. Split only if a real published-package or
+  deployment dependency appears. The follow-on .NET 11 slice owns native unions for closed internal
+  values and module-local heterogeneous operation choices; typed factories own DI construction and no
+  union performs service resolution or restores the global workflow. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 - [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish Payment's final consumer-agnostic surface in one breaking release: durable operation references, provider-identifier ownership, reference-keyed escrow/ledger/settlement, legacy raw-identifier removal, and payment-owned vocabulary. B2B and Customer then migrate directly from the old surface once. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
 - [x] ✅ **Customer payment-reference migration** `launch/customer-payment-reference` — Customer ticket purchase now runs on-session Payment sessions addressed by whole Customer-minted operation references; provider identifiers no longer cross or persist at the Customer boundary. Delivered by PRs #939 and #938.
+
+- [ ] 🟡 **Lifecycle reporting read projections** `launch/lifecycle-read-projections` — deferred until
+  the lifecycle ownership refactor is terminal. Replace the Application dashboard's transitive
+  Opportunity query with a narrow Application-owned, event-fed availability projection while keeping
+  Apply, Accept, checkout, and invariant decisions on authoritative synchronous reads. This is a
+  selective reporting boundary, not a Dashboard-wide database or a rule to denormalize every reverse
+  read. See [LIFECYCLE_READ_PROJECTIONS_PLAN.md](LIFECYCLE_READ_PROJECTIONS_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**
 

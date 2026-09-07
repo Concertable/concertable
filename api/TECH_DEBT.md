@@ -6,6 +6,74 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### An untenanted context has no base, so 14 contexts hand-roll `OnModelCreating`
+
+`multitenancy` gives every stance a base that owns `OnModelCreating` — default schema, then the module's
+configuration provider, then filters — and forbids a concrete context from declaring one. Three of the four
+stances have that base (`TenantScopedDbContext`, `ReadDbContext`, `PrivilegedDbContext`). A context with **no**
+tenancy has none, so it derives from `DbContextBase` and repeats the same two lines — B2B's `Admin`, `Deal`,
+`Tenant` and `User`, all seven Customer module contexts, and the single contexts of Payment, Search and Auth
+(the last two without the schema line):
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+    modelBuilder.HasDefaultSchema(Schema.Name);
+    provider.Configure(modelBuilder);
+}
+```
+
+`PrivilegedDbContext` already *is* that shape — unfiltered, writable, provider and schema composed by the
+base — but its name states a moderation stance these four modules do not have, so reusing it as-is would
+misname them.
+
+**Resolves when:** those 14 contexts compose provider and schema through a base rather than their own
+`OnModelCreating`, and the only `OnModelCreating` declarations left in `api/` are the bases' and
+`OutboxDbContext`/`InboxDbContext`, which configure a real model rather than composing a provider.
+
+---
+
+### Redundant `this.` qualification survives outside the PR #633 file set
+
+`STYLE.md` now states that `this.` exists only to disambiguate a member a parameter or local shadows,
+and PR #633 stripped it from the 602 `.cs` files that PR touches. The rest of `api/` still carries
+**977 redundant `this.` qualifications across 85 files** — concentrated in Customer module services,
+`Concertable.Shared` test libraries, Payment infrastructure, and the B2B files this PR does not open.
+The rule is not expressible in `.editorconfig`: `dotnet_style_qualification_for_field` is
+all-or-nothing and its `true` setting is the opposite of the convention.
+
+The sweep was scoped deliberately rather than run repo-wide: four other worktrees are live on shared
+files, and the mechanical pass needs member-scope shadow analysis (a naive strip produces
+`competingChange = competingChange;` wherever a non-constructor setter takes a same-named parameter).
+
+**Resolves when:** the remaining 977 sites are stripped with shadowed members left qualified, the
+solution builds, and no `X = X;` self-assignment exists anywhere in `api/`.
+
+---
+
+### Injected collaborator variables drop their shape noun across the backend
+
+`NAMING.md` requires an injected parameter and its field to keep the collaborator's shape noun
+(`ISettlementService settlementService`), dropping only the domain prefix the containing type already
+supplies (`repository` inside `SettlementService`). PR #633 corrected the ~50 sites its own refactor
+introduced. **562 sites across `api/` still deviate**, two conventions dominating:
+
+| Pattern | Sites | Should read |
+|---|---|---|
+| `XDbContext context` | 132 | `xDbContext`, or `dbContext` where the owner supplies `X` |
+| `XApiFixture fixture` | 98 | `xApiFixture`, or `apiFixture` inside `XApiTests` |
+
+The remaining ~330 are one-offs — pluralised domain nouns for a service (`IBookingService bookings`),
+dropped qualifiers (`IArtistReadModelRepository artistRepository`), and abbreviations
+(`IUnitOfWorkBehavior uowBehavior`). Both dominant patterns are repo-wide conventions that predate the
+module carve, so correcting only a subset fragments them.
+
+**Resolves when:** every injected field and constructor parameter in `api/` names its collaborator type
+in lower camel case with the shape noun intact, and the two dominant patterns are converted in one
+sweep each rather than per-PR.
+
+---
 ### Production assemblies own dev/test seeding across the backend
 
 Dev/test seeder implementations and seed-only helpers currently live in production assemblies across
@@ -181,11 +249,17 @@ operation being added; declaration-contract exceptions remain excluded.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
 
+### Per-project `obj`/`bin` output risks Windows `MAX_PATH` as module nesting deepens
+
+A project's `obj`/`bin` folders sit inside its own source directory and repeat the full project name a second time beneath it, so a nested module's build output can exceed Windows' 260-character path limit — e.g. `Concertable.B2B.Dashboard.Opportunity.Application/obj/Debug/net10.0/Concertable.B2B.Dashboard.Opportunity.Application.dll` is 272 characters. On a Windows machine without NTFS long-path support enabled, this intermittently fails MSBuild's `Copy` task with `MSB3030: could not copy ... because it was not found` even though the file compiled and exists — the referencing project simply can't see it. Enabling `LongPathsEnabled` in the registry is an immediate per-machine mitigation, but it is not enforced anywhere, so a fresh clone or a locked-down machine hits this again. First surfaced building `Concertable.B2B.Dashboard.Opportunity.Api` on `Refactor/launch_deal-lifecycle-modules-phase2`.
+
+**Resolves when:** each service adopts the .NET SDK's `UseArtifactsOutput`, centralizing `obj`/`bin` to one short `artifacts/` tree at the service root instead of inside every project folder — landed per-service at the point that service is extracted into its own repo during the repo-split migration, rather than as a big-bang change across the still-shared monorepo.
+
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
-When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the hold: Payment exposes no cancel anywhere (`ManagerPayment` has `FindHeldIntent` but no cancel RPC, and there is no internal hold-cancel — `IStripeHoldClient` has only `FindHeldIntent`/`Capture`), so the funds stay ring-fenced until Stripe auto-expires the intent (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
+When a venue runs FlatFee accept-checkout (an `Authorization` payment session ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the authorization: `IPaymentSessionOperationsClient` offers `CreateAsync`, `RetryAsync` and `GetStatusAsync` but no cancel, so the funds stay ring-fenced until the provider auto-expires the authorization (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
 
-**Resolves when:** `ManagerPayment` gains a `CancelHeldIntent(payer_id, application_id)` RPC (+ `IManagerPaymentClient.CancelHeldIntentAsync` and fake/mock impls, published as `Payment.Client`), and B2B best-effort releases the hold on FlatFee withdraw/reject/cancel.
+**Resolves when:** `IPaymentSessionOperationsClient` gains a cancel taking the operation's `PaymentOperationReference` (with fake/mock impls, published as `Payment.Client`), and B2B best-effort cancels the authorization on FlatFee withdraw/reject/cancel.
 
 ---
 

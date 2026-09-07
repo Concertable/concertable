@@ -69,6 +69,14 @@ The Aspire dashboard opens with links to every service and SPA. The SPAs are sta
   paths (`reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1`,
   admin, then reboot), or run from a shallower path (the main checkout, not a
   `.worktrees/Long-Branch-Name/` one).
+- **Native DLL loading caps at 250 characters, and `LongPathsEnabled` does not lift it** — a host whose
+  `runtimes/win-x64/native/Microsoft.Data.SqlClient.SNI.dll` path exceeds 250 characters dies on its first SQL
+  connection with `DllNotFoundException ... The filename or extension is too long. (0x800700CE)`, which
+  surfaces as an Aspire resource that never reaches `Running`. The registry flag above governs managed path
+  APIs; a `longPathAware` application manifest was measured against this failure and does not help either. The
+  four E2E host executables therefore set `BaseOutputPath` to `artifacts/e2e/<host>/`, which takes the longest
+  from 252 characters to 202. Budget for a new host: its output directory plus 57 characters must stay at or
+  under 250.
 - **SQL data volume** is isolated per worktree automatically (hashed on the AppHost working directory) —
   no manual naming needed since 2026-08-22.
 - `appsettings.E2E.json` **is** committed (it holds only fixed-localhost E2E config, no secrets) — don't

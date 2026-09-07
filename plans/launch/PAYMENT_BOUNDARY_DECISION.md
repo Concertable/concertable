@@ -160,9 +160,9 @@ name for the same fact plus a persistence obligation in B2B that B doesn't have.
 ### Homes, unions, and the fifth deal type
 
 B lives in **Home 1 + Home 2**: each contract arm declares `ExpectedFinancialOperation`
-(compiler-forced), and the behavioural families (`IConfirm`, `ICancel`, `IComplete`) re-key by
+(compiler-forced), and the behavioural families (`IConfirmStep`, `ICancelStep`, `ICompleteStep`) re-key by
 `FinancialOperation`. **The re-keying insight is right — endorse it.** The capability partition
-is more stable than the deal partition: `IConfirm` 4→3 leaves, `ICancel` 4→2, `IComplete` 4→2,
+is more stable than the deal partition: `IConfirmStep` 4→3 leaves, `ICancelStep` 4→2, `ICompleteStep` 4→2,
 and a fifth `DealType` adds **zero** strategy leaves — it fails to compile until its arm declares
 which operation it expects, then rides the existing operation-keyed families. That is the
 acceptance test answered at its strongest: *it doesn't compile until someone classifies it
@@ -465,7 +465,7 @@ every retry/reconcile decision; the bus and gRPC contracts speak references and 
    `BookingSettlement.PaymentMethodId`, `ApplyRequest`/`AcceptRequest.PaymentMethodId`,
    `FindHeldIntentAsync` usage; re-scaffold B2B initial migrations; SPA stops POSTing pm ids.
    One coordinated delivery chain (B2B + frontend) after the package publish.
-4. **Re-key `IConfirm`/`ICancel`/`IComplete` by `FinancialOperation`** (§2). B2B-internal,
+4. **Re-key `IConfirmStep`/`ICancelStep`/`ICompleteStep` by `FinancialOperation`** (§2). B2B-internal,
    independently shippable; naturally rides with or immediately after 3 since it touches the same
    call sites.
 Step 1 is in flight; step 2 follows its package publish; step 4 is B2B-internal and independently

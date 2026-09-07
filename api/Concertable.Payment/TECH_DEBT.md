@@ -63,6 +63,20 @@ subsystem, which already carries attempt and revision.
 
 **Resolves when:** a reconcile path exists — e.g. a background sweep (or webhook handler) that, for a `Pending` `PaymentRefundEntity` older than some threshold, queries Stripe for a refund under the reservation's idempotency key and either `Complete`s it (Stripe refund exists) or `Fail`s it (none), freeing the reserved gross.
 
+### `PayoutAccountEntity.MarkVerified()` is production-dead
+
+`Payment/src/Concertable.Payment.Domain/Entities/PayoutAccountEntity.cs` — `MarkVerified()` sets
+`Status = PayoutAccountStatus.Verified`, but nothing in production ever calls it; the only caller is
+`PaymentTestSeeder`. The live "is this account verified" read path (`PayoutAccountService.cs`,
+`StripeAccountClient.cs`) queries Stripe directly instead of consulting this persisted column, so
+`Status` only ever advances `NotVerified -> Pending` (via `LinkAccount`) in production, never reaching
+`Verified`. Either the persisted status is meant to track Stripe's verification outcome (missing a
+production caller — likely a webhook/reconciliation handler that never got wired) or the column/method
+are vestigial from before verification checks moved to a live Stripe query.
+
+**Resolves when:** either a production path calls `MarkVerified()` in response to the real verification
+signal, or the method, the `Verified` status value, and any now-dead column plumbing are removed.
+
 ---
 
 ## RESOLVED
@@ -74,3 +88,23 @@ Resolved by `plans/PAYMENT_SEED_REFLECTION_REFACTOR.md`. Rather than re-homing t
 - `Concertable.Payment.Seed.Contracts` (the ticket-purchase catalog + `PaymentSeedSpec` incl. the 3 dead `Settlement`/`Escrow`/`Verify` factories) and `Concertable.Payment.Seed.Simulator` are gone, along with their AppHost wiring (`AddPaymentSeedingSimulator`, the resource-name constant, csproj/slnx entries).
 - The only seed state those payments produced is **inherently-unreproducible historical state** (past-dated ticket sales). Each consumer now reflection-seeds its own copy: B2B sets `ConcertEntity.TicketsSold` via `ConcertFactory` from a `ticketsSold` field on `ConcertSeedSpec`; Customer direct-inserts `SeedState.Tickets` via `TicketDevSeeder`. Documented as a sanctioned exception in the `seeding` skill.
 - `Payment.Contracts.PaymentSucceededEvent` stays — the only Payment-owned piece. Payment now owns **zero** ticket/concert knowledge.
+
+---
+
+## MEDIUM
+
+### Stripe.net's API key is a global written from constructors, not an injected client
+
+`StripeApiClient` and `StripeAccountClient` each assign `StripeConfiguration.ApiKey` in their own
+constructor, and the E2E adapter's account client does it a third time. Every `Stripe.*Service` is
+registered bare (`AddSingleton<Stripe.SetupIntentService>()`), so it resolves the key from that global when
+a call is made rather than from a client it owns.
+
+`AddPaymentInfrastructure` now assigns the key once at composition, which removes the ordering hazard that
+made the first payment session of a process fail with `No API key provided`. The underlying shape is still
+wrong: process-wide mutable state, three writers, and services that cannot be constructed with a different
+key — so a test cannot exercise two keys, and the failure mode when someone adds a fourth writer is silent.
+
+**Resolves when:** an `IStripeClient` is registered from `StripeSettings` and every `Stripe.*Service` is
+constructed with it, no code assigns `StripeConfiguration.ApiKey`, and the E2E adapter overrides that one
+registration instead of racing a global.
