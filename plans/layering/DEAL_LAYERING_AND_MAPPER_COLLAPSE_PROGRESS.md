@@ -1,10 +1,10 @@
-# Deal vocabulary split and DI-mapper collapse progress
+# Deal layering and DI-mapper collapse progress
 
-- Plan: `plans/layering/DEAL_VOCABULARY_AND_MAPPER_COLLAPSE_PLAN.md`
+- Plan: `plans/layering/DEAL_LAYERING_AND_MAPPER_COLLAPSE_PLAN.md`
 - Roadmap: `plans/layering/LAYERING_ROADMAP.md`
-- Roadmap item: `layering/deal-vocabulary-and-mapper-collapse`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-layering_deal-vocabulary-and-mapper-collapse`
-- Branch: `Refactor/layering_deal-vocabulary-and-mapper-collapse`, based on `origin/main` @ `15ce7946f`
+- Roadmap item: `layering/deal-layering-and-mapper-collapse`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-layering_deal-layering-and-mapper-collapse`
+- Branch: `Refactor/layering_deal-layering-and-mapper-collapse`, based on `origin/main` @ `15ce7946f`
 - PR: none yet
 - Dependency/package gates: `Riok.Mapperly` needs pinning in `api/Concertable.B2B/Directory.Packages.props`
   (Phase 2) and `api/Concertable.Payment/Directory.Packages.props` (Phase 3). It is already pinned at 4.3.1 and
@@ -21,11 +21,16 @@ re-verified against `origin/main` @ `15ce7946f`.
 
 ## Completed milestones
 
-- **Phase 1** (`3d4fa7ab4`) — `Concertable.B2B.Vocabulary` added and registered in `api/Concertable.slnx`;
-  `DealType`, `DealTypeNames` and `PaymentMethod` moved into it under namespace `Concertable.B2B.Vocabulary`;
-  `Deal.Domain` repointed off `Deal.Contracts`; 51 files renamed off the old namespace;
-  `LayeringArchitectureTests` added asserting the Domain→Contracts violations are exactly the ten modules
-  still pending.
+- **Phase 1** — `DealType`/`DealTypeNames` moved into `Concertable.B2B.Deal.Domain`;
+  `PaymentMethod` moved into the new service-local `Concertable.B2B.Enums`, registered in
+  `api/Concertable.slnx`; `Deal.Domain` repointed off `Deal.Contracts` onto `Concertable.B2B.Enums`;
+  `Deal.Contracts` takes a reference on `Deal.Domain` for `DealType`; 51 files repointed off the old
+  namespace; `LayeringArchitectureTests` added asserting the Domain→Contracts violations are exactly the ten
+  modules still pending.
+
+  The first cut of this (`3d4fa7ab4`) put both enums in one service-level `Concertable.B2B.Vocabulary`
+  project. Rejected: `DealType` is Deal's own domain vocabulary and belongs in `Deal.Domain`, and the name
+  was not carrying its weight. Do not reintroduce a single shared home for both enums.
 
 ## Latest verification
 
@@ -68,7 +73,7 @@ locally.
   availability one: a Mapperly 5 shipping `MemberVisibility.All` across assemblies would still not be used,
   because after Phase 1 `Deal.Domain` cannot reference `DealDto` at all. Do not revisit this plan when 5.0
   lands. The only deferred choice is the vocabulary's *location*, gated on the published-package rule and
-  tracked as `layering/vocabulary-to-shared-contracts`.
+  tracked as `layering/enums-to-shared-contracts`.
 - **`Apply` as an abstract member on `DealEntity` was designed and rejected.** `DealTerms.Render()` proves the
   shape works in this codebase, but `DealTerms` lives in Contracts and may see a DTO; `DealEntity` lives in
   Domain and, after Phase 1, may not. Do not re-propose it.

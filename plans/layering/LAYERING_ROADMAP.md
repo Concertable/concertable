@@ -9,8 +9,8 @@ dependency-free.
 
 ## Items
 
-- [ ] Deal vocabulary split and DI-mapper collapse — `layering/deal-vocabulary-and-mapper-collapse`.
-  Introduces the B2B-local vocabulary project, cuts `Deal.Domain`'s reference to `Deal.Contracts`, and
+- [ ] Deal layering and DI-mapper collapse — `layering/deal-layering-and-mapper-collapse`.
+  Relocates the two shared enums, cuts `Deal.Domain`'s reference to `Deal.Contracts`, and
   collapses the `IDealMapper`, `IDealUpdater`, `ITransactionMapper` and `IUserMapper` families. Deal is the
   proving ground for the template the remaining modules follow.
 
@@ -23,11 +23,18 @@ dependency-free.
   Customer.Preference) follow the same template. Blocked on the item above only for the template, not for
   design. Concert.Domain is the awkward one: it reaches across modules for `Deal.Contracts` as well as its own.
 
-- [ ] Vocabulary to the shared published contract — `layering/vocabulary-to-shared-contracts`.
+- [ ] Shared enums to the published contract — `layering/enums-to-shared-contracts`.
   `Concertable.Contracts` already holds `Genre` and is the conceptually right long-term home for shared
   vocabulary. It is a **published package**, so this is a breaking published-contract change: it needs its own
   expand/contract design and cannot land in one PR. Deliberately deferred behind the two items above so a
   service-local project unblocks them first.
+
+- [ ] Tighten domain type visibility — `layering/domain-visibility-cascade`.
+  `Deal.Domain`'s entities are `public` when the module-structure standard wants `internal` with
+  `InternalsVisibleTo`. Making them internal was attempted during the item above and reverted: the seed layer
+  exposes `DealEntity` through public members (`SeedState.Deals`, `DealFactory`, `ApplicationFactory`) that
+  every module's integration fixture consumes, so the change cascades through `Seed.Infrastructure` and the
+  fixtures. Until this lands, `Deal.Contracts -> Deal.Domain` leaks the entities to 18 projects.
 
 - [ ] Rename the two genuine-DI application mappers — `layering/application-mapper-renames`.
   `Concert.Api/ApplicationMapper` injects `IConcertWorkflowCapabilityRegistry` to gate HATEOAS links — it is a
