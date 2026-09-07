@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `9e08250dcf681980d50dc1c6df5a492fe32db2f8`  _(2026-09-07)_
-**Security-reviewed up to commit:** `9e08250dcf681980d50dc1c6df5a492fe32db2f8`  _(2026-09-07)_
+**Reviewed up to commit:** `fb1046be8`  _(2026-09-07)_
+**Security-reviewed up to commit:** `fb1046be8`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1746,3 +1746,45 @@ exit 0, including the test that failed in CI. `Concertable.B2B.E2ETests.Server` 
 without `Reunion.Errors`, confirming the dropped reference was genuinely unused. The B2B API E2E result and
 the whole-solution Release build from the preceding passes stand; this change touches one using and one
 package reference.
+
+## Review pass — 2026-09-07 — gate the Customer fixture on Payment's provisioned owners
+
+**Candidate base:** `9f329cfdc676ad00b336417897569c6d3f1ba627`
+**Candidate head:** `fb1046be8`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved-with-remediation`
+
+### Findings
+
+No new findings. The Customer E2E fixture had no readiness gate on Payment's payout provisioning, so ticket
+checkout raced the handlers that write `StripeCustomerId` and `StripeAccountId` and returned 409
+`payment.operation.provider_unavailable`. B2B gained this gate earlier on this branch; Customer is the same
+defect in the sibling fixture and is pre-existing rather than a regression from this branch.
+
+Two things were established before writing the gate rather than assumed. The payee resolves to
+`TenantSeedIds.For(SeedUsers.VenueManagerId(1))` = `ccd6850f-4c9d-db0b-251d-825df8a66eef`, computed from the
+same MD5 derivation the seed uses and present in `StripeTestAccounts.ByOwnerId` — so the owner is wired and
+waiting terminates. And `payment.PayoutAccounts` sits in the Payment resetter's `TablesToIgnore`, so the rows
+survive a reset; the gate is therefore in `InitializeAsync` only, and a per-reset re-assert would poll for a
+condition already true.
+
+`GetPayableOwnerIdsAsync` requires both provisioning halves, which is correct for a tenant that both receives
+and pays but can never complete for a consumer, since a ticket buyer is only ever charged and is issued no
+connect account. `GetChargeableOwnerIdsAsync` covers the customer half alone so each side of the gate asserts
+against the guard that actually governs it. Every id is derived from its seed API; no GUID is written as a
+literal.
+
+### Validation
+
+`local-platform.ps1 build` of `Concertable.Customer.E2ETests.csproj` — build succeeded, exit 0. Both changed
+files are project references rather than packed packages, so no platform repack is implicated.
+
+**Remediation owed:** the gate itself is unverified by a run. The verifying execution of
+`Concertable.Customer.E2ETests` was killed during stack startup before any test result, and was deliberately
+not relaunched. The failure it targets is reproduced and understood — 409 `provider_unavailable` at eight
+seconds, twice — and the change is confined to test-tier code with no production path, but the green run is
+outstanding and is owed before this suite can be called verified. B2B API E2E remains 10/10 on this branch.
+CI runs no B2B or Customer E2E gate, so exact-head CI does not cover this.
