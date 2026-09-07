@@ -8,6 +8,86 @@ the capability model decided in the workflow-divergence research, the entry-rout
 configurable-deal-workflows product doc, and the standing rule those hand to
 `api/Concertable.B2B/CODE_PATTERNS.md`.
 
+## 0. STATUS — BLOCKED on the configurable-deal refactor. Do not build this.
+
+This plan's entry-stage design is **disproven**, and its sequencing is **reversed**. Sections 3, 5 and
+7 remain useful input; sections 4, 6, 9 and 11 are provisional and partly wrong. Read this section
+before any other.
+
+### 0.1 The disproof — entry and binding are two axes, not one
+
+Sections 4–6 claim the second entry route collapses into one derived key, so every family keeps keying
+on `FinancialOperation` and no registration surface grows. **That is false, and DoorSplit-offer is the
+counterexample.**
+
+| Deal | Route | Commitment at **entry** | Operation at **binding** |
+|---|---|---|---|
+| FlatFee | apply | — | `CaptureEscrow` |
+| FlatFee | offer | venue → `MethodSetup` | `DepositEscrow` |
+| DoorSplit / Versus | apply | — | `VerifyPayment` |
+| DoorSplit / Versus | **offer** | venue → **`MethodVerification`** | **`VerifyPayment`** |
+| VenueHire | apply | artist → `MethodSetup` | `DepositEscrow` |
+| VenueHire | offer | — | `CaptureEscrow` |
+
+`VerifyPayment` pairs with **both** `None` and `MethodVerification`, so entry behaviour is **not**
+derivable from the binding operation. Entry and binding are different *moments*; with one entry route
+they always had the same occupant, so one key served both. The second route separates them — in
+DoorSplit-offer the venue is present at the offer and gone by acceptance, so its card must be verified
+at entry while its binding operation is unchanged.
+
+Consequence: this needs **two** derived keys — an entry-commitment key and a binding-operation key —
+so registration grows from four `DealType` rows to roughly three plus three. The claim that it shrinks
+to three is withdrawn.
+
+### 0.2 The sequencing reversal
+
+Building two keyed enum axes is building two things the configurable-deal refactor deletes.
+`CONFIGURABLE_DEAL_WORKFLOWS.md` states the requirement as *"replace fixed deal-key selection with
+validated configuration-backed capability selection"* — and per-stage capability selection is precisely
+what "entry commitment" and "binding operation" are. Under configuration they are not two enums; they
+are two stages each selecting a capability, and the second entry route stops being a dimension.
+
+**Decision (owner, this session): the configurable-deal refactor comes first, `DealType` goes away
+entirely, and direct offers land as its first consumer.** This reverses the founder ordering recorded
+in the entry/union refresh. Do not ship an interim enum axis.
+
+### 0.3 A foundational blocker that must be settled first
+
+`KeyedStrategyBuilder<TKey> where TKey : struct, Enum` cannot express a capability registry identity
+plus version, which is what configuration-backed selection selects on. That generic has to widen before
+anything is built on it. It is not a detail of this plan; it is the load-bearing constraint of the one
+that replaces it.
+
+### 0.4 The owner's design constraints for the eventual work
+
+Recorded verbatim in substance, as constraints to satisfy — **not** as a design this plan has validated:
+
+- **Two genuinely separate endpoints**, `ApplyAsync` and `OfferAsync`, plus the shared `AcceptAsync`.
+- **Route A**: create opportunity → artist applies to it → organiser accepts.
+- **Route B**: **skips the opportunity step entirely** — invite a named artist, artist accepts.
+- Both follow the same sequence after entry; they deviate only at the start. No per-person special
+  casing; the offer still runs the ordinary workflow.
+
+### 0.5 The open question this raises, unanswered
+
+If Route B creates no opportunity, then `ApplicationEntity.OpportunityId` — non-null today, and the
+column both unique indexes are built on — has no value to hold. The three ways out are not equivalent
+and none is chosen:
+
+1. make `OpportunityId` nullable — reintroduces the nullable this plan's §5.2 removed, and breaks
+   `(OpportunityId, ArtistId)` and `(OpportunityId) WHERE State = Accepted` as written;
+2. have Route B create a hidden opportunity anyway — what §5.1 proposed, and what the owner has now
+   rejected as an extra step;
+3. **extract the bookable slot** from Opportunity so both routes point at one, leaving Opportunity as
+   the advertised listing over a slot — shape (c) in §5.3, rejected there on scope and module-boundary
+   grounds that the configurable refactor largely dissolves.
+
+The scope objection that killed (3) was that splitting slot from listing touches every `opportunityId`
+foreign key, `IOpportunitySyncer`, the Search projection and Customer. That objection is much weaker
+inside a refactor already replacing deal-key selection across every lifecycle stage. **This is the
+first question the configurable-deal design must answer**, because Booking's parent and both exclusivity
+indexes hang off it.
+
 ## 1. The question this plan answers
 
 Venues create opportunities and artists apply. An organiser must also be able to select an artist and
@@ -43,6 +123,11 @@ Four things were wrong.
 
 ## 3. The coincidence, confirmed against `origin/main`
 
+> **Not this plan's finding.** `research/post-launch/DIVERGENCE_BLIND_DESIGN.md` §1 established it first
+> and more completely — *"the registrations reveal that `DealType` is not the axis anything actually
+> varies on"* — with a seven-family table including `IApply` keyed on *"must the payer have committed a
+> method before applying"*. This section reproduces it against `origin/main` and adds nothing to it.
+
 `ApplicationCheckoutExtensions` states entry-time behaviour as a deal-type test:
 
 ```csharp
@@ -75,6 +160,9 @@ hire arm and nowhere else, is the mechanical proof.
 Every one of these families is already keyed on an axis and merely *registered* per deal type.
 
 ## 4. The real constraint — the payer has to be at the keyboard
+
+> **Still correct, but only about *binding*.** The table below is the operation at binding, and it holds.
+> §0.1 shows it does not also determine the *entry* commitment, which is where this plan went wrong.
 
 Both `AuthorizeAsync` and `SetupPaymentMethodAsync` return a `ClientSecret` the payer's browser confirms,
 so the payer must be **present** when their instrument is collected. Money moves at binding, which is the
@@ -242,6 +330,9 @@ Cost: one table, one EF configuration, one re-scaffolded initial migration.
 
 ## 6. Where each divergence lives
 
+> **~~Superseded by §0.1.~~** The table below assumes one derived key serves every payment-shaped family.
+> It does not. Entry needs its own key. Read this only as a record of what was assumed, never as a target.
+
 | The new thing | Home | Key |
 |---|---|---|
 | `Payer`, `FundsTiming`, `SettlementBasis`, `DealProfile` | abstract member on the terms arm | compiler-forced per arm |
@@ -328,6 +419,10 @@ so it is invisible rather than harmful. Closing it properly is a client-supplied
 opportunity creation; that is named here and deliberately not built in this PR.
 
 ## 9. The API surface, end to end
+
+> **Provisional.** The routes and the action-link table survive the §0 reversal, because they describe
+> acts and authority rather than deal keying. §9.4's second call assumes the offer creates an opportunity,
+> which §0.4 rejects. Re-derive against whatever §0.5 settles.
 
 The `plans` skill treats a consumption contract as non-deferrable, so this is the whole surface, not a
 sketch. **Three new routes, none removed, six with generalised authority.**
@@ -467,6 +562,9 @@ ContractSnapshot)`, and `ContractSnapshot` already carries **both** `ArtistSigna
 generalisation in the confirm steps from §4 — no new event, no new handler, no new state.
 
 ## 11. Phases
+
+> **Do not execute.** Blocked per §0.2. Phase 1's `DealProfile` is the one piece the configurable work
+> still wants — persisted rather than compile-time — and §0.3 must be settled before even that.
 
 All five land as **one PR**; they are sequenced so each commit builds and its suites pass.
 

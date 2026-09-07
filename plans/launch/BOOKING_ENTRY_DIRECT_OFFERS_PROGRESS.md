@@ -16,105 +16,66 @@
 
 ## Current state
 
-**Design only. No code written, no branch, no worktree.** The plan is complete and internally decided;
-the modelling question that stalled v2 is answered.
+**BLOCKED. Design only, nothing built, and the entry-stage design is disproven.** Plan §0 is the entry
+point; do not read §4, §6, §9 or §11 as targets.
 
-The recommended model is **(d)**: `ApplicationEntity` becomes the negotiation thread and a new
-append-only `ProposalEntity` carries the versions. It nets **−2** nullable fields against today, keeps
-both existing unique indexes, needs no new lifecycle state, and satisfies the product doc's versioned
-proposals. Plan §5.3 scores it against (a), (b) and (c).
+Two findings ended this pass. Entry commitment and binding operation are **two** axes, not one —
+DoorSplit-offer pairs `MethodVerification` at entry with `VerifyPayment` at binding, while DoorSplit-apply
+pairs `None` with the same `VerifyPayment`, so entry is not derivable from binding. And building the two
+enum axes that follow would build exactly what the configurable-deal refactor deletes. The owner has
+reversed the ordering: configuration first, `DealType` removed entirely, direct offers as its first
+consumer.
 
 ## Completed milestones
 
-- **Design pass v1 (2026-09-07)** — superseded: kept `IApply` keyed by `DealType`, which the standing
-  rule lists under **Not a home**.
-- **Design pass v2 (2026-09-07)** — superseded: right on the financial reading, wrong on the modelling
-  and authored against a stale tree.
-- **Design pass v3 (2026-09-07)** — commit `55c95691b` struck v2's §6 back to an open question; this pass
-  then answered it. Financial reading re-verified line by line against `origin/main`.
+- **Design pass v1–v2 (2026-09-07)** — superseded; v2 was additionally authored against a tree 592
+  commits stale.
+- **Design pass v3 (2026-09-07)** — re-derived against `origin/main`, answered the modelling question
+  with the proposal-thread shape, specified the API surface.
+- **v3 partially disproven, same session** — the single-derived-key claim fails on DoorSplit-offer;
+  sequencing reversed to configurable-deals-first. Recorded in plan §0.
 
 ## Latest verification
 
-None executable. The design's factual claims were verified by direct read of `origin/main`, not of the
-working checkout — see the first discovery below.
+None executable. Factual claims verified by direct read of `origin/main`; the disproof in §0.1 is a
+cell-by-cell check of the entry/binding pairing, not a test run.
 
 ## Reviews
 
-None recorded. A review is required before this plan's delivery PR may merge.
+None recorded.
 
 ## Decisions, discoveries and blockers
 
-- **Discovery — v2 was authored against the wrong tree.** It cites baseline `516f4cc25` but the checkout
-  it was written in is 592 commits behind and predates PR #633, which split `Concert` into `Application`,
-  `Booking`, `Opportunity` and `Dashboard` (401 files, −15296/+4087 in that module alone). Every path in
-  v2 was stale. **Any future pass must read `origin/main` explicitly** — `git show origin/main:<path>` —
-  not the working checkout.
-- **Decision — model by role, not by party. This is the whole answer to the nullable objection.** The
-  Application persists exactly one signature: the author of the standing proposal. The venue's is built
-  at accept time in `AcceptCoreAsync` and persisted on the *Contract*, never on the Application.
-  `ArtistESignature` is a role field wearing a party's name — the same error as `RequiresApplyCheckout()`.
-  Adding a venue signature beside the artist's models by party and yields v2's five nullables; modelling
-  by role and moving both fields onto `ProposalEntity` removes two `null!` members instead.
-- **Decision — shape (d), Application-as-thread plus Proposal versions.** (a) is right about the aggregate
-  but has nowhere to record a counteroffer, which the product doc requires as versioned proposals. (b) is
-  rejected: it discards `(OpportunityId, ArtistId)` unique — the guard that catches an organiser offering
-  to an artist who already applied — and pushes nullables onto `BookingEntity`. (c) is conceptually the
-  best home for exclusivity but needs a synchronous cross-module write across two `DbContext`s, and
-  Opportunity only learns of acceptance asynchronously via `MarkFilled()`.
-- **Discovery — no new lifecycle state is needed.** v2 added `Offered` beside `Applied`. Whose turn it is
-  is `Proposals[^1].ProposedBy`. The state machine keeps its four transitions and gains one self-loop,
-  `Applied --Counter--> Applied`. Adding `Offered` would encode the initiator into the state and then
-  multiply with every counter.
-- **Verified — the payer-presence rule, mechanically.** `VenueHireConfirmStep` passes
-  `PaymentSession.OffSession` with payer `ArtistTenantId`; `FlatFeeConfirmStep` passes payer
-  `VenueTenantId` against a held authorization. Payer-first → `DepositEscrow` off-session; payer-last →
-  `CaptureEscrow` on-session. Both new offer cells reuse existing operations; no new leaf.
-- **Verified — the payer axis already exists.** `IDealPayeeResolver` is two leaves
-  (`VenuePaysArtist`, `ArtistPaysVenue`) across four `DealType` keys. `ICommitmentReferenceStep`'s three
-  leaves are `FinancialOperation` under other names.
-- **Verified — Payment is party-agnostic.** `CaptureEscrowCommand`/`DepositEscrowCommand` take plain
-  `Guid PayerId`/`PayeeId`. Zero Payment changes.
-- **Discovery — the confirm steps hardcode payer and payee.** This is the one genuine code change the
-  offer route forces on Booking: each leaf must read the arm's declared `Payer` instead of a literal
-  tenant id. Three leaves stay three leaves.
-- **Discovery — three dispatch sites beyond the briefed list.** `ApplicationTermsFingerprint:14`
-  (`deal switch` with a throwing `_`; belongs on `DealTerms` beside `Render()`), and the three live
-  consumers of the checkout extensions: `ApplicationMappers:28`, `:44` and `OpportunityMapper:80`.
-  `SeedState:541` is seed-fixture selection, deliberately left alone.
-- **Decision — no keyed union, for a better reason than v2 gave.** Apply and Offer are different *acts*
-  (different authority, actor, inputs, preconditions), not two arms of one shared action.
-  `KeyedUnionBuilder` keeps its zero production consumers deliberately. No generic-by-profile-type either
-  — the product doc rules out `IApply<Artist>` versus `IApply<Venue>` explicitly.
-- **Decision — no `OpportunityWorkflow`, on module-boundary grounds.** v2 reached this from the standing
-  rule alone and silently contradicted the product doc, which permits creating the private opportunity and
-  the initial proposal together. The real reason: separate `DbContext`s and a read-only
-  `IOpportunityModule`. The composition is the client's — two calls.
-- **Known gap, deliberate.** A retried opportunity-create can leave an orphan `ByInvitationOnly`
-  opportunity. It is invisible to discovery and carries no proposals. The proper fix is an idempotency key
-  on opportunity creation; named in plan §8 and out of scope for this PR. The *offer* itself is protected
-  by a hard unique constraint.
-- **Sequencing — `Refactor/launch_operation-claims-and-attempts` is a rebase collision, not a
-  dependency.** Correcting v2's ledger: this design consumes **nothing** from `OperationClaim`, so it is
-  not blocked and bases cleanly on `origin/main`. But that branch (worktree `513298a1a`, no PR, unmerged)
-  edits `ApplicationEntity.cs`, `ApplicationEntityConfiguration.cs` and `ApplicationWorkflow.cs` — the
-  three files Phase 3 rewrites hardest. Whichever lands second rebases. It is smaller and already
-  implemented, so landing it first is the cheaper order.
+- **Discovery — entry and binding are two axes.** Plan §0.1. The counterexample is DoorSplit-offer: the
+  venue is present at the offer and gone by acceptance, so its card must be verified at entry, while the
+  binding operation stays `VerifyPayment` exactly as in the apply route. `VerifyPayment` therefore pairs
+  with both `None` and `MethodVerification`. Registration grows to roughly 3 + 3, not down to 3.
+- **Decision — configurable deals first, `DealType` deleted, offers as its first consumer.** Reverses the
+  founder ordering in the entry/union refresh. An interim enum axis would be built to be deleted.
+- **Blocker — `KeyedStrategyBuilder<TKey> where TKey : struct, Enum`** cannot express a capability
+  registry identity plus version. Configuration-backed selection needs that generic widened; it is
+  load-bearing for the replacement plan, not a detail.
+- **Owner constraint — Route B skips the opportunity entirely.** Two separate endpoints (`ApplyAsync`,
+  `OfferAsync`) sharing `AcceptAsync`; the offer invites a named artist with no opportunity created.
+  This rejects plan §5.1's hidden-opportunity approach.
+- **Open question that follows, unanswered — what does Booking hang off?** `Application.OpportunityId`
+  is non-null and carries both unique indexes. Plan §0.5 lays out the three exits (nullable FK, hidden
+  opportunity, extract the slot) and argues the scope objection that killed slot-extraction is much
+  weaker inside the configurable refactor. **This is the first question the replacement design must
+  answer.**
+- **Still standing from v3, as input** — the payer-axis reading (§3, credited to
+  `DIVERGENCE_BLIND_DESIGN.md` §1, not this plan's finding); the binding-operation table (§4); the
+  proposal-thread model and its scoring of four shapes (§5), which is orthogonal to the disproof; the
+  dispatch-site inventory (§7); the routes and action-link table (§9.1–9.3).
+- **Payment still needs no change.** `CaptureEscrowCommand`/`DepositEscrowCommand` take plain
+  `PayerId`/`PayeeId`. Unaffected by the reversal.
 
 ## Next Steps
 
-Design is complete. Nothing is blocked; the next action is a scope decision that is the owner's, not the
-agent's.
+Blocked: no configurable-deal plan exists, and this work must land as its consumer rather than ahead of it
+Blocked by: no owning ledger — the configurable-deal refactor is unplanned; `CONFIGURABLE_DEAL_WORKFLOWS.md` in `Concertable/docs` owns the product scope
+Unblock action: author a configurable-deal plan that settles (a) widening `KeyedStrategyBuilder`'s key from `struct, Enum` to a registry identity plus version, (b) whether the bookable slot is extracted from Opportunity, and (c) per-stage capability selection covering entry commitment and binding operation as separate stages — owner is dispatching this to a fresh context
+Resume when: that plan exists with (a), (b) and (c) decided, and names direct offers as its consumer
 
-1. Confirm the PR shape. The plan puts all five phases in **one PR**: Phases 1–2 are the `DealType`
-   re-keying (behaviour-identical, one route), Phases 3–5 add the second route. Splitting 1–2 out as a
-   preparatory PR is viable and would halve the review surface; the plan assumes they are in.
-2. Decide the merge order against `Refactor/launch_operation-claims-and-attempts`. It has no PR. Landing
-   it first is recommended — see the sequencing note above.
-3. On the go-ahead, create `Feature/launch_booking-entry-direct-offers` from `origin/main` and implement
-   Phase 1: `Payer`, `FundsTiming`, `SettlementBasis`, `DealProfile`, abstract `DealTerms.Profile`,
-   promote `FinancialOperation` into `Concertable.B2B.Deal.Contracts.Enums`, and derive
-   `ContractEntity.ExpectedFinancialOperation` from the profile.
-4. Keep the commitment-token assertion in `ContractFactory<TTerms>` passing — it is the check that proves
-   the profile derivation agrees with the reference vocabulary.
-5. Read `origin/main` explicitly when implementing. This checkout is 592 commits behind and its Concert
-   module predates the #633 split.
+Nothing in this plan may be implemented before then. Phase 1's `DealProfile` is the only piece the
+replacement still wants, and only in persisted rather than compile-time form.
