@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `daf297e14`  _(2026-09-07)_
-**Security-reviewed up to commit:** `daf297e14`  _(2026-09-07)_
+**Reviewed up to commit:** `a8afc00f8`  _(2026-09-07)_
+**Security-reviewed up to commit:** `a8afc00f8`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
