@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `95161fc14`  _(2026-09-07)_
-**Security-reviewed up to commit:** `95161fc14`  _(2026-09-07)_
+**Reviewed up to commit:** `1aeabdb5d`  _(2026-09-07)_
+**Security-reviewed up to commit:** `1aeabdb5d`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1830,3 +1830,46 @@ B2B API E2E remains 10/10 on this branch and passes in the merge queue. The reme
 preceding pass is discharged: the gate is now green rather than merely diagnostic.
 
 Browser-tier E2E is unverified locally and runs only in the queue; it is the one gate outstanding.
+
+## Review pass — 2026-09-07 — drive the Payment Element as Stripe renders it
+
+**Candidate base:** `80c70b520`
+**Candidate head:** `1aeabdb5d`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved-with-remediation`
+
+### Findings
+
+No new findings. All 14 browser payment scenarios failed on two shapes, both read off the failure
+screenshots in the queue run's `e2e-ui-diagnostics` artifact rather than inferred: the Element renders the
+card form inline with no tab strip, and offers no saved card although one is attached.
+
+`SelectCardAsync` waited unconditionally on a `Card` tab. Stripe draws the tab strip under `layout: "tabs"`
+only when the account has more than one payment method enabled, and the intent is created with
+`AutomaticPaymentMethods` — so the method list comes from the Stripe account, not from this repository. The
+wait now falls through to the inline form, which makes the suite robust to a dashboard toggle instead of
+hostage to one.
+
+`AttachTestCardAsync` left the method at `allow_redisplay: unspecified`; a customer session only re-offers
+one marked `always`. The saved-card path therefore clicked Confirm against empty fields and never produced
+the `/confirm` request it waits for.
+
+**Provenance.** Not a regression from this branch. `StripeCardEntry`, `StripePaymentForm` and the session
+configurators are byte-identical to main; the branch's only UI-step edits are a seed-state rename, an
+owner-keyed account lookup and a dropped null-forgiving operator. The browser tier last ran on 2026-09-04
+(run `33860333526`, `e2e-ui-tests: success`) because `e2e-ui-tests` needs `e2e-api-tests`, which failed on
+all eight preceding queue attempts — so this is the first observation in three days, not a new break.
+
+### Validation
+
+`local-platform.ps1 build` of `Concertable.B2B.E2ETests.Ui.csproj` — exit 0. B2B and Customer API E2E both
+green (`e2e-api-tests: success` in queue run `34127943014`).
+
+**Remediation owed:** neither fix is verified by a browser run. The local browser tier cannot start on this
+workstation — the Business SPA on `https://localhost:5177` never passes readiness, with `app/node_modules`,
+`app/web/shared/dist` and a valid dev certificate all present, so every scenario fails at fixture startup
+and the tier yields no signal locally. The queue is currently the only environment that can execute it. The
+local startup failure is unrelated to these two fixes and is owed its own diagnosis.
