@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `11b322e92e7d523133dc033b330414f3074fe2d6`  `(2026-09-06)`
-**Security-reviewed up to commit:** `11b322e92e7d523133dc033b330414f3074fe2d6`  `(2026-09-06)`
+**Reviewed up to commit:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`  `(2026-09-07)`
+**Security-reviewed up to commit:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`  `(2026-09-07)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -47,3 +47,25 @@ No findings. The plan-only checkpoint records draft PR #948, its direct #633 bra
 restack gate. Security review found no risk in the publication metadata. PR #633 advanced after the reviewed
 commit from the locally restacked `ad4ad986f` snapshot to `5e2dcf604`; the follow-up ledger correction records
 that moving-base fact without changing the reviewed implementation delta.
+
+## Review pass — 2026-09-07 — full landed-main restack
+
+**Candidate base:** `516f4cc25936289744babef3f98b1a297035fbb6`
+**Candidate head:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:42e5615b7456954e4d7cf5a132779e18617334802d930065db6510c13408615d` `(30 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m3-restack-00deaf4fb1714f30a57bfca135bb7307`
+**Candidate bundle identity:** `sha256:fcbd84efcc49a2664d1e70d4aa712e04904366f2a7b412968fad0fa80c17333f`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The seven-commit range-diff from the #633 snapshot to landed main is patch-equivalent throughout,
+and the landed #633 changes do not overlap the M3 path set. The shared build configuration remains
+product-neutral, product workspace ownership remains explicit, and both mobile applications consume the same
+generic package-resolution helper. Boundary tests/lint, all package tests/builds, all five web builds, both
+mobile typechecks and Android/Hermes exports, both feed-restored mobile carves, and an independent packed
+consumer passed. Security review found no credential, trust-boundary, or unsafe dependency-resolution change.
