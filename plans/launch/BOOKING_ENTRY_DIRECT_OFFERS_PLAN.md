@@ -108,10 +108,17 @@ construction, and it is the answer to the cross-matrix worry.
 `RequiresApplyCheckout()` / `RequiresAcceptCheckout()` are deleted. The question they answered becomes
 "is this party the payer, and is this their consent?" — which the row already knows.
 
-## 6. One aggregate, not two
+## 6. The modelling question — OPEN, NOT DECIDED
 
-Making invites a separate entity is the tempting way to dodge the matrix. It must not be done, for a
-reason that is not stylistic:
+> **Contested.** This section previously read as a decision ("one aggregate, not two"). It is not one.
+> The author lost confidence in it after an objection this section never answered: a variant-of-Application
+> shape turned two non-null fields into five nullables. Do not build against this section. It is being
+> re-derived; until that lands, treat the entry-route model as an open question with at least three live
+> candidates — (a) variant of `ApplicationEntity` keyed on initiator, (b) its own entity converging at
+> `Booking`, (c) slot/exclusivity extracted into a first-class thing both routes point at.
+
+The argument this section *did* make, preserved because its evidence is real even though its conclusion
+does not follow from it:
 
 ```csharp
 builder.HasIndex(application => application.OpportunityId)
@@ -125,7 +132,9 @@ racing "we accept a rival application" from a database decision into an applicat
 duplicates the shared flow the standing rule requires to stay in one stage workflow — an endpoint split
 is for an *act*, never a copy of the shared action.
 
-**One `Application` aggregate. Two entry acts, each with its own endpoint.**
+The index is real. **The inference is not.** It proves that whatever accepts into a `Booking` needs *one
+exclusivity scope*; it does not prove *one table*. Shape (c) satisfies the same constraint with the scope
+living on the slot rather than on the proposal. That gap is the open question.
 
 ## 7. The lifecycle, unchanged
 
