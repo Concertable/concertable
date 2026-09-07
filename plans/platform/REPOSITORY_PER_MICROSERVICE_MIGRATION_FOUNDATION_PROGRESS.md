@@ -5,39 +5,42 @@
 - Roadmap item: `platform/polyrepo-cut`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M2-Owner-Operations`
 - Branch: `Refactor/RepoSplit-M2-Owner-Operations`
-- PR: [#947](https://github.com/Concertable/concertable/pull/947), draft; independent sibling restacked onto
-  landed `origin/main` `516f4cc25936289744babef3f98b1a297035fbb6`
-- Dependency/package gates: PR #633 and the Docker-backed integration proof are cleared. M2 still requires a
-  refreshed exact-head review and PR CI; private-repository merge-queue rulesets remain unavailable on the
-  current GitHub entitlement.
-- Last reconciled: 2026-09-07 against landed `origin/main`
-  `516f4cc25936289744babef3f98b1a297035fbb6` and rebased M2 candidate
-  `c74ca5f3ad0c194a583bd3f0ad303d7d2c5bf7c9` immediately before this checkpoint.
+- PR: [#947](https://github.com/Concertable/concertable/pull/947), ready; independent sibling being merged
+  with current `origin/main` `12efedd68da08d92b08990a30e76dab5546b5ed4` after M3 landed through #948.
+- Dependency/package gates: PR #633 and the Docker-backed integration proof are cleared. M3 is landed and is
+  not a dependency of M2. M2 requires focused validation, current-head review, and exact-head PR CI after
+  this final base reconciliation before merge-queue delivery.
+- Last reconciled: 2026-09-07 against current `origin/main`
+  `12efedd68da08d92b08990a30e76dab5546b5ed4` and the prior exact-head-green M2 candidate
+  `4c7109ab5c21e617c97a51572edd87eddb63ce88` immediately before this merge.
 
 ## Current state
 
 Checkpoint 6A is terminal and checkpoint 6B preparation is active. Existing private `auth`, `b2b`,
 `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities. The remaining
-repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository creation is
-part of these preparation packets.
+selected repositories are `platform-dotnet`, `platform-frontend`, and separate `system`; none is created by
+this packet. General shared frontend code covers web and mobile while those remain package tiers, not
+repository boundaries.
 
-M1 is published as four draft stacked PRs #942-#945. M2 is independent sibling draft PR #947. Its ten staged
-patches were replayed without conflict from the pre-landing base onto exact landed `origin/main`
-`516f4cc25936289744babef3f98b1a297035fbb6`; `git range-diff` reports all ten patches unchanged. All 24 EF
+M1 is published as four draft stacked PRs #942-#945. M2 is ready as independent sibling PR #947. Its ten
+staged patches were replayed unchanged onto landed #633 main, then merged cleanly with the B2B producer
+landing. Exact-head CI run `34166864272` is green at `4c7109ab5`, but M3 landed while that run executed, so
+this final current-main reconciliation must be validated, reviewed, and pushed before enqueue. All 24 EF
 contexts are assigned to owner-local manifests, including Opportunity, Application, and Booking under B2B.
-The root migration and local-development scripts are compatibility delegators only. Offline ownership,
-rollback, path, bootstrap, evaluated-reference, Docker-health, and full fresh-container integration gates
-pass. The previous review watermarks are not ancestors of the rebased candidate, so the mandatory refreshed
-exact-head review and PR CI remain before M2 can be represented as merge-ready. M3 is active independently
-and does not depend on M1 or M2.
+The root migration and local-development scripts are compatibility delegators only.
+
+M3 landed independently through PR #948 at `12efedd68`. It extracts the product-neutral
+`@concertable/build-config` package, makes product workspaces own their package lists, and uses the shared
+Metro resolver for both mobile applications without encoding product ownership into the platform tier.
 
 ## Next Steps
 
-- Refresh the full general and security review against the exact rebased candidate, resolve any findings, and
-  preserve the review work order locally.
-- Force-with-lease update draft PR #947 only after the reviewed candidate is stable, then require exact-head
-  PR CI before representing M2 as merge-ready.
-- Keep M1, M2, and M3 as separate packets and preserve producer/package and final service cutover ordering.
+- Resolve the current-main merge by retaining both M2 owner-operation assignments and landed M3 build-config
+  ownership, then run focused owner, inventory, frontend-boundary, package, plan-graph, and whitespace gates.
+- Incrementally review the exact merge head, push one stable candidate, require exact-head PR CI, and deliver
+  PR #947 through the merge queue.
+- Keep M1, M2, and M3 separate. Do not create repositories, import history, publish packages, or perform a
+  service cutover from this preparation branch.
 
 ## Completed work
 
@@ -52,8 +55,10 @@ and does not depend on M1 or M2.
 - The full M2 review found four publication defects: an implicit PowerShell runtime assumption, missing CI
   invocation, missing reparse-point coverage, and monorepo-only scripts leaking into the System extraction.
   All four are repaired; full and incremental review resolved every finding. The approved substantive and
-  publication watermark is `97b447bcf`, and `ae43e13cc` carries the review record only.
-- M3 is independent sibling draft PR #948; it is not a dependency of M2.
+  publication watermark is `97b447bcf`, and `ae43e13cc` carries the review record only. The landed-main
+  restack fixed the Unix path issue at `73ef5db31`; exact-head CI run `34165097661` passed.
+- M3 landed independently through PR #948 at `12efedd68`, assigning `app/build-config` to
+  `platform-frontend` and preserving product-owned frontend workspace manifests.
 
 ## Verification
 
@@ -71,6 +76,8 @@ and does not depend on M1 or M2.
 - `scripts/integration.ps1 run`: pass; all 22 integration-test projects completed successfully. The first run
   from the long worktree path hit Windows native-DLL path limit `0x800700CE`; rerunning the unchanged owning
   worktree through a temporary short drive alias passed, and the alias was removed after the run.
+- Exact-head PR CI run `34166864272` passed at `4c7109ab5` before M3 landed; the current-main merge requires
+  one final focused validation and exact-head CI cycle.
 
 ## Reviews
 
@@ -79,15 +86,18 @@ no regression. The rebased frozen-head review at `a2115afc5` requested four furt
 `7a561adbe`. The final full review of that fixing head requested the platform-tool destination and checkpoint
 corrections, both fixed by `d98622e69`. The incremental review over that commit found no further defects and
 advanced both the general and security watermarks through `97b447bcf`; `ae43e13cc` adds the review record
-only. Those watermarks are not ancestors of the landed-main restack. Draft PR #947 therefore requires a new
-full general and security review of the exact rebased candidate before its force-with-lease update.
+only. The full landed-main review and CI repair pass advanced the current M2 review through `73ef5db31`; the
+clean B2B base merge was approved through `4c7109ab5`. This current-main/M3 merge now requires only an
+incremental review of its conflict resolutions before the next push.
 
 ## Decisions, discoveries, blockers, and deviations
 
 - B2B owns 11 of the current 24 EF contexts; Messaging remains the platform owner of Inbox and Outbox.
 - `api/initial-migrations.ps1` remains a thin compatibility route. Owner-local manifests and runners are the
   independently extracted interface.
-- M1, M2, and M3 may be prepared in parallel. M2 and M3 are sibling candidates based on #633; neither is
-  silently folded into M1 or into the other packet.
+- M1, M2, and M3 were prepared independently. M3 is now landed; M2 retains its own owner-operation packet
+  and incorporates M3 only as current base state.
+- `platform-frontend` owns general shared web/mobile packages and build tooling; product repositories own
+  their own workspace manifests.
 - No Docker reset, WSL shutdown, repository creation, history import, visibility change, package publication,
   or service cutover was performed.

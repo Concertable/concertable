@@ -43,6 +43,7 @@ AREA_TARGETS = {
 }
 
 FRONTEND_TARGETS = {
+    "app/build-config": "platform-frontend",
     "app/shared": "platform-frontend",
     "app/web/shared": "platform-frontend",
     "app/mobile/shared": "platform-frontend",
