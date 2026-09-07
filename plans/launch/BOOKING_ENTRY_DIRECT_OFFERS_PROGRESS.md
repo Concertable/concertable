@@ -14,33 +14,35 @@
   `Refactor/launch_operation-claims-and-attempts` is implemented but unmerged. That type lives in
   `Concertable.B2B.DataAccess.Application` by `ProjectReference`, so this work either stacks on that
   branch or starts after it merges.
-- Last reconciled: 2026-09-07 — design pass complete against the merged PR #633 baseline
-  (`origin/main` at `516f4cc25`); no implementation started.
+- Last reconciled: 2026-09-07 — design revised against the workflow-divergence capability model after
+  the first pass was judged against current code rather than the decided target model. Baseline
+  `origin/main` at `516f4cc25`; no implementation started.
 
 ## Current state
 
 **Design only. No code written, no branch, no worktree.**
 
-The design resolves every question the assignment posed and is recorded in the plan. The load-bearing
-decisions, in the order they constrain implementation:
+The revised design turns on one reading of the current code: `ApplicationCheckoutExtensions`'
+`RequiresApplyCheckout() => dealType == DealType.VenueHire` is not a statement about venue hire. Read
+against `ApplicationCheckoutService`, it is `Payer == Artist`, hardcoded to the single entry route in
+which the artist moves first. The feared entry-route x deal-type matrix is that one coincidence.
 
-1. `Applied` and `Offered` are the same pending proposal seen from either side, so the second direction
-   costs one state and one trigger rather than a parallel pipeline.
-2. The offer is an Application row, not an Opportunity concern. Opportunity gains one column
-   (`OpportunityAdmission`) and no strategy.
-3. No `OpportunityWorkflow`: `ApplicationWorkflow` already depends on `IOpportunityModule` and the
-   reverse edge would close a module cycle, while buying no atomicity across three `DbContext`s.
-4. Separate endpoints (authorisation, rate limiting and request shape are static per action) over one
-   shared creation path.
-5. The only capability change is narrowing `IApplyStep` to an artist-side commitment precondition
-   invoked at the consent moment rather than at creation.
-6. No profile-typed generics and no new union case.
-7. The Booking handoff is unchanged, which is what keeps this to one PR.
+Removing it gives a single rule — the payer must be present when their instrument is collected, so a
+payer who consents last authorises on-session (`CaptureEscrow`) and a payer who consents first leaves a
+method for an off-session move (`DepositEscrow`). That reproduces both shipped journeys and covers both
+new cells with the operations that already exist. `CaptureEscrowCommand` and `DepositEscrowCommand` take
+plain `PayerId`/`PayeeId` tenant ids, so Payment needs no change.
+
+Entry route therefore enters as one boolean into the `Expected()` derivation, not as a second
+registration dimension. No new `FinancialOperation` member, no new confirm or cancel leaf, no union.
 
 ## Completed milestones
 
-- **Design pass (2026-09-07)** — proposal reconciled against the merged PR #633 tree; plan authored with
-  phases, acceptance checks and an explicit out-of-scope list. No commit yet.
+- **Design pass v1 (2026-09-07)** — reconciled the proposal against the merged PR #633 tree. Superseded:
+  it kept `IApply` keyed by `DealType`, which the standing rule lists under **Not a home**.
+- **Design pass v2 (2026-09-07)** — rewritten against the workflow-divergence capability model. Adds the
+  payer-presence rule, the collapse of the cross matrix, the one-aggregate argument from the filtered
+  unique index, and phases that carry migration steps 2-3 as their foundation.
 
 ## Latest verification
 
@@ -52,37 +54,45 @@ None recorded. A review is required before this plan's delivery PR may merge.
 
 ## Decisions, discoveries and blockers
 
-- **Discovery — venue-hire breaks the naive offer.** `VenueHireApplyStep` validates the *artist* tenant's
-  payment method before an application may exist. On a direct offer the artist has done nothing at
-  creation time, so that check at that place rejects every venue-hire offer. This is why the precondition
-  binds to the artist-side consent moment instead of to creation, and it is the single finding that
-  changed the design.
-- **Discovery — the union machinery has no production consumer** on the merged baseline; `IDealUnionFactory`
-  appears only in its own definition, its registration extension and `DealUnionBuilderTests`. This problem
-  does not give it one, so none is added.
-- **Decision — a counteroffer may not change `DealType`.** Terms are negotiable, the financial
-  arrangement is not. This is what preserves every commitment reference, confirm step, contract factory
-  and settlement path unchanged, and it is a product constraint to state rather than hide.
-- **Decision — the domain says "organiser" while the organiser resolves to the opportunity's owning venue
-  tenant.** Promoter tenants and multiple business profiles are out of scope; naming it now means the
-  later work changes a resolver, not every call site.
-- **Sequencing — this work follows `Refactor/launch_operation-claims-and-attempts`.** It consumes
-  `OperationClaim` for retry-safe offer creation. Not a blocker on design or on local implementation, but
-  it decides the base commit.
+- **Discovery — the cross matrix is one hardcoded coincidence.** `RequiresApplyCheckout()` reads as a
+  deal-type rule and is actually `Payer == Artist`. Entry route and deal type never multiplied; one
+  constant route made them look fused.
+- **Discovery — the binding constraint is payer presence, not deal shape.** `AuthorizeAsync` and
+  `SetupPaymentMethodAsync` both return a `ClientSecret` the payer's browser confirms, so the payer must
+  be at the keyboard. Whether they consent first or last is what selects capture-vs-deposit, and it
+  explains today's two shapes rather than encoding them.
+- **Discovery — Payment is party-agnostic.** Both escrow commands take plain `PayerId`/`PayeeId` tenant
+  ids, so flat fee funded off-session by the venue and hire fee captured on-session from the artist are
+  already-served commands. Zero Payment changes, no producer PR, no platform sync.
+- **Decision — one aggregate, not two.** `Applications(OpportunityId) WHERE State = Accepted` is a
+  filtered unique index and is the only thing making an exclusive slot safe under concurrent acceptance.
+  Two tables cannot share it, so a separate invitation entity would turn a database decision into an
+  application-level lock.
+- **Decision — the offer endpoint takes an existing `opportunityId`.** Application only reads
+  Opportunity, matching the `Booking -> Application.Contracts` edge. No `OpportunityWorkflow`: the
+  standing rule's **Not a home** list rules out anything spanning stages.
+- **Decision — no union.** Countered terms are figures of the deal, so they are a data arm; the standing
+  rule keeps `IDealMapper`/`IDealUpdater` on `DealType`. The escalation tier stays empty until a shared
+  action needs different client-supplied *behaviour* parameters.
+- **Correction carried from v1 — a counteroffer may not change `DealType`.** Terms are negotiable, the
+  financial arrangement is not.
+- **Sequencing — this work carries migration steps 2-3** (declare `DealProfile`; re-key Application off
+  `DealType`) as Phases 1-2. Shipping offers on `DealType` keying would add a behaviour family the
+  standing rule forbids and fail its acceptance test 1.
+- **Sequencing — follows `Refactor/launch_operation-claims-and-attempts`** for `OperationClaim`. Not a
+  design blocker; it decides the base commit.
 
 ## Next Steps
 
-Decide the base for implementation, then start Phase 1.
+Design is complete and awaiting the owner's decision on scope before any branch is created.
 
-1. Check whether `Refactor/launch_operation-claims-and-attempts` has opened a PR and merged
-   (`gh pr list --state all --search "operation-claims"`). PR #633 has merged, so that stack is
-   unblocked and should retarget to the default branch.
-2. If it has merged, create `Feature/launch_booking-entry-direct-offers` from the current remote default.
-   If it has not, stack on `Refactor/launch_operation-claims-and-attempts` and record that base commit
-   here.
-3. Implement Phase 1 of the plan: `Offered` state, `Counter` trigger, `Initiator`, per-side signature
-   slots carrying their signed terms fingerprint, `ProposedDealId`, and `OpportunityAdmission`.
-4. Re-scaffold initial migrations via `./initial-migrations.ps1` from `api/` — never an additive
-   migration.
-5. Run the Application and Opportunity unit suites and confirm `has-pending-model-changes` is clean on
-   both contexts before committing.
+1. Confirm with the owner that Phases 1-2 (declare `DealProfile`, re-key Application off `DealType`)
+   belong in this PR rather than shipping ahead of it as their own slice. The plan assumes they are in.
+2. Check whether `Refactor/launch_operation-claims-and-attempts` has opened a PR and merged; PR #633 has
+   merged so that stack is unblocked and should retarget to the default branch. It decides the base
+   commit.
+3. On the owner's go-ahead, create `Feature/launch_booking-entry-direct-offers` from the resolved base
+   and implement Phase 1: `Payer`, `FundsTiming`, `SettlementBasis`, `DealProfile`, abstract
+   `DealTerms.Profile`, and `ContractEntity.ExpectedFinancialOperation` computed from the profile.
+4. Keep the commitment-token assertion in `ContractFactory<TTerms>` passing — it is the check that proves
+   the profile derivation agrees with the reference vocabulary.
