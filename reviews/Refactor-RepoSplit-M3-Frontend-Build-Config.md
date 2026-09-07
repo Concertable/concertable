@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`  `(2026-09-07)`
-**Security-reviewed up to commit:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`  `(2026-09-07)`
+**Reviewed up to commit:** `3832378585110ade2a9460bdd6ca3b252e5723ab`  `(2026-09-07)`
+**Security-reviewed up to commit:** `3832378585110ade2a9460bdd6ca3b252e5723ab`  `(2026-09-07)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -69,3 +69,24 @@ product-neutral, product workspace ownership remains explicit, and both mobile a
 generic package-resolution helper. Boundary tests/lint, all package tests/builds, all five web builds, both
 mobile typechecks and Android/Hermes exports, both feed-restored mobile carves, and an independent packed
 consumer passed. Security review found no credential, trust-boundary, or unsafe dependency-resolution change.
+
+## Review pass — 2026-09-07 — incremental split-inventory repair
+
+**Candidate base:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`
+**Candidate head:** `3832378585110ade2a9460bdd6ca3b252e5723ab`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:d739c088ef421df356566f84dc6afedfa96f47a97ee488f9958739bc497c16ee` `(6 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m3-inventory-02d1fab668a448af8bc1cc9ae5a07401`
+**Candidate bundle identity:** `sha256:64fc63dc0ba20daf1f623c077975a398eeea32045fd79a56a8beb55bd4c4d686`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The inventory generator and extraction map now use the approved `platform-frontend` identity
+consistently and assign `app/build-config` to that target, with the package renamed to
+`packages/build-config/` during extraction. The regenerated inventory is current, all frontend workspaces
+are assigned, and the focused inventory check and plan-graph gate pass. Security review found no credential,
+trust-boundary, or dependency-resolution risk in the repair.
