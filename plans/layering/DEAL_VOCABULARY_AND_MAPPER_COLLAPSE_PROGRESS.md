@@ -13,11 +13,38 @@
 
 ## Current state
 
-Plan authored and reconciled against real `main`. No implementation yet. Phase 1 is the next action.
+**Phase 1 is complete and committed** (`3d4fa7ab4`). Phase 2 is the next action.
 
 The plan was originally drafted against `Docs/launch_seal-and-postgres-plans`, whose Concert module predates
 the Application/Booking/Opportunity split. Every file path and family roster in the plan has since been
 re-verified against `origin/main` @ `15ce7946f`.
+
+## Completed milestones
+
+- **Phase 1** (`3d4fa7ab4`) — `Concertable.B2B.Vocabulary` added and registered in `api/Concertable.slnx`;
+  `DealType`, `DealTypeNames` and `PaymentMethod` moved into it under namespace `Concertable.B2B.Vocabulary`;
+  `Deal.Domain` repointed off `Deal.Contracts`; 51 files renamed off the old namespace;
+  `LayeringArchitectureTests` added asserting the Domain→Contracts violations are exactly the ten modules
+  still pending.
+
+## Latest verification
+
+- `Concertable.B2B.Deal.UnitTests` builds clean and passes **47/47**, which transitively proves
+  Deal.Contracts, Deal.Domain, Deal.Application and Deal.Infrastructure compile.
+- **`LayeringArchitectureTests` has never been executed.** `Concertable.B2B.ArchitectureTests` references the
+  composition root, which does not build — see the blocker below. PR CI is its first real run; expect to fix
+  the pending list there if it is wrong.
+
+## Blocker on the full-solution gate (pre-existing, not caused by this branch)
+
+`api/Concertable.slnx` does not build. `Concertable.B2B.Application.Infrastructure/Services/ApplicationCheckoutService.cs:112`
+calls `IEscrowOperationsClient.AuthorizeAsync`, which the pinned `Concertable.Payment.Client` package does not
+expose. **Verified pre-existing:** it reproduces at `origin/main` @ `15ce7946f` with this branch's changes
+stashed. This is the recorded debt that PR CI never builds against the pinned packages (`1d11deec6`).
+
+Consequence for this plan: the phase gates fall back to the smallest affected project plus its unit tests, and
+anything requiring the composition root — the architecture suite included — is gated on PR CI rather than
+locally.
 
 ## Decisions and discoveries that affect execution
 
@@ -54,15 +81,21 @@ None yet — no implementation exists.
 
 ## Next Steps
 
-Execute Phase 1 in this worktree:
+Execute Phase 2 in this worktree:
 
-1. Add `api/Concertable.B2B/src/Concertable.B2B.Vocabulary` (`net10.0`, no package references) and register it
-   in `api/Concertable.slnx`.
-2. Move `DealType`, `DealTypeNames` and `PaymentMethod` from
-   `Modules/Deal/Concertable.B2B.Deal.Contracts/Enums/` into it under namespace `Concertable.B2B.Vocabulary`.
-3. Repoint `Deal.Domain` (drop `Deal.Contracts`, add `Vocabulary`) and `Deal.Contracts` (add `Vocabulary`), then
-   fix the `global using Concertable.B2B.Deal.Contracts.Enums;` line in each of the 20 `GlobalUsings.cs` files
-   that carry it, plus any file-scoped `using` of that namespace.
-4. Add the `*.Domain` → `*.Contracts` architecture test with the remaining B2B modules allowlisted.
-5. Gate on a full `api/Concertable.slnx` build plus `Concertable.B2B.Deal.UnitTests`, then commit before
-   starting Phase 2.
+1. Pin `Riok.Mapperly` in `api/Concertable.B2B/Directory.Packages.props` at the version
+   `Chore/TestTierNaming` already uses (4.3.1), and add the `PackageReference` to
+   `Concertable.B2B.Deal.Application`.
+2. Add `DealMappers` (static, C# 14 extension members, `[Mapper]` with no visibility overrides,
+   `[MapDerivedType]` over the four arms) covering `DealEntity → DealDto` only.
+3. Add `DealFactory` with `Create(DealDto)` and `Apply(DealEntity, DealDto)` switches over
+   `XDealEntity.Create`/`.Update`, the tuple pattern's default arm carrying the deal-type mismatch error that
+   `DealUpdater.Apply` currently hand-writes.
+4. Delete `IDealMapper`, `DealMapper` and the four arms; `IDealUpdater`, `DealUpdater` and the four arms.
+   Repoint `DealService` (`Validate`, `CreateAsync`, `UpdateAsync`, `FindByIdAsync`, `GetByIdsAsync`).
+5. Remove both `RequireAll` rows and the keyed registrations in
+   `Deal.Infrastructure/Extensions/ServiceCollectionExtensions.cs:47-66`, then fix
+   `DealStrategyArchitectureTests` and `DealStrategyFactoryTests` where they name deleted types.
+6. Add the exhaustiveness test asserting both switches carry an arm per `DealType`.
+7. Gate on `Concertable.B2B.Deal.UnitTests` building and passing. The full-solution build cannot be a gate
+   until the `AuthorizeAsync` package break above clears.
