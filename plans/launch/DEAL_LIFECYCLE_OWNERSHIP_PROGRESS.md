@@ -5,230 +5,427 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) remains
-  published at `0511c35cadca144c7614b27596575eb66692bc62`. Local merge checkpoint
-  `922dcf321` reconciled baseline `6229e87c64326aad86c8cbc85e23802266808a48`; planning checkpoint
-  `0598ccc70` records the settled dispatch design. The Workers, Concert unit, Opportunity request-builder, and
-  `ApplicationCancelApiTests` frontiers remain cleared.
-- Dependency/package gates: blocked on terminal Phase 0-1 delivery of
-  `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`. Phase 1 delivery remains terminal; final `api/**`
-  package publication and platform sync remain part of PR #633's later delivery lifecycle.
-  The B2B payment slice also waits for PR #933's breaking Payment packages: session requests carry
-  one validated `PaymentOperationReference`, and public outcomes/events expose only Payment-owned
-  identities rather than provider object ids.
-- Last reconciled: 2026-08-19 after suspending PR #633 behind the independently deliverable Deal
-  dispatch foundation while preserving its `ApplicationDoorSplitApiTests` continuation
+- PR: [#633](https://github.com/Concertable/concertable/pull/633), out of draft and merging through the
+  merge queue. The candidate carries the completed state-machine cutover, the IR1–IR31 fixes, and the
+  Payment v1 consumer cut-over merged up to `main` at `abd3466e3`.
+- Dependency/package gates: Deal producer PR #678 and platform sync #694 are terminal at
+  `Concertable.Platform 0.1.0-alpha.0.1108`. Kernel producer PR #719 published
+  `Concertable.Kernel 0.1.0-alpha.0.1133`, and platform sync PR #730 produced the B2B platform pin
+  `0.1.0-alpha.0.1158`. B2B consumes the Kernel state machine directly and every consumer directly pins
+  `Reunion 0.1.0-alpha.8` rather than relying on Kernel's transitive reference. No producer gate remains.
+- Last reconciled: 2026-09-06 from local Git, GitHub PR #633, the active review work order, and focused
+  module lifecycle verification.
 
 ## Current state
 
-Tommy approved the target ownership design on 2026-08-16. The fixed progression is Application →
-Booking → Concert for every `DealType`; DealType varies only the local behaviour performed at each
-stage. Opportunity remains the upstream one-Deal/many-Applications aggregate.
+PR #633 is the one complete B2B modular-monolith refactor. Opportunity, Application, Booking, and
+Concert own their full Api/Application/Domain/Infrastructure/test verticals and retain the fixed forward
+authority flow `Opportunity -> Application -> Booking -> Concert`. Deal behaviour varies inside each
+stage and does not alter that order. The B2B query-composition modules own cross-stage dashboard reads;
+the lifecycle modules do not depend backwards for presentation.
 
-Application, Booking, and Concert are being separated into independent modules with their own state,
-transition model, contextual operation contracts, and provisional module-local selection. There is no
-umbrella process entity, shared lifecycle state, workflow module, cross-module resolver, or parent state
-machine. A combined status exists only as a read projection.
+The state-machine cutover is complete (review finding IR5). Application, Booking, and Concert each own
+`Domain/Lifecycle/{State,Trigger,StateMachine}.cs`: a module-local `internal sealed class StateMachine :
+IStateMachine<State, Trigger>` backed by the published Kernel `StateMachine<State, Trigger>` frozen table.
+Each aggregate holds one static machine and funnels every mutation through a private `Transition(Trigger)`
+helper that assigns `State` only from the success value, then mutates auxiliary data and raises events;
+a rejected edge leaves state, auxiliary facts, and events untouched. Operation errors carry
+`InvalidTransition(TransitionError<State, Trigger>)`. The old combined `LifecycleState`, per-`DealType`
+`LifecycleStateMachine`, `IConcertStateMachineRegistry`, and `ILifecycleTransitioner` are gone from source.
 
-Phase 1 characterization is complete. Existing integration coverage already pins both
-payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
-compensation, immutable Contract snapshots, Invoice creation, and duplicate settlement success. The
-two missing cases are now covered: payment-webhook redelivery asserts exactly one persisted Concert,
-and a failed settlement followed by a successful retry reaches the existing completion outcome. No
-new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
+Deal-varying dispatch now has one shared Deal-specific composition layer. `DealStrategyBuilder` composes
+the generic keyed-strategy builder and automatically requires full `DealType` coverage for every registered
+same-interface family. `DealUnionBuilder<TUnion>` composes the generic keyed-union builder and enforces one
+method-header case per DealType. No family needs that escalation today: with Payment owning payment-method
+commitments, apply and accept take the same arguments for every deal type, so Application's `IApplyStep` and
+`IMintCommitment` are same-interface families. `DealUnionBuilder` stays for the first family that genuinely
+fractures on caller input.
 
-Phase 1 characterization merged through PR #625, its package publication succeeded, and platform-sync
-PR #630 merged green. PR #633 owns the complete remaining decomposition through the plan's definition
-of done. Phases 2-6 are implementation/recovery checkpoints on that one draft PR, not separate merge
-candidates.
+## Payment v1 consumer cut-over
 
-The published PR #633 frontier has cleared the Opportunity request-builder, Concert unit, Workers unit,
-B2B Web, and `ApplicationCancelApiTests` ownership recoveries. The remaining integration compile
-frontier continues one fixture at a time from the exact action below. The keyed-selector concern is a
-recorded non-blocking follow-up owned by the Deal plan and must not be expanded inside these recovery
-slices.
+B2B now consumes only Payment's consumer-agnostic v1 surface (producer PR
+[#933](https://github.com/Concertable/concertable/pull/933)). No provider identifier crosses the boundary
+and none is persisted: `PaymentOperationReference` is minted once in
+`Concertable.B2B.Infrastructure/Payments/PaymentOperationReferences`, frozen onto `ContractEntity`, and
+read back by Booking and Concert. `BookingEntity.FinancialOperationReferenceId`,
+`ConcertEntity.FinancialOperationReferenceId`, `VerifyPaymentEntity.ProviderTransactionId` and
+`SettlementConfirmation.ManagerPaid(transactionId)` are gone; the Payment-owned `Guid OperationId` is the
+only operation identity B2B stores. The legacy `IManagerPaymentOperationsClient` /
+`IManagerPaymentReportingClient` / `CheckoutSession` / `FindHeldIntentAsync` surface is replaced by
+`IPaymentSessionOperationsClient`, `ISettlementOperationsClient` and `IPaymentReportingClient`, and the
+`*ByReference` escrow commands collapse back into `CaptureEscrowCommand` / `DepositEscrowCommand` /
+`RefundEscrowCommand` carrying the reference. B2B's `Checkout.Session` is now a B2B-owned
+`CheckoutSession`, so the SPA contract is unchanged while the Payment type no longer reaches the HTTP edge.
 
-Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
-The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
-runtime change was carried forward.
+Concert's ticket-sold counter no longer sniffs `PaymentSucceededEvent` metadata for
+`type=ticket`/`concertId`/`quantity` — those keys are deleted in v1. `TicketSaleProcessor` subscribes to
+Customer's already-published `TicketPurchasedEvent` instead, which is where a ticket sale is actually
+owned; the `ConcertSalesProjection` end state in `api/Concertable.B2B/TECH_DEBT.md` stays open.
 
-Tommy selected the Deal dispatch foundation as the next delivery owner before further lifecycle recovery.
-The local PR #633 worktree is preserved at its current committed checkpoint; its next integration slice
-is unchanged but suspended. After the foundation lands, the branch must merge fresh `origin/main` before
-that slice resumes so it consumes generated net10 factories directly rather than adding temporary keyed
-or handwritten dispatch that would be replaced during .NET 11 preparation.
+### Published-package evidence
+
+The producer is delivered and this consumer is validated against the real feed, not a local artifact.
+
+- Producer PRs: [#933](https://github.com/Concertable/concertable/pull/933) merged as
+  `3f7fd95cc0fc4a6fbd2168f035cce3088fc3d22f`, and the JSON-transport fix
+  [#937](https://github.com/Concertable/concertable/pull/937) (reviewed head
+  `4346770d56cbbc81bcc774bde92e3c40bc89ad88`) merged as
+  `ea33c48e66ec814d2341b35b72be73a04f8cc347`, which is the source commit the packages were built from.
+- Published Payment version: **`0.1.0-alpha.0.1322`** — `Concertable.Payment.Client`,
+  `Concertable.Payment.Contracts`, `Concertable.Payment.Hosting`, `Concertable.Payment.TestKit`.
+- Package workflow (green, reported "Your package was pushed" for every Payment package, fresh-consumer
+  feed restore passed): <https://github.com/Concertable/concertable/actions/runs/33978948615>.
+  Corrected image workflow (green): <https://github.com/Concertable/concertable/actions/runs/33978948571>.
+  #933's own package and image runs were cancelled before their push steps, so no broken artifact escaped.
+- SHA-256 of the packages this branch actually restored from the feed:
+  `Concertable.Payment.Contracts` `4cf37682e1e3e6d7fd7e175c591cf8b920b08cecb4da9136100fcca566551539`;
+  `Concertable.Payment.Client` `68b7e9aec20c60bc7824fa1af49c8f487c3658b347dbce36e57f2cc0993cef5a`.
+  `Payment.Hosting` and `Payment.TestKit` are not restored here: `PlatformSourcePackages.targets` swaps
+  them to `ProjectReference` for `*.AppHost` and `/tests/` projects, so only the two `src` packages come
+  from the feed in this solution.
+- The `[JsonConstructor]` blocker recorded below is **resolved by #937**, which added the attribute and a
+  serialize/deserialize regression test. It is history now, not an open gate.
+
+**The platform pin deliberately stays at `0.1.0-alpha.0.1329` while Payment moves to `0.1.0-alpha.0.1322`.**
+The alpha heights are not monotonic in time — `1329` was published 2026-09-02 and `1322` on 2026-09-05 — and
+`Concertable.Payment.Contracts 1322` declares `Concertable.Kernel >= 0.1.0-alpha.0.1329`. Moving
+`ConcertablePlatformVersion` to `1322` therefore downgrades Kernel beneath what Payment itself requires and
+fails restore with `NU1605` (warning-as-error). Only the four Payment packages carry the explicit `1322`
+pin; every other platform package stays on `$(ConcertablePlatformVersion)`. B2B is the only service bumped —
+Customer's pin rides its own migration.
+
+### Preparation evidence, retained as history
+
+Before publication this consumer was proven against an exact artifact packed from #933's head
+`ec11b801fb314929552f4907ddf81361ea05d4ab` (reviewed watermark
+`6018baa840aac6ae0c493b14fcdcb77a3ab13774`) as version `0.1.0-local.ec11b801f`, consumed through
+working-tree-only edits to `api/Concertable.B2B/nuget.config` and `api/Concertable.B2B/Directory.Packages.props`
+plus a working-tree-only overlay of #933's `api/Concertable.Payment` source. Every one of those inputs was
+reverted before the push; no machine-specific feed, temporary path or disposable version pin was ever
+committed. That artifact is superseded by the published packages above and is recorded only so the earlier
+green runs in this ledger can be interpreted.
+
+### Pre-existing branch red the cut-over uncovered
+
+`Concertable.B2B.Application.Infrastructure` did not compile before this work, so every project downstream
+of it — the Application, Booking, Concert, Dashboard and Lifecycle integration suites and the Concert unit
+suite — had never been built or run on this branch. Compiling them surfaced four defects that predate the
+Payment cut-over and are fixed here:
+
+- `BookingFactory` left the contract on `BookingEntity.Contract`, so the seeder's booking save dragged the
+  contract into the same `IDENTITY_INSERT` window and every B2B fixture failed at seed. The seed aggregate
+  now clears the navigation.
+- `ConfirmedBookings` hard-coded tenant ids that four Concert unit tests mocked with fresh GUIDs, and two
+  door-revenue tests dated `now` before the fixture's 2035 concert. Both now read the fixture's constants.
+- `ApplicationEntity.Accept` raised only `ApplicationAcceptedDomainEvent`, so a verification recorded
+  *before* the acceptance was never replayed against the booking the acceptance creates and the booking sat
+  in `AwaitingConfirmation` forever. `Accept` now re-raises the recorded verification after the acceptance
+  event, which is the durable replayable join NAT11 asked for.
+- `ConcertEntity`'s settlement payment reference was never mapped, so the column did not exist and the
+  reference read back empty on every settlement. `ConcertEntityConfiguration` now maps it as a complex
+  property beside the financial failure, and the Concert migration is re-scaffolded.
+- `DoorRevenueOutstandingSpecification` downcast to the **abstract** `DoorRevenueConcert`, which EF cannot
+  translate at all, so `/api/venue-dashboard/kpis` returned 500 and the completion sweep's query threw. It
+  now casts to the concrete `DoorSplitConcert` / `VersusConcert` leaves, which EF translates to the
+  discriminator, in the one place the predicate is defined.
+- `ConcertApiFixture.FailSettlementPersistenceAsync` armed its CHECK constraint on the provider-reference
+  column this change removes; the state half alone already admits the reservation and rejects the
+  completion, which is what the constraint is for.
+- Four Application/Concert tests asserted the retired contract (a `pi_` client-secret prefix, apply
+  succeeding with no committed method, accept requiring one). They now assert the v1 behaviour: apply
+  without a commitment is `402`, accept before verification is `204` and waits.
+- `MockPaymentTransport` could only settle a *pending* command, so a second webhook for a flow whose only
+  Payment operation moves over the bus threw instead of redelivering. Each outcome now carries an envelope
+  id stable per operation, and after the wait window finds nothing pending the settled command's outcome is
+  repeated — which is what the bus does and what the inbox dedupes.
+- `scripts/integration.ps1` carries a hand-written roster that never gained the six integration projects
+  this branch adds (Application, Booking, Dashboard, Deal, Opportunity, Lifecycle), so the local entrypoint
+  could not see or run the suites covering this change. CI discovers by `find` and always ran them; the
+  roster now matches. `Admin` and `E2EAdmin` were missing before this branch and are left alone.
+
+The venue dashboard's revenue chart changed meaning, not just names: v1 has no ticket-scoped reporting
+query, so what was `charts/ticket-revenue` now reports every payment where the tenant is payee. It is
+renamed end to end — `charts/payment-revenue`, `GetPaymentRevenueAsync`, `useVenuePaymentRevenueQuery`,
+card title "Revenue" — rather than left saying something the number no longer means.
+
+`Modules/Deal/ARCHITECTURE.md` §2.7 and two tech-debt entries described the retired surface
+(`IManagerPaymentClient`, `FindHeldIntentAsync`, the `*Step` names, and a "resolves when `ManagerPayment`
+gains a `CancelHeldIntent` RPC" that v1 makes unreachable). All three now describe the v1 shape.
+
+### Invariant sweep and its deliberate survivors
+
+`PaymentMethodId` / `paymentMethodId` / `payment_method_id` / `PaymentIntentId` / `paymentIntentId` /
+`payment_intent_id` / `SetupIntentId` / `ChargeId` / `TransferId` / `RefundId`, case-insensitively over
+`api/Concertable.B2B`, `app/web/b2b` and `app/web/shared`, is zero except:
+
+- `app/web/shared/.../checkout/StripePaymentForm.tsx` and `.../payments/NewCardSection.tsx` — the browser's
+  own Stripe adapter reading `intent.payment_method`, still offered to callers through `onSuccess` /
+  `onConfirmed`. B2B stopped consuming it; narrowing the shared tier is publish-first and is recorded in
+  `api/Concertable.B2B/TECH_DEBT.md`.
+- `Concertable.B2B.E2ETests` / `.Ui` — provider ids **read back from Payment's own database** through the
+  Payment TestKit and asserted against real Stripe objects. That is what the E2E tier is for; nothing B2B
+  sends carries them, and the addressing is now `PaymentOperationReference`-shaped via
+  `Concertable.B2B.E2ETests/PaymentOperationsDb`.
+- Old generated migration snapshots are gone: Application, Booking and Concert were re-scaffolded, so no
+  `PaymentMethodId` / `SettlementPaymentMethodId` column survives anywhere in B2B's model.
+
+`api/Concertable.Customer` and `app/customer/shared` still consume the removed contract and are **not**
+touched here; that consumer is `plans/launch/CUSTOMER_PAYMENT_REFERENCE_PROGRESS.md`'s.
+
+### Producer defect found while validating — resolved by #937
+
+`PaymentOperationReference` does not survive a JSON round-trip: it is a `readonly record struct` whose
+parameterized constructor carries no `[JsonConstructor]`, so `System.Text.Json` binds the implicit
+parameterless constructor and every value is lost. Serializing produces
+`{"OperationType":"escrow","ClientReference":"booking:48"}`; deserializing yields `('', '')`. That silently
+empties the reference on every escrow command and event crossing the outbox, and B2B's Booking integration
+suite fails on exactly that. Verified with a standalone probe against the packed v1 assembly, and confirmed
+fixed by adding `[JsonConstructor]`, applied only to the local overlay at the time to prove the consumer.
+PR #937 landed exactly that attribute plus a serialize/deserialize regression test, and the packages this
+branch now restores are built from its merge commit, so the defect cannot reach B2B.
+
+The final security review added IR7-IR10. IR7 is closed: verify-payment handlers now resolve only the
+Booking id before entering the repository's serialized financial transition, and deterministic overlap
+coverage compiles through the real handler. IR8 is also closed: Accept, Withdraw, and Reject acquire the
+same aggregate update lock before lifecycle validation, with deterministic queue-order coverage. IR9-IR10
+remain active. The earlier review work order had
+every fixed-anchor finding and every incremental finding (IR1–IR6) closed on the branch.
+`ConcertAvailabilityEntity` naming/layer
+placement remains recorded Application technical debt in
+`api/Concertable.B2B/src/Modules/Application/TECH_DEBT.md`, deliberately outside this PR's scope.
 
 ## Next Steps
 
-Blocked: PR #633 is suspended until the Deal dispatch foundation is delivered on `main`.
-Blocked by: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md` Phases 0-1.
-Unblock action: The Deal owner must deliver the generator/analyzer plus Deal-owned mapper/updater factory foundation through review, CI, merge, package publication, and platform sync, then update this ledger to resume the preserved `ApplicationDoorSplitApiTests` module-owned read/state compile-recovery slice from the current 22-error frontier.
-Resume when: Current `main` contains the delivered Deal foundation, its ledger records the Phase 1 delivery lifecycle terminal green, and this branch has merged that exact `origin/main` state.
+Both consumers of Payment v1 are now delivered. Customer's migration merged to `main` (#939 published the
+`@concertable/customer` package, #938 landed the service and standalone carves), so the two compile errors
+that kept `main` red alongside B2B's are gone from `main` itself. `origin/main` at `abd3466e3` is merged
+into this branch, and the six B2B references this PR owns — `ArtistDashboardService` /
+`VenueDashboardService` (`IManagerPaymentReportingClient`), `Concert.Application/Responses/Checkout.cs`
+(`CheckoutSession`), and `FinishConcertError.cs` (`ManagerPaymentError`) — are resolved against the reviewed
+v1 consumer shapes. No Customer or Payment source was modified to get there.
+
+The merged tree therefore builds green as a whole for the first time since #933: `api/Concertable.slnx`
+compiles with 0 errors. **PR #633 no longer needs an admin merge and must not get one** — it goes through
+the merge queue so the E2E tier validates it against current `main`.
+
+After terminal merge, the causally triggered consequences are the package publish for B2B's published
+contracts and the generated `ConcertablePlatformVersion` sync PR, which finally retires the split Payment
+pin recorded above. Only when those are terminal is this ledger's lifecycle complete and the plan, ledger
+and review artifact deleted.
+
+## Boundary hardening (MM_BOUNDARY_HARDENING_PROMPT.md)
+
+An external audit found the module boundary enforced encapsulation but not direction. Working this to
+close before PR #633 leaves draft.
+
+- **A1 (fixed)** — `IOpportunityModule.FillAsync`/`TryFillAsync`/`FillOpportunityError` deleted;
+  `IOpportunityModule` is now query-only. The "one Accepted Application per Opportunity" invariant moved
+  to a unique filtered index (`Application(OpportunityId) WHERE State = Accepted`); the loser's
+  `SaveChangesAsync` duplicate-key conflict maps to `AcceptApplicationError.AlreadyAccepted`
+  (`application.accept.duplicate`, replacing the deleted `OpportunityUnavailable`). Opportunity's `Filled`
+  is now an ordinary aggregate transition (`MarkFilled`, guarded like `Reopen`) reached asynchronously via
+  the new `ApplicationAcceptedEvent` integration event (published by
+  `Application.Infrastructure.Events.ApplicationAcceptedDomainEventHandler`, consumed by
+  `Opportunity.Infrastructure.Events.ApplicationAcceptedIntegrationEventHandler`), mirroring the existing
+  `Reopen` reaction to Booking/Concert cancellation. The plan's Section 8 self-contradiction (synchronous
+  claim vs. no-backward-synchronous-calls) is resolved in the plan text itself.
+- **A2 (fixed)** — `PaymentVerificationRecordedDomainEvent`/`...Handler` deleted (Application commanding
+  Booking directly); `IBookingModule.RecordPaymentVerificationAsync` and its `BookingPaymentVerification`
+  family deleted from Booking.Contracts. `ApplicationEntity.RecordPaymentVerification` now raises the
+  already-contracted `VerifyPaymentSucceeded`/`VerifyPaymentFailed` directly, which the previously-dead
+  `VerifyPaymentSucceededHandler`/`VerifyPaymentFailedHandler` in Booking now actually receive (they were
+  registered but the events were never raised before this fix).
+- **A3 (blocked on an unrelated build break)** — added to `ModuleBoundaryTests.cs`: a cycle rule
+  (`Slices().Matching("Concertable.B2B.(*).").Should().BeFreeOfCycles()`), a lifecycle-direction rule
+  (no later stage's namespace calls a non-`Get`-prefixed member of an earlier stage's `I*Module`), and a
+  facade query-only rule (every member of `IOpportunityModule`/`IApplicationModule`/`IBookingModule`/
+  `IConcertModule` must start with `Get` — true for all four after A1/A2). `LifecycleStateOwnershipTests`'s
+  bulk-state-write scan now includes Opportunity (the one violation it would have caught was A1's
+  `TryFillAsync`, already deleted). **Cannot yet build-verify**: `Concertable.B2B.Infrastructure` fails
+  with `CS0246: IClientContext could not be found` — commit `880cef5ff` moved `IClientContext` into the
+  `Concertable.Kernel` package but no locally-cached Kernel package version (checked through
+  `0.1.0-alpha.0.1252`) actually contains it. Pre-existing, unrelated to this hardening pass; user is
+  looking into the Kernel publish. Once it clears: verify the cycle-rule slice pattern is meaningful, and
+  prove both new rules fail-before/pass-after per this PR's own verification convention.
+- **A4 (in progress)** — concurrency test for two applications racing to accept on one Opportunity,
+  dispatched to a background agent; not yet returned (also blocked on the same Kernel build issue for its
+  own verification).
+- **Part B sweep** — 14 `I*Module` contracts across B2B (+3 Customer) enumerated; after A1/A2, all four
+  lifecycle contracts are query-only, and only 3 of 14 total carry any command member
+  (`IAdminModule.EnsureCurrentUserAdminGrantedIfEligibleAsync`, `IConversationsModule.SendAsync`/
+  `SendAndNotifyAsync`, `IDealModule.CreateAsync`/`UpdateAsync`/`Validate` — none is a downstream-to-upstream
+  lifecycle call; `IDealModule`'s dead `DeleteAsync` was found and deleted). Every registered
+  `IDomainEventHandler<T>`/`IIntegrationEventHandler<T>` in B2B has a confirmed live raise/publish site (no
+  dead handlers remain; A2 removed the one that was dead). `ApplicationEntity.BeginAcceptance()` (the
+  no-arg overload) is production-dead, test-only — minor, not fixed yet. Cross-context transaction
+  enlistment: Application's accept transaction enlists Booking's DbContext twice more (Contract/Booking
+  formation via `ApplicationAcceptedDomainEvent`, and payment verification via
+  `VerifyPaymentSucceeded`/`Failed`) plus Conversations' via `ApplicationNotifier` — all three forward and
+  deliberate; the Conversations one is flagged as a plausible future async-conversion candidate, not fixed
+  here (see Decisions below). Booking -> Concert confirmation is *not* a cross-context enlistment — it's
+  the durable async `BookingConfirmedEvent` path, correcting an earlier wrong claim in this ledger. No
+  contract-leaking-internals found across the 14 `I*Module`s. `PayoutAccountEntity.MarkVerified()` (Payment
+  service) found production-dead, logged as tech debt there rather than fixed blind. Plan DoD checkboxes
+  reconciled for Phases 3/6 against actual code state; the plan's Section 8 contradiction resolved. Not yet
+  done: scaffolding-debt project sweep (item 8) beyond a light spot-check, and a full pass over Customer/
+  Payment/Auth's own domain-event rosters for item 2 (B2B's is complete).
 
 ## Completed work
 
-- Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`; its package
-  publication succeeded and platform-sync PR #630 merged green.
-- Opened draft whole-refactor PR #633 for Phases 2-6. Its published head
-  `0511c35cadca144c7614b27596575eb66692bc62` includes the Opportunity request-builder, Concert unit,
-  Workers unit, B2B Web, and `ApplicationCancelApiTests` recovery checkpoints.
-- Reconstructed `origin/main` and the rejected aggregate-collapse, premature state-split, and
-  Deal-owned workflow attempts.
-- Established that the combined `ApplicationEntity.State` is an ownership defect rather than evidence
-  for a replacement process aggregate.
-- Confirmed from current executors/callbacks that commands consume one lifecycle operation at a time;
-  the `IConcertWorkflow` dependency-holder leaks unrelated dependencies.
-- Obtained Tommy's explicit decision for independent Application, Booking, and Concert ownership,
-  module-local state machines/resolvers, contextual names, and no umbrella parent.
-- Replaced the undecided plan with executable phases covering module extraction, state ownership,
-  transaction/convergence invariants, local step resolution, projections, and delivery.
-- Reconciled the approved decision onto current main, fixed all three docs-review findings, and pushed
-  reviewed work head `d06422710a5789cc40ab8817f8ee860f80220eda`; the remote-tracking ref matched exactly.
-- Published ledger checkpoint `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`, opened docs-only PR #622,
-  and confirmed its PR head and `skip-e2e` label.
-- Merged docs decision PR #622 as `5c33f849444dda60ece44070353716c08819b2d8`, closed rejected PR #614,
-  and retired its clean worktree/local branch at exact head `ec1dcac897ce5075db83247d05ff694a912f9c43`.
-- Published initial work commit `7898bf8bb83f3dff61686044cd49023ed0afb9fc`, merged current
-  `origin/main` as `3d0fc5a823cad198f8de878aecef5928036f6c5f`, then pushed range
-  `7898bf8bb..3d0fc5a82` from starting remote head `7898bf8bb`.
-- Opened draft PR #625 and verified local HEAD, the remote branch, and PR `headRefOid` all equalled
-  `3d0fc5a823cad198f8de878aecef5928036f6c5f` before this ledger checkpoint.
-- Removed the exact shared-state topology and source/file inventory additions after recognizing they
-  asserted the implementation scheduled for deletion rather than durable system behaviour. This
-  correction is recorded in this commit.
-- Published correction `cea004a225d04e1ce92abb0eac1b061220e2bdc2`, verified local HEAD, the
-  remote branch, and PR #625 `headRefOid` matched, and corrected the draft PR title and description.
-- Audited Phase 1 boundary coverage and added only the missing settlement-recovery flow and direct
-  exactly-once Concert assertion; the existing coverage already protects the other required outcomes.
-- Published Phase 1 range `40cd20957..96dd65989`, including current `origin/main` merge
-  `96dd6598979313c40214cbf78c69facd25e4b2e7`; local HEAD, the remote branch, and PR #625
-  `headRefOid` matched exactly before this ledger checkpoint.
-- Reviewed range `40cd20957..2cc20d1be`; replaced the fixture's hand-written handler scope with
-  `IScoped<...>.RunAsync`, then verified and published the resolved review work head.
-- Exact checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4` passed draft-PR CI run
-  `31983097059`, including build, every service carve, unit matrix, integration matrix, and `ci-complete`.
+- Phase 1 characterization shipped through PR #625 and package/platform sync #630.
+- The module carve removed cross-stage EF navigations, established Contracts handoffs, split all four
+  module verticals, corrected host/module composition and integration-test topology, regenerated the
+  canonical initial migrations, and established mechanical module-boundary guards.
+- Deal's validated module-local strategy foundation shipped through PR #678 and platform sync #694.
+- Kernel's immutable Result-based state-machine producer shipped through PR #719, published
+  `Concertable.Kernel 0.1.0-alpha.0.1133`, and reached main through platform sync PR #730 at platform pin
+  `0.1.0-alpha.0.1158`.
+- PR #633 split all four module verticals, then adopted the module-local Kernel state machines (IR5) and
+  closed every fixed-anchor and incremental review finding, including NAT17 (durable post-commit Concert
+  notification/email), MB6 (Contract suite re-homed to public boundaries), CV9/CV10 (mock-heavy orchestration
+  moved out of UnitTests), IR1/IR2 (production message topology), IR3 (cross-venue availability), and IR4
+  (serialized Booking financial transitions).
+- IR6 completed the production message topology by provisioning the three lifecycle topics and the durable
+  Concert-notification command queue in the Aspire composition layer.
+- Replaced the four copied Deal strategy builders with the shared generic keyed builder plus the
+  Deal-specific `DealStrategyBuilder`; added the generic keyed-union catalog, `DealUnionBuilder<TUnion>`,
+  and `IDealUnionFactory<TUnion>`; and moved Application Apply/Accept dispatch out of DealType switches.
+- Replaced operation-specific executors with one executable module-local workflow per Application, Booking,
+  and Concert. Deal-varying lifecycle leaves remain discrete `*Step` contracts selected through
+  `IDealStrategyFactory<TStrategy>` so implementations can be shared and recombined by `DealType`.
 
 ## Verification
 
-- Live GitHub state on 2026-08-19: PR #625 is merged; PR #633 is an open draft at
-  `0511c35cadca144c7614b27596575eb66692bc62`.
-- The published PR #633 ledger records the next isolated `ApplicationDoorSplitApiTests` recovery slice
-  from a 22-error Concert integration compile frontier.
-- `origin/main` uses one broad `LifecycleState` on Application while Booking and Concert have no
-  lifecycle state of their own.
-- Public Application mapping already collapses post-accept states back to Accepted, proving those later
-  states are not meaningful Application status.
-- Concert completion currently reaches backwards through `Concert.Booking.Application.State`, the
-  dependency leak the target design removes.
-- Accept currently forms Application acceptance, Booking, and Contract under one B2B transaction; the
-  plan preserves that invariant across module DbContexts.
-- Verify-before-Accept convergence already persists the early payment fact before advancing; the plan
-  preserves the join without treating it as one end-to-end state.
-- Corrected Concert unit suite: 229/229 passed in Release with the branch restored to current-main
-  lifecycle test coverage and no new assertion over `LifecycleState` or its transition table.
-- `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --no-restore`:
-  0 errors and the pre-existing `UserEntity` CS0628 warning after merging the current platform pin.
-- Rejected DealTerms implementation vocabulary scan: no matches.
-- `python .agents/hooks/plan_graph.py --root .`: 0 errors and 0 warnings.
-- `git diff --check`: passed.
-- Pre-checkpoint publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR
-  #625 `headRefOid` all equalled `3d0fc5a823cad198f8de878aecef5928036f6c5f`.
-- Correction publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR
-  #625 `headRefOid` all equalled `cea004a225d04e1ce92abb0eac1b061220e2bdc2`.
-- `dotnet build api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj --configuration Release`:
-  0 errors; the three warnings are pre-existing `UserEntity`/`ConcertApiTests` warnings.
-- Current candidate `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors and 0 warnings;
-  `git diff --check`: passed.
-- After merging current `origin/main`, the affected integration-test project built with 0 errors and
-  two pre-existing nullable warnings.
-- Phase 1 work-head publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft
-  PR #625 `headRefOid` all equalled `96dd6598979313c40214cbf78c69facd25e4b2e7`.
-- Review-fix publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR #625
-  `headRefOid` all equalled `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; the affected integration-test
-  project rebuilt with 0 errors after the using-based scoped-dispatch cleanup.
-- Exact-head draft-PR CI at checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4`: green. The B2B
-  Concert integration shard passed in 5m03s, the Concert unit shard passed in 1m14s, and `ci-complete`
-  passed.
-- Removed the future-module ArchUnitNET rule before delivery because `WithoutRequiringPositiveResults`
-  made it vacuous until the module assemblies exist; Phase 2 now owns meaningful boundary enforcement.
-- Published corrected work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; local HEAD, the remote
-  branch, and PR #625 `headRefOid` matched exactly before this review checkpoint.
-- Merged current `origin/main` as `ac7e3799e743657697b73c024b9ec75a7a71760b`; the architecture and
-  Concert integration-test projects rebuilt with 0 errors, and local, remote, and PR heads matched.
-- Incorporated platform-sync #629 as work head `b88e867ab6f2a52d8fcb838d688957450e361820`; both affected
-  projects rebuilt with 0 errors and the branch was 0 commits behind `origin/main` before checkpointing.
+- Kernel: 246/246. Application: 18/18. Booking: 13/13. Concert: 91/91. B2B Architecture: 22/22 (includes the
+  exhaustive per-module state/trigger tests, the aggregate no-mutation tests, and the
+  `LifecycleStateOwnershipTests` assignment guard).
+- B2B Web build: 0 warnings / 0 errors.
+- B2B's published package closure built in Release with `UseLocalCore=false` and
+  `EnforceServiceBoundary=true`: 0 warnings / 0 errors. Direct Kernel/Reunion ownership and the shared
+  `0.1.0-alpha.8` Reunion pin were mechanically confirmed.
+- `ServiceTopologyTests`: 7/7 passed with the lifecycle topic and command-queue inventory.
+- Current Deal/workflow slice: KeyedStrategies 19/19, Deal 47/47, Application 20/20, Booking 8/8, and
+  Concert 96/96. Application, Booking, and Concert Infrastructure builds completed with 0 warnings and
+  0 errors. The full B2B solution build completed with 0 errors; its two warnings came from generated
+  temporary UI E2E sources. Architecture composition validation passed outside the sandbox, leaving 21/23
+  green; the two remaining failures are in unchanged Reunion package-ownership and Venue fixture-boundary
+  paths, not this dispatch diff.
+- Step naming slice: Application, Booking, and Concert Infrastructure builds completed with 0 warnings and
+  0 errors; Application 20/20, Booking 9/9, Concert 105/105, Deal 47/47, and B2B Architecture 29/29 passed.
+  The repository-wide old-name and old-filename sweep returned zero matches.
+- A local Concert integration diagnostic reached 38 passing B2B cases before it was stopped after five
+  failures in unchanged HTTP-status and concurrency tests generated nearly 50 MB of captured seed logs. The
+  moved Cancel/Complete bodies match `12273b558`; this run is not recorded as a green integration gate.
+- Local E2E deliberately not run. Standalone carve, complete integration matrices, and exact-head CI remain
+  owned by PR CI and the merge queue; PR/remote head equality is asserted at the pushed head below.
+
+### Merged-tree verification (`origin/main` `abd3466e3` merged in)
+
+- `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release`: **Build succeeded, 0
+  errors**, against a freshly packed local platform. This is the compile floor `main` is currently red on;
+  the merged tree clears it. Four residual warnings are all pre-existing and outside this change: two
+  `MSB3277` EF version conflicts in `Concertable.Auth.ArchitectureTests` and two `CS8632` in generated
+  MSBuild temp sources for `Concertable.B2B.E2ETests.Ui`. The two warnings this branch did own — a duplicate
+  `using` in `B2BHostGraphTests` and an unguarded nullable read in `OpportunityApiTests` — are fixed here.
+- Unit tier, all green, 0 failures: B2B DataAccess 4, Admin 33, Application 20, Artist 12, Booking 9,
+  Concert 105, Conversations 46, Dashboard.Opportunity 7, Deal 47, Tenant 178, User 1, Venue 12,
+  KeyedStrategies 19; Kernel 303, Concertable.DataAccess 31, AppHost.Shared 13.
+- B2B Architecture: 32/32.
+- Frontend compile floor: `npm run test:boundaries` 8/8 and `npm run lint:boundaries` clean across all seven
+  cruised graphs; `npm run build:web-packages`, `build:venue` and `build:artist` all succeeded.
+- Provider-identifier invariant sweep re-run over the merged tree: zero hits in `api/Concertable.B2B/src`.
+  The only survivors are the ones already documented above — `Concertable.B2B.E2ETests` /
+  `.Ui` reading provider ids back from Payment's own database, `api/Concertable.B2B/TECH_DEBT.md`, and the
+  browser's own Stripe adapter in `app/web/shared`. The retired client and error identifiers
+  (`IManagerPayment*Client`, `ManagerPaymentError`, `FindHeldIntentAsync`) return zero hits across `api/`
+  and `app/` except Payment's own deliberately baseline-pinned `PublishedContractFixture`, which is in no
+  solution and consumes `0.1.0-alpha.0.1254` on purpose.
+- `git diff --check`: clean.
+
+### First-ever CI test matrix, and the two defects it revealed
+
+Every previous CI run on this branch died at `build`, which gates the whole test matrix — so no unit, architecture
+or integration job had ever executed on it. The merge makes `api/Concertable.slnx` compile, the matrix ran, and two
+real defects surfaced. Both are this branch's own and both are fixed here (review findings IR32 and IR33).
+
+- **Opportunity lost every genre on persistence.** The module carve regressed `OpportunityEntity.Genres` from
+  `EfSet<Genre>` to a `HashSet<Genre>` behind a computed `List<Genre> PersistedGenres` shim — the exact shape
+  `b610d9eeb` had already rejected as unusable under EF 10. Artist and Concert kept `EfSet<Genre>`; Opportunity alone
+  did not. The HTTP response looked right because it maps the in-memory aggregate, but the JSON column never
+  round-tripped, so every Opportunity re-materialised with no genres at all. Restored to `EfSet<Genre>` with
+  `builder.PrimitiveCollection(o => o.Genres)`, the shadow property and its single-use query helper deleted, and the
+  migration re-scaffolded (same `Genres nvarchar(max)` column; only its ordinal position moves).
+- **The provider-contract inventory no longer described the tree.** Four committed entry points had been retired by
+  Customer's migration on `main` and two live ones were unclassified — Customer's new `paymentSessions.CreateAsync`
+  and this branch's `VerifyPaymentFailedProcessor` status read. Neither side could have caught it alone: CI scopes the
+  test matrix to the changed service, so Customer's PRs never ran Payment's unit tier. Reconciled, with the orphaned
+  `frontend-ticket-web-correlation` decision removed.
+
+A third, confirmed defect is **not** fixed here and is recorded as HIGH tech debt in `api/Concertable.B2B/TECH_DEBT.md`
+plus review finding IR34: the venue dashboard's revenue KPI and chart are structurally zero, because
+`GetPaymentRevenueAsync` sums a table whose only writer is keyed on a `type` value nothing in the system emits. The
+fix is Payment-side or belongs to the open `ConcertSalesProjection`; both are outside this PR. IR35 records a
+separate Customer/Payment idempotency defect found while reviewing the merged tree.
 
 ## Reviews
 
-- Docs review of `89361e99e..d06422710` found three issues: the checkout boundary was ambiguous, the
-  typed-result ledger retained a transferred return path, and graph evidence was stale. All were fixed
-  in `0bd1d2094`; follow-up review through `d06422710` found no further issues.
-- Review `reviews/Refactor-launch_deal-lifecycle-modules.md` covered `40cd20957..1457a2508` across
-  correctness, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
-  coverage. Its integration-test convention finding and incremental ledger-consistency finding are
-  resolved; no open findings remain.
+- Work order: `reviews/BIG-Refactor-launch_deal-lifecycle-modules-phase2-Review.md`. Fixed-anchor review
+  `fb561acee..c50469d48`, security-reviewed through `c50469d48`; incremental through `b61fc7feb`.
+- IR7-IR8 are resolved; IR9-IR10 remain active. IR2/IR3/IR4 (`d1c5d252b`/`05a685317`/`090308c04`), IR5
+  (`c61566685`), and the current IR6 topology checkpoint landed after `b61fc7feb`; a fresh incremental review
+  over those fix commits is the remaining review gate. Keep the artifact until PR #633 merges, then delete it.
+- Independent review 2026-09-05 over `39fbbc0..db5d4be8c` added IR21–IR27; all are closed on the branch,
+  including the Payment metadata fix (IR23) in Payment's source here. IR18 and IR20 are closed too; IR19 is
+  `wontfix` with its debt entry in `Modules/Concert/TECH_DEBT.md`. No `[ ]` finding remains. CI on this
+  branch stays red only on Customer's two legacy compile errors and the jobs downstream of them; the merge is
+  Tommy's admin merge.
+- Incremental and security closeout began over `db5d4be8c..3f89818c7` / `39fbbc012..3f89818c7` and followed
+  the concurrently added local-platform pin commit through remediation head `17ad067e1`; it added IR28–IR31.
+  The branch now proves failed verification ownership through B2B's persisted venue and Payment's operation
+  owner, retries provider-unavailable ownership checks, stamps the public `operationId` metadata key, and
+  covers both terminal outcomes after a deferred refund. Narrative comments found in the reviewed range were
+  removed. All four findings are closed; the fresh remediation incremental is clean.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- One state machine exists per owning aggregate/module, not per individual enum value.
-- Local state machines may use different structures; no common lifecycle interface is required.
-- Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
-  need Application/Booking/Concert prefixes internally.
-- The dispatch investigation is concluded. Honest same-interface families use generated module-specific
-  invariant strategy factories. Heterogeneous lifecycle operations use dedicated non-generic factories
-  returning Dunet implementation unions on net10 and native implementation unions on .NET 11. The
-  consumer matches acceptance/confirmation/completion kind, not four Deal cases; deliberate aliases let
-  multiple Deals share one implementation. Neither path uses `IKeyedServiceProvider` or a global workflow.
-- `IApplicationDealStrategyFactory<TStrategy>` is not reused for `Accept`: an implementation union whose
-  cases have different invocations is not a strategy family. The dedicated name is `IAcceptFactory`, not
-  `IAcceptStepFactory`.
-- PR #633 owns the best-effort net10 heterogeneous-operation conversion after its compile-recovery
-  frontier is green, but only after the Deal foundation lands. It consumes the generated
-  common-interface and dedicated-operation factory machinery directly. The downstream Deal plan retains
-  the later .NET 11 native/closed compiler-enforced cut-over.
-- Generic transition plumbing may be shared only when it has no domain knowledge. Strategy
-  registrations, transition tables, capabilities, and selector instances remain module-local.
-- Application records pre-accept payment evidence only because the callback can arrive before Booking
-  exists. The evidence is not a continuation of Application lifecycle state.
-- The fixed progression is an invariant to enforce, not an extension point. A `DealType` cannot skip,
-  reorder, or merge Application, Booking, and Concert.
-- .NET 11 native unions are the selected mechanism for justified closed internal values after the
-  module split, including the combined journey projection and module-local state, trigger, or
-  operation-outcome shapes with case-specific data. Separate module-local implementation unions may
-  contain the owning heterogeneous operation implementations. Neither form creates shared lifecycle
-  ownership or preserves Deal-keyed service resolution; persistence maps each module's discriminator
-  explicitly.
-- Rust is not an implementation option for this lifecycle, Deal behaviour, or settlement work. The
-  obsolete Rust engine plan was deleted rather than retained as a paused alternative.
-- Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.
-- Invoice/settlement records require evidence-based final placement during the Concert carve, but they
-  cannot justify a shared lifecycle owner.
-- A characterization test must survive the refactor it protects. Types, transition tables, filenames,
-  source tokens, and collaborator ownership explicitly scheduled for removal belong in migration
-  inventory, never in new regression assertions.
-
-## Migration inventory
-
-- Application commands currently run through Apply, Accept, Reject, Withdraw, and application-cancel
-  executors; Accept owns the transaction/outbox boundary, Contract issuance, and early-payment join.
-- Booking progression currently spans verification, escrow, settlement, refund, and financial-operation
-  callbacks, with operation IDs on Application and settlement correlation through Booking.
-- Concert completion runs from `ConcertFinishedFunction`; Concert API actions cover update, post,
-  cancellation, door revenue, Contract reads, and Invoice reads.
-- Application and Opportunity HATEOAS currently derive checkout and command links from the Concert
-  workflow capability registry.
-- Booking-to-Concert creation currently runs through the book step and draft service; Invoice currently
-  reaches DealType through Concert to Booking to Application. These are migration sites, not target
-  ownership or test expectations.
+- The refactor remains one complete draft PR. Its phases are recovery checkpoints, not independently
+  mergeable partial architectures.
+- Application acceptance synchronously forms Booking/Contract pre-commit, and the same accept
+  transaction also synchronously records `VerifyPaymentSucceeded`/`VerifyPaymentFailed` into Booking's
+  financial state via `VerifyPaymentSucceededHandler`/`VerifyPaymentFailedHandler`, and synchronously
+  sends the counterparty conversation message via `IConversationsModule.SendAsync`/`SendAndNotifyAsync`
+  (`ApplicationNotifier`) -- all three are cross-context enlistments, forward (Application -> Booking,
+  Application -> Conversations), all deliberate. Booking's financial confirmation reaching Concert is NOT
+  a synchronous pre-commit enlistment -- correcting an earlier wrong claim here -- it is the durable async
+  `BookingConfirmedEvent` -> `BookingConfirmedIntegrationEventHandler` integration-event path in Concert's
+  own transaction, the same pattern Opportunity's `Filled` reaction now also uses. The Conversations call
+  is a plausible future candidate to convert to the same async pattern (Application already has an
+  event-driven counterparty-notification path for email via `ApplicationCounterpartyNotifiedDomainEvent`;
+  the in-app conversation message uses a different, synchronous mechanism for the same moment) -- not
+  fixed here, flagged for a future consistency pass. Outbound notification/email effects must remain
+  durable and transactionally staged, never escape before commit.
+- A module integration project owns only its resource/API and local persistence assertions. Full journeys
+  belong in B2B Process tests and cross boundaries through HTTP or Contracts.
+- The shared host integration fixture directly reuses the one B2B `SeedState`; namespace separation is
+  sufficient. Do not introduce snapshot, source, mirror, adapter, or copied seed-state taxonomies.
+- Seed consumers may read foreign seeded entities only for stable identities/expected immutable seed data;
+  they may not invoke foreign domain behaviour or query foreign module persistence.
+- Runtime orchestration belongs in integration tests. Unit tests retain pure state, value, transition,
+  calculation, and other deterministic logic.
+- Generic keyed builders remain business-agnostic. Shared B2B Infrastructure composes them with DealType,
+  `IDealStrategy`, exhaustive Deal coverage, and factory registration; module Infrastructure owns only its
+  DealType-to-implementation assignments.
+- A module workflow groups the named lifecycle operations for one aggregate stage. API entry points begin
+  at the module service, while domain-event and background entry points may invoke the workflow directly;
+  no workflow spans modules or owns aggregate state.
+- `ConcertAvailabilityEntity` naming/layer placement is accepted only as recorded Application technical
+  debt for this PR; do not expand the current review fix into that refactor.
+- No local E2E. Exact-head PR/merge-queue CI owns the full E2E tier.
 
 ## Downstream handoffs
 
-- Waiting plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
-  Gate: this lifecycle implementation must land before the .NET 11 plan applies native unions to the
-  resulting closed value shapes and enables module-local dedicated factories to return native
-  implementation unions without restoring the rejected god-workflow model.
-- Blocking prerequisite owner: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
-  Gate: its Phase 0 generator proof and Phase 1 Deal-owned mapper/updater foundation must be terminal on
-  `main` before this PR resumes and consumes the generated Application and operation-factory surfaces.
-  After PR #633 delivers, the same Deal ledger resumes for the compiler-exhaustive native-union and
-  closed-Deal cut-over.
+- `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md` resumes after this lifecycle refactor lands; it may
+  replace justified closed internal values/factory return boundaries with native .NET 11 unions without
+  restoring shared lifecycle ownership.
+- `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md` resumes after PR #633 delivers for its compiler-exhaustive
+  native-union/closed-Deal cut-over.
