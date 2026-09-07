@@ -29,6 +29,11 @@ Design complete, nothing implemented. No branch or worktree exists for this work
   validating factory exactly as a public setter would, and riok/mapperly#1458 (private members across
   compilation units) is fixed only by #2139, merged 2026-02-04 and absent from the latest stable 4.3.1
   (published 2025-12-22). The `entity → DTO` direction never needed it.
+- **Nothing in this plan is waiting on a Mapperly release.** The rejection above is a design decision, not an
+  availability one: a Mapperly 5 that ships `MemberVisibility.All` across assemblies would still not be used,
+  because after Phase 1 `Deal.Domain` cannot reference `DealDto` at all. Do not revisit this plan when 5.0
+  lands. The only deferred choice is the vocabulary's *location*, gated on the published-package rule and
+  tracked as `layering/vocabulary-to-shared-contracts`.
 - **`Apply` as an abstract member on `DealEntity` was designed and rejected.** It is the nicer dispatch and
   gives compiler-enforced exhaustiveness, but it only compiles because of the very `Domain → Contracts`
   reference Phase 1 deletes. Do not re-propose it after Phase 1 lands.
