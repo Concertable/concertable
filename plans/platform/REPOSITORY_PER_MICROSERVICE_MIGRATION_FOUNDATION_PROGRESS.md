@@ -6,14 +6,16 @@
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
 - Branch: `Refactor/M1-Platform-Expand`
 - PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
-- Dependency/package gates: PR #633 landed on `origin/main`; Platform Expand has passed exact-head package,
-  composition, and targeted browser validation. Owner Hosting Sync may now enter exact-head validation.
+- Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand passed exact-head
+  package, composition, and targeted browser validation before the M3 landing and is being revalidated on the
+  exact combined base. Owner Hosting Sync may then enter exact-head validation.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
   remain unavailable on the current GitHub entitlement.
-- Last reconciled: 2026-09-07 — PR #633 landing commit `516f4cc25936289744babef3f98b1a297035fbb6`,
-  the corrective topology commits `82bf5dbbb` and `bb59d9ba3`, and the fixed M1 repository topology.
+- Last reconciled: 2026-09-07 — current `origin/main` commit
+  `12efedd68da08d92b08990a30e76dab5546b5ed4`, which includes PR #633, B2B producer PR #949, and M3 PR #948;
+  the corrective topology commits `82bf5dbbb` and `bb59d9ba3`; and the fixed M1 repository topology.
 
 ## Current state
 
@@ -22,7 +24,7 @@ public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is
 `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
 The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
 creation is part of M1. Four clean M1 branches preserve the Platform Expand, Owner Hosting Sync, AppHost Sync,
-and Platform Contract boundaries above landed `origin/main` commit `516f4cc25`; Git owns their current
+and Platform Contract boundaries above landed `origin/main` commit `12efedd68`; Git owns their current
 rewritten heads. Local
 review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
 retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
@@ -30,8 +32,8 @@ associations into the B2B and Customer owners before system composition consumes
 
 ## Next Steps
 
-- Commit and publish the validated Platform Expand repair, restack the three dependent M1 stages without
-  changing their publication boundaries, and establish a current-head review watermark.
+- Publish the combined-base Platform Expand restack, restack the three dependent M1 stages without changing
+  their publication boundaries, and re-enter exact-head validation and the merge queue.
 - Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
   publication caused by Owner Hosting Sync to its immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
@@ -44,9 +46,11 @@ associations into the B2B and Customer owners before system composition consumes
   their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
 - Extraction-map preflight reports 4,769 tracked paths, 4,769 target claims, 79 unclaimed tracked paths, and
   zero multiply-claimed paths; 6C is not ready.
-- The complete four-stage M1 chain was rebased without conflicts onto PR #633 landing commit `516f4cc25`.
-  Range-diff verification preserves every staged package expansion, owner migration, composition migration,
-  and contract-removal patch and boundary.
+- Platform Expand was rebased onto current `origin/main` `12efedd68`. The shared inventory and plan conflicts
+  preserved M3's landed `app/build-config` ownership and `platform-frontend` identity while restoring M1 as
+  the active foundation ledger; no runtime-code conflict occurred.
+- M3 landed through PR #948 at `12efedd68`; its product-neutral `@concertable/build-config` ownership remains
+  independent of M1's .NET hosting stack and no repository boundary changed.
 - Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
   and normalized resource names, so the B2B mobile API tunnel is emitted correctly.
 - Review remediation added exact Auth SPA replacement and unknown-client fail-closed coverage, retained legacy
@@ -57,8 +61,10 @@ associations into the B2B and Customer owners before system composition consumes
 
 ## Verification
 
-- Ancestry from landed `origin/main` commit `516f4cc25` through the complete M1 stack is verified after the
-  final local restack; landed-base package and composition revalidation is in progress.
+- Ancestry from landed `origin/main` commit `12efedd68` through Platform Expand is verified; the three
+  dependent stages are being restacked in order before combined-base CI is treated as current evidence.
+- Pre-M3 exact-head PR run `34166392329` passed all 81 executed jobs, including package preparation, generated
+  inventory, solution/image builds, five service carves, architecture, unit, and integration matrices.
 - Package inventory and local platform preparation pass with 58 packages. Auth Hosting, B2B Hosting, Auth
   AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
   form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
