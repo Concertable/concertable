@@ -10,7 +10,7 @@ configurable-deal-workflows product doc, and the standing rule those hand to
 
 ## 0. STATUS — BLOCKED on the configurable-deal refactor. Do not build this.
 
-This plan's entry-stage design is **disproven**, and its sequencing is **reversed**. Sections 3, 5 and
+This plan's entry-stage design is **disproven**. Its sequencing is **under discussion**, not resolved. Sections 3, 5 and
 7 remain useful input; sections 4, 6, 9 and 11 are provisional and partly wrong. Read this section
 before any other.
 
@@ -39,7 +39,7 @@ Consequence: this needs **two** derived keys — an entry-commitment key and a b
 so registration grows from four `DealType` rows to roughly three plus three. The claim that it shrinks
 to three is withdrawn.
 
-### 0.2 The sequencing reversal
+### 0.2 The sequencing question — open
 
 Building two keyed enum axes is building two things the configurable-deal refactor deletes.
 `CONFIGURABLE_DEAL_WORKFLOWS.md` states the requirement as *"replace fixed deal-key selection with
@@ -47,9 +47,12 @@ validated configuration-backed capability selection"* — and per-stage capabili
 what "entry commitment" and "binding operation" are. Under configuration they are not two enums; they
 are two stages each selecting a capability, and the second entry route stops being a dimension.
 
-**Decision (owner, this session): the configurable-deal refactor comes first, `DealType` goes away
-entirely, and direct offers land as its first consumer.** This reverses the founder ordering recorded
-in the entry/union refresh. Do not ship an interim enum axis.
+**Direction under discussion, NOT a decision.** The owner's current leaning is configurable deals first,
+`DealType` removed entirely, direct offers as its first consumer — which would reverse the founder
+ordering in the entry/union refresh. Nothing here is settled: the architecture for configuration-backed
+capability selection is still being worked out, and a Postgres migration may come before it. What *is*
+firm is only the negative — do not ship an interim enum axis on the strength of §4–§6, because §0.1
+disproves them.
 
 ### 0.3 A foundational blocker that must be settled first
 
