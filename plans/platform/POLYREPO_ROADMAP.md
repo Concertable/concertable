@@ -9,8 +9,9 @@
 > Design every change as if that split already happened: would this still work if this service lived alone?
 > This roadmap tracks the work that makes that literally true.
 >
-> **Definition of done for the epic:** each service (`B2B`, `Customer`, `Auth`, `Payment`, `Search`,
-> `Shared`) builds, tests, **documents, and plans** itself standing alone; every cross-service dependency
+> **Definition of done for the epic:** each service (`B2B`, `Customer`, `Auth`, `Payment`, `Search`), both
+> platform repositories (`platform-dotnet`, `platform-frontend`), and `system` build, test, **document, and plan**
+> themselves standing alone; every cross-service dependency
 > is Contracts/published-package only; and the cut (§6) has run, so each service folder **is** its own
 > coherent, self-describing repo.
 >
@@ -146,7 +147,7 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
   execution.
   Approved and in execution 2026-08-26. Eleven repositories (five services, `platform-dotnet`,
-  `platform-web`, `system`, `infra`, `config`, `.github`); seventeen checkpoints; the Payment extraction is
+  `platform-frontend`, `system`, `infra`, `config`, `.github`); seventeen checkpoints; the Payment extraction is
   proven end to end.
   **Checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A are delivered** (all 45 test-tier
   cross-repository `ProjectReference`s are now packages, standalone AppHosts consume published Hosting/image
@@ -164,19 +165,19 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   teams, owner access, release-environment policy, the main merge queue, and immutable-tag protection were
   then applied and read back successfully.
   Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
-  parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
+  parallel, while publication, system consumption, source removal, deployment, and archive
   remain ordered and require explicit authorization.
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
-  | Foundation 6B | Active in the isolated topology worktree; owns target-name reconciliation, private-repository policy feasibility, package-ACL preflight, and extraction-map readiness before any target is created or renamed. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
+  | Foundation 6B / M1-M4 | Active across isolated packet worktrees: M1 is the ordered four-stage hosting stack; M2 remains an independent sibling prepared from PR #633, M3 is restacked directly onto the exact landed #633 main, and M4 follows the M1 package/API shape. This stream owns live-target identity reconciliation, package-ACL preflight, extraction-map readiness, and the preparation packets. Existing carve repository IDs and active owner ledgers override historical labels. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
   | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
-  | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
-  | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
-  | Search-next | Reserved exclusively to the Search preparation stream at `C:\Users\tommy\source\repos\search-next` / `Chore/search-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
+  | Auth | Paused but implementable in the existing private `auth` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
+  | Payment | Reserved exclusively to the Payment preparation stream in the existing private `payment` repository; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
+  | Search | Reserved exclusively to the Search preparation stream in the existing private `search` repository; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
 
   Agents read this table and the named ledger before acting. One stream never edits a sibling ledger or
-  worktree. B2B-next preparation remains unassigned until its existing
+  worktree. B2B preparation remains unassigned until its existing
   `wip/b2b-frontend-fold-handoff` checkout is reconciled; the completed Stage 4 boundary leaves system
   extraction available for its later repository-foundation checkpoint.
 
@@ -208,8 +209,10 @@ split is. N3 re-homes its content to `Concertable/agent-standards` (the shared-i
 `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) and deletes `api/AGENTS.md` +
 `api/CLAUDE.md`; the backend floor is thereafter the `.agents/skill-routes.json` routes over the `dotnet` plugin.
 
-The remaining sub-decision is still open: whether a true cut restructures to per-service colocation
-(`services/<x>/{api,web,mobile}`) or uses a multi-source mirror assembler.
+The repository topology is fixed: existing service, `infra`, and `config` identities remain; shared packages
+split into `platform-dotnet` and `platform-frontend`; and `system` owns container composition plus black-box
+qualification. General frontend sharing spans web and mobile, while web and mobile remain package tiers rather
+than repositories. Extraction layout mechanics must preserve this topology and do not reopen it.
 
 ### Original framing (kept for the trade-off it records)
 
