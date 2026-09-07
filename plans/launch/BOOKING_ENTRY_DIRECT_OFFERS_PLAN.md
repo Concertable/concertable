@@ -127,6 +127,26 @@ public enum OpportunityAdmission { OpenToApplications, ByInvitationOnly }
 `WhereActive` adds `o.Admission == OpenToApplications`; `ApplyAsync` rejects `ByInvitationOnly`. Two call
 sites, zero nullables, and it is an axis rather than a switch.
 
+### 5.1b Why Opportunity is not a third proposal
+
+A live reading holds that Opportunity and Application are the same idea — an invitation or request to
+perform, plus an accept — so all three (open call, application, direct offer) are one entity distinguished
+by who is addressed. **The half of that about Application and direct offer is correct and this plan adopts
+it**: §5.4 puts both on one `ProposalEntity` precisely because they are the same act with different
+authors. Folding Opportunity in as well is what fails, for two reasons.
+
+**An opportunity is not signed.** A venue publishing a flat-fee slot e-signs nothing and is bound to
+nothing — it is an invitation to treat. An artist applying signs; an organiser offering signs. Merge
+Opportunity into the proposal table and `Signature` must become nullable, which reintroduces exactly the
+nullable the role-modelling in §5.2 removes. The asymmetry is real, not incidental.
+
+**An opportunity is the scarce thing.** It is 1:N with proposals, transitions `Open → Filled`, and
+survives any number of rejections; a proposal is consumed by its answer. Exclusivity exists because one
+slot admits one booking. Collapsing the scarce resource into the bids competing for it leaves nothing for
+the filtered unique index to be scoped on.
+
+Two entities, therefore — the slot and the proposal — not three, and not one.
+
 ### 5.2 The nullable objection, refuted
 
 Today the Application persists **one** signature. The venue's is never stored on the Application at all —
@@ -307,22 +327,123 @@ orphan. An orphan `ByInvitationOnly` opportunity appears in no discovery query a
 so it is invisible rather than harmful. Closing it properly is a client-supplied idempotency key on
 opportunity creation; that is named here and deliberately not built in this PR.
 
-## 9. Endpoints, authority and visibility
+## 9. The API surface, end to end
 
-| Endpoint | Actor | Permission |
-|---|---|---|
-| `POST /api/application/opportunity/{id}/offer` | organiser | new `VenuePermissions.OffersSend` |
-| `POST /api/application/{id}/counter` | whoever owes the answer | existing pair |
-| `POST /api/application/{id}/decline` | whoever owes the answer | existing pair |
-| `POST /api/application/{id}/accept` | whoever owes the answer | existing pair |
-| `POST /api/application/{id}/withdraw` | the author of the standing proposal | existing pair |
+The `plans` skill treats a consumption contract as non-deferrable, so this is the whole surface, not a
+sketch. **Three new routes, none removed, six with generalised authority.**
 
-Accept, decline and withdraw become symmetric and derive authority from the row's own
-`VenueTenantId`/`ArtistTenantId` pair against `Proposals[^1].ProposedBy` — never from `TenantType`. That
-is what retires the `switch (membership.Type)` in `GetById`.
+| Route | Verb | Who may call it | Change |
+|---|---|---|---|
+| `/api/application/opportunity/{opportunityId}` | POST | artist | unchanged — Apply; creates the thread and Proposal #1 |
+| `/api/application/opportunity/{opportunityId}/offer` | POST | organiser | **new** — creates the thread and Proposal #1 |
+| `/api/application/{id}/counter` | POST | whoever owes the answer | **new** — appends Proposal #n+1 |
+| `/api/application/{id}/proposals` | GET | either party | **new** — the negotiation history |
+| `/api/application/{id}/accept` | POST | whoever owes the answer | authority generalised |
+| `/api/application/{id}/reject` | POST | whoever owes the answer | authority generalised |
+| `/api/application/{id}/withdraw` | POST | the author of the standing proposal | authority generalised |
+| `/api/application/opportunity/{opportunityId}/checkout` | POST | the entering party, when they are the payer | permission widened |
+| `/api/application/{id}/checkout` | POST | the answering party, when they are the payer | authority generalised |
+| `/api/application/{id}` | GET | either party | the `membership.Type` switch is deleted |
+| `/api/application/{id}/eligibility`, `/opportunity/{id}/eligibility` | GET | either party | role-derived |
+| `/api/application/opportunity/{id}`, `/artist/pending`, `/artist/recently-denied`, `/venue/current`, `/artist/current`, `/{id}/contract/pdf`, `/{id}/cancel` | — | unchanged | — |
 
-`ApplicationsDecide` stays the venue's accept/reject permission. Sending an offer is a distinct act and
-gets `OffersSend`, so an organisation can grant one without the other.
+**There is no `/decline` route.** An earlier draft of this plan invented one. `reject` (the responder's act)
+and `withdraw` (the author's act) are already the symmetric pair; they need role-based authority, not a
+third verb.
+
+On the Opportunity side, `OpportunityRequest` gains one optional `Admission` field defaulting to
+`OpenToApplications`. No new Opportunity route.
+
+### 9.1 Requests
+
+```csharp
+internal sealed record ApplyRequest(ESignatureRequest ESignature);                    // unchanged
+internal sealed record AcceptRequest(ESignatureRequest ESignature);                   // unchanged
+internal sealed record OfferRequest(int ArtistId, ESignatureRequest ESignature);      // new
+internal sealed record CounterRequest(DealDto Terms, ESignatureRequest ESignature);   // new
+```
+
+`CounterRequest.Terms` is the existing `$type`-tagged `DealDto` — the same polymorphic shape
+`OpportunityRequest.Deal` already carries over the wire — validated by `IDealModule.Validate` and
+persisted by `IDealModule.CreateAsync`, both of which already exist.
+
+**This is the evidence behind §6's "no keyed union".** A counteroffer is the one place where
+arm-specific, client-supplied figures enter, which is the admission trichotomy's middle tier. It needs no
+union here because the arm pairing is made by the JSON `$type` discriminator and owned by the Deal
+facade, whose `IDealMapper`/`IDealUpdater` families the standing rule blesses as legitimately
+`DealType`-keyed because they are data-arm-bound. The union tier stays empty because this case already
+has a home, not because the case does not arise.
+
+A counter may not change `DealType`; the workflow asserts the posted arm against the thread's.
+
+### 9.2 Responses
+
+```csharp
+internal sealed record ApplicationResponse(
+    int Id,
+    ArtistSummary Artist,
+    OpportunitySummaryResponse Opportunity,
+    ApplicationStatus Status,
+    ProposalResponse Standing,
+    ApplicationActions Actions);
+
+internal sealed record ProposalResponse(
+    int Id, int Ordinal, ProposalSide ProposedBy,
+    string SignatoryName, DateTime AtUtc, DealDto Terms);
+
+internal sealed record ApplicationActions(
+    ActionLink? Accept, ActionLink? Counter, ActionLink? Reject,
+    ActionLink? Withdraw, ActionLink? Checkout, ActionLink? Cancel, ActionLink? Contract);
+```
+
+Deleted: `ApplicationResponse<TActions>`, `VenueApplicationActions`, `ArtistApplicationActions`, and both
+`ToVenueResponse`/`ToArtistResponse` mapper arms.
+
+**The `switch (membership.Type)` in `GetById` is not fixed — it stops existing**, because there is no
+longer a per-party response type to choose between. Two action records, two mapper methods and one switch
+collapse into one of each. `GET /{id}/proposals` returns `IReadOnlyList<ProposalResponse>`, so list
+responses stay lean and only the negotiation view pays for the history.
+
+### 9.3 When each action link is present
+
+Let `owesAnswer` be "the caller's tenant did not author the standing proposal", `isAuthor` its converse,
+and `isPayer` "the caller's tenant matches `Standing.Terms.Profile.Payer`".
+
+| Link | Present when |
+|---|---|
+| `Accept` | `owesAnswer` and state is `Applied` and the recomputed fingerprint matches |
+| `Counter` | `owesAnswer` and state is `Applied` |
+| `Reject` | `owesAnswer` and state is `Applied` |
+| `Withdraw` | `isAuthor` and state is `Applied` |
+| `Checkout` | `owesAnswer` and `isPayer` |
+| `Cancel` | organiser, state is `Applied`, no booking |
+| `Contract` | a booking exists |
+
+The `Checkout` row is the entire replacement for `RequiresAcceptCheckout()`, and it reproduces today
+exactly: FlatFee — venue owes the answer and is the payer, link present; DoorSplit and Versus — the same;
+VenueHire — the venue owes the answer but the artist is the payer, no link. It then covers both offer
+cells with no further rule. These are guards on a derived axis, not dispatch on a type.
+
+### 9.4 The organiser flat-fee journey, call by call
+
+1. `POST /api/opportunity` — `{ startDate, endDate, genres: [], deal: { "$type": "flatFee", fee: 500 }, admission: "byInvitationOnly" }` → `201 { id: 42 }`
+2. `POST /api/application/opportunity/42/checkout` — the venue is the payer entering first, so the derived operation is `DepositEscrow` → `200 Checkout { clientSecret, … }`; the organiser's browser confirms the method
+3. `POST /api/application/opportunity/42/offer` — `{ artistId: 7, eSignature }` → `201 ApplicationResponse` with `Standing.ProposedBy = Organiser` and `Actions = { Withdraw, Cancel }`
+4. the artist `GET /api/application/{id}` → `Actions = { Accept, Counter, Reject }` — no `Checkout`, because they are not the payer
+5. the artist `POST /api/application/{id}/accept` — `{ eSignature }` → `204`; the Contract is cut from Proposal #1 plus the artist's signature, the Booking is created, and `DepositEscrow` moves the venue's funds off-session
+
+Countering at step 4: `POST /api/application/{id}/counter` with
+`{ terms: { "$type": "flatFee", fee: 650 }, eSignature }` appends Proposal #2, and the organiser's next
+response carries `{ Accept, Counter, Reject, Checkout }`. The method collected at step 2 carries no
+amount, so a re-priced counter reuses it; on the apply route, where FlatFee holds an amount-specific
+authorisation, the regenerated `Checkout` link re-authorises at the countered figure.
+
+### 9.5 Authority and visibility
+
+Accept, reject and withdraw derive authority from the row's own `VenueTenantId`/`ArtistTenantId` pair
+against `Standing.ProposedBy` — never from `TenantType`. `ApplicationsDecide` stays the organiser's
+accept/reject permission; sending an offer is a distinct act and gets a new `VenuePermissions.OffersSend`,
+so an organisation can grant one without the other.
 
 Targeted visibility is `OpportunityAdmission` (§5.1). A `ByInvitationOnly` opportunity is absent from
 artist discovery and rejects a direct apply; the invited artist reaches it through the Application the
@@ -368,11 +489,11 @@ discovery filter; the fingerprint guard against `Proposals[^1].DealId`; `Proposa
 snapshot. Re-scaffold initial migrations via `./initial-migrations.ps1`.
 *Gate:* Application and Opportunity integration suites; a concurrent-acceptance test.
 
-**Phase 4 — API.** Offer, counter and decline endpoints; `OffersSend`; role-derived action links and the
-role-derived `GetById` mapper; the new notification kinds and role-phrased copy.
-*Consumption contract:* `ApplicationResponse<TActions>` keeps its shape; `TActions` becomes
-proposer/responder-derived rather than venue/artist-derived, and every action link is present exactly when
-the caller may take it — the frontend adds no conditional of its own.
+**Phase 4 — API.** The three new routes, the six generalised ones, `OffersSend`, and the response
+collapse — all specified in §9. New notification kinds and role-phrased copy.
+*Consumption contract:* §9.1–9.3 in full. `ApplicationResponse` loses its generic parameter and both
+per-party action records; every action link is present exactly when the caller may take it, so the
+frontend adds no conditional of its own.
 
 **Phase 5 — frontend.** Artist offers surface with accept/decline/counter; venue send-offer and
 counter-review; shared types and action labels. No `dealType` conditional exists in `app/` today and none
