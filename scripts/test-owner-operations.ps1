@@ -23,11 +23,9 @@ function Write-Fixture([string]$Path, [string]$Value) {
     [IO.File]::WriteAllText($Path, $Value)
 }
 function Get-CompatibleRelativePath([string]$BasePath, [string]$Path) {
-    $separator = [IO.Path]::DirectorySeparatorChar
-    $base = [IO.Path]::GetFullPath($BasePath).TrimEnd($separator, [IO.Path]::AltDirectorySeparatorChar) + $separator
-    $target = [IO.Path]::GetFullPath($Path)
-    $relative = ([Uri]$base).MakeRelativeUri([Uri]$target).ToString()
-    return [Uri]::UnescapeDataString($relative).Replace('/', $separator)
+    return [IO.Path]::GetRelativePath(
+        [IO.Path]::GetFullPath($BasePath),
+        [IO.Path]::GetFullPath($Path))
 }
 function global:dotnet {
     $arguments = @($args)
