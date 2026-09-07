@@ -264,6 +264,7 @@
       "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
       "api/Concertable.B2B/src/Concertable.B2B.TestKit/Concertable.B2B.TestKit.csproj",
       "api/Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Contracts/Concertable.B2B.Admin.Contracts.csproj",
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Contracts/Concertable.B2B.Application.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Contracts/Concertable.B2B.Artist.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Contracts/Concertable.B2B.Booking.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Contracts/Concertable.B2B.Concert.Contracts.csproj",
@@ -532,7 +533,7 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.Application.Contracts",
-        "packable": false,
+        "packable": true,
         "target": "b2b"
       },
       "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Concertable.B2B.Application.Domain.csproj": {
