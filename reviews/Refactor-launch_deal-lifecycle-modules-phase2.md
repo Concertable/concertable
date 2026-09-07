@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `1aeabdb5d`  _(2026-09-07)_
-**Security-reviewed up to commit:** `1aeabdb5d`  _(2026-09-07)_
+**Reviewed up to commit:** `daf297e14`  _(2026-09-07)_
+**Security-reviewed up to commit:** `daf297e14`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1873,3 +1873,61 @@ workstation — the Business SPA on `https://localhost:5177` never passes readin
 `app/web/shared/dist` and a valid dev certificate all present, so every scenario fails at fixture startup
 and the tier yields no signal locally. The queue is currently the only environment that can execute it. The
 local startup failure is unrelated to these two fixes and is owed its own diagnosis.
+
+## Review pass — 2026-09-07 — commit a saved payment method for off-session reuse
+
+**Candidate base:** `1481c4201`
+**Candidate head:** `daf297e14`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings against the change itself. `PaymentSessionService.SetupPaymentMethodAsync` hardcoded
+`PaymentSession.OnSession`, so every SetupIntent went to Stripe as `usage: "on_session"` — a
+customer-present mandate. The venue-hire deposit is then taken off-session when the venue manager accepts,
+and Stripe refused any card requiring authentication with `authentication_required`. The booking stayed
+pending, no concert was created, and the scenario timed out polling `/api/concert/application/{id}`.
+
+Off-session is right for both setup kinds rather than a venue-hire special case: every payment method this
+platform saves is reused with the payer absent — the venue-hire deposit at accept, door-split and versus
+settlement at completion via `PayoutCompleteStep`.
+
+One property of the change worth recording: `PaymentSessionFingerprint` includes `session`, so a setup
+operation already persisted as `OnSession` fingerprint-differs on replay and returns `OperationConflict`.
+Immaterial here (E2E resets the database per run, and the service has no production rows) but it is a real
+consequence rather than a silent one.
+
+**Provenance — this one *is* the branch's.** The preceding passes' claim that the 3DS defect pre-dates the
+branch is wrong. Before `62b9fde66` (branch-only, 2026-09-05) the apply-time capture ran through
+`StripeAccountClient.CreateSetupSessionAsync`, which set `Usage = "off_session"` explicitly; that commit
+re-pointed apply checkout at `SetupPaymentMethodAsync` and lost it. `PaymentSessionService` itself came from
+`233ca5c90` on main, but nothing routed venue-hire apply through it until the branch commit, so main was
+never broken. It went unseen because the last `e2e-ui-tests` that actually executed is run `33860333526`
+(2026-09-04, head `2979ab78f`), which contains neither commit; the ten `merge_group` runs since all failed
+before reaching that job.
+
+### Validation
+
+`local-platform.ps1 test` of `Concertable.B2B.E2ETests.Ui.csproj --filter "DisplayName~3DS challenge on
+venue hire"` — **`Test Run Successful. Total tests: 1, Passed: 1`** (5.29 min). Zero occurrences of
+`authentication_required` in the run, against six in the pre-fix run, so the fix is the mechanism rather
+than a coincident pass. This discharges the remediation the preceding pass owed: the browser tier does now
+run on this workstation. Its earlier failure to start was orphaned `vite`/`npm run dev` processes left by
+force-killed runs holding the SPA ports — clearing them was the unblock, and it explains the recorded
+"Business SPA on `https://localhost:5177` never passes readiness" symptom.
+
+A new `PaymentSessionServiceTests` case pins that a payment-method commitment persists as `OffSession`.
+
+**Defect found and not fixed here.** With the deposit now succeeding, the run shows
+`PaymentTransactionHandler` throwing `Payment operation escrow/booking:48 has no provider transaction` three
+times and dead-lettering `payment-succeeded.v1`: the resolver reads `PaymentSessionOperations`, but an
+escrow deposit is taken through the legacy `HoldAsync` path that writes no such row. `EscrowConfirmedHandler`
+therefore never runs and the escrow stays `Pending` with no ledger posting. This is pre-existing (`8fb94d140`,
+main, 2026-09-05) — the fix moved it from the failed path to the succeeded path rather than causing it — and
+no suite catches it, because the scenarios assert the draft concert and the Stripe-side capture, not
+Payment's own bookkeeping. Rewritten as the single HIGH entry in `api/Concertable.Payment/TECH_DEBT.md`,
+replacing the two narrower entries that described only the failure path and the now-fixed 3DS symptom.
