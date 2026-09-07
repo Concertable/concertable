@@ -9,9 +9,9 @@
   `origin/main` `516f4cc25936289744babef3f98b1a297035fbb6`. Local, upstream, and PR head were proven equal
   at `b6596ca8573d0dd4b3f398248190f1d3a64b48ac`; this commit carries the focused split-inventory
   repair found by that head's CI.
-- Dependency/package gates: PR #633 and the exact landed-main restack/review are complete. M3 delivery still
-  waits for the real `@concertable/build-config` publication and feed verification; preparation does not
-  depend on M1 or M2.
+- Dependency/package gates: PR #633 and the exact landed-main restack/review are complete. M3 does not depend
+  on M1 or M2. Its merge must causally trigger the real `@concertable/build-config` publication and feed
+  verification before this delivery is terminal.
 - Last reconciled: 2026-09-07 against landed `origin/main`
   `516f4cc25936289744babef3f98b1a297035fbb6`, patch-equivalent restacked candidate
   `93d102222f9cc25b5f4b68af97e6f08df59f16b0`, and the focused M3 validation and review evidence below.
@@ -30,18 +30,20 @@ merge `516f4cc25`; `git range-diff` reports every old/new pair as patch-equivale
 original order. The reviewed pre-checkpoint candidate is `93d102222`, and draft PR #948 was force-with-lease
 updated to checkpoint `b6596ca85`. Its first exact-head CI exposed a stale generated split inventory: the
 generator still named the obsolete `platform-web` target and did not assign the new build-config workspace.
-This commit repairs that owned topology and regenerates the inventory.
+The focused repair assigned that owned topology and regenerated the inventory. Exact-head CI run
+`34162425623` is green. This commit closes the remaining publication-rail omission by adding build-config to
+the main-branch frontend publisher and its clean feed-consumer verification.
 M3 extracts the product-neutral `@concertable/build-config` package, makes product workspaces own their
 package lists, and uses the shared Metro resolver for both mobile applications without encoding product
 ownership into the platform tier.
 
 ## Next Steps
 
-- Keep draft PR #948 on the rewritten landed-main head and require exact-head PR CI before any later delivery
-  decision. Diagnose only a failing remote scope; do not run local E2E for this behavior-preserving frontend
-  boundary.
-- Before delivery, publish and feed-verify the real `@concertable/build-config` package, replace local
-  validation artifacts with the real pin, then rerun both packed mobile carves and the independent consumer.
+- Validate and review this publication-rail repair, push one stable candidate, require exact-head PR CI, then
+  make PR #948 ready and deliver it independently through the merge queue.
+- Bind the post-merge frontend publication run to #948's landing commit and require
+  `@concertable/build-config` to pass the workflow's clean feed-consumer verification before calling M3
+  terminal.
 - Keep M1, M2, and M3 separate. Do not create repositories, import history, publish packages, or perform a
   service cutover from this preparation branch.
 

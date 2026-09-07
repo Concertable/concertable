@@ -43,6 +43,29 @@ function b2bChecks(name, tenantExport = "features/tenant") {
 }
 
 const CHECKS = {
+  "@concertable/build-config": {
+    node: [
+      'import { sourceAlias } from "@concertable/build-config/vite";',
+      'import { nodeTests } from "@concertable/build-config/vitest";',
+      'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
+      'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+    ],
+    nodeRuntime: [
+      'import { sourceAlias } from "@concertable/build-config/vite";',
+      'import { nodeTests } from "@concertable/build-config/vitest";',
+      'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
+      'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+    ],
+    commonJsRuntime: [
+      'const createDependencyCruiserConfig = require("@concertable/build-config/dependency-cruiser");',
+      'const withPackageResolution = require("@concertable/build-config/metro");',
+      'const boundaryConfig = createDependencyCruiserConfig({ workspaces: ["app/shared"] });',
+      'if (boundaryConfig.forbidden[0].severity !== "error") throw new Error("Unexpected boundary severity");',
+      'const metroConfig = withPackageResolution({ resolver: {} }, __dirname, ["react"]);',
+      'if (!metroConfig.resolver.nodeModulesPaths.length) throw new Error("Missing Metro package roots");',
+    ],
+    extendsTypeScriptConfig: true,
+  },
   "@concertable/shared": {
     node: [
       'import { GENRE_LABELS, type Genre } from "@concertable/shared/types";',
@@ -174,6 +197,9 @@ function verifyNodeConsumer() {
     directory,
   );
   writeJson(directory, "tsconfig.json", {
+    ...(checks.extendsTypeScriptConfig
+      ? { extends: "@concertable/build-config/typescript" }
+      : {}),
     compilerOptions: {
       module: "NodeNext",
       moduleResolution: "NodeNext",
@@ -182,6 +208,9 @@ function verifyNodeConsumer() {
       skipLibCheck: true,
       jsx: "react-jsx",
       outDir: "dist",
+      ...(checks.extendsTypeScriptConfig
+        ? { noEmit: false, allowImportingTsExtensions: false }
+        : {}),
     },
     include: ["*.ts"],
   });
@@ -189,13 +218,14 @@ function verifyNodeConsumer() {
   if (checks.nodeRuntime) {
     writeFileSync(join(directory, "runtime.ts"), checks.nodeRuntime.join("\n") + "\n");
   }
+  if (checks.commonJsRuntime) {
+    writeFileSync(join(directory, "runtime.cjs"), checks.commonJsRuntime.join("\n") + "\n");
+  }
   run(["exec", "--", "tsc"], directory);
-  run([
-    "exec",
-    "--",
-    "node",
-    checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js",
-  ], directory);
+  run(["exec", "--", "node", checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js"], directory);
+  if (checks.commonJsRuntime) {
+    run(["exec", "--", "node", "runtime.cjs"], directory);
+  }
 }
 
 function verifyMetroConsumer() {
