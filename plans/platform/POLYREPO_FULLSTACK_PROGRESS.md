@@ -6,14 +6,14 @@
 - Also delivers: `REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md` **checkpoint 8B** — the `concertable`-side
   consumer work for the frontend platform publisher cutover.
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-FrontendRegistryPackageConsumers`
-- Branch: `Refactor/FrontendRegistryPackageConsumers`
-- PR: [#964](https://github.com/Concertable/concertable/pull/964) OPEN for the 8B safe half, base `main`, at head `6c722c2c4`; run 34281482043 green, including all seven `carve-fe` surfaces and `fe-boundaries`. Phase 3 import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) merged as `162b8412a`; mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
-- Dependency/package gates: **all seven tiers are published and current with `main`.** The `alpha` dist-tag
-  is `0.1.0-alpha.0.6314` for `@concertable/{shared,web,mobile,customer,b2b,web-b2b,build-config}`; every
-  tier's last source commit is at height ≤ 6300, so the published set matches `main` exactly.
+- Branch: `Chore/FrontendCarveLockRefresh`
+- PR: 8B safe half [#964](https://github.com/Concertable/concertable/pull/964) MERGED as `6cd7fd615`; its publish run [34284459421](https://github.com/Concertable/concertable/actions/runs/34284459421) succeeded and moved every tier's `alpha` to `0.1.0-alpha.0.6462`. The lock refresh that publish made necessary is open on `Chore/FrontendCarveLockRefresh`. Phase 3 import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) merged as `162b8412a`; mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- Dependency/package gates: **all seven tiers are published, and every surface lock pins them.** The
+  `alpha` dist-tag is `0.1.0-alpha.0.6462` for
+  `@concertable/{shared,web,mobile,customer,b2b,web-b2b,build-config}`, published by the 8B merge itself.
   **8B's third deliverable is blocked on 8A:** `platform-frontend` does not exist, so the monorepo must keep
   publishing the four platform IDs. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-09-08 — measured 8B's three deliverables against `origin/main` `ef8d505fd` before
+- Last reconciled: 2026-09-08 — 8B safe half merged as `6cd7fd615`, its publish moved `alpha` to `0.1.0-alpha.0.6462`, and the seven surface locks were regenerated onto that version. Earlier the same day, measured 8B's three deliverables against `origin/main` `ef8d505fd` before
   writing anything, and reconciled this ledger from its stale Phase-3 state.
 
 ## Current state
@@ -32,7 +32,7 @@ The registry switch exists only as a carve-time transform: every workspace still
 `@concertable/*: "*"`, and `carve-fe.mjs` rewrites `"*"` → `"alpha"` inside the temp tree. So the
 *capability* is proven each CI run, but a `git archive` of a surface is not itself installable.
 
-This branch lands the safe half: a committed standalone `package-lock.json` per surface, restored with
+The safe half has landed: a committed standalone `package-lock.json` per surface, restored with
 `npm ci` in the carve, and retirement of the `@concertable/build-config` local-pack special case.
 
 **Terminal Phase-3 facts still worth carrying.** Only `@concertable/{web,b2b}` carry web class strings, so
@@ -46,9 +46,11 @@ spawning the npm `.cmd` shim fails with `EINVAL` on Windows (#428, `162b8412a`).
 
 ## Next Steps
 
-**1. Merge PR #964.** The 8B safe half is implemented, reviewed and green: run 34281482043 passed all
-seven `carve-fe` surfaces plus `fe-boundaries` at head `6c722c2c4`. Take it through the merge queue and own
-the queue run and any generated platform-sync PR to terminal.
+**1. Land the lock refresh on `Chore/FrontendCarveLockRefresh`.** The 8B safe half merged as `6cd7fd615`
+and republished every tier at `0.1.0-alpha.0.6462`, which left the seven locks it had just landed pinned
+at `0.1.0-alpha.0.6314`. They are regenerated; take that PR through the queue. It touches only
+`app/<surface>/package-lock.json` and this ledger, so it publishes nothing and closes the loop in one
+step.
 
 **2. Then 8B's remaining two deliverables, both gated on 8A.** They cannot land while `platform-frontend`
 does not exist, because either one breaks every carve restore the moment it merges:
@@ -98,6 +100,17 @@ publisher is `platform-frontend`, for all four platform IDs.
 - `0e3d8f5a6` makes full merge-queue E2E the strict default, preserves the no-duplicate-local-E2E workflow, and keeps findings on the reviewed branch unless they are proven independent.
 
 ## Verification
+
+- **8B safe half landed and published (2026-09-08).** PR #964 merged as `6cd7fd615` through the queue with
+  `skip-e2e` — no positive end-to-end trigger, since the diff changed no product source, wire contract or
+  published package shape. Its `Publish frontend packages` run 34284459421 succeeded, and a direct registry
+  probe confirms `alpha` = `0.1.0-alpha.0.6462` for all seven tiers (`build-config` now at two versions). No
+  `api/**` path changed, so `Publish packages` never ran and no backend platform-sync PR exists.
+
+- **Lock refresh (2026-09-08).** `npm run lock:carve` regenerated all seven surface locks against the new
+  `alpha`. Every `@concertable` entry in every lock is `0.1.0-alpha.0.6462`, and each lock's total package
+  count is unchanged from the `6314` generation (642/641/642/618/600 web, 878/877 mobile) — so the tier
+  version is the only delta, not the surrounding graph. `node --test scripts/carve-fe.test.mjs` passes 8/8.
 
 - **Authoritative carve gate (2026-09-08), PR #964 run 34281482043 at head `6c722c2c4`.** All seven
   `carve-fe` surfaces passed — `web/{customer,admin}`, `web/b2b/{venue,artist,business}` and both mobile
@@ -181,6 +194,14 @@ publisher is `platform-frontend`, for all four platform IDs.
 
 ## Reviews
 
+- **Lock-refresh review:** `reviews/Chore-FrontendCarveLockRefresh.md`, range `6cd7fd615..<refresh head>`
+  (8 paths). No findings. The load-bearing check was per-entry drift rather than the tier version: diffing
+  every `packages` entry against the previous generation showed 3–5 changes per lock, of which exactly one
+  is not a tier — `electron-to-chromium` `1.5.424` → `1.5.425`, build-time-only and accepted deliberately
+  rather than hand-suppressed. Root specifiers remain `alpha` in all seven, no lock carries machine-specific
+  or secret content, `app/package.json` is untouched so no publish re-triggers, and
+  `node --test scripts/carve-fe.test.mjs` passes 8/8.
+
 - **Checkpoint 8B safe-half full review:** `reviews/Refactor-FrontendRegistryPackageConsumers.md`, range
   `3052fb9ac..73e36b581` (12 paths). One LOW finding, `FRP1`: the candidate makes a committed per-surface
   lockfile a required input to the `carve-fe` gate without adding `npm run lock:carve` to `app/README.md`'s
@@ -208,6 +229,27 @@ publisher is `platform-frontend`, for all four platform IDs.
 - No open finding is evidenced. Delivery of the two fixed findings remains gated on the new review-fix PR.
 
 ## Decisions, discoveries, blockers, and deviations
+
+- **A lock refresh is never purely a tier bump — it also lands whatever transitive patch versions floated.**
+  Regenerating onto `0.1.0-alpha.0.6462` moved exactly one non-`@concertable` entry in all seven locks:
+  `electron-to-chromium` `1.5.424` → `1.5.425`, pulled by `browserslist` at `^1.5.420`, a build-time-only
+  ISC data package that publishes a new patch daily. Verified by diffing every `packages` entry against the
+  previous generation: 3–5 changed entries per lock, of which exactly one is not a tier. Do not hand-edit a
+  generated lock to suppress that — it would make the file unreproducible from `npm run lock:carve` and the
+  next regeneration would silently undo it. The consequence for Phase 4 is a requirement, not a nuisance:
+  whatever opens the refresh must report the non-tier delta rather than presenting itself as a
+  version-only change, because that delta is the only part of a refresh a reviewer actually has to judge.
+
+- **Every frontend republish stales the seven committed locks, and Phase 4 must own the refresh.** The
+  publish workflow triggers on `app/package.json` among the tier paths, so a change touching only the root
+  manifest republishes all seven tiers at a new lockstep version — which is exactly what landing the locks
+  themselves did (`6cd7fd615` published `0.1.0-alpha.0.6462`, leaving locks pinned at `0.1.0-alpha.0.6314`).
+  A stale lock is still valid and still restores; it just carves against the previous tier build, so the gate
+  quietly stops exercising current tier code. Refreshing by hand is `npm run lock:carve`, and it does not
+  cascade: the per-surface locks live at `app/<surface>/package-lock.json`, which the publish filter's
+  `app/package-lock.json` entry does not match, so a refresh cannot re-trigger a publish. The durable fix is
+  for the frontend counterpart of `platform-sync.yml` to open the refresh alongside the version bump rather
+  than leaving it a standing manual chore — treat that as part of Phase 4's scope, not a separate errand.
 
 - **`@concertable/build-config` is on the feed — the carve's local-pack special case is retired, do not
   re-add it.** `carve-fe.mjs` used to `npm pack` `app/build-config` into the mobile carve as a `file:`
