@@ -735,8 +735,8 @@ needing a host, HTTP or a database is an integration test" — these need the re
 ---
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`  `(2026-09-06)`
-**Security-reviewed up to commit:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`  `(2026-09-06)`
+**Reviewed up to commit:** `3f4f04a3bfa3669f106e971acf8df243dd8f8517`  `(2026-09-08)`
+**Security-reviewed up to commit:** `3f4f04a3bfa3669f106e971acf8df243dd8f8517`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -929,3 +929,76 @@ checks, and it reported nothing for an hour. The cause was not this branch's `st
   merge queue only ever targets `main`. E2E is unaffected, being gated on
   `github.event_name == 'merge_group'`, so a stacked PR gets the intended PR tier — build, carve, unit,
   architecture, startup, integration — and not the 25-minute suite.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`
+**Candidate head:** `288330fa31623d8382379f5d0e711ad172bdf731`
+**Candidate branch:** `Chore/TestTierNaming`
+**Candidate scope:** branch-authored paths with a net change since the watermark
+**Candidate path-set:** `sha256:bf2c4592eb8be42a…` `(11 paths)`
+**Candidate bundle:** `…/47c488ba-e13e-4022-8eee-3ff69fbf32e6/scratchpad/rev-bundle`
+**Work-order path:** `reviews/Chore-TestTierNaming.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+**Remediation head:** `3f4f04a3bfa3669f106e971acf8df243dd8f8517` — all five findings fixed in this pass.
+
+Opened because the merge gate refused the merge on a stale watermark. The delta is the seeding
+identity-rewrite unit coverage plus two main merges; `.github/workflows/test.yml` has **no net change**,
+a CI ordering commit and its revert cancelling exactly.
+
+Layers: native/general, conventions, changed-behaviour test impact, and the security layer (the PR's own
+sensitive surface is Auth/Payment test projects). Of the 46 sensitive paths the gate sees since the
+watermark, **44 are main-inherited** and reviewed on their own PRs; the 2 PR-owned ones
+(`Concertable.Auth.StartupTests/ResourceGraphTests.cs`, `WebHostTests.cs`) arrived via merge `288330fa3`
+carrying #943's SPA-client assertions, which tighten posture (`RestrictToEnabledClients`, stale redirect
+URIs and CORS origins asserted absent). Security layer: **no qualifying vulnerability.** The rewriter's
+emitted table name clears two barriers — the capture class `\[?[\w]+\]?` admits no interior `]` or `;`,
+and every emitted name must be an allowlisted `IModel` key — and `SeedingScope.Activate()` has exactly
+three callers, all startup-gated outside Production.
+
+### Findings
+
+- [x] **F11 — MEDIUM — correctness** — `SeedingIdentityRewriterTests.cs`
+  `Assert.Single(this.identityTables.Keys, key => key == "[Animals]")` was unfalsifiable for the property
+  its name claims: `Dictionary.Keys` is distinct by construction, so no predicate can ever match twice, and
+  the zero case was already covered by the indexer on the preceding line. Dropping `e.BaseType is null`
+  from `BuildTableMap` surfaces as a duplicate-key throw in the test constructor — a fixture crash, not
+  this assertion failing. Now asserts the whole key set.
+
+- [x] **F12 — MEDIUM — correctness** — `SeedingIdentityInterceptor.cs`
+  The extraction moved the `Contains("INSERT")` short-circuit behind `tableCache.GetOrAdd`, so an active
+  seeding scope's first intercepted command of any kind built the model map instead of its first INSERT.
+  Restored, so the extraction is behaviour-preserving apart from the deliberate throw.
+
+- [x] **F13 — MEDIUM — test-coverage** — `SeedingIdentityRewriterTests.cs`
+  Three mutations survived the original nine tests, each boot-fatal in production: `ToHashSet`→`ToList`
+  (a legal two-statements-one-table command becomes the throw), `Off()` dropping the schema (leaves
+  `IDENTITY_INSERT` on for the rest of the connection — the *primary* path, since every module sets
+  `HasDefaultSchema`), and the per-match column list reverted to a whole-command scan (makes the throw fire
+  on `ConcertDevSeeder`'s real shape, where `Applications` takes a generated identity while the
+  `BookingEntity` its navigation drags into the same save supplies an explicit one). Four tests added;
+  each mutation now fails exactly one. Also covers EF's `MERGE` with `OUTPUT` plus a declared table
+  variable, and the throw across an INSERT/MERGE pair rather than only INSERT pairs — what EF actually
+  emits for a TPH batch.
+
+- [x] **F14 — LOW — docs** — `api/Concertable.Shared/TECH_DEBT.md`
+  Item 1 of the seeding entry still read "has *zero* coverage today" for a class this same change gave
+  thirteen tests, which `docs-and-debt` forbids ("once the debt is addressed, delete the entire entry").
+  Item 1 deleted, **Resolves when** narrowed to items 2-3; items 2-4 stay genuinely open.
+
+- [x] **F15 — LOW — hygiene** — `Concertable.Seed.Shared/AssemblyInfo.cs`
+  Gained a UTF-8 BOM from a `utf-8-sig` write over a file that had none, rewriting an untouched line.
+  Stripped; that file's diff is now the one added `InternalsVisibleTo`.
+
+### Verification
+
+Executed, not asserted. 13/13 unit tests pass in ~0.9s; full `api/Concertable.slnx` build clean, 0 errors
+(6 pre-existing CS8632 in Reqnroll-generated E2E temp files, present on the base). Each of the three F13
+mutations was applied and shown to fail exactly one test, and each was reverted and re-verified green.
+
+One process note worth keeping: the F13 `Off()` mutation **silently failed to apply** on its first run —
+the replacement pattern did not match and nothing checked that it had, so the run reported all-pass and
+looked like evidence the gate did not bite. Re-run with an assertion that the mutation landed, it fails one
+test. A sabotage harness without a did-it-apply check is the `AssertImageEndpoint` mistake in the
+verification step rather than the code.
