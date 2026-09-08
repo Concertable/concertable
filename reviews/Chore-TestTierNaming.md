@@ -735,8 +735,8 @@ needing a host, HTTP or a database is an integration test" — these need the re
 ---
 
 **Review status:** `complete`
-**Reviewed up to commit:** `fdce0c077350a0b0d866c6974a734e694ea7955d`  `(2026-09-08)`
-**Security-reviewed up to commit:** `fdce0c077350a0b0d866c6974a734e694ea7955d`  `(2026-09-08)`
+**Reviewed up to commit:** `be228212454c03b3c6f9c4d83b13425069570c7f`  `(2026-09-08)`
+**Security-reviewed up to commit:** `be228212454c03b3c6f9c4d83b13425069570c7f`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -942,7 +942,8 @@ checks, and it reported nothing for an hour. The cause was not this branch's `st
 **Work-order path:** `reviews/Chore-TestTierNaming.md`
 **Work-order mode:** `append`
 **Pass judgment:** `approved`
-**Remediation head:** F16 fixed in this pass.
+**Remediation head:** `be228212454c03b3c6f9c4d83b13425069570c7f` — F16 fixed in this pass; that commit's only non-`reviews/` path is
+`.agents/skill-routes.json`, whose change is quoted in full under F16.
 
 The 186-path range is almost entirely `main`: merge `288330fa3` plus the merge of #943 that preceded it.
 **The branch-authored net change since the watermark is zero code.** Proved rather than asserted — the
