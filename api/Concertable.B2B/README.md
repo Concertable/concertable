@@ -6,12 +6,18 @@ venues/artists, and create concerts. It is a *data service*: it owns its data an
 data services (Customer, Search) only through `*.Contracts` integration events, never their runtime.
 It depends on the **Auth** and **Payment** adapter services at runtime.
 
-## Canonical source vs. this mirror
+## Source ownership during extraction
 
-Development happens in the **monorepo** ([`Concertable/concertable`](https://github.com/Concertable/concertable)),
-under `api/Concertable.B2B/`. That folder is **automatically mirrored** to the read-only repo
-[`Concertable/b2b`](https://github.com/Concertable/b2b) on every push to
-`main`. **Don't open PRs against the mirror** — nothing flows back from it.
+Follow the [current system ownership map](https://github.com/Concertable/docs/blob/main/SYSTEM.md)
+and the extraction owner's qualified source/release state. Do not assume the retained
+[`Concertable/b2b`](https://github.com/Concertable/b2b) checkout includes every merged monorepo change.
+At the 8 September 2026 check, the monorepo B2B source contains PR633's lifecycle architecture and the
+retained repository's main does not; the monorepo source remains authoritative for that work.
+
+## Implementation planning
+
+[Commercial execution planning](plans/commercial/COMMERCIAL_ROADMAP.md) belongs to B2B and travels with
+its source. Product decisions remain in Concertable/docs; external services retain their own plans.
 
 ## Building standalone
 
