@@ -9,7 +9,8 @@ It does not own Payment, Customer, Search or Auth implementation or provider mig
 
 Next action: [the progress ledger](COMMERCIAL_EXECUTION_PROGRESS.md#next-steps).
 
-For the latest discussion, start with the [configuration and entity sketches](#keep-lifecycle-sections-make-their-connections-explicit),
+For the concrete entry-flow approval review, start with [section 16](#16-entry-workflow-approval-walkthrough).
+For the wider architecture, read the [configuration and entity sketches](#keep-lifecycle-sections-make-their-connections-explicit),
 [factory and capability matching](#matching-belongs-in-the-owning-workflow),
 [operation catalogue and Application flow](#the-operation-catalogue-and-owned-facts), and
 [existing-code migration map](#source-to-target-migration-of-existing-responsibilities).
@@ -46,6 +47,7 @@ reading this plan.
 13. [Verification and observable completion](#13-verification-and-observable-completion)
 14. [Decisions for review](#14-decisions-for-review)
 15. [Evidence and existing-owner reconciliation](#15-evidence-and-existing-owner-reconciliation)
+16. [Entry workflow approval walkthrough](#16-entry-workflow-approval-walkthrough)
 
 ## 1. Authority, baseline and established constraints
 
@@ -59,6 +61,7 @@ The implementation baseline is the monorepo's merged B2B source, not the older e
 | Initial investigation baseline | ed5c0fce602fc6a2e9aaa65cfe74970c51dc7c90 | Includes subsequent Application contract packaging and confirmed-term polymorphic serialization |
 | Authoring refresh | f72431d7b6800b72f855706cd7fa1469681406de | PR947 adds owner-local migration/setup tooling; no lifecycle runtime change relative to the investigation baseline |
 | Discussion refresh | 3826320d1cd171705dffe1a74340e62b9a1e14c2 | Later host/package/CI changes inspected; Application/Booking/Concert/Deal runtime source remains unchanged from the authoring refresh |
+| Entry-contract refresh | ef8d505fdb0133d8b967d58634022192169e90e1 | Comparison from 3826320d changes startup-test/CI guidance and package pins, not the inspected entry/Booking/Deal runtime files |
 | Extracted Concertable/b2b main | fded052cdbf6f0f4c8f55ef7414c13ffc19ab33c | Still older than PR633's lifecycle split; not the source to design against |
 | Concertable/docs main | 99ad353b9cb26921ad8914e0f1449202574e330e | Includes docs PR11; no newer remote docs found during authoring |
 | Organiser research, not merged policy | Docs/Organiser-Commercial-Research at 5ac4048a6f4145f1e8f22d1e043aff33da47ba3f | Sixteen scenarios and five worked arrangements inform the design; demand, funding permissions and disputed-outcome authority remain unproven |
@@ -199,18 +202,21 @@ public sealed record DealConfiguration(
     BookingDefinition Booking,
     ConcertDefinition Concert);
 
-[Union]
-public abstract partial record EntryDefinition
+public abstract record EntryDefinition
 {
-    public partial record Application(ApplicationEntryDefinition Definition);
-    public partial record DirectInvitation(DirectInvitationEntryDefinition Definition);
+    private EntryDefinition() { }
+
+    public sealed record Application(ApplicationEntryDefinition Definition) : EntryDefinition;
+    public sealed record DirectInvitation(DirectInvitationEntryDefinition Definition) : EntryDefinition;
 }
 
 public sealed record ApplicationEntryDefinition(
+    IReadOnlyList<EntryCommitmentDefinition> Commitments,
     ApplyDefinition Apply,
     AcceptDefinition Accept);
 
 public sealed record DirectInvitationEntryDefinition(
+    IReadOnlyList<EntryCommitmentDefinition> Commitments,
     SendDefinition Send,
     AcceptDefinition Accept);
 
@@ -223,9 +229,10 @@ public sealed record ConcertDefinition(
     CancellationDefinition Cancel);
 ~~~
 
-The Union attribute above denotes B2B's existing Dunet pattern, not a dependency on preview native C#
-unions or assumed first-class EF union mapping. Extra operations such as evidence submission and amendment
-are explicit owned operations, not an invitation to hide them inside Complete.
+These explicit record families use qualified discriminator serialization and pairing/coverage tests;
+they do not assume preview native C# unions or first-class EF union mapping. The existing keyed-union
+builder can wrap these cases without requiring a particular union generator. Extra operations such as
+evidence submission and amendment are explicit owned operations, not hidden inside Complete.
 
 | Definition | Meaning and required content |
 |---|---|
@@ -360,9 +367,9 @@ action acquires genuinely different required inputs or results. It is not necess
 | Workflow | Owns lifecycle orchestration and transitions | ApplicationWorkflow |
 | Operation | A business action, not automatically a strategy interface | ApplyAsync or AcceptAsync |
 | Operation definition | Configured responsibilities, parameters and prerequisites | ApplicationEntryDefinition.Apply / Accept |
-| Step family | One independently varying responsibility inside the operation | Payment commitment reference |
-| Capability interface | Honest required inputs and result for that responsibility | ICommitmentReferenceStep |
-| Implementation | Compiled behaviour satisfying that interface | MethodSetupCommitmentReferenceStep |
+| Step family | One independently varying responsibility inside the operation | Payment commitment preparation |
+| Capability interface | Honest required inputs and result for that responsibility | IMethodSetupStep |
+| Implementation | Compiled behaviour satisfying that interface | SaveMethodStep or VerifyMethodStep |
 | Execution instance | Durable progress for one configured action on one agreement | Advance collection action with its attempts |
 
 An operation may compose several step families. One IConfirmStep implementation per combination of
@@ -431,12 +438,13 @@ internal interface IGuaranteeShareCalculator
     Money Calculate(GuaranteeShareTerms terms, ApprovedRevenueBasis revenue);
 }
 
-[Union]
-internal abstract partial record CalculationCapability
+internal abstract record CalculationCapability
 {
-    public partial record Fixed(IFixedFeeCalculator Calculator);
-    public partial record RevenueShare(IRevenueShareCalculator Calculator);
-    public partial record GuaranteeShare(IGuaranteeShareCalculator Calculator);
+    private CalculationCapability() { }
+
+    public sealed record Fixed(IFixedFeeCalculator Calculator) : CalculationCapability;
+    public sealed record RevenueShare(IRevenueShareCalculator Calculator) : CalculationCapability;
+    public sealed record GuaranteeShare(IGuaranteeShareCalculator Calculator) : CalculationCapability;
 }
 
 var builder = new KeyedUnionBuilder<CalculationBehaviour, CalculationCapability>(services);
@@ -469,12 +477,15 @@ definition-binding boundary resolves the typed terms and required facts, rejecti
 invocation. Its prepared inputs have explicit shapes:
 
 ~~~csharp
-[Union]
-internal abstract partial record CalculationInput
+internal abstract record CalculationInput
 {
-    public partial record Fixed(FixedFeeTerms Terms);
-    public partial record RevenueShare(RevenueShareTerms Terms, ApprovedRevenueBasis Revenue);
-    public partial record GuaranteeShare(GuaranteeShareTerms Terms, ApprovedRevenueBasis Revenue);
+    private CalculationInput() { }
+
+    public sealed record Fixed(FixedFeeTerms Terms) : CalculationInput;
+    public sealed record RevenueShare(
+        RevenueShareTerms Terms, ApprovedRevenueBasis Revenue) : CalculationInput;
+    public sealed record GuaranteeShare(
+        GuaranteeShareTerms Terms, ApprovedRevenueBasis Revenue) : CalculationInput;
 }
 ~~~
 
@@ -568,48 +579,15 @@ creation. Extract that responsibility; select it because the configured commitme
 actual payer, not because an enum says VenueHire. Reuse the existing payment-session validation contract.
 Retain an IApplyStep only when a remaining Apply variation genuinely earns that contract.
 
-Accept loads the entry-owned issued proposal, checks its expected revision and consent, and consumes the
-configured commitments. A focused target interface illustrates the retained strategy boundary:
+Accept loads the entry-owned issued proposal, checks its expected revision and consent, and consumes
+recorded commitment facts. Section 16 chooses persisted operation references: the old
+ICommitmentReferenceStep is removed from acceptance after historical references have been converted or
+made readable. It is not redesigned into a union. Starting a commitment is the genuinely varying
+operation, with concrete method-setup and amount-authorisation inputs and matching in 16.9.
 
-~~~csharp
-internal interface IApplicationCommitmentReferenceStep
-{
-    PaymentOperationReference Resolve(
-        ApplicationEntity application,
-        CommitmentDefinition definition);
-}
-~~~
-
-CommitmentDefinition names the supported reference behaviour, stable definition identity, payer-role
-binding and obligation/scope it covers. ApplicationEntity is the actual owned aggregate with its
-proposal/commitment history, not a context invented to carry unrelated optional properties. The method
-resolves a reference only; eligibility and actual payment readiness are checked separately.
-
-The relevant fragment inside ApplicationWorkflow.AcceptAsync, after loading/validating the proposal, is:
-
-~~~csharp
-if (proposal.Configuration.Entry is not EntryDefinition.Application(var entry))
-    return new AcceptApplicationError.InvalidEntryRoute();
-
-var commitments = new List<PaymentOperationReference>();
-
-foreach (var definition in entry.Accept.Commitments)
-{
-    var step = commitmentFactory.Create(definition.Behaviour);
-    commitments.Add(step.Resolve(application, definition));
-}
-~~~
-
-Here proposal denotes the explicitly loaded Application proposal revision, not an existing
-CurrentProposal property. The factory is Application-owned; its behaviour selection is not DealType.
-The fragment is not the whole acceptance method: it omits the mandatory consent/claim/transaction work
-listed above and must never be copied as a complete accept implementation. Resolving a reference is not
-proof that its payment setup, authorisation or funding succeeded.
-
-An invitation-facing resolver consumes its own root/definition. Shared pure reference rules may consume
-explicit origin/party/obligation values; neither route accepts the other's entity or a nullable
-ApplicationOrInvitationContext. If the target records a ready commitment reference directly and reference
-resolution ceases to vary, remove that redundant strategy instead of maintaining variation artificially.
+The complete Apply/Accept business cores and their transaction/replay boundary are in 16.6-16.7.
+Neither route accepts the other's entity or a nullable ApplicationOrInvitationContext. A saved
+reference alone is not proof that payment setup, authorisation or funding succeeded.
 
 Confirmation is requested, then progresses when its prerequisites become true. For example, collect a
 configured advance after acceptance, observe its funding result, obtain the configured rider approval,
@@ -1262,6 +1240,11 @@ The provider and entry/configuration delivery order remains a recommendation; th
 authorise database work or change another owner's ledger. Exact C# namespace/method refinements may occur
 during implementation, but inputs/results, ownership, compatibility and failure meaning are design gates.
 
+Section 16 now specifies the entry/proposal/consent/commitment-start and common Booking acceptance
+contracts for review. It does not close the richer B6/B7 financial-operation design gate. Approval and
+implementation authority are separate, and each slice must carry its exact admitted subset into its
+handoff; a lower-model agent must not infer unspecified financial behaviour from these examples.
+
 ### Prerequisite P1: shared provider support, separately owned
 
 - **Owner/dependencies:** current published DataAccess/Messaging/hosting/testing owners; design approval
@@ -1327,7 +1310,9 @@ during implementation, but inputs/results, ownership, compatibility and failure 
 - **Changes:** DirectInvitation module, both entry proposal/consent histories, counter/accept/reject/withdraw
   UI/actions, role-based entry commitment and common Booking input. Preserve existing financial arrangements.
 - **Contracts/persistence:** 5.3/5.4 initial contract records and section 6 input; application-only event,
-  checkout and financial-correlation assumptions removed. Stage factories remain module-local.
+  checkout and financial-correlation assumptions removed. Section 16 pins private drafts, consent and
+  operation receipts, fresh-scope recovery and the result-aware acceptance transaction. Stage factories
+  remain module-local; explicit Booking facade creation replaces the former accepted-event creator.
 - **Consumers:** Booking/Concert, B2B artist/organiser/shared UI, notification/action links and relevant
   published B2B consumers/simulators.
 - **Verification:** all supported existing economics through both paths; equivalent accepted inputs;
@@ -1425,7 +1410,7 @@ physical frontend folder is outside api/Concertable.B2B.
 
 | Scenario | Observable completion |
 |---|---|
-| Same terms via application/invitation | Same accepted configuration and downstream actions; distinct provenance; no synthetic rows |
+| Same terms via application/invitation | Equivalent Terms/Booking/Concert selections and economics; distinct Entry/origin/consent facts; no synthetic rows |
 | Competing cross-route acceptances | Exactly one active claim and Booking; loser gets a typed conflict; no duplicate collection |
 | Adjacent and overlapping bookings | Half-open nonoverlap allowed; real resource overlap denied across tenants/representatives |
 | Promoter venue/headliner/support | One Show/room reservation; private agreements; shared permitted evidence; correct amounts |
@@ -1468,7 +1453,9 @@ options, a successful schema migration alone, or an internal demonstration witho
 | D13 | Recommended boundary | Supported typed composition, not arbitrary scripts or unrestricted formula graphs |
 | D14 | Agreed direction in discussion | Mix and match semantically compatible capabilities, including within an operation; four lifecycle sections remain a useful organisation, not independent unvalidated bags |
 | D15 | Recommended technical shape | Operations can compose several step families; retain ordinary strategies where contracts match and unions where they genuinely differ; no assumed IAcceptStep or schedule-choice branch |
-| D16 | Design gate | Finalise the admitted operation schemas/signatures, binding rules and output consumers before implementation; snippets are proposed contracts, not compiled or executed evidence |
+| D16 | Design gate | Entry/binding contracts are specified for review in section 16; richer B6/B7 operation schemas/signatures and policies still require the same review before implementation. No excerpt is compiled or executed evidence |
+| D17 | Recommended entry contract | Private entry-local drafts; exact issued-proposal consent; separate invitation minimal-API surface/service/workflow; recorded commitments and atomic result-aware Booking creation |
+| D18 | Recommended initial subset | Two legal principals per agreement with explicit representation; additional production/evidence approvals are not extra contract signatures; joint multi-principal contracts remain disabled |
 
 Writing this review draft resolves neither D9-D12 nor implementation authority.
 After discussion, put accepted product decisions in their existing Concertable/docs owners and reconcile
@@ -1535,3 +1522,1331 @@ This update does not edit the research owner's branch or create another research
 Only B2B execution progress belongs in this ledger. External owners remain responsible for their own
 implementation, publication and consumer delivery. This plan names exact consumption requirements and
 completion evidence; it does not maintain a second progress history for those owners.
+
+## 16. Entry workflow approval walkthrough
+
+**Proposed code-level design for review, not application implementation.** This section fixes the entry
+contracts and the acceptance algorithm more precisely than the earlier architectural sketches. Approval
+of it approves these responsibilities and invariants; it does not authorise implementation, a provider
+cutover, or every later financial capability. Names below are target names unless expressly identified
+as existing. Constructors/usings, routine DTO mapping, EF configuration boilerplate and exhaustive error
+Definition mappings are omitted from method excerpts; business ordering and failure boundaries are not.
+
+The initial supported agreement has two legal principals, Buyer and Supplier. Either can act through
+explicitly authorised representatives. Each principal consents to the exact proposal. Production/evidence
+approvals remain separate requirements, not invented additional contract signatures. Joint contracts
+with additional legal principals need an explicit extension; one Show with several two-party contracts
+already covers the worked promoter arrangements.
+
+### 16.1 Which classes exist, and which route calls them
+
+| Surface | Application | Direct Invitation |
+|---|---|---|
+| HTTP edge | Existing ApplicationController, extended | New DirectInvitationEndpoints in DirectInvitation.Api |
+| Application API | IApplicationService / ApplicationService | IDirectInvitationService / DirectInvitationService |
+| Lifecycle orchestration | IApplicationWorkflow / ApplicationWorkflow | IDirectInvitationWorkflow / DirectInvitationWorkflow |
+| Owned persistence | ApplicationDbContext, ApplicationEntity, proposal/consent/commitment children | DirectInvitationDbContext, DirectInvitationEntity and its own proposal/consent/commitment children |
+| Capability selection | Application-owned factories/registrations | Invitation-owned factories/registrations |
+| Acceptance destination | IBookingModule, with AcceptedBookingAgreement | The same IBookingModule and input contract |
+
+The current HTTP standard selects minimal APIs for a new edge, hence DirectInvitationEndpoints rather
+than a new MVC controller. This is the separate invitation API previously described conversationally as
+a controller. It has the same ownership boundary; it is not a new service or a generic entry controller.
+Existing ApplicationController remains MVC. New routes must explicitly wire authentication, request
+validation, rate limits and Result-to-ProblemDetails handling; MVC filters do not automatically cover them.
+Workflow authority checks remain mandatory regardless of either transport's filters.
+
+~~~text
+ApplicationController -> ApplicationService -> ApplicationWorkflow ----+
+                                                                     |
+DirectInvitationEndpoints -> DirectInvitationService ->               +-> BookingModule
+                             DirectInvitationWorkflow ---------------+     -> BookingWorkflow
+                                                                           -> Concert
+~~~
+
+Each module keeps its Contracts/Domain/Application/Infrastructure/Api projects. Callable workflow/step
+interfaces are in its Application project; implementations and registrations in Infrastructure; entities
+in Domain. Deal.Contracts owns configuration vocabulary. Booking.Contracts owns AcceptedBookingAgreement.
+Pure proposal/consent value rules shared by both entry modules belong to a B2B-only agreement library,
+with no repository, controller, root entity, runtime locator or separate acceptance lifecycle. Neither
+entry module references the other's Domain/Application/Infrastructure. Booking depends on neither entry
+entity: origin identifiers are primitive values in its contract.
+
+The dependency direction is explicit: Deal.Contracts owns definition data; Show.Contracts owns
+BookingContextSnapshot and SlotClaimRequest; the B2B agreement library may reference those Contracts and
+the existing Tenant/Payment Contracts for authority/reference values. Booking.Contracts references those
+data contracts, never either entry runtime. Application and Invitation runtime projects consume the
+agreement rules and Booking/Show/Tenant/Deal facades. Neither Show.Contracts nor Deal.Contracts references
+the agreement library back. ProposalConsentRequest belongs to the shared B2B agreement contract surface;
+HTTP signature construction stays at the entry boundary. No shared package outside B2B gains these types.
+
+### 16.2 Draft preparation is not submission, acceptance or a reservation
+
+A server-owned draft is the target for terms preview, signatures and payment preparation. This gives a
+payment action a durable proposal identity before Apply/Send. It replaces the existing VenueHire-specific
+pre-application key based on opportunity plus artist for newly created entries; historical references
+must remain unchanged.
+
+| Operation | Observable change |
+|---|---|
+| Create draft | Creates a real Draft Application against an existing opportunity, or a Draft Invitation against a real slot; copies a validated Deal configuration into its draft proposal; no notification/claim/Booking |
+| Edit/preview draft | Updates only an authorised draft and returns its server-calculated document hash and rendered terms; invalidates preparation tied to changed content |
+| Start commitment | Creates/reuses a durable action for this proposal/definition/payer/hash and starts the authorised provider interaction outside the database transaction |
+| Apply / Send | Checks submission requirements, records the proposer's consent, freezes/issues the draft and notifies the other party through the outbox |
+| Counter | Prepares a new draft against the current issued proposal; issuing it records the counterproposer's consent and supersedes the current proposal atomically |
+| Accept | Signs the exact current issued proposal, checks the required commitment facts, claims the slot/resources, creates Booking and seals the entry in one B2B transaction |
+| Decline / Withdraw | Ends negotiation with attributed authority; reconciles/voids unused holds independently; creates no Booking |
+
+The UI need not display a draft wizard. It can create the draft when the user begins an application or
+invitation. Drafts are private to their author until issued, are excluded from submitted/inbox counts,
+and have an explicit expiry/retention policy. Discarding a draft with an uncertain provider outcome must
+first reconcile that action; draft cleanup is not permission to delete financial evidence.
+
+The existing POST /api/application/{opportunityId} is an existing consumer contract, not the new Apply
+resource route below. B4 must either cut over its known clients together or provide a time-bounded adapter
+with a named removal gate. Never reinterpret that existing integer as an ApplicationId in place.
+
+### 16.3 Configuration data consumed by these operations
+
+These definitions extend the four-section DealConfiguration in section 3. Commitments are declared once
+inside the selected entry definition; Apply/Send/Accept reference them by ID. No operation has a selectable
+whole-deal class. An empty list means that operation imposes no additional payment commitment, not that
+authentication, eligibility or two-party consent can be disabled.
+
+~~~csharp
+public sealed record CapabilityReference(string Id, int Version);
+
+public enum AgreementPartyRole
+{
+    Buyer,
+    Supplier
+}
+
+public sealed record ApplyDefinition(IReadOnlyList<Guid> RequiredCommitments);
+public sealed record SendDefinition(IReadOnlyList<Guid> RequiredCommitments);
+public sealed record AcceptDefinition(IReadOnlyList<Guid> RequiredCommitments);
+
+public abstract record EntryCommitmentDefinition
+{
+    private EntryCommitmentDefinition() { }
+
+    public sealed record Method(
+        Guid Id,
+        CapabilityReference Capability,
+        AgreementPartyRole Payer,
+        string MandateTermsVersion) : EntryCommitmentDefinition;
+
+    public sealed record Hold(
+        Guid Id,
+        CapabilityReference Capability,
+        AgreementPartyRole Payer,
+        AgreementPartyRole Payee,
+        TermReference<FixedAmountDefinition> Amount,
+        TimeSpan MinimumRemainingValidity) : EntryCommitmentDefinition;
+}
+
+public sealed record FixedAmountDefinition(Money Amount);
+~~~
+
+Method supports the registered save-method and verify-method behaviours, whose callable contracts match.
+Hold supports an identified amount authorisation and must bind to an amount known at that time. A receipt
+share of unknowable final revenue is not such an amount. The capability descriptor validates its definition
+case, supported semantic version, stage and parameters. IDs are not CLR type names or executable expressions.
+
+The explicit C# record family here requires whitelisted wire discriminators/converters and
+coverage tests; it makes no claim about native C# unions or automatic EF inheritance-in-JSON support.
+This is not a requirement to replace the existing Result carrier or adopt preview language support.
+Storage uses the qualified JSONB envelope; unknown discriminators fail validation rather than becoming
+runtime types selected by the caller.
+
+For the GBP 600 support example, Terms names a GBP 150 advance and GBP 450 balance; Booking schedules
+the advance collection and Concert schedules the balance. Both reference one appropriately scoped saved
+method requirement. Application.Apply may require none, with Application.Accept requiring that method.
+DirectInvitation.Send may require the payer's method before offering; its Accept also checks it remains
+usable. If the payer is not the sender, the requirement's authorised action must be reachable before the
+required boundary. The validator rejects a requirement only its not-yet-invited counterparty could fulfil
+before Send. Equivalent economics do not mean identical entry orchestration or identical signed hashes.
+
+### 16.4 Proposal, consent and entity shapes
+
+~~~csharp
+public sealed record AgreementParty(
+    AgreementPartyRole Role,
+    Guid TenantId,
+    LegalPartySnapshot LegalIdentity);
+
+public sealed record ProposedAgreement(
+    DealConfiguration Configuration,
+    BookingContextSnapshot Context,
+    IReadOnlyList<AgreementParty> Parties,
+    LegalDocumentVersions LegalDocuments,
+    DealTemplateReference? Template);
+
+public sealed record ProposalDocument(
+    ProposedAgreement Agreement,
+    string ContentHash,
+    string RenderedTerms);
+
+public sealed record AgreementSigner(
+    Guid UserId,
+    Guid ActingTenantId,
+    Guid PrincipalTenantId,
+    AuthoritySnapshot Authority);
+
+public sealed record SubmittedConsent(
+    string ContentHash,
+    AgreementPartyRole Party,
+    AgreementSigner Signer,
+    SignatureEvidence Signature);
+
+public sealed record ProposalConsent(
+    Guid ProposalId,
+    string ContentHash,
+    AgreementPartyRole Party,
+    AgreementSigner Signer,
+    SignatureEvidence Signature);
+
+internal sealed class ApplicationEntity : IIdEntity
+{
+    private ApplicationEntity() { }
+
+    public int Id { get; private set; }
+    public int OpportunityId { get; private set; }
+    public Guid SlotId { get; private set; }
+    public Guid ApplicantTenantId { get; private set; }
+    public Guid AdvertiserTenantId { get; private set; }
+    public Guid? CurrentProposalId { get; private set; }
+    public ApplicationState State { get; private set; }
+    public uint RowVersion { get; private set; }
+}
+
+internal sealed class ApplicationProposalEntity
+{
+    private readonly List<ApplicationProposalConsentEntity> consents = [];
+
+    private ApplicationProposalEntity() { }
+
+    public Guid Id { get; private set; }
+    public int ApplicationId { get; private set; }
+    public int Revision { get; private set; }
+    public ProposalState State { get; private set; }
+    public Guid AuthorTenantId { get; private set; }
+    public Guid? ReplacesProposalId { get; private set; }
+    public Guid AcceptanceOperationId { get; private set; }
+    public string OpportunityVersion { get; private set; } = null!;
+    public ProposalDocument Document { get; private set; } = null!;
+    public IReadOnlyList<ApplicationProposalConsentEntity> Consents => consents;
+    public IReadOnlyList<ProposalConsent> ConsentSnapshots =>
+        consents.Select(consent => consent.Snapshot).ToArray();
+    public uint RowVersion { get; private set; }
+}
+
+internal sealed class DirectInvitationEntity : IIdEntity
+{
+    private DirectInvitationEntity() { }
+
+    public int Id { get; private set; }
+    public Guid SlotId { get; private set; }
+    public Guid InviterTenantId { get; private set; }
+    public Guid InviteeTenantId { get; private set; }
+    public Guid? CurrentProposalId { get; private set; }
+    public InvitationState State { get; private set; }
+    public uint RowVersion { get; private set; }
+}
+
+internal sealed class DirectInvitationProposalEntity
+{
+    private readonly List<DirectInvitationProposalConsentEntity> consents = [];
+
+    private DirectInvitationProposalEntity() { }
+
+    public Guid Id { get; private set; }
+    public int DirectInvitationId { get; private set; }
+    public int Revision { get; private set; }
+    public ProposalState State { get; private set; }
+    public Guid AuthorTenantId { get; private set; }
+    public Guid? ReplacesProposalId { get; private set; }
+    public Guid AcceptanceOperationId { get; private set; }
+    public ProposalDocument Document { get; private set; } = null!;
+    public IReadOnlyList<DirectInvitationProposalConsentEntity> Consents => consents;
+    public IReadOnlyList<ProposalConsent> ConsentSnapshots =>
+        consents.Select(consent => consent.Snapshot).ToArray();
+    public uint RowVersion { get; private set; }
+}
+
+internal sealed class ApplicationProposalConsentEntity
+{
+    private ApplicationProposalConsentEntity() { }
+
+    public Guid Id { get; private set; }
+    public Guid ProposalId { get; private set; }
+    public ProposalConsent Snapshot { get; private set; } = null!;
+}
+
+internal sealed class DirectInvitationProposalConsentEntity
+{
+    private DirectInvitationProposalConsentEntity() { }
+
+    public Guid Id { get; private set; }
+    public Guid ProposalId { get; private set; }
+    public ProposalConsent Snapshot { get; private set; } = null!;
+}
+~~~
+
+Domain creation/transition methods below are members of these entities; the property-only extracts above
+are their persistence shape, not an invitation to make setters public. CurrentProposalId means the current
+ISSUED proposal, so it is absent while an entry has only drafts. Both proposal-to-entry and optional current-
+proposal relationships are same-module relationships. Creation inserts the root without a current proposal,
+then its draft; issuance sets the pointer later. No cross-module ORM navigation or circular initial insert
+is required. The current pointer must reference an issued proposal belonging to that root.
+
+Each consent Snapshot is an owned value mapped into its own module's relational consent row, including
+the party/principal/hash columns used by its uniqueness checks. It is not a navigation to a shared
+agreement entity. ConsentSnapshots is a non-mapped projection of explicitly loaded consent rows.
+OpportunityVersion pins the actual advertised source checked by Application eligibility; it is not
+another mutable copy of Opportunity. AcceptanceOperationId is generated once when a proposal is created.
+
+ProposalState is Draft or Issued; a superseded issued document is not edited to reflect supersession.
+The entry's current pointer and replacement chain supply that fact. Initially ApplicationState and
+InvitationState each have Draft, Negotiating, Accepted, Declined, Withdrawn and Expired states, with
+separate transition types/permissions. Migration maps existing states explicitly; it does not relabel
+historical rejection/cancellation events without preserving their meaning.
+
+LegalPartySnapshot is the accepted legal identity, not a live TenantEntity. BookingContextSnapshot contains
+ShowId, SlotId, the typed performance/venue-hire subject, room/space identity, occupied interval and time
+zone. AuthoritySnapshot is either membership evidence or a specific representation grant with scope and
+validity; all AgreementSigner fields apply to both forms. SignatureEvidence contains the submitted signature
+and server-stamped time/client evidence. None of these values is a step-specific nullable context bag.
+
+RowVersion above is the proposed PostgreSQL xmin-backed token, subject to B1 qualification and the existing
+State concurrency checks. HTTP exposes an opaque ETag, not a client-editable uint. It is unrelated to the
+proposal's user-readable Revision. Entry/proposal relationships, access grants, consent rows, acceptance
+rows and action state remain relational; only the versioned definition/document body is JSONB.
+
+Additional tables exist separately in EACH entry module:
+
+| Row | Required data and constraints |
+|---|---|
+| ProposalConsentEntity | ProposalId FK, party role, principal/user/acting tenant, authority evidence, signed hash, signature/client evidence; one effective consent per required principal for that revision |
+| EntryCommitmentEntity | Id, ProposalId FK, definition ID, bound-content hash, payer, immutable operation reference, preparation state and provider-operation correlation; unique proposal/hash/definition/payer scope |
+| CommitmentObservationEntity | CommitmentId FK, provider observation identity, observed status/time and scoped ready evidence; append observations, reject duplicate/reordered state regression |
+| EntryAcceptanceEntity | EntryId FK, ProposalId FK, operation ID, BookingId reference, immutable request fingerprint and result; unique accepted entry and accepted proposal |
+| CommandReceiptEntity | RequestId, actor/principal, operation/resource, canonical request fingerprint, durable result reference; unique scoped request ID; different payload on reuse is a conflict |
+
+No payment client secret is stored in a proposal or returned in an ordinary entry DTO. The checkout result
+is available only to the authorised payer. Pending invitations and draft proposals are not public listings;
+row/query authorisation includes participants and valid representatives, never arbitrary template users.
+
+Absence of ITenantScoped on these shared-participant roots is not permission for unscoped repository
+queries. Each entry module must supply explicit participant/draft-author visibility and write authority;
+ordinary lists, counts and direct lookups all use that stance. Deal remains a single-owner tenant root.
+
+### 16.5 Requests, reads and the common accepted contract
+
+~~~csharp
+public sealed record DealDraftReference(int Id, string ETag);
+
+public sealed record ApplicationDraftRequest
+{
+    public int ArtistId { get; init; }
+    public DealDraftReference Deal { get; init; } = null!;
+}
+
+public sealed record InvitationDraftRequest
+{
+    public Guid RecipientTenantId { get; init; }
+    public DealDraftReference Deal { get; init; } = null!;
+}
+
+public sealed record ProposalConsentRequest
+{
+    public string ContentHash { get; init; } = null!;
+    public AgreementPartyRole Party { get; init; }
+    public ESignatureRequest ESignature { get; init; } = null!;
+}
+
+public sealed record DraftProposalRequest
+{
+    public DealDraftReference Deal { get; init; } = null!;
+}
+
+public sealed record ExpectedContentHashRequest
+{
+    public string ContentHash { get; init; } = null!;
+}
+
+public sealed record DecisionRequest
+{
+    public Guid ProposalId { get; init; }
+    public string ContentHash { get; init; } = null!;
+    public string Reason { get; init; } = null!;
+}
+
+public sealed record ConsentSummary(
+    AgreementPartyRole Party,
+    Guid PrincipalTenantId,
+    string SignerDisplayName,
+    DateTimeOffset SignedAt,
+    string ContentHash);
+
+public sealed record ProposalDto(
+    Guid Id,
+    int Revision,
+    ProposalState State,
+    ProposalDocument Document,
+    IReadOnlyList<ConsentSummary> Consents,
+    IReadOnlyList<CommitmentRequirementStatus> Commitments,
+    string ETag);
+
+public sealed record AcceptedBooking(int BookingId, Guid ContractRevisionId);
+
+public sealed record ApplicationDto(
+    int Id,
+    int OpportunityId,
+    Guid SlotId,
+    ApplicationState State,
+    Guid? CurrentProposalId,
+    AcceptedBooking? Booking,
+    IReadOnlyList<ActionLink> Actions,
+    string ETag);
+
+public sealed record DirectInvitationDto(
+    int Id,
+    Guid SlotId,
+    Guid InviterTenantId,
+    Guid InviteeTenantId,
+    InvitationState State,
+    Guid? CurrentProposalId,
+    AcceptedBooking? Booking,
+    IReadOnlyList<ActionLink> Actions,
+    string ETag);
+
+public sealed record ApplicationDraft(ApplicationDto Application, ProposalDto Proposal);
+public sealed record InvitationDraft(DirectInvitationDto Invitation, ProposalDto Proposal);
+
+public sealed record SlotClaimRequest(
+    Guid AcceptanceOperationId,
+    BookingContextSnapshot Context,
+    IReadOnlyList<Guid> PartyTenantIds);
+
+public abstract record BookingOrigin
+{
+    private BookingOrigin() { }
+
+    public sealed record Application(
+        int ApplicationId,
+        int OpportunityId,
+        Guid ProposalId) : BookingOrigin;
+
+    public sealed record DirectInvitation(
+        int DirectInvitationId,
+        Guid ProposalId) : BookingOrigin;
+}
+
+public sealed record AcceptedCommitment(
+    Guid DefinitionId,
+    Guid CommitmentId,
+    Guid PayerTenantId,
+    PaymentOperationReference Reference,
+    string BoundContentHash);
+
+public sealed record AcceptedBookingAgreement(
+    Guid AcceptanceOperationId,
+    BookingOrigin Origin,
+    ProposalDocument Proposal,
+    IReadOnlyList<ProposalConsent> Consents,
+    IReadOnlyList<AcceptedCommitment> Commitments,
+    SlotClaimSnapshot Claim);
+~~~
+
+The input IDs identifying the entry, proposal or slot come from routes. RequestId is a validated UUID
+from an Idempotency-Key header, scoped to the authenticated actor/principal and operation. Fingerprints
+are calculated server-side over the resource and canonical writable payload. RecipientTenantId identifies
+a counterparty, not the active-tenant selector; the HTTP edge translates it to product vocabulary where
+needed. Controllers/endpoints never accept an active-tenant ID or a client-supplied AgreementSigner.
+
+ApplicationDraftRequest.ArtistId identifies the real performing profile, including a represented artist;
+the workflow must prove authority for that profile. It is not an active-tenant-to-profile convenience
+lookup. Creation loads the referenced Deal through its facade, checks access and ETag, validates it against
+the real opportunity/slot, binds the actual parties/context, and copies the result into the draft. Future
+builders create the same editable Deal shape; they do not select a second execution path.
+
+ProposalDto is an authorised read shape. An entry DTO adds its own identity, state, origin-specific
+references, current proposal reference, optional accepted Booking reference and role-aware action links.
+Its mapper must not expose another party's client secrets, confidential authority documents or draft work.
+Sensitive SignatureEvidence is represented by the permitted summary/artifact link at the HTTP boundary.
+
+These are the target core read fields, not permission to delete unrelated profile/display fields from
+today's ApplicationDto. B4 must explicitly preserve or migrate those consumer projections. ActionLink
+denotes the existing action-link contract or its qualified successor. An absent current proposal or
+Booking reflects an actual lifecycle state, not implementation-specific nullable input parameters.
+
+CommitmentRequirementStatus identifies the requirement, responsible party, state and permitted action
+link. It is a view of recorded progress, not an instruction that the browser may mark fulfilled. The
+typed checkout response is separate. AcceptedCommitment deliberately carries no assertion of guaranteed
+future collection; Booking still evaluates its own financial execution requirements.
+
+IBookingModule accepts AcceptedBookingAgreement only from trusted in-process B2B use cases. There is no
+public endpoint accepting this document from a browser. SlotClaimSnapshot includes claim ID, slot/show,
+accepted context and acceptance operation; Booking validates that correspondence through Show's facade.
+
+SlotClaimRequest is a Show.Contracts input, not an HTTP request. Show verifies the stored placement
+permission, expected slot/space revision, subject, interval and resource claims against the actual
+agreement principals. Entry proves the signer's authority and consent first. Accepting artists must not
+need the organiser's active-tenant scope to claim their valid offered engagement. The trusted entry
+facade supplies the validated principals; a browser cannot submit an arbitrary principal list to Show.
+
+### 16.6 The transaction and replay contract used by the workflows
+
+The following infrastructure boundary is REQUIRED, not a claim that today's IUnitOfWorkBehavior already
+has these semantics:
+
+~~~csharp
+internal interface IEntryTransaction
+{
+    Task<Result<TValue, TError>> ExecuteAsync<TValue, TError>(
+        Func<CancellationToken, Task<Result<TValue, TError>>> action,
+        Func<EntryWriteConflict, CancellationToken, Task<Result<TValue, TError>>> recover,
+        CancellationToken ct = default)
+        where TValue : notnull
+        where TError : IError;
+}
+~~~
+
+| Concern | Required implementation contract |
+|---|---|
+| Commit/rollback | One local B2B connection/transaction; enlisted module contexts and inbox/outbox are atomic. Flush/commit only a successful Result. Any typed rejection after staging work rolls back and discards the affected scope |
+| Provider calls | No Payment/Stripe/network notification call inside action; only B2B-owned reads/writes and facades. Checkout preparation/execution is separated in 16.9 |
+| Expected database failure | Classify only known constraints/concurrency conflicts after rollback; run recover in a fresh DI/data scope, never through the failed DbContexts |
+| Replay | Authorise access before returning a stored result. Match operation/resource, actor/principal, request ID and canonical payload fingerprint. Same key/different payload returns an operation-owned conflict |
+| Race | Duplicate receipt or already-created acceptance may return the previously authorised result; a different winning proposal yields availability conflict; a stale proposal yields proposal conflict |
+| Retry | Unknown infrastructure faults and cancellation remain exceptions. No unbounded whole-workflow retry and no automatic new payment identity |
+
+The current UnitOfWorkBehavior.ExecuteAsync/TryExecuteAsync calls Complete after any normally returned
+value, including a failed Result. Its callbacks must not be used unchanged for the algorithm below.
+B1/P1 must qualify result-aware rollback and local enlistment. This is implementation work to existing
+infrastructure, not a second domain workflow or a distributed transaction.
+
+Each entry module owns command receipts and an IEntryCommandJournal implementation over its own context.
+ReadAsync<T> returns Result<Option<T>, CommandReplayError>; None means there is no committed receipt.
+RecordAsync stages the successful DTO/result and its fingerprint in the SAME transaction as the domain
+effect. No Result carrier or client secret is serialized. The journal never bypasses resource authority.
+The generic mechanics may be shared; the rows, query stance and operation errors remain module-owned.
+
+Public ApplyAsync/AcceptAsync/SendAsync/CounterAsync methods wrap their CoreAsync method in the transaction
+above and pass a module-local recovery method. The code below is the transactional business core; the
+wrapper is shown explicitly for Application.AcceptAsync. All loading/validation collaborators have the
+contracts in 16.10, rather than an unspecified ApplicationContext or CommitmentContext.
+
+### 16.7 ApplicationWorkflow: Apply and Accept
+
+The workflow still owns fixed lifecycle ordering. Apply is no longer a per-DealType factory call that
+creates different Application entities. It loads this application's draft, checks its configured
+requirements and performs the common submission transition.
+
+~~~csharp
+private async Task<Result<ApplicationDto, ApplyApplicationError>> ApplyCoreAsync(
+    int applicationId,
+    Guid proposalId,
+    Guid requestId,
+    ProposalConsentRequest request,
+    CancellationToken ct)
+{
+    var application = await applicationRepository.GetByIdAsync(applicationId, ct);
+    var proposal = await proposalRepository.GetWithConsentsByIdAsync(proposalId, ct);
+    if (application is null || proposal is null || proposal.ApplicationId != application.Id)
+        return new ApplyApplicationError.NotFound();
+
+    var authorised = await authority.AuthorizeApplyAsync(application, proposal, request.Party, ct);
+    if (!authorised.TryGetValue(out var signer))
+    {
+        authorised.TryGetError(out var error);
+        return new ApplyApplicationError.Authority(error!);
+    }
+
+    var command = commandFactory.CreateApply(requestId, applicationId, proposalId, signer, request);
+    var replay = await commandJournal.ReadAsync<ApplicationDto>(command, ct);
+    if (!replay.TryGetValue(out var previous))
+    {
+        replay.TryGetError(out var error);
+        return new ApplyApplicationError.Replay(error!);
+    }
+    if (previous.TryGetValue(out var priorResult))
+        return priorResult;
+
+    if (proposal.Document.Agreement.Configuration.Entry is not EntryDefinition.Application(var entry))
+        return new ApplyApplicationError.InvalidEntryRoute();
+
+    var eligible = await eligibility.CanSubmitAsync(application, proposal, ct);
+    if (eligible.TryGetError(out var eligibilityError))
+        return new ApplyApplicationError.Ineligible(eligibilityError);
+
+    var ready = await commitments.ReadReadyAsync(proposal.Id, entry.Apply.RequiredCommitments, ct);
+    if (ready.TryGetError(out var commitmentError))
+        return new ApplyApplicationError.Commitment(commitmentError);
+
+    var consent = consentEvaluator.Create(
+        proposal.Id, proposal.Document, signatureGenerator.Create(request, signer));
+    if (!consent.TryGetValue(out var signature))
+    {
+        consent.TryGetError(out var error);
+        return new ApplyApplicationError.Consent(error!);
+    }
+
+    var submitted = application.Apply(proposal, signature);
+    if (submitted.TryGetError(out var transitionError))
+        return new ApplyApplicationError.Transition(transitionError);
+
+    await unitOfWork.SaveChangesAsync(ct);
+    var dto = mapper.ToDto(application, proposal);
+    await commandJournal.RecordAsync(command, dto, ct);
+    return dto;
+}
+
+public Task<Result<AcceptedBooking, AcceptApplicationError>> AcceptAsync(
+    int applicationId,
+    Guid proposalId,
+    Guid requestId,
+    ProposalConsentRequest request,
+    CancellationToken ct = default) =>
+    transaction.ExecuteAsync(
+        token => AcceptCoreAsync(applicationId, proposalId, requestId, request, token),
+        (conflict, token) => acceptanceRecovery.RunAsync(
+            fresh => fresh.ResolveAsync(
+                applicationId, proposalId, requestId, request, conflict, token)),
+        ct);
+
+private async Task<Result<AcceptedBooking, AcceptApplicationError>> AcceptCoreAsync(
+    int applicationId,
+    Guid proposalId,
+    Guid requestId,
+    ProposalConsentRequest request,
+    CancellationToken ct)
+{
+    var application = await applicationRepository.GetByIdAsync(applicationId, ct);
+    var proposal = await proposalRepository.GetWithConsentsByIdAsync(proposalId, ct);
+    if (application is null || proposal is null || proposal.ApplicationId != application.Id)
+        return new AcceptApplicationError.NotFound();
+
+    var authorised = await authority.AuthorizeAcceptAsync(application, proposal, request.Party, ct);
+    if (!authorised.TryGetValue(out var signer))
+    {
+        authorised.TryGetError(out var error);
+        return new AcceptApplicationError.Authority(error!);
+    }
+
+    var command = commandFactory.CreateAccept(requestId, applicationId, proposalId, signer, request);
+    var replay = await commandJournal.ReadAsync<AcceptedBooking>(command, ct);
+    if (!replay.TryGetValue(out var previous))
+    {
+        replay.TryGetError(out var error);
+        return new AcceptApplicationError.Replay(error!);
+    }
+    if (previous.TryGetValue(out var priorResult))
+        return priorResult;
+
+    var acceptable = application.ValidateAccept(proposal, request.ContentHash);
+    if (acceptable.TryGetError(out var transitionError))
+        return new AcceptApplicationError.Transition(transitionError);
+
+    if (proposal.Document.Agreement.Configuration.Entry is not EntryDefinition.Application(var entry))
+        return new AcceptApplicationError.InvalidEntryRoute();
+
+    var eligible = await eligibility.CanAcceptAsync(application, proposal, ct);
+    if (eligible.TryGetError(out var eligibilityError))
+        return new AcceptApplicationError.Ineligible(eligibilityError);
+
+    var consent = consentEvaluator.Complete(
+        proposal.Id, proposal.Document, proposal.ConsentSnapshots,
+        signatureGenerator.Create(request, signer));
+    if (!consent.TryGetValue(out var signatures))
+    {
+        consent.TryGetError(out var error);
+        return new AcceptApplicationError.Consent(error!);
+    }
+
+    var ready = await commitments.ReadReadyAsync(proposal.Id, entry.Accept.RequiredCommitments, ct);
+    if (!ready.TryGetValue(out var acceptedCommitments))
+    {
+        ready.TryGetError(out var error);
+        return new AcceptApplicationError.Commitment(error!);
+    }
+
+    var operationId = proposal.AcceptanceOperationId;
+    var claimed = await showModule.ClaimAsync(
+        new SlotClaimRequest(
+            operationId,
+            proposal.Document.Agreement.Context,
+            proposal.Document.Agreement.Parties.Select(party => party.TenantId).Distinct().ToArray()),
+        ct);
+    if (!claimed.TryGetValue(out var claim))
+    {
+        claimed.TryGetError(out var error);
+        return new AcceptApplicationError.Availability(error!);
+    }
+
+    var agreement = new AcceptedBookingAgreement(
+        operationId,
+        new BookingOrigin.Application(application.Id, application.OpportunityId, proposal.Id),
+        proposal.Document,
+        signatures,
+        acceptedCommitments,
+        claim);
+
+    var created = await bookingModule.CreateFromAcceptedAsync(agreement, ct);
+    if (!created.TryGetValue(out var booking))
+    {
+        created.TryGetError(out var error);
+        return new AcceptApplicationError.Booking(error!);
+    }
+
+    var accepted = application.Accept(proposal, signatures, booking);
+    if (accepted.TryGetError(out var acceptanceError))
+        return new AcceptApplicationError.Transition(acceptanceError);
+
+    await commandJournal.RecordAsync(command, booking, ct);
+    return booking;
+}
+~~~
+
+acceptanceRecovery is IScoped<ApplicationAcceptanceRecovery>; RunAsync is the existing fresh-scope
+mechanism. The transaction invokes this callback only after rollback. The Invitation wrapper uses its
+own IScoped<InvitationAcceptanceRecovery> in the same way. Capturing a recovery object from the failed
+scope and merely wrapping its call does not meet this contract.
+
+AcceptanceOperationId is retained with its proposal and is never regenerated by a retry. Repositories
+explicitly load consent rows; acceptance does not rely on lazy loading or a current-template navigation.
+The entity transition stages the new consent/acceptance rows and raises notification/outbox facts. The
+transaction boundary flushes all participating contexts. No notifier sends a network message inline.
+
+Apply/Send flush their local changes before mapping a returned ETag, so the response and receipt contain
+the updated PostgreSQL concurrency token. SaveChanges is not transaction commit; a later receipt failure
+still rolls everything back. Draft creation follows the same flush-before-mapping rule for integer IDs.
+
+ValidateAccept requires Negotiating, the exact current Issued proposal and the expected hash. Same-request
+replay is checked BEFORE these lifecycle checks, because a committed acceptance legitimately closes the
+entry. A fresh request against an already accepted entry returns an explicit AlreadyAccepted outcome with
+the authorised existing Booking reference; it must never create another Booking. Recovery applies the same
+rule. Stored consent is checked against the signed revision and authority at signing; revocation prevents
+new acts, not retrospective deletion of historically valid consent.
+
+No IAcceptStep or IApplyStep union has been invented. commitments is the Application-owned reader of actual
+recorded commitment facts. Its input is a proposal ID and explicit required-definition IDs, and its result
+is either the scoped accepted references or a named missing/expired/failed/mismatched requirement. It does
+not call Payment during this transaction. The checkout operation that produces those facts is in 16.9.
+
+### 16.8 DirectInvitationWorkflow, service and HTTP edge
+
+DirectInvitationService delegates writes to its workflow and owns its read/mapping use cases, just as
+ApplicationService does. It neither calls ApplicationService nor constructs an ApplicationRequest.
+
+~~~csharp
+internal interface IDirectInvitationService
+{
+    Task<Result<InvitationDraft, CreateInvitationError>> CreateDraftAsync(
+        Guid slotId, Guid requestId, InvitationDraftRequest request, CancellationToken ct = default);
+
+    Task<Result<DirectInvitationDto, SendInvitationError>> SendAsync(
+        int invitationId, Guid proposalId, Guid requestId,
+        ProposalConsentRequest request, CancellationToken ct = default);
+
+    Task<Result<AcceptedBooking, AcceptInvitationError>> AcceptAsync(
+        int invitationId, Guid proposalId, Guid requestId,
+        ProposalConsentRequest request, CancellationToken ct = default);
+}
+
+internal sealed class DirectInvitationService : IDirectInvitationService
+{
+    private readonly IDirectInvitationWorkflow workflow;
+
+    public DirectInvitationService(IDirectInvitationWorkflow workflow)
+    {
+        this.workflow = workflow;
+    }
+
+    public Task<Result<InvitationDraft, CreateInvitationError>> CreateDraftAsync(
+        Guid slotId, Guid requestId, InvitationDraftRequest request, CancellationToken ct = default) =>
+        workflow.CreateDraftAsync(slotId, requestId, request, ct);
+
+    public Task<Result<DirectInvitationDto, SendInvitationError>> SendAsync(
+        int invitationId, Guid proposalId, Guid requestId,
+        ProposalConsentRequest request, CancellationToken ct = default) =>
+        workflow.SendAsync(invitationId, proposalId, requestId, request, ct);
+
+    public Task<Result<AcceptedBooking, AcceptInvitationError>> AcceptAsync(
+        int invitationId, Guid proposalId, Guid requestId,
+        ProposalConsentRequest request, CancellationToken ct = default) =>
+        workflow.AcceptAsync(invitationId, proposalId, requestId, request, ct);
+}
+~~~
+
+This extract covers the three writes being traced; the full service/workflow also exposes the operations
+listed in 16.11, with their own operation-owned errors. InvitationDraft contains the created invitation
+read DTO and its draft ProposalDto. ApplicationDraft has the corresponding application/read proposal.
+No Response-suffixed type is introduced below the HTTP boundary.
+
+The invitation acceptance core intentionally has the same shared contract/rules but its OWN entity,
+repository, authority and eligibility checks:
+
+~~~csharp
+private async Task<Result<AcceptedBooking, AcceptInvitationError>> AcceptCoreAsync(
+    int invitationId,
+    Guid proposalId,
+    Guid requestId,
+    ProposalConsentRequest request,
+    CancellationToken ct)
+{
+    var invitation = await invitationRepository.GetByIdAsync(invitationId, ct);
+    var proposal = await proposalRepository.GetWithConsentsByIdAsync(proposalId, ct);
+    if (invitation is null || proposal is null || proposal.DirectInvitationId != invitation.Id)
+        return new AcceptInvitationError.NotFound();
+
+    var authorised = await authority.AuthorizeAcceptAsync(invitation, proposal, request.Party, ct);
+    if (!authorised.TryGetValue(out var signer))
+    {
+        authorised.TryGetError(out var error);
+        return new AcceptInvitationError.Authority(error!);
+    }
+
+    var command = commandFactory.CreateAccept(requestId, invitationId, proposalId, signer, request);
+    var replay = await commandJournal.ReadAsync<AcceptedBooking>(command, ct);
+    if (!replay.TryGetValue(out var previous))
+    {
+        replay.TryGetError(out var error);
+        return new AcceptInvitationError.Replay(error!);
+    }
+    if (previous.TryGetValue(out var priorResult))
+        return priorResult;
+
+    var acceptable = invitation.ValidateAccept(proposal, request.ContentHash);
+    if (acceptable.TryGetError(out var transitionError))
+        return new AcceptInvitationError.Transition(transitionError);
+
+    if (proposal.Document.Agreement.Configuration.Entry is not EntryDefinition.DirectInvitation(var entry))
+        return new AcceptInvitationError.InvalidEntryRoute();
+
+    var eligible = await eligibility.CanAcceptAsync(invitation, proposal, ct);
+    if (eligible.TryGetError(out var eligibilityError))
+        return new AcceptInvitationError.Ineligible(eligibilityError);
+
+    var consent = consentEvaluator.Complete(
+        proposal.Id, proposal.Document, proposal.ConsentSnapshots,
+        signatureGenerator.Create(request, signer));
+    if (!consent.TryGetValue(out var signatures))
+    {
+        consent.TryGetError(out var error);
+        return new AcceptInvitationError.Consent(error!);
+    }
+
+    var ready = await commitments.ReadReadyAsync(proposal.Id, entry.Accept.RequiredCommitments, ct);
+    if (!ready.TryGetValue(out var acceptedCommitments))
+    {
+        ready.TryGetError(out var error);
+        return new AcceptInvitationError.Commitment(error!);
+    }
+
+    var operationId = proposal.AcceptanceOperationId;
+    var claimed = await showModule.ClaimAsync(
+        new SlotClaimRequest(
+            operationId,
+            proposal.Document.Agreement.Context,
+            proposal.Document.Agreement.Parties.Select(party => party.TenantId).Distinct().ToArray()),
+        ct);
+    if (!claimed.TryGetValue(out var claim))
+    {
+        claimed.TryGetError(out var error);
+        return new AcceptInvitationError.Availability(error!);
+    }
+
+    var created = await bookingModule.CreateFromAcceptedAsync(
+        new AcceptedBookingAgreement(
+            operationId,
+            new BookingOrigin.DirectInvitation(invitation.Id, proposal.Id),
+            proposal.Document,
+            signatures,
+            acceptedCommitments,
+            claim),
+        ct);
+    if (!created.TryGetValue(out var booking))
+    {
+        created.TryGetError(out var error);
+        return new AcceptInvitationError.Booking(error!);
+    }
+
+    var accepted = invitation.Accept(proposal, signatures, booking);
+    if (accepted.TryGetError(out var acceptanceError))
+        return new AcceptInvitationError.Transition(acceptanceError);
+
+    await commandJournal.RecordAsync(command, booking, ct);
+    return booking;
+}
+~~~
+
+SendCoreAsync is its own orchestration, not a call into ApplicationWorkflow:
+
+~~~csharp
+private async Task<Result<DirectInvitationDto, SendInvitationError>> SendCoreAsync(
+    int invitationId,
+    Guid proposalId,
+    Guid requestId,
+    ProposalConsentRequest request,
+    CancellationToken ct)
+{
+    var invitation = await invitationRepository.GetByIdAsync(invitationId, ct);
+    var proposal = await proposalRepository.GetWithConsentsByIdAsync(proposalId, ct);
+    if (invitation is null || proposal is null || proposal.DirectInvitationId != invitation.Id)
+        return new SendInvitationError.NotFound();
+
+    var authorised = await authority.AuthorizeSendAsync(invitation, proposal, request.Party, ct);
+    if (!authorised.TryGetValue(out var signer))
+    {
+        authorised.TryGetError(out var error);
+        return new SendInvitationError.Authority(error!);
+    }
+
+    var command = commandFactory.CreateSend(requestId, invitationId, proposalId, signer, request);
+    var replay = await commandJournal.ReadAsync<DirectInvitationDto>(command, ct);
+    if (!replay.TryGetValue(out var previous))
+    {
+        replay.TryGetError(out var error);
+        return new SendInvitationError.Replay(error!);
+    }
+    if (previous.TryGetValue(out var priorResult))
+        return priorResult;
+
+    if (proposal.Document.Agreement.Configuration.Entry is not EntryDefinition.DirectInvitation(var entry))
+        return new SendInvitationError.InvalidEntryRoute();
+
+    var eligible = await eligibility.CanSendAsync(invitation, proposal, ct);
+    if (eligible.TryGetError(out var eligibilityError))
+        return new SendInvitationError.Ineligible(eligibilityError);
+
+    var ready = await commitments.ReadReadyAsync(proposal.Id, entry.Send.RequiredCommitments, ct);
+    if (ready.TryGetError(out var commitmentError))
+        return new SendInvitationError.Commitment(commitmentError);
+
+    var consent = consentEvaluator.Create(
+        proposal.Id, proposal.Document, signatureGenerator.Create(request, signer));
+    if (!consent.TryGetValue(out var signature))
+    {
+        consent.TryGetError(out var error);
+        return new SendInvitationError.Consent(error!);
+    }
+
+    var sent = invitation.Send(proposal, signature);
+    if (sent.TryGetError(out var transitionError))
+        return new SendInvitationError.Transition(transitionError);
+
+    await unitOfWork.SaveChangesAsync(ct);
+    var dto = mapper.ToDto(invitation, proposal);
+    await commandJournal.RecordAsync(command, dto, ct);
+    return dto;
+}
+~~~
+
+The new HTTP group exposes that service. A representative binding is:
+
+~~~csharp
+internal static class DirectInvitationEndpoints
+{
+    public static void Map(IEndpointRouteBuilder endpoints)
+    {
+        var group = endpoints.MapGroup("/api/direct-invitation").RequireAuthorization();
+
+        group.MapPost("/{invitationId:int}/proposals/{proposalId:guid}/accept", AcceptAsync);
+    }
+
+    private static async Task<IResult> AcceptAsync(
+        int invitationId,
+        Guid proposalId,
+        [FromHeader(Name = "Idempotency-Key")] Guid requestId,
+        [FromBody] ProposalConsentRequest request,
+        IDirectInvitationService service,
+        CancellationToken ct)
+    {
+        var result = await service.AcceptAsync(invitationId, proposalId, requestId, request, ct);
+        return result.Match<IResult>(
+            booking => TypedResults.Ok(booking),
+            error => MinimalApiErrors.ToProblem(error));
+    }
+}
+~~~
+
+MinimalApiErrors is a proposed HTTP-only terminal using the same published error code/kind and validation
+shape as the existing MVC ProblemDetails terminal. It is not assumed to exist today. Add that adapter and
+its contract tests; do not return an MVC ActionResult from a minimal endpoint or serialize Result itself.
+The host must call this module's Map and apply its request-validation/rate-limit metadata. Permission and
+representation checks remain in the workflow, including non-HTTP calls. The representative Map above is
+not the complete route registration; 16.11 is the full required route/operation inventory.
+
+### 16.9 Where the keyed union really is useful: starting a commitment
+
+Reference resolution and provider preparation are different responsibilities. Existing acceptance merely
+selects ICommitmentReferenceStep. In the target, acceptance reads already-persisted references/facts; it
+does not need to reconstruct them from a deal enum. The old reference resolver is therefore removed from
+Accept after conversion, not promoted into a union. Historical reference formats retain their readers.
+
+Starting a saved/verified method and authorising a specific amount DO have different legitimate inputs,
+as the actual ApplicationCheckoutService already demonstrates. This operation earns a capability union:
+
+~~~csharp
+internal enum CommitmentBehaviour
+{
+    SaveMethod,
+    VerifyMethod,
+    AuthoriseAmount
+}
+
+internal sealed record MethodCommitmentInput(
+    PaymentOperationReference Reference,
+    Guid PayerTenantId,
+    string MandateTermsVersion);
+
+internal sealed record HoldCommitmentInput(
+    Guid OperationId,
+    PaymentOperationReference Reference,
+    Guid PayerTenantId,
+    Guid PayeeTenantId,
+    Money Amount);
+
+internal sealed record CommitmentCheckout(Guid CommitmentId, CheckoutSession Session);
+
+internal interface IMethodSetupStep
+{
+    Task<Result<CheckoutSession, PaymentOperationError>> StartAsync(
+        MethodCommitmentInput input, CancellationToken ct = default);
+}
+
+internal interface IAmountAuthorisationStep
+{
+    Task<Result<CheckoutSession, PaymentOperationError>> StartAsync(
+        HoldCommitmentInput input, CancellationToken ct = default);
+}
+
+internal abstract record CommitmentCapability
+{
+    private CommitmentCapability() { }
+
+    public sealed record Method(IMethodSetupStep Step) : CommitmentCapability;
+    public sealed record Hold(IAmountAuthorisationStep Step) : CommitmentCapability;
+}
+
+internal abstract record CommitmentInput
+{
+    private CommitmentInput() { }
+
+    public sealed record Method(MethodCommitmentInput Value) : CommitmentInput;
+    public sealed record Hold(HoldCommitmentInput Value) : CommitmentInput;
+}
+
+internal sealed record PreparedCommitment(
+    Guid CommitmentId,
+    CapabilityReference Capability,
+    CommitmentInput Input);
+
+var builder = new KeyedUnionBuilder<CommitmentBehaviour, CommitmentCapability>(services);
+
+builder.Case<IMethodSetupStep>(step => new CommitmentCapability.Method(step))
+    .UseScoped<SaveMethodStep>(CommitmentBehaviour.SaveMethod)
+    .UseScoped<VerifyMethodStep>(CommitmentBehaviour.VerifyMethod);
+
+builder.Case<IAmountAuthorisationStep>(step => new CommitmentCapability.Hold(step))
+    .UseScoped<AuthoriseAmountStep>(CommitmentBehaviour.AuthoriseAmount);
+
+builder.Build();
+~~~
+
+The key and factory are module-local. The descriptor/factory resolves the persisted capability ID/version
+to this closed supported key before returning CommitmentCapability. Unknown or disabled versions fail
+preparation. Application and Invitation each register their entry-facing family; stateless reference and
+consent rules may be shared, but there is no cross-module service locator. This is one execution approach
+for template and builder output, not a remaining DealType engine beside a configurable engine.
+
+SaveMethodStep and VerifyMethodStep both implement IMethodSetupStep and occupy the SAME union case.
+They call the existing SetupPaymentMethodAsync with PaymentSessionKind.PaymentMethodSetup or
+PaymentMethodVerification respectively. AuthoriseAmountStep uses the existing escrow AuthorizeAsync
+operation with its required payer, payee and amount. The leaves map successful provider/session data to
+CheckoutSession and preserve the actual typed provider errors; they do not manufacture money amounts or
+authority. No nullable amount/payee has been added to MethodCommitmentInput.
+
+ApplicationWorkflow.StartCommitmentAsync prepares, dispatches and records the start outcome explicitly:
+
+~~~csharp
+public async Task<Result<CommitmentCheckout, StartApplicationCommitmentError>> StartCommitmentAsync(
+    int applicationId,
+    Guid proposalId,
+    Guid definitionId,
+    Guid requestId,
+    ExpectedContentHashRequest request,
+    CancellationToken ct = default)
+{
+    var preparation = await commitmentPreparation.PrepareAsync(
+        applicationId, proposalId, definitionId, requestId, request.ContentHash, ct);
+    if (!preparation.TryGetValue(out var prepared))
+    {
+        preparation.TryGetError(out var error);
+        return new StartApplicationCommitmentError.Preparation(error!);
+    }
+
+    var capability = commitmentFactory.Create(prepared.Capability);
+    var started = await ((capability, prepared.Input) switch
+    {
+        (CommitmentCapability.Method(var step), CommitmentInput.Method(var input)) =>
+            step.StartAsync(input, ct),
+        (CommitmentCapability.Hold(var step), CommitmentInput.Hold(var input)) =>
+            step.StartAsync(input, ct),
+        _ => throw new InvalidOperationException("Validated commitment contracts do not match.")
+    });
+
+    if (!started.TryGetValue(out var session))
+    {
+        started.TryGetError(out var error);
+        await commitmentObservations.RecordStartFailureAsync(prepared.CommitmentId, error!, ct);
+        return new StartApplicationCommitmentError.Payment(error!);
+    }
+
+    await commitmentObservations.RecordSessionCreatedAsync(prepared.CommitmentId, ct);
+    return new CommitmentCheckout(prepared.CommitmentId, session);
+}
+~~~
+
+PrepareAsync returns Result<PreparedCommitment, PrepareCommitmentError>. It owns the short preparation
+transaction described below, including access checks, exact payload replay, definition binding and
+persisting the immutable input/reference before success. It rejects a stale/forbidden/unsupported scope
+or a requirement already satisfied without starting another operation. Required parameters are the
+MethodCommitmentInput or HoldCommitmentInput above, never an untyped parameter map.
+
+The observation writer uses separate short local transactions. RecordSessionCreated does not mark the
+method/hold Ready; it records only that a session was obtained. RecordStartFailure appends the permitted
+failure code and attempt evidence, not a serialized Result or client secret, and cannot regress a later
+authoritative provider outcome. Unknown exceptions leave the prepared intent available for reconciliation.
+These recording methods may be retried for the same observation identity; provider execution must not be
+repeated under a new identity merely because recording its response failed.
+
+Preparation rejects customer-authored mismatches with typed errors BEFORE this call. The exception arm is
+an internal registry/binding invariant failure, not validation or a fallback to another payment behaviour.
+Pairing tests must cover every supported combination; the builder alone does not prove that this switch
+invokes all of them correctly. InvitationWorkflow has its own matching call for the invitation operation.
+
+The WHOLE StartCommitmentAsync operation has these three explicit phases, of which the match is phase 2:
+
+1. **Prepare locally:** authorise the actual payer/representative, validate the draft/issued proposal hash
+   and definition, resolve typed parameters, persist/reuse EntryCommitmentEntity with an immutable
+   provider operation identity/reference, then commit. Amount and payer come from the validated proposal,
+   never the checkout request. A stale hash cannot start a newly altered obligation.
+2. **Invoke outside the transaction:** use the family above and return the payer-only session. On timeout
+   or process death, the preparation row remains discoverable; resume/reconcile using the SAME reference
+   and operation ID before creating any new provider operation. Qualify each adapter's replay contract.
+3. **Observe locally:** provider outcomes or an authenticated status query append the matching observation
+   and advance the preparation state. The client cannot mark it successful. A method session being created
+   is not a completed mandate; a hold must have sufficient amount, currency, parties and remaining validity.
+
+New references use a stable commitment UUID in ClientReference, while preserving Payment's supported
+OperationType values (including its verification discriminator). Existing outcome processors that parse
+app:/booking:/concert: must be updated to look up the owning action for new references and retain historical
+format readers. The existing PaymentOperationReference contract already supports an opaque string;
+this does not itself require Payment to understand Application or Direct Invitation.
+
+Revising the bound draft invalidates its old readiness for the new hash. Unused authorisations are
+reconciled/voided by identified cleanup actions. Reuse/rebinding of a prior saved method requires an explicit
+validated scope/mandate rule; initial delivery must not silently transplant a successful old verification.
+Acceptance checks local, correlated readiness and expiry. It cannot guarantee that a provider will honour
+a later capture/collection; Booking retains the pending/failure path for that possibility.
+
+### 16.10 Every workflow collaborator has an explicit contract
+
+These are not pluggable mega-contexts. Each row names an existing responsibility or one required target
+abstraction, with the data it actually uses. The implementation must not replace them with object,
+Dictionary<string, object> or an ApplicationOrInvitationContext.
+
+| Collaborator | Input -> output | Owner and required behaviour |
+|---|---|---|
+| applicationRepository / invitationRepository | Entry ID -> nullable owned root | Respective module, ordinary entity repository; no cross-module query |
+| proposalRepository | Proposal ID -> nullable owned proposal with consent rows | Respective module; explicit consent-inclusive finder, no lazy-loading assumption; caller verifies parent ID |
+| authority.AuthorizeApply/Send/AcceptAsync | Owned entry, owned proposal, requested signing party -> Result<AgreementSigner, EntryAuthorityError> | Respective entry authority use case using current identity/tenant and Tenant's authority facade; checks draft visibility, actual principal and action scope; does not require Negotiating merely to authorise a valid replay |
+| eligibility.CanSubmit/CanAccept/CanSendAsync | Owned root and proposal -> UnitResult<EntryEligibilityError> | Entry-specific; Application checks the real opportunity and its advertised constraints; Invitation checks its addressed recipient; both validate referenced context/party readiness through facades |
+| signatureGenerator.Create | Shared consent request + verified signer -> SubmittedConsent | Server-stamps signature time and permitted client evidence; no client-provided user/tenant/authority snapshot |
+| consentEvaluator.Create | Proposal ID/document + SubmittedConsent -> Result<ProposalConsent, ProposalConsentError> | Shared pure rule: expected hash, actual principal/party, required documents and signature completeness |
+| consentEvaluator.Complete | Same inputs plus existing consent snapshots -> Result<IReadOnlyList<ProposalConsent>, ProposalConsentError> | Shared pure rule: exactly the required Buyer/Supplier consent for this revision; a counteroffer does not inherit another party's old signature |
+| commitments.ReadReadyAsync | Proposal ID and required definition IDs -> Result<IReadOnlyList<AcceptedCommitment>, EntryCommitmentError> | Respective entry module; correlated provider evidence, exact bound hash/payer, completeness and expiry; no remote call here |
+| commandFactory | Server-known operation/resource, request ID, verified actor identities and writable request -> EntryCommand | Canonical fingerprint excludes newly stamped times, IP and freshly evaluated authority evidence, so a legitimate retry can match; it never excludes economic/signature input |
+| commandJournal.Read/RecordAsync | EntryCommand -> prior typed successful result or ordinary absence/conflict; record stages a receipt | Respective entry module; see 16.6; input is not trusted merely because its request ID is a Guid |
+| showModule.ClaimAsync | SlotClaimRequest -> Result<SlotClaimSnapshot, ClaimSlotError> | Show-owned use case; validates stored placement entitlement/context version and agreement principals, atomically claims slot/resource rows, returns a replay only for the same claim payload; does not demand the accepting artist act as Show owner |
+| bookingModule.CreateFromAcceptedAsync | AcceptedBookingAgreement -> Result<AcceptedBooking, CreateBookingError> | Booking-owned use case; narrow common boundary, independent of entry route |
+| acceptanceRecovery.ResolveAsync | Exact request/resource + classified write conflict -> Result<AcceptedBooking, operation-owned error> | Fresh DI/data scope after rollback; reauthorises, checks journal/accepted origin and actual winning claim; never reuses tracked failed entities |
+| mapper.ToDto | Owned root + proposal -> authorised read DTO | Module's mapping family; current selected/issued state, no provider secret or private unrelated draft |
+
+SubmittedConsent is a shared value containing ContentHash, Party, AgreementSigner and SignatureEvidence.
+The pure evaluator consumes that value, not an Application-layer Request type. Shared consent vocabulary
+and rules must not create a reference from an agreement library back into either entry module.
+
+ApplicationProposalEntity additionally retains the source opportunity/context version used to prepare
+the draft. A changed advertised constraint or placement is rechecked at issue and acceptance; this field
+does not appear as an unused nullable OpportunityVersion on invitation proposals.
+
+Accept.RequiredCommitments must include the dependency closure needed by configured Booking/Concert
+actions, even when Apply/Send already checked one of them. An earlier readiness check is not a substitute
+for checking that a hold remains usable at acceptance. Missing/dangling/duplicate references or a required
+action unreachable by the responsible party are configuration errors.
+
+Representative error case inventories to implement, with an exhaustive ErrorDefinition mapping and
+contract test per case:
+
+| Operation error | Cases and caller meaning |
+|---|---|
+| ApplyApplicationError | NotFound; InvalidEntryRoute; Authority; Replay; Ineligible; Commitment; Consent; Transition |
+| SendInvitationError | Corresponding invitation-owned cases; no OpportunityNotFound invented for an invitation |
+| AcceptApplicationError / AcceptInvitationError | NotFound; InvalidEntryRoute; Authority; Replay; Ineligible; Consent; Commitment; Availability; Booking; Transition |
+| ProposalConsentError | HashChanged, WrongPrincipal, WrongParty, MissingRequiredDocument, InvalidSignature, MissingCounterpartyConsent |
+| EntryCommitmentError | UnknownRequirement, NotPrepared, Pending, Failed, Expired, ScopeMismatch, InsufficientAuthorisation |
+| ClaimSlotError | ContextChanged, PlacementForbidden, SlotTaken, ResourceOverlap, InvalidInterval, OperationPayloadChanged |
+| CreateBookingError | InvalidAcceptedAgreement, ClaimMismatch, OperationPayloadChanged, OriginAlreadyBooked |
+
+The compound cases retain the actual nested operation error/definition; do not discard it and guess one
+generic failure. NotFound/access-denied responses must follow the resource privacy policy without leaking
+another tenant's negotiation. Infrastructure faults and cancellation are not appended as catch-all domain
+cases. The minimal-API and MVC terminals publish the same error kinds/codes, with an explicit mapping to
+400/401/403/404/409/payment-required/validation responses as appropriate to the actual case.
+
+### 16.11 Full entry operation and route inventory
+
+The following inventory completes the service/workflow surface beyond the traced excerpts. API resource
+names are illustrative route targets to qualify with existing consumers; their semantics are fixed here.
+Use bounded, authorised pagination for lists and revision history.
+
+| Route / operation | Request and result | Exact domain work |
+|---|---|---|
+| POST /api/application/opportunity/{opportunityId}/drafts | ApplicationDraftRequest + RequestId -> ApplicationDraft | Authorise actual artist/representative; validate open opportunity/Deal ETag and allowable terms; bind parties/context; create root plus first draft; no submission notification |
+| POST /api/direct-invitation/slot/{slotId}/drafts | InvitationDraftRequest + RequestId -> InvitationDraft | Authorise organiser/representative and placement; validate real addressed party/Deal ETag; create invitation plus first draft; no Application/Opportunity |
+| PUT /api/{entry}/{id}/proposals/{proposalId} | DraftProposalRequest (DealDraftReference), If-Match + RequestId -> ProposalDto | Draft author only; reload/validate referenced Deal, rebind allowed context/terms, recalculate preview/hash; reject an Issued proposal; invalidate old bound preparations |
+| GET /api/{entry}/{id}/proposals/{proposalId} | None -> authorised ProposalDto | Author sees draft; addressed participants see issued revisions; server-rendered terms/hash and authorised preparation actions |
+| POST /api/application/{id}/proposals/{proposalId}/apply | ProposalConsentRequest + RequestId -> ApplicationDto | ApplyCoreAsync above; first application submission only |
+| POST /api/direct-invitation/{id}/proposals/{proposalId}/send | ProposalConsentRequest + RequestId -> DirectInvitationDto | Send algorithm above; first invitation issue only |
+| POST /api/{entry}/{id}/proposals/{currentProposalId}/counter-drafts | DraftProposalRequest + RequestId -> ProposalDto | Authorise current counterparty; verify current issued proposal; create a private draft with ReplacesProposalId; does NOT withdraw the current offer yet |
+| POST /api/{entry}/{id}/proposals/{draftProposalId}/counter | ProposalConsentRequest + RequestId -> entry DTO | Recheck draft.ReplacesProposalId is still current, actor is entitled to counter, compatible configuration and hash; freeze/issue with only counterproposer consent; CAS current pointer and notify; no Booking |
+| POST /api/{entry}/{id}/proposals/{proposalId}/accept | ProposalConsentRequest + RequestId -> AcceptedBooking | Corresponding acceptance core; does not automatically confirm or collect booking-time funds |
+| POST /api/{entry}/{id}/proposals/{proposalId}/commitments/{definitionId}/checkout | ExpectedContentHash + RequestId -> CommitmentCheckout | Three-phase StartCommitmentAsync; only the bound payer/authorised financial representative receives session data |
+| GET /api/{entry}/{id}/proposals/{proposalId}/commitments/{definitionId} | None -> CommitmentRequirementStatus | Correlated recorded state; an authorised refresh may query Payment outside any acceptance transaction |
+| POST /api/{entry}/{id}/decline | DecisionRequest (expected proposal ID/hash, reason), RequestId -> entry DTO | Addressed/current non-proposing party declines the exact current offer; not a post-Booking cancellation |
+| POST /api/{entry}/{id}/withdraw | DecisionRequest, RequestId -> entry DTO | Current proposer/authorised owner withdraws the offer; conflicts with a winning acceptance; identified unused commitments enter cleanup |
+| GET /api/{entry}/{id}; GET /api/{entry} | Query/pagination -> entry DTO or page | Current authorised participant/representative view; invitations private; opportunity application listing still belongs to Application |
+
+Here {entry} is documentation shorthand for two actual endpoint sets, not a runtime EntryKind route or
+shared controller. Each operation has its own error union. A request sharing the same writable shape
+may share a data type, but it does not grant the permission of another endpoint.
+
+Counter drafts are private work in progress. Multiple participants may prepare drafts, but only an
+authorised draft replacing the still-current issued proposal may be issued. Unique revision numbers and
+the root's concurrency token prevent silent overwrite; an intervening acceptance/withdrawal wins its own
+transaction and makes counter issuance fail. Proposal hashes cover the bound context, terms, selected
+definitions, principals and legal-document versions, not mutable UI state or payment-session secrets.
+
+Apply/Send are FIRST-issue operations. Initial Counter is a common proposal/consent operation, not a
+second invocation of either first-issue operation. It checks compatible replacement terms and exact
+counterproposer consent; it does not demand that a different principal complete payment preparation
+against a private counter draft they cannot read. All required commitments for the replacement must be
+ready before Accept, and their binding to the new hash is revalidated. Configurable counter-specific
+financial prerequisites are not an enabled initial capability; adding them requires a reachable action
+and an explicit Counter definition, not an undocumented fallback to Apply/Send.
+
+CreateDraftAsync has a precise transaction algorithm even though its routine field mapping is not
+repeated here: authorise the real source/subject and principal; check the scoped request journal; load
+the Deal through its facade with access and expected ETag; validate/bind the selected route, parties and
+real slot/context; create the Draft root and first proposal with stable IDs; flush to obtain the root ID
+and concurrency tokens; record the successful draft DTO receipt; commit. Any rejection rolls back.
+The draft does not inherit user-supplied template provenance or payment readiness. Existing active-entry
+duplicate rules from 5.3 are enforced independently of the later shared slot claim.
+
+### 16.12 Booking is the convergence point, not a second acceptance UI
+
+~~~csharp
+public interface IBookingModule
+{
+    Task<Result<AcceptedBooking, CreateBookingError>> CreateFromAcceptedAsync(
+        AcceptedBookingAgreement agreement, CancellationToken ct = default);
+}
+
+private async Task<Result<AcceptedBooking, CreateBookingError>> CreateFromAcceptedCoreAsync(
+    AcceptedBookingAgreement agreement,
+    CancellationToken ct)
+{
+    var valid = await acceptedAgreementValidator.ValidateAsync(agreement, ct);
+    if (valid.TryGetError(out var validationError))
+        return validationError;
+
+    var existing = await bookingRepository.GetByAcceptanceOperationIdAsync(
+        agreement.AcceptanceOperationId, ct);
+    if (existing is not null)
+        return existing.ValidateReplay(agreement);
+
+    var booking = BookingEntity.Create(agreement);
+    await bookingRepository.AddAsync(booking, ct);
+    await unitOfWork.SaveChangesAsync(ct);
+    return new AcceptedBooking(booking.Id, booking.InitialContractRevisionId);
+}
+~~~
+
+The facade delegates to Booking's owning use case/workflow. ValidateAsync checks the accepted document,
+required signatures/commitment binding and the actual Show claim/operation correspondence, not the
+current template. This method requires the enclosing B2B transaction. SaveChanges flushes Booking's
+root/contract rows to obtain its existing integer ID; it does not independently commit that enclosing
+transaction. A later entry failure must roll it back. Unique acceptance/origin constraints protect races.
+
+BookingEntity.Create freezes one ContractRevision with explicit parties/consent/configuration and starts
+PendingConfirmation. It does not ask whether the route was Application to discover payer, recipient or
+financial behaviour. Creating from DirectInvitationOrigin creates no ApplicationId/OpportunityId column
+value. Physical nullable columns are constrained to the selected origin shape; the contract above is a
+discriminated origin, not optional unrelated IDs.
+
+This explicit facade handoff replaces the old Application-accepted pre-commit handler's responsibility
+for creating Booking. Do not leave both creation paths active. Retain necessary outward facts under their
+qualified contract versions; notification/outbox handlers must not also create a second Booking.
+
+Downstream operation contracts distinguish a successful request that is waiting from a failed request:
+
+| Workflow operation | Successful result | Durable work / continuation |
+|---|---|---|
+| BookingWorkflow.ConfirmAsync | ConfirmationProgress: Pending(required actions) or Confirmed(BookingId) | Materialise configured actions once per contract revision/definition; request them through outbox; confirm only when required facts hold; Pending is a SUCCESS so action rows commit |
+| Booking action outcome handler | Updated action/readiness | Correlate actual Payment operation; do not infer origin IDs from sender/acceptor; resume confirmation with its recorded identity |
+| Booking confirmed handoff | ConfirmedBookingSnapshot | Contract revision/configuration, subject/context, origin and completed booking actions; Concert creates one execution idempotently |
+| ConcertWorkflow.CompleteAsync | CompletionProgress: WaitingForRequirements, ExecutingActions or Completed | Typed calculation/approval and identified obligations; action creation is not a replay of all earlier collections |
+| Concert action outcome handler | Updated obligation/action progress | Preserve completed advance/transfer; collection, recipient transfer and bank payout outcomes stay distinct |
+
+For R1, acceptance creates Booking but does not charge GBP 150. Confirmation requests the advance action;
+only its qualified success satisfies that confirmation prerequisite. The confirmed handoff carries the
+completed advance reference/credit. Later GBP 450 collection belongs to a separate Concert obligation.
+A declined balance or failed bank payout does not send the GBP 150 action again.
+
+For R2, each slot produces this same common Booking boundary. Show evidence is shared only through
+permitted references; each private contract binds/approves its own basis. The named calculation resolver
+in section 4 owns its fixed/revenue/guarantee-share capability match. Entry does not become a calculator,
+and Booking does not consult the template catalogue on each execution action.
+
+### 16.13 Approval and verification for this code-level design
+
+| Proof | Required result |
+|---|---|
+| Draft vs submitted | Draft creation sends no invitation/application notification, reserves nothing and creates no Booking; authorisation prevents reading another party's private counter draft |
+| Same commercial terms via both routes | Equivalent Terms/Booking/Concert selections and financial obligations; distinct entry definition, origin and consent history; no byte-identical-hash assertion |
+| Apply / Send required action | Missing or expired requirement blocks issue; a completed correctly bound one permits it; unreachable payer-before-Send combination rejected at validation |
+| Exact consent | Mutate fee, party, time/room, legal version or capability semantics after preview: hash/revision check rejects the stale signature |
+| Multiple implementations, one case | SaveMethodStep and VerifyMethodStep resolve through IMethodSetupStep; AuthoriseAmountStep requires its own amount-bearing input; new template adds no registration |
+| Partial failure inside transaction | Inject failure after Show claim, after Booking flush and after entry staging: no orphan claim, Booking, consent or receipt commits |
+| Repeated request | Same actor/resource/key/payload returns the committed result; changed payload conflicts; replay after permission revocation cannot bypass authorisation |
+| Competing requests | Application and Invitation accepting one slot produce one active claim/Booking; losing source remains unaccepted and has an actionable conflict |
+| Counter race | Issuing a counter against a proposal accepted/replaced meanwhile fails; an unpublished counter draft does not silently withdraw the outstanding offer |
+| Provider uncertainty | Crash/timeout after provider call reuses the persisted operation identity; reordered observation/session-created events do not regress a ready fact; no provider call occurs inside acceptance's transaction |
+| API composition | New invitation endpoints are registered, authorised, validated and rate-limited; their success/ProblemDetails contracts match the B2B client; DTOs never expose payer-only session data |
+| History migration | Existing four arrangements and historical payment references retain their meaning; old accepted-event creation path is not left beside the new Booking facade path |
+
+Approve or amend the following technical choices together: separate invitation API/service/workflow;
+entry-local drafts and proposal/consent history; operation composition without artificial Apply/Accept
+unions; typed commitment-start capability matching; recorded readiness at acceptance; and result-aware
+atomic convergence into Booking. Existing policy gates in section 14 remain visible.
+
+This section is a reviewable entry/binding design, not evidence that the C# excerpts compile against the
+current checkout. Before a lower-model implementation context is assigned a slice, give it the approved
+section and exact slice baseline, require contract/composition/negative tests, and prohibit inventing a new
+domain policy to resolve ambiguity. The richer B6/B7 statement, amendment and recovery operation schemas
+must receive the same concrete review before those capabilities are enabled; approval of entry code does
+not silently declare the entire multi-PR programme implementation-ready.
