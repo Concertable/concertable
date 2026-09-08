@@ -1,6 +1,6 @@
 # B2B commercial execution: architecture and coordinated delivery plan
 
-Status: **discussion-refined architecture draft, updated 8 September 2026; application implementation and database migration are not authorised.**
+Status: **discussion-refined architecture draft, updated 9 September 2026; application implementation and database migration are not authorised.**
 
 This is the B2B-owned successor to the direct-offers draft, not a second plan running alongside it.
 It covers B2B commercial configuration, templates, both booking entry paths, event/resource context and
@@ -62,6 +62,7 @@ The implementation baseline is the monorepo's merged B2B source, not the older e
 | Authoring refresh | f72431d7b6800b72f855706cd7fa1469681406de | PR947 adds owner-local migration/setup tooling; no lifecycle runtime change relative to the investigation baseline |
 | Discussion refresh | 3826320d1cd171705dffe1a74340e62b9a1e14c2 | Later host/package/CI changes inspected; Application/Booking/Concert/Deal runtime source remains unchanged from the authoring refresh |
 | Entry-contract refresh | ef8d505fdb0133d8b967d58634022192169e90e1 | Comparison from 3826320d changes startup-test/CI guidance and package pins, not the inspected entry/Booking/Deal runtime files |
+| Union/version clarification refresh | 5b367c5a4e3d63d1fcc185379adff90db35e03da | Checked 9 September: subsequent hosting, package, test and extraction changes do not change the inspected lifecycle contracts or keyed builder; B2B already pins Dunet 1.16.2 and uses it for ConfirmedBookingTerms |
 | Extracted Concertable/b2b main | fded052cdbf6f0f4c8f55ef7414c13ffc19ab33c | Still older than PR633's lifecycle split; not the source to design against |
 | Concertable/docs main | 99ad353b9cb26921ad8914e0f1449202574e330e | Includes docs PR11; no newer remote docs found during authoring |
 | Organiser research, not merged policy | Docs/Organiser-Commercial-Research at 5ac4048a6f4145f1e8f22d1e043aff33da47ba3f | Sixteen scenarios and five worked arrangements inform the design; demand, funding permissions and disputed-outcome authority remain unproven |
@@ -160,7 +161,7 @@ move PR633's orchestration back into Deal or Show.
 
 A configuration contains a schema version, required party roles, commercial parameters, stage action
 selections, prerequisites, typed input/result bindings, cancellation/amendment policy and optional template
-provenance. Capability references name supported behaviour and versions, not arbitrary CLR types.
+provenance. Behaviour keys name supported behaviour and semantics versions, not arbitrary CLR types.
 Money uses integer minor units and explicit currency; durations, percentages and evidence references are
 typed values rather than an unvalidated string dictionary.
 
@@ -202,12 +203,11 @@ public sealed record DealConfiguration(
     BookingDefinition Booking,
     ConcertDefinition Concert);
 
-public abstract record EntryDefinition
+[Dunet.Union(EnableImplicitConversions = false)]
+public abstract partial record EntryDefinition
 {
-    private EntryDefinition() { }
-
-    public sealed record Application(ApplicationEntryDefinition Definition) : EntryDefinition;
-    public sealed record DirectInvitation(DirectInvitationEntryDefinition Definition) : EntryDefinition;
+    public partial record Application(ApplicationEntryDefinition Definition);
+    public partial record DirectInvitation(DirectInvitationEntryDefinition Definition);
 }
 
 public sealed record ApplicationEntryDefinition(
@@ -229,10 +229,11 @@ public sealed record ConcertDefinition(
     CancellationDefinition Cancel);
 ~~~
 
-These explicit record families use qualified discriminator serialization and pairing/coverage tests;
-they do not assume preview native C# unions or first-class EF union mapping. The existing keyed-union
-builder can wrap these cases without requiring a particular union generator. Extra operations such as
-evidence submission and amendment are explicit owned operations, not hidden inside Complete.
+Use Dunet for these union families now, following the existing ConfirmedBookingTerms declaration style.
+This is an agreed authoring choice, not a new Result carrier or a preview-language upgrade. Persisted and
+wire unions still require explicit, stable discriminator mappings and qualified JSONB serialization;
+Dunet does not supply first-class EF union mapping. Pairing/coverage tests remain necessary. Extra
+operations such as evidence submission and amendment are explicit owned operations, not hidden inside Complete.
 
 | Definition | Meaning and required content |
 |---|---|
@@ -368,8 +369,8 @@ action acquires genuinely different required inputs or results. It is not necess
 | Operation | A business action, not automatically a strategy interface | ApplyAsync or AcceptAsync |
 | Operation definition | Configured responsibilities, parameters and prerequisites | ApplicationEntryDefinition.Apply / Accept |
 | Step family | One independently varying responsibility inside the operation | Payment commitment preparation |
-| Capability interface | Honest required inputs and result for that responsibility | IMethodSetupStep |
-| Implementation | Compiled behaviour satisfying that interface | SaveMethodStep or VerifyMethodStep |
+| Capability interface | Honest required inputs and result for that responsibility | IPaymentMethodSetupStep |
+| Implementation | Compiled behaviour satisfying that interface | SavePaymentMethodStep or VerifyPaymentMethodStep |
 | Execution instance | Durable progress for one configured action on one agreement | Advance collection action with its attempts |
 
 An operation may compose several step families. One IConfirmStep implementation per combination of
@@ -409,32 +410,45 @@ For the proposed entry families, name the executable selection for its responsib
 | Distinct acceptance contracts, if required | IAcceptXStep / IAcceptYStep | Placeholder names for genuinely different callable capabilities |
 | Their union | AcceptStep | One selected executable capability, not an acceptance request or result |
 | Its factory | IAcceptStepFactory | Returns AcceptStep after selecting the implementation |
-| Commitment-start union | CommitmentStep | The method-setup or amount-authorisation capability in section 16.9 |
+| Commitment-start union | CommitmentStep | The payment-method setup or payment-authorisation capability in section 16.9 |
 | Its factory | ICommitmentStepFactory | Returns CommitmentStep; unrelated to the former reference resolver |
 
-Using the current C# 15 union declaration syntax, the future acceptance family would be:
+If acceptance later earns distinct callable contracts, its Dunet declaration would be:
 
 ~~~csharp
-internal union AcceptStep(IAcceptXStep, IAcceptYStep);
+[Dunet.Union(EnableImplicitConversions = false)]
+internal abstract partial record AcceptStep
+{
+    public partial record X(IAcceptXStep Step);
+    public partial record Y(IAcceptYStep Step);
+}
 
 internal interface IAcceptStepFactory
 {
-    AcceptStep Create(AcceptBehaviour behaviour);
+    AcceptStep Create(BehaviourKey behaviour);
 }
 ~~~
 
-X/Y and AcceptBehaviour are illustrative, not new approved behaviours to implement. Replace X/Y with
+X/Y are illustrative, not new approved behaviours to implement. Replace X/Y with
 the actual responsibility when distinct contracts exist. A common IAcceptStep is appropriate when all
 implementations share an honest invocation contract; it is not an artificial parent needed by the union.
 Several implementations may inhabit IAcceptXStep without adding union cases. ApplicationWorkflow owns
 the match on IAcceptXStep / IAcceptYStep and passes the corresponding required typed input. It does not
-match on concrete implementation classes, template IDs or the former whole-deal DealType.
+match on concrete implementation classes, template IDs or the former whole-deal DealType. With Dunet,
+that match unwraps the case's Step property; native syntax may eventually match the contained interface.
+
+The [Dunet documentation](https://github.com/domn1995/dunet), checked 9 September 2026, describes partial
+record cases and generated matching. Interface-valued cases use explicit construction callbacks, as in
+the existing keyed builder examples; do not depend on implicit conversions from interfaces. The B2B
+source already uses Dunet 1.16.2 for ConfirmedBookingTerms, with explicit JSON discriminators. Qualify
+generated matching and diagnostics against that pinned version; these sketches are not compilation proof.
 
 The existing KeyedUnionBuilder<TKey, TUnion> leaves TUnion unconstrained, so a native struct union does
 not itself require redesigning the builder or widening its enum key constraint. Registration callbacks
 construct the native union instead of record wrappers; the module-local factory still resolves keyed DI.
 Keep the existing overlap check: an implementation must not satisfy two cases of the same family.
 Qualify non-empty factory results and missing-case compiler diagnostics when adopting native syntax.
+Changing the authoring representation alone does not change the persisted behaviour's semantics version.
 
 Microsoft's [union reference](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/union)
 and [C# 15 specification](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-15.0/unions.md),
@@ -487,13 +501,12 @@ internal interface IGuaranteeShareCalculator
     Money Calculate(GuaranteeShareTerms terms, ApprovedRevenueBasis revenue);
 }
 
-internal abstract record CalculationCapability
+[Dunet.Union(EnableImplicitConversions = false)]
+internal abstract partial record CalculationCapability
 {
-    private CalculationCapability() { }
-
-    public sealed record Fixed(IFixedFeeCalculator Calculator) : CalculationCapability;
-    public sealed record RevenueShare(IRevenueShareCalculator Calculator) : CalculationCapability;
-    public sealed record GuaranteeShare(IGuaranteeShareCalculator Calculator) : CalculationCapability;
+    public partial record Fixed(IFixedFeeCalculator Calculator);
+    public partial record RevenueShare(IRevenueShareCalculator Calculator);
+    public partial record GuaranteeShare(IGuaranteeShareCalculator Calculator);
 }
 
 var builder = new KeyedUnionBuilder<CalculationBehaviour, CalculationCapability>(services);
@@ -526,15 +539,14 @@ definition-binding boundary resolves the typed terms and required facts, rejecti
 invocation. Its prepared inputs have explicit shapes:
 
 ~~~csharp
-internal abstract record CalculationInput
+[Dunet.Union(EnableImplicitConversions = false)]
+internal abstract partial record CalculationInput
 {
-    private CalculationInput() { }
-
-    public sealed record Fixed(FixedFeeTerms Terms) : CalculationInput;
-    public sealed record RevenueShare(
-        RevenueShareTerms Terms, ApprovedRevenueBasis Revenue) : CalculationInput;
-    public sealed record GuaranteeShare(
-        GuaranteeShareTerms Terms, ApprovedRevenueBasis Revenue) : CalculationInput;
+    public partial record Fixed(FixedFeeTerms Terms);
+    public partial record RevenueShare(
+        RevenueShareTerms Terms, ApprovedRevenueBasis Revenue);
+    public partial record GuaranteeShare(
+        GuaranteeShareTerms Terms, ApprovedRevenueBasis Revenue);
 }
 ~~~
 
@@ -581,23 +593,123 @@ Do not promise a current C# compile-time guarantee supplied only by speculative 
 
 ### Versioning without widening everything
 
-The existing enum-keyed builders remain appropriate for a closed family. A version-aware module factory
-can select a supported family/version and return the existing arm when its contract remains compatible.
-A new incompatible request/result shape earns a new contract arm.
+This lifecycle is a recommendation for approval, not a claim that version-aware registration already exists.
+The proposed BehaviourKey is a readonly record struct containing a stable behaviour ID and positive
+semantics version. It identifies a supported execution contract, not a CLR class, deployment, template
+revision, configured requirement, operation attempt or EF concurrency token. Section 16.3 shows its value
+shape. Validate non-empty known IDs and positive supported versions at the boundary, including the invalid
+default struct value. Do not let default values or unknown keys resolve to a convenient implementation.
 
-Declare supported versions with the module's registrations and validate catalogue references against them.
-Do not register two implementations under the same existing DI key and hope the container chooses the right
-version. If concurrent versions require a new registration dimension, extend that specific version-aware
-factory/registration surface, not every enum constraint in the codebase.
+#### When a version changes
 
-The acceptance test is practical: adding a tenant template changes no workflow match; adding a genuinely
-different acceptance contract changes the owning union, typed endpoint/action and workflow pairing, without
-editing unrelated lifecycle modules.
+| Change | Treatment |
+|---|---|
+| Refactoring, logging, provider SDK replacement with equivalent observable behaviour | Keep the key; replace the implementation after compatibility verification |
+| Fix that restores the already documented contract | Normally keep the key; assess affected completed work separately and do not replay it automatically |
+| Fee, percentage, due date, agreed mandate text or other supported commercial parameter changes | Change the typed configuration/proposal under the consent rules; not a code version per parameter value |
+| Incompatible meaning, calculation, precondition or result interpretation for the same responsibility | Publish a new semantics version; existing issued/accepted work remains pinned unless explicitly resolved |
+| A genuinely different responsibility offered alongside the old one | Give it a distinct behaviour identity and honest input/result contract; do not hide it as a cosmetic version bump |
+| Dunet wrappers replaced by qualified native unions with the same wire and execution contracts | No semantics bump solely for changing C# representation |
 
-Preserve KeyedUnionBuilder's actual guarantees: enum coverage, declared/inhabited cases, no implementation
-overlapping multiple declared cases, duplicate-key rejection and consistent lifetimes. Many implementations
-of one case interface are already supported. Those checks do not prove compatible definition bindings,
-complete workflow matches, consent or provider readiness. Test those separately.
+An explicit numeric version is not mandatory in DI or EF. Immutable new IDs for every incompatible
+contract would also pin meaning. The recommendation keeps a stable behaviour name plus a version because
+it makes compatibility and retirement explicit without disguising old behaviour under a mutable name.
+Only incompatible changes need parallel executable revisions; routine releases do not accumulate copies.
+
+#### Exact selection using the existing builder
+
+The actual builder is enum-keyed and has no version argument. Keep that constraint. A module-local
+registration declaration binds each supported public BehaviourKey to a closed execution key, capability
+case and implementation. Its descriptor projection drives validation and its registration projection
+drives the existing keyed builder. This small registration adapter is new work; do not claim that
+UseScoped currently accepts BehaviourKey, and do not maintain a second independent dictionary by hand.
+
+If an incompatible second verification contract is eventually required, the bindings could be:
+
+| Persisted selection | Module-local DI key | Selected implementation | Union case |
+|---|---|---|---|
+| payment-method.save, 1 | SavePaymentMethod | SavePaymentMethodStep | CommitmentStep.PaymentMethod |
+| payment-method.verify, 1 | VerifyPaymentMethodV1 | PaymentMethodVerification.V1.VerifyPaymentMethodStep | CommitmentStep.PaymentMethod |
+| payment-method.verify, 2 | VerifyPaymentMethodV2 | PaymentMethodVerification.V2.VerifyPaymentMethodStep | CommitmentStep.PaymentMethod |
+| payment.authorise, 1 | AuthorisePayment | AuthorisePaymentStep | CommitmentStep.PaymentAuthorisation |
+
+V2 here illustrates coexistence, not a newly approved verification requirement. Do not create a V2 class
+or version namespace now. While only one contract exists, section 16.9's simple VerifyPaymentMethod key
+and class name suffice. Enum keys are code-local, never persisted as agreement identities, so introducing
+a V1 suffix locally later does not rewrite stored configurations. Namespaces separate incompatible
+generations of the same responsibility; PaymentMethodStep2 is not the target naming convention.
+
+Given those future enum members and implementations, the existing registration API supports both leaves:
+
+~~~csharp
+builder.Case<IPaymentMethodSetupStep>(step => new CommitmentStep.PaymentMethod(step))
+    .UseScoped<SavePaymentMethodStep>(CommitmentBehaviour.SavePaymentMethod)
+    .UseScoped<PaymentMethodVerification.V1.VerifyPaymentMethodStep>(CommitmentBehaviour.VerifyPaymentMethodV1)
+    .UseScoped<PaymentMethodVerification.V2.VerifyPaymentMethodStep>(CommitmentBehaviour.VerifyPaymentMethodV2);
+~~~
+
+The registration adapter must produce this binding from its single declaration, not add another
+independently editable registration table. The owning factory's public contract remains
+CommitmentStep Create(BehaviourKey behaviour). It resolves the exact declared key, then the keyed
+implementation. Both revisions can still implement IPaymentMethodSetupStep and occupy the same union
+case if their required input/result shapes honestly match. Different observable semantics do not alone
+require a new interface. A genuinely incompatible invocation shape requires a distinct typed contract
+and case, not nullable fields, a cast or a version test inside ApplicationWorkflow.
+
+Sharing stable mechanics below two leaves is appropriate; duplicating workflows, repositories and
+provider clients is not. Do not silently dispatch an old key to the latest semantics. A reviewed
+compatibility alias is acceptable only when the replacement fulfils the complete old contract, including
+recovery and side effects. Such compatibility must be proved, not inferred from identical signatures.
+
+Validate duplicate public keys, enum coverage, descriptor/case/definition pairing, supported versions,
+declared/inhabited cases, implementation overlap and consistent lifetimes at composition time. Preserve
+the builder's existing guarantees; separately test definition binding and workflow/input pairing.
+Adding a tenant template changes no registration or workflow match. Adding an incompatible executable
+revision changes its owner and metadata; it does not widen every generic key constraint in the service.
+
+#### Retirement: keep history, remove code only when safe
+
+| State | New selections | Existing pinned work |
+|---|---|---|
+| Available | May select after compatibility and authority checks | Exact-version execution allowed |
+| Execution-only | No new publication/issuance selecting this version | Previously issued/accepted work may progress within the explicit support policy |
+| Executor removed | Rejected | No reachable work may still need that executor; historical records remain readable |
+
+This is a recommended support policy, not three additional business status enums required by the sketches.
+Template retirement and executor retirement are separate. Editing a template does not mutate any issued
+proposal or accepted configuration. Unissued drafts must upgrade before issuance once their version is
+execution-only; previously issued offers need an explicit acceptance/support deadline or reissue policy.
+That deadline must be established before withdrawing support, not guessed from an arbitrary retention period.
+
+Before removing an executor, produce an auditable dependency report covering reachable unstarted actions,
+in-flight sessions, unknown outcomes, scheduled work, messages, retries, reconciliation and any configured
+cancellation, compensation, recovery or re-preparation paths. Check still-valid offers as well as accepted
+contracts, and prevent new references while assessing/removing support. A historical contract reference
+alone does not prove execution is still needed: a completed entry payment-method setup may never be invoked
+again even while its Concert is active. Its completed fact and the downstream ability to read it must survive.
+
+Drain or finish pending work. Where necessary, expire/reissue an unaccepted offer, apply a verified
+semantics-preserving migration, or obtain the authorised amendment for changed obligations. Never mutate
+an accepted agreement or reinterpret a completed action merely to delete old code. If old work genuinely
+still requires incompatible semantics and cannot be resolved, retain support for those semantics. There
+is no versioning trick that removes that maintenance cost. If security or provider availability prevents
+safe execution, suspend with an actionable resolution path rather than run unsafe code or select latest.
+
+Persist the selected key, immutable prepared input, action/attempt identity, provider references and
+authoritative outcomes. Reconciliation resumes the same operation identity after an unknown outcome;
+it must not issue a fresh collection under V2 because V1 was retired. Completed charges, transfers and
+payouts are distinct facts and are not rerun to demonstrate compatibility. Subsequent stages execute
+their own pinned definitions while consuming the recorded results they are authorised to use.
+
+Retain signed configurations, evidence, outcomes and necessary schema readers under the established
+retention requirements. Retaining those records does not require retaining every executable DI leaf
+forever, storing binaries in the database or dynamically loading historical code. Audit calculations may
+need retained explainable inputs/results or isolated supported replay; an audit reader must not replay
+payment side effects. Git history alone is not an operational recovery guarantee. Remove the DI leaf and
+code-local enum member only after the dependency gate passes; retain a tombstone/descriptor sufficient to
+identify the historical contract and reject new execution. Hosting retention and replay requirements
+remain to be qualified with section 10's retained-data decision and B1's cutover gate, rather than assuming
+databases can be recreated.
 
 ### The operation catalogue and owned facts
 
@@ -958,10 +1070,11 @@ An amendment has its own proposal/consents and accepted contract revision. It ch
 obligations through explicit deltas, reversals or replacement obligations. Completed operations retain
 their original amounts, provider references, evidence and contract version.
 
-Retiring a template prevents new use. Retiring a capability from new authoring does not remove the
-implementation needed by live agreements. Keep supported historical execution/readers until obligations
-finish. If safety or a provider makes old behaviour impossible, suspend with an operational resolution
-path; do not silently substitute a new commercial formula.
+Retiring a template prevents new use. Retiring a capability from new authoring does not remove an
+executor still needed by reachable work. Follow section 4's exact selection and dependency-gated
+retirement policy: retain agreement history and required readers independently of executable DI leaves.
+If safety or a provider makes old behaviour impossible, suspend with an operational resolution path;
+do not silently substitute a new commercial formula.
 
 Entry commitment and booking financial execution are separate selections. Who sends an invitation,
 who accepts last and who pays are distinct. Method setup/verification/mandate/authorisation is not proof
@@ -1362,11 +1475,14 @@ handoff; a lower-model agent must not infer unspecified financial behaviour from
   checkout and financial-correlation assumptions removed. Section 16 pins private drafts, consent and
   operation receipts, fresh-scope recovery and the result-aware acceptance transaction. Stage factories
   remain module-local; explicit Booking facade creation replaces the former accepted-event creator.
+  Use Dunet for the admitted union families and section 4's single-source BehaviourKey registration
+  binding; implement only the supported initial semantics, not the hypothetical V2 demonstration.
 - **Consumers:** Booking/Concert, B2B artist/organiser/shared UI, notification/action links and relevant
   published B2B consumers/simulators.
 - **Verification:** all supported existing economics through both paths; equivalent accepted inputs;
   invitation creates no Opportunity/Application; stale counter acceptance and revoked authority fail;
   simultaneous cross-route acceptances yield one Booking; retries return that same Booking.
+  Qualify generated unions/serialization, exact version selection and descriptor-to-registration pairing.
 - **Completion:** both real entry journeys converge into the same confirmation/cancellation/execution
   behaviours, including differing payer-at-keyboard timing.
 - **Scope:** substantial vertical domain/API/UI slice; no general template editor prerequisite.
@@ -1387,6 +1503,8 @@ arrangements are enabled. A temporary conversion is a migration boundary, not a 
 - **Verification:** access before pagination/counts; cross-tenant cache isolation; incompatible/unknown
   versions and invalid dependencies rejected; retired template cannot be newly selected; accepted
   agreement survives template edit/retirement; existing arrangement regression fixtures.
+  Execution-only versions cannot enter newly issued configurations; permitted pinned work still resolves
+  exactly. Prove the removal gate detects outstanding/recoverable work and retains historical readers.
 - **Completion:** a tenant creates/publishes/uses a template without enum or code changes, and its
   accepted agreement follows the same engine as a built-in.
 - **Boundary:** this is engine/catalogue completion, not the complete configurable beta. B6/B7 supply
@@ -1505,6 +1623,8 @@ options, a successful schema migration alone, or an internal demonstration witho
 | D16 | Design gate | Entry/binding contracts are specified for review in section 16; richer B6/B7 operation schemas/signatures and policies still require the same review before implementation. No excerpt is compiled or executed evidence |
 | D17 | Recommended entry contract | Private entry-local drafts; exact issued-proposal consent; separate invitation minimal-API surface/service/workflow; recorded commitments and atomic result-aware Booking creation |
 | D18 | Recommended initial subset | Two legal principals per agreement with explicit representation; additional production/evidence approvals are not extra contract signatures; joint multi-principal contracts remain disabled |
+| D19 | Agreed in discussion | Use Dunet for union authoring now; explicit PaymentMethod/PaymentAuthorisation case names and IPaymentMethodSetupStep/IPaymentAuthorisationStep contracts; native union adoption is a separate future toolchain change |
+| D20 | Recommended for review | BehaviourKey readonly record struct; semantic version pinning, exact module-local registrations and dependency-gated executor retirement as specified in section 4; compatible releases do not accumulate versioned implementations |
 
 Writing this review draft resolves neither D9-D12 nor implementation authority.
 After discussion, put accepted product decisions in their existing Concertable/docs owners and reconcile
@@ -1663,7 +1783,7 @@ whole-deal class. An empty list means that operation imposes no additional payme
 authentication, eligibility or two-party consent can be disabled.
 
 ~~~csharp
-public sealed record CapabilityReference(string Id, int Version);
+public readonly record struct BehaviourKey(string Id, int Version);
 
 public enum AgreementPartyRole
 {
@@ -1675,38 +1795,44 @@ public sealed record ApplyDefinition(IReadOnlyList<Guid> RequiredCommitments);
 public sealed record SendDefinition(IReadOnlyList<Guid> RequiredCommitments);
 public sealed record AcceptDefinition(IReadOnlyList<Guid> RequiredCommitments);
 
-public abstract record EntryCommitmentDefinition
+[Dunet.Union(EnableImplicitConversions = false)]
+public abstract partial record EntryCommitmentDefinition
 {
-    private EntryCommitmentDefinition() { }
-
-    public sealed record Method(
+    public partial record PaymentMethod(
         Guid Id,
-        CapabilityReference Capability,
+        BehaviourKey Behaviour,
         AgreementPartyRole Payer,
-        string MandateTermsVersion) : EntryCommitmentDefinition;
+        string MandateTermsVersion);
 
-    public sealed record Hold(
+    public partial record PaymentAuthorisation(
         Guid Id,
-        CapabilityReference Capability,
+        BehaviourKey Behaviour,
         AgreementPartyRole Payer,
         AgreementPartyRole Payee,
         TermReference<FixedAmountDefinition> Amount,
-        TimeSpan MinimumRemainingValidity) : EntryCommitmentDefinition;
+        TimeSpan MinimumRemainingValidity);
 }
 
 public sealed record FixedAmountDefinition(Money Amount);
 ~~~
 
-Method supports the registered save-method and verify-method behaviours, whose callable contracts match.
-Hold supports an identified amount authorisation and must bind to an amount known at that time. A receipt
-share of unknowable final revenue is not such an amount. The capability descriptor validates its definition
-case, supported semantic version, stage and parameters. IDs are not CLR type names or executable expressions.
+PaymentMethod describes saving or verifying a payer's payment method under identified mandate terms.
+PaymentAuthorisation describes authorising a specific amount for a payee and must bind to an amount known
+at that time. A share of unknowable final revenue is not such an amount. Authorisation is neither a charge
+nor permanently available funds; its expiry/readiness must be checked when later execution requires it.
 
-The explicit C# record family here requires whitelisted wire discriminators/converters and
-coverage tests; it makes no claim about native C# unions or automatic EF inheritance-in-JSON support.
-This is not a requirement to replace the existing Result carrier or adopt preview language support.
+These are data-only alternatives inside one configured commitment, not two actions always executed
+together. A configuration can contain several distinct commitments, with Apply/Send/Accept naming the IDs
+they require. The commitment's Guid identifies that configured requirement; BehaviourKey identifies the
+supported behaviour and semantic contract. The descriptor validates the definition case, key, stage,
+parties and typed parameters. No field contains a CLR type name or executable expression.
+
+This Dunet family still requires whitelisted wire discriminators/converters and coverage tests; Dunet
+does not supply automatic EF inheritance-in-JSON support. Keep the existing Reunion Result carrier.
 Storage uses the qualified JSONB envelope; unknown discriminators fail validation rather than becoming
-runtime types selected by the caller.
+runtime types selected by the caller. Schema version and BehaviourKey.Version have different owners:
+reading an old document is not permission to execute an unsupported behaviour. Reject an empty/default
+BehaviourKey rather than using a default DI registration; detailed version policy is in section 4.
 
 For the GBP 600 support example, Terms names a GBP 150 advance and GBP 450 balance; Booking schedules
 the advance collection and Concert schedules the balance. Both reference one appropriately scoped saved
@@ -1978,18 +2104,17 @@ public sealed record SlotClaimRequest(
     BookingContextSnapshot Context,
     IReadOnlyList<Guid> PartyTenantIds);
 
-public abstract record BookingOrigin
+[Dunet.Union(EnableImplicitConversions = false)]
+public abstract partial record BookingOrigin
 {
-    private BookingOrigin() { }
-
-    public sealed record Application(
+    public partial record Application(
         int ApplicationId,
         int OpportunityId,
-        Guid ProposalId) : BookingOrigin;
+        Guid ProposalId);
 
-    public sealed record DirectInvitation(
+    public partial record DirectInvitation(
         int DirectInvitationId,
-        Guid ProposalId) : BookingOrigin;
+        Guid ProposalId);
 }
 
 public sealed record AcceptedCommitment(
@@ -2541,17 +2666,17 @@ as the actual ApplicationCheckoutService already demonstrates. This operation ea
 ~~~csharp
 internal enum CommitmentBehaviour
 {
-    SaveMethod,
-    VerifyMethod,
-    AuthoriseAmount
+    SavePaymentMethod,
+    VerifyPaymentMethod,
+    AuthorisePayment
 }
 
-internal sealed record MethodCommitmentInput(
+internal sealed record PaymentMethodCommitmentInput(
     PaymentOperationReference Reference,
     Guid PayerTenantId,
     string MandateTermsVersion);
 
-internal sealed record HoldCommitmentInput(
+internal sealed record PaymentAuthorisationCommitmentInput(
     Guid OperationId,
     PaymentOperationReference Reference,
     Guid PayerTenantId,
@@ -2560,68 +2685,71 @@ internal sealed record HoldCommitmentInput(
 
 internal sealed record CommitmentCheckout(Guid CommitmentId, CheckoutSession Session);
 
-internal interface IMethodSetupStep
+internal interface IPaymentMethodSetupStep
 {
     Task<Result<CheckoutSession, PaymentOperationError>> StartAsync(
-        MethodCommitmentInput input, CancellationToken ct = default);
+        PaymentMethodCommitmentInput input, CancellationToken ct = default);
 }
 
-internal interface IAmountAuthorisationStep
+internal interface IPaymentAuthorisationStep
 {
     Task<Result<CheckoutSession, PaymentOperationError>> StartAsync(
-        HoldCommitmentInput input, CancellationToken ct = default);
+        PaymentAuthorisationCommitmentInput input, CancellationToken ct = default);
 }
 
-internal abstract record CommitmentStep
+[Dunet.Union(EnableImplicitConversions = false)]
+internal abstract partial record CommitmentStep
 {
-    private CommitmentStep() { }
-
-    public sealed record Method(IMethodSetupStep Step) : CommitmentStep;
-    public sealed record Hold(IAmountAuthorisationStep Step) : CommitmentStep;
+    public partial record PaymentMethod(IPaymentMethodSetupStep Step);
+    public partial record PaymentAuthorisation(IPaymentAuthorisationStep Step);
 }
 
 internal interface ICommitmentStepFactory
 {
-    CommitmentStep Create(CapabilityReference capability);
+    CommitmentStep Create(BehaviourKey behaviour);
 }
 
-internal abstract record CommitmentInput
+[Dunet.Union(EnableImplicitConversions = false)]
+internal abstract partial record CommitmentInput
 {
-    private CommitmentInput() { }
-
-    public sealed record Method(MethodCommitmentInput Value) : CommitmentInput;
-    public sealed record Hold(HoldCommitmentInput Value) : CommitmentInput;
+    public partial record PaymentMethod(PaymentMethodCommitmentInput Value);
+    public partial record PaymentAuthorisation(PaymentAuthorisationCommitmentInput Value);
 }
 
 internal sealed record PreparedCommitment(
     Guid CommitmentId,
-    CapabilityReference Capability,
+    BehaviourKey Behaviour,
     CommitmentInput Input);
 
 var builder = new KeyedUnionBuilder<CommitmentBehaviour, CommitmentStep>(services);
 
-builder.Case<IMethodSetupStep>(step => new CommitmentStep.Method(step))
-    .UseScoped<SaveMethodStep>(CommitmentBehaviour.SaveMethod)
-    .UseScoped<VerifyMethodStep>(CommitmentBehaviour.VerifyMethod);
+builder.Case<IPaymentMethodSetupStep>(step => new CommitmentStep.PaymentMethod(step))
+    .UseScoped<SavePaymentMethodStep>(CommitmentBehaviour.SavePaymentMethod)
+    .UseScoped<VerifyPaymentMethodStep>(CommitmentBehaviour.VerifyPaymentMethod);
 
-builder.Case<IAmountAuthorisationStep>(step => new CommitmentStep.Hold(step))
-    .UseScoped<AuthoriseAmountStep>(CommitmentBehaviour.AuthoriseAmount);
+builder.Case<IPaymentAuthorisationStep>(step => new CommitmentStep.PaymentAuthorisation(step))
+    .UseScoped<AuthorisePaymentStep>(CommitmentBehaviour.AuthorisePayment);
 
 builder.Build();
 ~~~
 
-The key and factory are module-local. The descriptor/factory resolves the persisted capability ID/version
-to this closed supported key before returning CommitmentStep. Unknown or disabled versions fail
-preparation. Application and Invitation each register their entry-facing family; stateless reference and
+The enum and factory are module-local. The descriptor/factory resolves the persisted BehaviourKey
+to this closed supported DI key before returning CommitmentStep; section 4 specifies the single-source
+registration binding and concurrent-version example. Unknown/unsupported or suspended executions fail
+preparation with typed outcomes. An execution-only version can still serve eligible pinned work; its
+removal from new authoring alone must not break that work. Application and Invitation each register their
+entry-facing family; stateless reference and
 consent rules may be shared, but there is no cross-module service locator. This is one execution approach
 for template and builder output, not a remaining DealType engine beside a configurable engine.
 
-SaveMethodStep and VerifyMethodStep both implement IMethodSetupStep and occupy the SAME union case.
+SavePaymentMethodStep and VerifyPaymentMethodStep both implement IPaymentMethodSetupStep and occupy the SAME union case.
 They call the existing SetupPaymentMethodAsync with PaymentSessionKind.PaymentMethodSetup or
-PaymentMethodVerification respectively. AuthoriseAmountStep uses the existing escrow AuthorizeAsync
+PaymentMethodVerification respectively. AuthorisePaymentStep uses the existing escrow AuthorizeAsync
 operation with its required payer, payee and amount. The leaves map successful provider/session data to
 CheckoutSession and preserve the actual typed provider errors; they do not manufacture money amounts or
-authority. No nullable amount/payee has been added to MethodCommitmentInput.
+authority. No nullable amount/payee has been added to PaymentMethodCommitmentInput. Definition unions hold
+data, input unions hold prepared arguments and CommitmentStep holds executable interfaces. Several
+configured commitments may be composed; each individual selection has exactly one alternative.
 
 ApplicationWorkflow.StartCommitmentAsync prepares, dispatches and records the start outcome explicitly:
 
@@ -2642,12 +2770,12 @@ public async Task<Result<CommitmentCheckout, StartApplicationCommitmentError>> S
         return new StartApplicationCommitmentError.Preparation(error!);
     }
 
-    var selectedStep = commitmentStepFactory.Create(prepared.Capability);
+    var selectedStep = commitmentStepFactory.Create(prepared.Behaviour);
     var started = await ((selectedStep, prepared.Input) switch
     {
-        (CommitmentStep.Method(var step), CommitmentInput.Method(var input)) =>
+        (CommitmentStep.PaymentMethod(var step), CommitmentInput.PaymentMethod(var input)) =>
             step.StartAsync(input, ct),
-        (CommitmentStep.Hold(var step), CommitmentInput.Hold(var input)) =>
+        (CommitmentStep.PaymentAuthorisation(var step), CommitmentInput.PaymentAuthorisation(var input)) =>
             step.StartAsync(input, ct),
         _ => throw new InvalidOperationException("Validated commitment contracts do not match.")
     });
@@ -2668,7 +2796,7 @@ PrepareAsync returns Result<PreparedCommitment, PrepareCommitmentError>. It owns
 transaction described below, including access checks, exact payload replay, definition binding and
 persisting the immutable input/reference before success. It rejects a stale/forbidden/unsupported scope
 or a requirement already satisfied without starting another operation. Required parameters are the
-MethodCommitmentInput or HoldCommitmentInput above, never an untyped parameter map.
+PaymentMethodCommitmentInput or PaymentAuthorisationCommitmentInput above, never an untyped parameter map.
 
 The observation writer uses separate short local transactions. RecordSessionCreated does not mark the
 method/hold Ready; it records only that a session was obtained. RecordStartFailure appends the permitted
@@ -2884,7 +3012,10 @@ and Booking does not consult the template catalogue on each execution action.
 | Same commercial terms via both routes | Equivalent Terms/Booking/Concert selections and financial obligations; distinct entry definition, origin and consent history; no byte-identical-hash assertion |
 | Apply / Send required action | Missing or expired requirement blocks issue; a completed correctly bound one permits it; unreachable payer-before-Send combination rejected at validation |
 | Exact consent | Mutate fee, party, time/room, legal version or capability semantics after preview: hash/revision check rejects the stale signature |
-| Multiple implementations, one case | SaveMethodStep and VerifyMethodStep resolve through IMethodSetupStep; AuthoriseAmountStep requires its own amount-bearing input; new template adds no registration |
+| Multiple implementations, one case | SavePaymentMethodStep and VerifyPaymentMethodStep resolve through IPaymentMethodSetupStep; AuthorisePaymentStep requires its own amount-bearing input; new template adds no registration |
+| Union representation | Pinned Dunet generates the intended cases; explicit factory construction, match coverage and stable discriminator round-trips are qualified; no implicit interface conversion or EF union mapping is assumed |
+| Version selection | Distinct supported semantics resolve to their exact registered leaves; compatible releases retain the key; unknown/default keys reject rather than select latest; a new template needs no enum member |
+| Executor retirement | New selections are closed before removal; outstanding/recoverable work blocks removal, completed facts remain readable, and reconciliation never creates a fresh charge merely to move versions |
 | Partial failure inside transaction | Inject failure after Show claim, after Booking flush and after entry staging: no orphan claim, Booking, consent or receipt commits |
 | Repeated request | Same actor/resource/key/payload returns the committed result; changed payload conflicts; replay after permission revocation cannot bypass authorisation |
 | Competing requests | Application and Invitation accepting one slot produce one active claim/Booking; losing source remains unaccepted and has an actionable conflict |

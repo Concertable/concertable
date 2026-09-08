@@ -7,7 +7,7 @@
 - Branch: `Docs/launch_booking-entry-direct-offers`
 - PR: not opened
 - Dependency/package gates: planning-only; external compatibility requirements are specified in the plan, not claimed delivered
-- Last reconciled: 2026-09-08 against Git/worktree identities, monorepo main ef8d505f, docs main 99ad353b and the local organiser research at 5ac4048
+- Last reconciled: 2026-09-09 against Git/worktree identities, monorepo main 5b367c5a, extracted B2B main fded052c, docs main 99ad353b and the local organiser research at 5ac4048
 
 Metadata paths are relative to the B2B source root, currently api/Concertable.B2B within the recorded
 Git worktree. This plan/ledger moves with B2B when the extraction owner qualifies its source cutover.
@@ -23,9 +23,16 @@ commitment-start methods, entity/request/read shapes, separate invitation API/se
 contracts and atomic Booking convergence. It does not declare the whole programme implementation-ready;
 B6/B7 financial-operation definitions still need equally concrete review before enabling those capabilities.
 
-The latest clarification fixes the proposed step/factory names and distinguishes reference lookup from
-executable steps in section 4. AcceptStep is the future union name if acceptance earns distinct contracts;
-section 16.9 now consistently uses CommitmentStep / ICommitmentStepFactory. No runtime code changed.
+The latest agreed clarification adopts Dunet for union authoring and explicit payment names (D19):
+PaymentMethod/PaymentAuthorisation cases, IPaymentMethodSetupStep/IPaymentAuthorisationStep and their
+corresponding implementation/input names. AcceptStep remains the future union name if acceptance earns
+distinct callable contracts. The existing reference resolver is still removed after migration, not
+converted into an executable union. No runtime code, package pin or SDK changed.
+
+Section 4 now specifies the recommended BehaviourKey value, exact module-local version registration and
+dependency-gated retirement lifecycle (D20). Compatible releases keep the key; incompatible semantics may
+need concurrent leaves in one capability case. History/readers are retained independently of executor code.
+The V2 example is explanatory, not an instruction to add another payment requirement or implementation now.
 
 Tommy requested B2B ownership. The prior direct-offers plan and ledger are replaced, not retained as
 parallel instructions. The old launch item now routes to this B2B owner. Historical text remains in Git.
@@ -35,7 +42,7 @@ draft remains with its separate owner; this plan owns only B2B scope and the req
 
 ## Next Steps
 
-Paused: Tommy - review sections 3-4 and 16's proposed structure and D17-D18. Before approval, reconcile the remaining collaborator/entity names and null-forgiving snippets with the discussion; resolve policies needed by each admitted slice and complete B6/B7's operation contracts before their implementation. Application implementation or migration requires separate explicit authorisation.
+Paused: Tommy - review section 4's version selection/retirement recommendation (D20) and sections 3/16 with D17-D18; D19 records the agreed Dunet/payment naming choice. Before overall approval, reconcile remaining collaborator/entity names and older null-forgiving snippets, resolve admitted-slice policies and complete B6/B7's operation contracts. Application implementation or migration requires separate explicit authorisation.
 
 On feedback, update this plan and the existing product-decision owners in Concertable/docs as appropriate.
 Do not infer approval of every recommendation from permission to write/read the draft.
@@ -58,18 +65,23 @@ Do not infer approval of every recommendation from permission to write/read the 
   demonstrated the genuine method-setup/amount-authorisation union and two implementations in one case.
 - Identified the existing normal-return transaction semantics; required failed-Result rollback, fresh-scope
   recovery, post-flush ETags and one Booking creation path. Added acceptance/counter/commitment race proofs.
+- Aligned all sketched sum-type declarations with Dunet, retained explicit interface-valued case construction
+  and added exact semantics selection/retirement requirements to B4/B5 and the entry verification matrix.
 
 ## Verification
 
-- Source authority refreshed through ef8d505f; entry/Booking/Deal runtime files inspected at 3826320d are
-  unchanged by that refresh. Extracted B2B main remains older than PR633. Docs main
+- Source authority refreshed through 5b367c5a; relevant lifecycle/keyed-builder files inspected at 3826320d
+  remain unchanged. Current B2B pins Dunet 1.16.2 and already uses it in ConfirmedBookingTerms. Extracted
+  B2B main remains older than PR633. Docs main
   includes PR11; organiser research 5ac4048 is local/unpublished evidence, not approved product policy.
 - This commit: B2B and root plan graphs pass with zero errors/warnings. Workflow v2 validates the B2B
-  artifact owner, worktree/branch and design-review pause. The commercial plan tree has no remaining
-  superseded commitment union/factory names; source-history reference-step names are deliberately retained.
-- At d3faa0f0e, all 27 local links/anchors, three SVG XML documents and delimiters for 18 C# excerpts validate;
-  delimiter checks are not compilation. Scoped diff whitespace passes. Only the existing plan and
-  ledger changed; diagrams are unchanged from their prior rendered/visual checks.
+  artifact owner, worktree/branch and design-review pause. No superseded commitment case, interface,
+  implementation, input or reference-value names remain in the commercial plan tree; historical source
+  ICommitmentReferenceStep references are deliberately retained.
+- This commit: local Markdown links/anchors, three SVG XML documents, union declaration consistency and
+  C# excerpt delimiters validate. These checks are not compilation or generated-code qualification.
+  Scoped diff whitespace passes. Only the existing plan and ledger changed; diagrams are unchanged
+  from their prior rendered/visual checks.
 - The prior broad B2B docs-reachability check found four baseline errors at 85ed6353:
   missing CLAUDE siblings in the two Dashboard test directories; missing AGENTS in E2EAdmin integration
   and KeyedStrategies unit test directories. These are not introduced by the plan; the owning test-guidance
@@ -78,9 +90,11 @@ Do not infer approval of every recommendation from permission to write/read the 
 
 ## Reviews
 
-The naming clarification received a scoped consistency self-review against the actual reference strategy,
-keyed builder and current first-party C# union documentation. No independent implementation-readiness
-review, application test or C# compilation is claimed. This remains a design draft for Tommy.
+The clarification received a scoped consistency self-review against the actual reference strategy,
+enum-constrained keyed builder, existing Dunet contract and first-party Dunet documentation. Version
+coexistence, unknown-outcome recovery and executor removal are specified design proofs, not implemented
+or executed tests. No independent implementation-readiness review, application test or C# compilation
+is claimed. This remains a design draft for Tommy.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -91,10 +105,14 @@ review, application test or C# compilation is claimed. This remains a design dra
   IApplyStep and ICommitmentReferenceStep, not IAcceptStep. The target stores commitment references and
   removes the redundant acceptance resolver after conversion; starting a commitment is the real union
   example. A reference alone is not proof of payment readiness.
-- Future acceptance union naming and native-interface matching are specified in section 4; distinct
-  implementations sharing one contract do not require separate cases. Native union adoption is not an
-  SDK upgrade authorised by this clarification. Keep the separate proposed acceptance record; questions
-  about its purpose did not withdraw that design choice.
+- Dunet authoring and explicit payment names are agreed; native unions remain a future qualified
+  representation/toolchain change, not an SDK upgrade authorised now. Distinct implementations sharing
+  one contract do not require separate union cases. Keep the separate proposed acceptance record;
+  questions about its purpose did not withdraw that design choice.
+- BehaviourKey and its retirement policy remain recommendations (D20). The enum-constrained builder
+  stays; a new module-local single-source registration binding maps persisted keys to supported execution
+  keys. No automatic latest-version fallback, enum per template, or indefinite executable retention merely
+  because historical agreements exist. Unresolved reachable old work can genuinely require continued support.
 - Configuration contains the actual selected commercial design; a template supplies reusable defaults.
   Version meanings, template provenance, issued proposals and accepted snapshots are separate concerns.
 - Stored compatibility needs structural/semantic and live checks as well as typed code. Section 16's
