@@ -10,6 +10,7 @@ test.yml itself rather than restated here, so the test cannot drift from the gat
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -53,7 +54,10 @@ def extract_block() -> str:
     steps = spec["jobs"]["changes"]["steps"]
     detect = next(s for s in steps if s.get("id") == "detect")
     run = detect["run"]
-    start = run.index("# SERVICE SCOPE:")
+    # Include the api_files derivation immediately before the policy comment. Starting at the
+    # comment leaves api_files inherited from the caller's environment, so the test can silently
+    # classify every backend change as frontend-only instead of exercising the workflow logic.
+    start = run.index("api_files=$(", run.index("# SERVICE SCOPE:") - 200)
     end = run.index('echo "services=$services"')
     block = run[start:end]
     if "SERVICE_DIRS" not in block:
@@ -64,7 +68,9 @@ def extract_block() -> str:
 def bash() -> str:
     # On Windows a bare `bash` can resolve to a WSL stub that cannot exec; prefer Git Bash,
     # which is the shell this repository's other hooks already assume.
-    for candidate in (r"C:\Program Files\Git\usr\bin\bash.exe", r"C:\Program Files\Git\bin\bash.exe"):
+    # Git's public bin/bash wrapper initializes PATH with grep/sed/sort; invoking usr/bin/bash
+    # directly inherits only the Windows process PATH and silently leaves those tools unavailable.
+    for candidate in (r"C:\Program Files\Git\bin\bash.exe", r"C:\Program Files\Git\usr\bin\bash.exe"):
         if Path(candidate).exists():
             return candidate
     return "bash"
@@ -80,7 +86,11 @@ def run_case(block: str, files: list[str]) -> str:
         fh.write(script)
         path = fh.name
     try:
-        proc = subprocess.run([bash(), path], capture_output=True, text=True)
+        environment = os.environ.copy()
+        # Git Bash rewrites slash-bearing regex arguments as Windows paths unless conversion is
+        # disabled. CI runs on Linux, but the policy test must exercise the same regexes locally.
+        environment["MSYS2_ARG_CONV_EXCL"] = "*"
+        proc = subprocess.run([bash(), path], capture_output=True, text=True, env=environment)
         if proc.returncode != 0:
             raise SystemExit(f"FAIL: classifier errored: {proc.stderr.strip()}")
         line = next(
@@ -124,6 +134,10 @@ def main() -> int:
         print(f"{status} {name} empty-matrix guard: {condition!r}")
     total = len(CASES) + len(MATRIX_GUARDS)
     print(f"\n{total - failures}/{total} passed")
+    package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
+    publication = subprocess.run([sys.executable, package_policy], check=False)
+    if publication.returncode != 0:
+        failures += 1
     return 1 if failures else 0
 
 
