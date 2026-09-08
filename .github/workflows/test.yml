@@ -1294,7 +1294,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Test CI service scope and queue E2E topology
+      - name: Test the CI service-scope classifier
         run: |
           python -m pip install --quiet pyyaml
           python .github/workflows/tests/test_service_scope.py
