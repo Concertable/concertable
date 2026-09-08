@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `4030eed8d31151f2ef49a17a4f214323f034745d`  `(2026-09-08)`
-**Security-reviewed up to commit:** `4030eed8d31151f2ef49a17a4f214323f034745d`  `(2026-09-08)`
+**Reviewed up to commit:** `5f1c672c490da68cb41751f3b16f1ca2803b0da8`  `(2026-09-08)`
+**Security-reviewed up to commit:** `5f1c672c490da68cb41751f3b16f1ca2803b0da8`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -90,13 +90,12 @@ what changed. A transport regression fails API E2E first and faster.
 
 After the initial pass the candidate was brought onto the merged M1 stack: `0c7116ecc` merges
 `origin/main` at Platform Contract's merge `2b5e8aad0` plus the 1335 pin sync, cleanly with no conflicts, and
-`4030eed8d` re-aligns the `Concertable.Auth.Contracts` pin to 1335 because sync PR #957 could not reach a file
+`4030eed8d` re-aligned the `Concertable.Auth.Contracts` pin to 1335, and after sync PR #958 landed 1338 the candidate merged main once more and settled that pin at 1338 because sync PR #957 could not reach a file
 that exists only on this branch. Nothing else changed and `Concertable.Auth.Contracts` rebuilds clean.
 
-The pin is deliberately **not** chased further. Platform Contract's own publish produced 1338 and sync PR
-#958 is taking main there, so aligning again would chase a version that moves on every merge. 1335 is a real
-published version that builds, the mismatch is transient, and the first sync after this lands corrects it
-through the grep-based discovery already verified above.
+The pin was deliberately not chased while publishes were still in flight, because each M1 merge produced a
+new version. With the whole M1 stack landed and sync PR #958 merged, main is settled at 1338 and all nine pin
+files now agree. From here `bump-platform-version.sh` reaches this folder by grep like the rest.
 
 ### CI gate extension is correct for the seam
 
