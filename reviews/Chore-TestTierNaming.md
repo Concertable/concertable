@@ -735,8 +735,8 @@ needing a host, HTTP or a database is an integration test" — these need the re
 ---
 
 **Review status:** `complete`
-**Reviewed up to commit:** `43df750067a7d8837d0168c111d4ba352eb14a0c`  `(2026-09-08)`
-**Security-reviewed up to commit:** `43df750067a7d8837d0168c111d4ba352eb14a0c`  `(2026-09-08)`
+**Reviewed up to commit:** `7ec49ae483d43401e8fd20e50ed3cafeeff56097`  `(2026-09-08)`
+**Security-reviewed up to commit:** `7ec49ae483d43401e8fd20e50ed3cafeeff56097`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -1090,3 +1090,14 @@ edits CI wiring; no production path, credential handling or authorization surfac
 - `yaml.safe_load` over the resolved `test.yml`.
 - The `fe-boundaries` red recorded in the previous pass was re-run on the same head and came back
   **success**, confirming the npm `_cacache` `EEXIST` diagnosis.
+
+### Addendum — second merge of `main` (`7ec49ae483d43401e8fd20e50ed3cafeeff56097`)
+
+`main` moved again mid-merge (#945). Its three `.ToArray()` snapshots in the AppHost mobile-tunnel facts
+followed the rename into the startup tier unaided and are correct there. Auth's new
+`AppHost_DeclaresAnExplicitSpaClientRoster` did not: git followed the
+`AuthArchitectureTests.cs` -> `WebHostTests.cs` rename and placed an AppHost resource-graph test in the
+web-host class — a **clean but wrong** auto-merge, which is the failure mode a rename-heavy split invites
+and the reason each merge here is inspected rather than trusted on its exit code. Moved to
+`ResourceGraphTests`, prefix dropped. Re-verified by execution: solution build 0 errors; startup tier
+**48/48** (Auth 10 -> 11) and architecture tier **40/40**, 88 tests, all green.
