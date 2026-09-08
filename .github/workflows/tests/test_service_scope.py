@@ -1,9 +1,10 @@
-"""Prove the CI service-scope classifier only ever narrows CI safely.
+"""Prove service scoping and queue E2E dependencies only ever narrow CI safely.
 
 The classifier decides which services a diff can affect, so an unrelated service's
 suites and standalone carve never gate a PR. Getting it wrong is silent: a suite
-that should have run simply does not. The block under test is extracted from
-test.yml itself rather than restated here, so the test cannot drift from the gate.
+that should have run simply does not. The classifier block and dependency graph
+are read from test.yml itself rather than restated here, so the test cannot drift
+from the gate.
 
     python .github/workflows/tests/test_service_scope.py
 """
@@ -27,6 +28,7 @@ MATRIX_GUARDS = {
     "architecture-tests": "architecture_projects",
     "integration-tests": "integration_projects",
 }
+QUEUE_E2E_JOBS = ("e2e-api-tests", "e2e-ui-tests")
 
 CASES: list[tuple[str, list[str], str]] = [
     ("payment only", ["api/Concertable.Payment/src/X/Y.cs"], "Payment"),
@@ -117,6 +119,43 @@ def matrix_guard_cases() -> list[tuple[str, bool, str]]:
     return cases
 
 
+def dependency_closure(spec: dict, job: str) -> set[str]:
+    closure: set[str] = set()
+    pending = [job]
+    while pending:
+        current = pending.pop()
+        needs = spec["jobs"][current].get("needs", [])
+        if isinstance(needs, str):
+            needs = [needs]
+        for dependency in needs:
+            if dependency not in closure:
+                closure.add(dependency)
+                pending.append(dependency)
+    return closure
+
+
+def empty_matrix_guarded_jobs(spec: dict) -> set[str]:
+    # Derived from the workflow, not from MATRIX_GUARDS: a job guarded this way that nobody added to
+    # that table would otherwise be free to skip queue E2E again. It cannot come back empty while the
+    # matrix-guard cases above pass, because those assert this exact idiom on each named job.
+    return {
+        job
+        for job, body in spec["jobs"].items()
+        if "!= '[]'" in str(body.get("if", ""))
+    }
+
+
+def queue_e2e_dependency_cases() -> list[tuple[str, bool, set[str]]]:
+    """Queue E2E must survive the empty matrices produced by frontend-only diffs."""
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    guarded = empty_matrix_guarded_jobs(spec)
+    cases = []
+    for job in QUEUE_E2E_JOBS:
+        blocked_by = dependency_closure(spec, job).intersection(guarded)
+        cases.append((job, not blocked_by, blocked_by))
+    return cases
+
+
 def main() -> int:
     block = extract_block()
     failures = 0
@@ -132,7 +171,12 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} {name} empty-matrix guard: {condition!r}")
-    total = len(CASES) + len(MATRIX_GUARDS)
+    for name, ok, blocked_by in queue_e2e_dependency_cases():
+        if not ok:
+            failures += 1
+        status = "ok  " if ok else "FAIL"
+        print(f"{status} {name} independent of empty matrices: {sorted(blocked_by)!r}")
+    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS)
     print(f"\n{total - failures}/{total} passed")
     package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
     publication = subprocess.run([sys.executable, package_policy], check=False)

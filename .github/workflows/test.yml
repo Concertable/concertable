@@ -909,11 +909,13 @@ jobs:
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes, architecture-tests]
+    # Never depend on a service-scoped matrix job here. Frontend-only changes deliberately produce empty
+    # backend matrices, and a skipped dependency fails the implicit `success()` over `needs`, taking this
+    # job down with it. ci-complete independently waits for architecture-tests when that tier is in scope.
+    needs: [build, changes]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
-    # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
-    # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
-    # can't stall queue admission.
+    # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. It skips only when the
+    # selected E2E tier says so; ci-complete is the sole required check and aggregates the result.
     if: github.event_name == 'merge_group' && needs.changes.outputs.run_e2e == 'true'
 
     permissions:
