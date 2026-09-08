@@ -735,8 +735,8 @@ needing a host, HTTP or a database is an integration test" — these need the re
 ---
 
 **Review status:** `complete`
-**Reviewed up to commit:** `be228212454c03b3c6f9c4d83b13425069570c7f`  `(2026-09-08)`
-**Security-reviewed up to commit:** `be228212454c03b3c6f9c4d83b13425069570c7f`  `(2026-09-08)`
+**Reviewed up to commit:** `43df750067a7d8837d0168c111d4ba352eb14a0c`  `(2026-09-08)`
+**Security-reviewed up to commit:** `43df750067a7d8837d0168c111d4ba352eb14a0c`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -1019,3 +1019,74 @@ across the two files, with none dropped. The revert's only security-adjacent eff
 - **`Concertable.Testing.Architecture` now serves the startup tier under an architecture name.** Renaming
   it is a published-package change with the same publish-then-bump two-step as F6, and the tier's own name
   is still an open decision, so it is not raised as a finding here.
+
+## Review pass — 2026-09-08 — incremental (merge resolution)
+
+**Candidate base:** `be228212454c03b3c6f9c4d83b13425069570c7f`
+**Candidate head:** `43df750067a7d8837d0168c111d4ba352eb14a0c`
+**Candidate branch:** `Chore/TestTierNaming`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:2e936985edbfe75ab62ec75cdb1757350fe7dffe0285441c2b6bdf08e76c8ff8` `(67 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable--worktrees-Chore-TestTierNaming/192f0d8e-a9ba-4372-a2e3-9b77f2e399c2/scratchpad/rev-bundle-946b`
+**Candidate bundle identity:** `sha256:6f57ce9097648b32161dfb5e6f6a6b56abbad3399b99877b5b5822d9fad0df6d`
+**Work-order path:** `reviews/Chore-TestTierNaming.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Opened because the PR was `CONFLICTING` against `main` — which is also why GitHub had stopped creating
+`pull_request` runs on the two preceding heads, since it cannot build a merge commit to run them against.
+`main` moved twice into the classes this branch splits, so the six conflicts are branch-authored resolution
+work rather than inherited content, and are reviewed here as such.
+
+**#944 (M1-AppHost-Sync)** added frontend and mobile app-model coverage to the classes the split
+redistributed. Each conflicted class was rebuilt from `main`'s version and then re-split, rather than
+resolved hunk by hunk, so nothing could be silently dropped:
+`MobileGraph_ContainsOnlyB2BSurfaces`, `MobileGraph_ContainsOnlyCustomerSurfaces`,
+`FrontendWorkspaces_ExtractedAndMonorepoLayouts_ResolveEveryProductionCandidate` (both services),
+`CustomerSpaOrigin_MatchesAuthRegistration`, the AppHost's `AllFrontendSurfaces_AreOwnedAndCollisionFree`
+and `MobileUrls_ResolveThroughOwnedTunnel`, `AssertNoSpaClientsAsync` on Payment and Search, and ten
+private helpers. The `Web_*`, `Functions_*` and `SeedSimulator_*` members were checked normalized-equal to
+what the split files already hold before being dropped from the graph classes, and
+`Web_ReferencesNoModuleInfrastructureAssembly` stays in Customer's `ModuleBoundaryTests`, where the split
+correctly put it. **The tier goes 38 -> 47 tests**, which is the arithmetic of what `main` added.
+
+`main`'s `AssertImageEndpoint` still declares `string scheme = "http"`. That default is the mechanism §5.3
+records — it is how `payment-web`'s `https`-named plaintext endpoint got asserted as correct. The branch's
+required-parameter form and its two explicit `scheme: "http"` call sites are kept through the merge.
+
+**#952 (FrontendFullE2EQueueDependencies)** removed `architecture-tests` from `e2e-api-tests`' `needs:`,
+because a service-scoped matrix that is legitimately empty takes the dependent job down with it, and
+encoded the rule as a test: `queue_e2e_dependency_cases` fails if queue E2E transitively depends on any job
+guarded by `!= '[]'`. Keeping this branch's ordering would have failed that test, so **`main`'s shape is
+taken**. Reasoned rather than conceded: ordering was never what makes the tier blocking — on a PR
+`startup-tests` runs and E2E does not, and in the queue `ci-complete` is the sole required check and
+aggregates every tier. What is lost is only wall-clock inside a queue run. The two places that asserted the
+`needs:` edge in prose — the `startup-tests` job comment and `docs/INDEX.md:159` — are corrected rather
+than left describing wiring that no longer exists.
+
+Security layer: **no qualifying vulnerability.** The resolution moves test code between test projects and
+edits CI wiring; no production path, credential handling or authorization surface changes in this range.
+
+### Findings
+
+- [x] **F17 — LOW — test-coverage** — `.github/workflows/tests/test_service_scope.py:26`
+  `MATRIX_GUARDS` names `unit-tests`, `architecture-tests` and `integration-tests`. This branch added
+  `startup-tests`, which carries the same `!= '[]'` idiom, and did not register it — so the guard the
+  suite exists to assert went unasserted on the one job the branch introduced, and
+  `empty_matrix_guarded_jobs`' own comment ("it cannot come back empty while the matrix-guard cases above
+  pass") no longer held for it. Registered; the suite goes 19/19 -> 20/20.
+
+### Verification — executed, not read
+
+- `dotnet build api/Concertable.slnx -c Debug` — **0 errors**, 9 warnings.
+- **The whole startup tier: 47/47 passing, ~20 s, no infrastructure** — Auth 10, B2B 13, Customer 8,
+  Payment 6, Search 6, AppHost 4.
+- **The whole architecture tier: 40/40 passing** — B2B 22, Customer 1, Payment 9, Search 7, AppHost 1.
+- `python .github/workflows/tests/test_service_scope.py` — 20/20, including
+  `e2e-api-tests independent of empty matrices: []`.
+- `python -m unittest discover -s .agents/hooks/tests` — 15 tests, OK.
+- `python eng/repository-split/inventory.py --check` — current, no test-tier cross-repository
+  `ProjectReference`.
+- `yaml.safe_load` over the resolved `test.yml`.
+- The `fe-boundaries` red recorded in the previous pass was re-run on the same head and came back
+  **success**, confirming the npm `_cacache` `EEXIST` diagnosis.
