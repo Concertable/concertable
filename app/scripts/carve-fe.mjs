@@ -131,8 +131,6 @@ try {
     console.log(`\n>>> carve-fe ${surface}: standalone lockfile written OK`);
   } else {
     // 4. Restore from the feed only — no workspace root above the temp dir to resolve @concertable/* from.
-    //    `ci` not `install`: the committed lock is what a standalone repo restores, so the gate has to
-    //    fail on a lock that no longer satisfies the surface rather than silently re-resolving around it.
     run(npm, [...npmPrefix, "ci", "--no-audit", "--no-fund"], { cwd: dir });
 
     // 5. Build the surface standalone.

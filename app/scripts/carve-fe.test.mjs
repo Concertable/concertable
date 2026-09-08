@@ -79,9 +79,8 @@ for (const surface of mobileSurfaces) {
   });
 }
 
-// The committed per-surface lockfile is what a standalone surface repo restores, so it has to pin the
-// feed tiers rather than whatever a fresh resolution would pick, and publication is lockstep across all
-// seven tiers — a lock left at an older version means a surface was skipped by `npm run lock:carve`.
+// Publication is lockstep across all seven tiers, so a lock sitting on an older version means its
+// surface was skipped by `npm run lock:carve`.
 test("every carved surface pins one lockstep tier version from the feed", () => {
   const pinned = new Map();
 
@@ -97,8 +96,8 @@ test("every carved surface pins one lockstep tier version from the feed", () => 
       }
     }
 
-    for (const [path, entry] of Object.entries(lock.packages)) {
-      const name = path.replace(/^.*node_modules\//, "");
+    for (const [entryPath, entry] of Object.entries(lock.packages)) {
+      const name = entryPath.replace(/^.*node_modules\//, "");
       if (!name.startsWith("@concertable/")) continue;
       assert.match(entry.resolved, /^https:\/\/npm\.pkg\.github\.com\//, `${surface} ${name}`);
       pinned.set(`${surface} ${name}`, entry.version);
@@ -106,6 +105,6 @@ test("every carved surface pins one lockstep tier version from the feed", () => 
   }
 
   assert.ok(pinned.size > 0);
-  assert.deepEqual([...new Set(pinned.values())].sort(), [[...pinned.values()][0]],
+  assert.equal(new Set(pinned.values()).size, 1,
     `tiers are not on one lockstep version: ${JSON.stringify([...pinned], null, 2)}`);
 });
