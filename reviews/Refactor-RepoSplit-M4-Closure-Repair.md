@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `5f1c672c490da68cb41751f3b16f1ca2803b0da8`  `(2026-09-08)`
-**Security-reviewed up to commit:** `5f1c672c490da68cb41751f3b16f1ca2803b0da8`  `(2026-09-08)`
+**Reviewed up to commit:** `8090cc46f1cbdba29923c02008104c7ad81b3707`  `(2026-09-08)`
+**Security-reviewed up to commit:** `8090cc46f1cbdba29923c02008104c7ad81b3707`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -112,3 +112,106 @@ diff carries no security-relevant change: no `permissions`, `secrets.*`, `GITHUB
 or registry-login edits — only a comment and the two `carve-auth` lines above. The one credential-adjacent
 change in the candidate moves in the fail-closed direction: an insecure `http://` gRPC address now throws
 unless `PaymentClient__AllowInsecureHttp` is set explicitly, where previously it was accepted.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `5f1c672c490da68cb41751f3b16f1ca2803b0da8`
+**Candidate head:** `8090cc46f1cbdba29923c02008104c7ad81b3707`
+**Candidate branch:** `Refactor/RepoSplit-M4-Closure-Repair`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:42268d705c85275ed9461f5f5285324a519ad0a406ed387c6b20a4a65f09e56b` `(11 paths)`
+**Candidate bundle identity:** `sha256:7a7974aa902b86ba62c181db3f3e72123bedc6cc12555d5276e0d40cc11e763a`
+**Work-order path:** `reviews/Refactor-RepoSplit-M4-Closure-Repair.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Covers the repair of the Payment gRPC regression that ejected PR #959 from the merge queue in merge-group
+run `34256886321`, plus the two tech-debt entries it produced. Lenses applied: the E2E service-discovery
+substitution seam, Kestrel protocol selection, test-tier placement, and duplication in the touched files.
+
+### Findings
+
+No open findings. One duplication found in this delta was fixed within it and is recorded below.
+
+### Root cause, confirmed rather than assumed
+
+The four failing tests all died on `POST .../checkout` with a Polly timeout inside
+`Http2Connection.Http2Stream.WaitForDataAsync`. The chain was verified end to end, not inferred:
+
+- **The `grpc` endpoint reaches consumers.** Resolving the real `Concertable_B2B_AppHost` graph shows both
+  `b2b-web` and `workers` receiving `services__payment-web__grpc__0` — emitted by the `WithReference` the
+  AppHost already had, because `AddPaymentWeb`'s container overload now declares a third endpoint. The same
+  resolution also shows the graph emits **no** `services__payment-web__https__0` at all: the container's
+  `https`-*named* endpoint carries an `http` scheme, so it lands as `http__0`. The pinning code's key list was
+  therefore already out of step with the container's endpoint roster.
+- **The advertised host never starts.** `SubstituteE2EProject` puts the container on `WithExplicitStart()` and
+  runs the Payment-owned project beside it on the single pinned `ASPNETCORE_URLS`.
+- **The client prefers exactly the broken key.** `AddPaymentClient` reads `services:payment-web:grpc:0` first
+  and falls back to `https:0` — a preference introduced by `d168522f2` in this same branch. Before it, the
+  client read `https:0` only, which the harness did pin, which is why the path was green until M4.
+- **A DCP proxy with no backend accepts and hangs**, which is why this presented as a 30-second timeout in
+  `WaitForDataAsync` rather than a connection refusal.
+
+### The fix is placed where the asymmetry is
+
+`PinPaymentDiscovery` repoints **every** `services__payment-web__*` key already present in the consumer's
+environment, deriving the list from what the reference actually emitted rather than restating a key list that
+had already drifted once. B2B web, B2B workers and Customer web all route through it; Customer has no other
+Payment consumer in its AppHost, which was checked rather than assumed.
+
+`ContainerBackedPinningTests` locks the invariant: it composes the real container overload, references it from
+a consumer, and asserts the `grpc` key is present **and** that every advertised key resolves to the pinned
+host. Reverting the helper to a single-key pin fails it.
+
+### The `?? 8081` default is removed, and the earlier pass's reasoning on it is superseded
+
+The prior pass recorded the duplicated `8081` as "not a maintenance hazard — the env var is the contract and
+the literal is the standalone fallback". The fallback claim does not hold: `Concertable.Payment.Web.csproj`
+sets `PaymentTransport__GrpcPort` as a `ContainerEnvironmentVariable` on the image itself, so a standalone
+container already carries the value and the literal defended nothing. What it did do was make **any**
+project-hosted endpoint that happened to bind 8081 HTTP/2-only, silently breaking REST. `grpcPort` is now a
+genuine `int?` and an unset value forces no endpoint to HTTP/2.
+
+`ConfigurePaymentTransport_NoConfiguredGrpcPort_LeavesTheContainerGrpcPortHttp1Capable` was confirmed to fail
+against the old `?? 8081` before being kept.
+
+### Kestrel does not serve h2c by prior knowledge on a cleartext `Http1AndHttp2` endpoint
+
+Established empirically while writing the above: a gRPC call to such an endpoint is rejected with
+`HTTP_1_1_REQUIRED`. This is why the container topology needs a genuinely separate HTTP/2-only listener on
+8081, and why a project-hosted Payment carries gRPC on its **TLS** endpoint via ALPN instead. That distinction
+is now stated in `ARCHITECTURE.md` and asserted by
+`AddPaymentWeb_ProjectOverload_AdvertisesNoDedicatedGrpcTransport`, which converts the project overload's
+previously accidental gap into a stated contract.
+
+### Duplication found and fixed in this delta
+
+The new pinning test needed the environment callbacks awaited, which briefly left
+`ContainerBackedPinningTests` with two helpers differing only in that. `8090cc46f` folds the four existing
+callers onto the awaited one and deletes the synchronous copy, so an async environment callback cannot go
+silently unresolved in any of them. Suite green at 9/9 after the fold.
+
+### Validation
+
+- `Concertable.Payment.ArchitectureTests` 14/14, `Concertable.Search.E2ETests.Helpers.UnitTests` 9/9,
+  `PaymentTransportTests` 3/3.
+- `Concertable.B2B.E2ETests` and `Concertable.Customer.E2ETests` both build clean.
+- `Concertable.B2B.ArchitectureTests` is 34/35 locally: `AppHost_ProductionGraphAndStrictValidation_AreValid`
+  fails with a bare `TimeoutException` **only on a machine that has `Stripe:SecretKey` in user secrets**,
+  because `AddStripeCli` then registers a `WithEnvironment` callback that blocks 60s waiting for the CLI's
+  webhook secret. CI has no such secret and the job passed on run `34247389726`. Not caused by this delta;
+  logged in `api/Concertable.Payment/TECH_DEBT.md`.
+- The merge queue's `e2e-api-tests` remains the authoritative gate for the regression itself.
+
+### Security pass
+
+No security-relevant change in this delta. No `.github/workflows/` path is touched, no permission, secret or
+token handling moves, and the fail-closed `PaymentClient:AllowInsecureHttp` guard is untouched — the E2E keys
+this pass repoints all resolve to the existing `https://` pinned endpoint, so the guard is not newly bypassed.
+
+### Tech debt recorded
+
+- `api/TECH_DEBT.md` — architecture-test classes that restate their own project name across Payment, Customer,
+  Search, Auth and the umbrella AppHost, to be resolved by splitting per subject as B2B already is.
+- `api/Concertable.Payment/TECH_DEBT.md` — `AddStripeCli`'s blocking environment callback making a host graph
+  unresolvable without a live Stripe CLI.
