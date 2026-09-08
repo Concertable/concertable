@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `2eb7e68c3f016987b14f85bea88c436d43a4f08e`  `(2026-09-08)`
-**Security-reviewed up to commit:** `2eb7e68c3f016987b14f85bea88c436d43a4f08e`  `(2026-09-08)`
+**Reviewed up to commit:** `24a7e93aa2661c7ecf31cd608460eaac654fd5fa`  `(2026-09-08)`
+**Security-reviewed up to commit:** `24a7e93aa2661c7ecf31cd608460eaac654fd5fa`  `(2026-09-08)`
 **Judgment:** `approved`
 
 Checkpoint 7B of [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md).
@@ -73,8 +73,24 @@ Routed rules for the frozen paths: `packages` (7 pin files), `docs-and-debt` (2 
   properties, which a props-file `<PropertyGroup>` cannot override, so leaving them on the old name
   would have sent the local inner loop to the feed version instead of the locally packed
   `0.1.0-local.*`.
-- **`ConcertablePaymentVersion` is untouched.** It is a separate hand-maintained cross-service pin in
-  B2B and Customer that `platform-sync` does not track.
+- **`ConcertablePaymentVersion` keeps its own name and its own default, but it is not independent of
+  the platform pin, and that is the sharpest edge in this diff.** B2B and Customer declare it as:
+
+  ```xml
+  <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1342</ConcertableDotNetPlatformVersion>
+  <ConcertablePaymentVersion Condition="'$(UseLocalPlatformPackages)' == 'true'">$(ConcertableDotNetPlatformVersion)</ConcertablePaymentVersion>
+  <ConcertablePaymentVersion Condition="'$(ConcertablePaymentVersion)' == ''">0.1.0-alpha.0.1330</ConcertablePaymentVersion>
+  ```
+
+  So the Payment pin *reads* the platform pin on the `local-platform.ps1` path, which passes
+  `UseLocalPlatformPackages=true`. Renaming only the declaration and not that reference would have
+  left `$(ConcertablePlatformVersion)` resolving to empty, making `ConcertablePaymentVersion` empty
+  and emitting `Version=""` for `Concertable.Payment.{Client,Contracts,Hosting,TestKit}` — a restore
+  failure on the local inner loop only, invisible to feed-path CI. The whole-file rename covers it and
+  the containment check above is what proves it: the reference now names the property the same file
+  declares one line earlier, and MSBuild evaluates the group top-down so the order is right. Its
+  hand-maintained `0.1.0-alpha.0.1330` fallback and its name are unchanged; `platform-sync` still does
+  not track it.
 - **`docs-and-debt`:** the four TECH_DEBT sentences renamed in place keep their single home; no rule
   gained a second copy and no violation site was named in a rule doc.
 
@@ -129,10 +145,42 @@ locally, the same major the `workflow-tests` job pins, and carries a `parentPath
 three `plans/platform/` doc edits are the same one-word rename applied to sentences that state the
 mechanism as current.
 
+## Review pass — 2026-09-08 — incremental over the current-main merge
+
+**Candidate base:** `3052fb9ac8e21f51bd4ff7e49a36176ad8f770c2`
+**Candidate head:** `24a7e93aa2661c7ecf31cd608460eaac654fd5fa`
+**Candidate branch:** `Refactor/DotNetPlatformPublisherConsumers`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:5d6b52d1df5fe7bc64fce50ef524cd19ed8df2cd65908cac92ba0cc24495aecc` `(19 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-DotNetPlatformPublisherConsumers\2897c3da-9893-4e4e-8d18-8e435457a178\scratchpad\review-bundle-7b-p3`
+**Candidate bundle identity:** `sha256:f06c5bc2bc3507f90e0b9ef992626baa9f088d4eb1f69f30d73fdaa3e960c5bb`
+**Work-order path:** `reviews/Refactor-DotNetPlatformPublisherConsumers.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The base is current `origin/main` after PRs #959 and #961 landed, so this pass is the branch's whole
+contribution over current main rather than a delta on a stale base.
+
+### Findings
+
+No findings. The merge conflicted in seven pin files — main had bumped every pin `1340` → `1342`
+(#961) and #959 had added an eighth, `api/Concertable.Auth.Contracts/Directory.Packages.props`, that
+did not exist at the original base. Each conflict was resolved to main's content and the rename
+re-applied, then verified: normalising the property name in `git show origin/main:<file>` produces a
+zero-line diff against the resolved file, for all eight. So the branch loses none of #959's or #961's
+content and the eighth pin file is now renamed too — the pin-file count is **eight**, not the seven of
+the first pass and not the handoff's nine.
+
+Scope is clean: `git diff origin/main..HEAD -U0` over `api/`, `scripts/`, `.github/workflows/` and
+`plans/` contains no line that does not carry the property name. The only non-rename content on the
+branch is the new test and this work order.
+
 ## Security review
 
 The frozen paths include `.github/workflows/` and `.github/scripts/`, so the merge gate requires the
-security marker. No new trust boundary, credential, permission or trigger in either pass:
+security marker. No new trust boundary, credential, permission or trigger in any of the three passes —
+the merge pass changed only `Directory.Packages.props` files on this branch's side, and every
+`.github/` path came through it unconflicted and identical to the second pass:
 
 - `platform-sync.yml` — only a commit-message string and a PR-body string. `permissions`,
   `PLATFORM_SYNC_TOKEN`/`GITHUB_TOKEN` usage, the `workflow_run` trigger and every `if` condition are
@@ -147,17 +195,27 @@ security marker. No new trust boundary, credential, permission or trigger in eit
 
 | Gate | Result |
 |---|---|
-| `./scripts/local-platform.ps1 prepare` | green — 58 packages packed at `0.1.0-local.1788899153911`, 0 errors. The renamed `-p:` override resolving against the renamed pin is what makes this restore succeed. |
-| `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release` | green — 0 errors |
+| `./scripts/local-platform.ps1 prepare` (pre-merge head) | green — 58 packages at `0.1.0-local.1788899153911`, 0 errors |
+| `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release` (pre-merge head) | green — 0 errors |
+| `./scripts/local-platform.ps1 prepare` (merged head `24a7e93aa`) | green — 58 packages at `0.1.0-local.1788902125923`, 0 errors, exit 0. This is the rename-specific gate: the renamed `-p:` global override has to resolve against the renamed pin, and against the `ConcertablePaymentVersion` derivation above, or the restore fails. |
+| `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release` (merged head) | **not completed — workstation disk exhausted.** `MSB3026 There is not enough space on the disk`, six retries, `C:` at 0.00 GB free of 474.7 GB. Not a defect in this change and not reproducible on a runner; removing this worktree's own `artifacts/` and 436 `bin`/`obj` directories reclaimed only 0.85 GB, so the fill is not this branch's. Superseded by the CI row below. |
 | `python .github/workflows/tests/test_service_scope.py` | green — 20/20, plus the chained `test_publish_packages_policy.py` |
-| `node --test .github/scripts/e2e-ghcr-login.test.mjs` | green — 3/3 |
-| `node --test .github/scripts/platform-sync-pr-action.test.mjs` | green — 4/4 |
-| `node --test .github/scripts/bump-platform-version.test.mjs` | green — 4/4, and proven to fail on a simulated incomplete rename |
+| `node --test` over all three `.github/scripts/*.test.mjs` | green — 11/11, and the new gate proven to fail on a simulated incomplete rename |
+| `python eng/repository-split/inventory.py --check` | green — inventory current, no blocking cross-repository `ProjectReference` |
+| `python -m unittest discover -s .agents/hooks/tests` | green — 15/15 |
+| **Exact-head CI, PR #962 at `24a7e93aa`** | **green — 87 pass, 0 fail, 5 skipping.** Includes `build`, all five `carve-*` jobs, `local-platform-pack`, `split-inventory`, `workflow-tests`, and the unit/integration/architecture/startup matrix. |
 | Merge-queue E2E tier | `skip-e2e` — a build-property rename ships no runtime behaviour and has no positive trigger |
 
-`CI` does not build package-clean: `local-platform.ps1` packs all 58 packages from source, so `CI` can
-be green while real feed pins are broken. The gates that exercise published pins are `Publish images`
-and the `carve-*` jobs, and both restore the renamed pin from each service folder's own props file.
+The five skips are expected: `e2e-api-tests`, `e2e-ui-tests` and `e2e-ui-quarantine` are `merge_group`-gated
+and never run on a PR, and `carve-fe`/`fe-boundaries` have no `app/` change to gate.
+
+`remote-validation` makes exact-head CI authoritative for the full solution, and here it is strictly
+stronger than the local Release build it replaces: it adds the five `carve-*` jobs, which `git
+archive` each service folder and restore the renamed pin from the feed standalone. That matters
+because `CI` alone is not package-clean — `local-platform.ps1` packs all 58 packages from source, so
+the jobs that genuinely exercise published pins are the carve jobs and `Publish images`. `workflow-tests`
+also confirms the new test runs from the existing `.github/scripts/*.test.mjs` glob with no workflow
+change, reporting `ok 1 - the script discovers the element the pin files actually declare`.
 
 ## Prepared and NOT landed — stop the monorepo publishing platform package IDs
 
