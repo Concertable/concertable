@@ -120,7 +120,16 @@
         "dotnet-standards:module-structure",
         "dotnet:module-structure"
       ],
-      "note": "The architecture tier holds both static ArchUnitNET rules (module-structure) and dynamic host-graph checks (composition-testing). The host-graph checks build each host's real production registration graph without starting it, then ValidateComposition proves the roots ValidateOnBuild cannot. Every executable host is covered here or declares a CompositionValidationExclusion."
+      "note": "The architecture tier holds static code-structure rules — ArchUnitNET, assembly and package reference rules, file-system convention scans — plus the executable-host coverage inventory that composition-testing defines. The host graphs that inventory demands live in the startup tier."
+    },
+    {
+      "path": "\\.StartupTests[^/]*/.*\\.cs$",
+      "skills": [
+        "composition-testing",
+        "dotnet-standards:dependency-injection",
+        "dotnet:microservice-boundaries"
+      ],
+      "note": "The startup tier answers whether a host would refuse to boot on the configuration its app model supplies it. It builds each host's real production registration graph and each AppHost's resource graph without starting either, then ValidateComposition proves the roots ValidateOnBuild cannot. Every executable host is covered here or declares a CompositionValidationExclusion. A test that executes a request, a business operation or infrastructure belongs in an integration or E2E project; a test asserting code structure belongs in an architecture project."
     },
     {
       "path": "\\.csproj$",

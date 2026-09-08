@@ -127,7 +127,8 @@ shared runtime. The target keeps that distinction.
 Current packable ownership is:
 
 - Auth: `Concertable.Auth.Contracts`.
-- B2B: Artist, Concert, Tenant, User, and Venue Contracts plus `Concertable.B2B.Seed.Contracts`.
+- B2B: Admin, Application, Artist, Booking, Concert, Deal, Tenant, User, and Venue Contracts plus
+  `Concertable.B2B.Seed.Contracts`, `Concertable.B2B.Hosting`, and `Concertable.B2B.TestKit`.
 - Customer: `Concertable.Customer.Review.Contracts`, `Concertable.Customer.Ticket.Contracts`, and
   `Concertable.Customer.Hosting`.
 - Payment: `Concertable.Payment.Contracts` and `Concertable.Payment.Client`.
@@ -182,8 +183,8 @@ There are 24 EF model snapshots:
 | Search | 1 |
 | Platform Messaging | 2 (Inbox and Outbox) |
 
-`api/initial-migrations.ps1` currently re-scaffolds all 24 contexts in one command. It preserves unchanged
-migration IDs to avoid source/package migration collisions. Several runtime programs still call
+`api/initial-migrations.ps1` delegates all 24 contexts to owner-local commands. Those commands preserve
+unchanged migration IDs to avoid source/package migration collisions. Several runtime programs still call
 `MigrateAsync`; the deployment design already requires deploy-time migration bundles/jobs instead.
 
 Seed ownership is mostly aligned already:

@@ -36,6 +36,7 @@
 
   <ItemGroup Condition="'$(UseLocalPlatformSources)' == 'true'">
     <PlatformSourcePackage Include="Concertable.AppHost.Shared" Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
+    <PlatformSourcePackage Include="Concertable.Frontend.Hosting" Project="$(MSBuildThisFileDirectory)Concertable.Frontend.Hosting\Concertable.Frontend.Hosting.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
