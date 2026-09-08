@@ -81,6 +81,14 @@ associations into the B2B and Customer owners before system composition consumes
   `concertable-b2b-application-accepted` subscription and locks it down with composition coverage. The
   scenario URL wait is 30 seconds so a genuine failure terminates sooner. Remote merge-group E2E remains the
   authoritative delivery gate.
+- Platform Expand merge-group commit `f0ad78ad1` proved the B2B UI suite green at 32/32, including every 3DS
+  path. Customer UI passed 6/7; the sole failure trace showed the card-number input remained exactly empty
+  because the generic successful-test-card step selected the saved-card path even though the isolated Stripe
+  fixture creates fresh customers without attached cards. Platform Expand now routes that step through the
+  explicit successful new-card path; the same merge-group artifact already proves that path completes Stripe
+  confirmation, ticket creation, ticket listing, and QR display. A local post-fix run authorised all three
+  card payments but its downstream confirmation assertions encountered workstation Service Bus and SQL health
+  degradation, so the exact-head merge-group Customer run remains the acceptance evidence for this repair.
 
 ## Reviews
 
