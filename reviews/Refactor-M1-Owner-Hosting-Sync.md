@@ -5,18 +5,16 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `d71b0200fc4e500232c3ba0d17706d45bf1e0892`  `(2026-09-08)`
+**Reviewed up to commit:** `2ed239c359757b7272bdc020f3b2a136a387bd50`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
 
 **Candidate base:** `21760e777ecc6df0680bd846e8f814f035627ac4`
-**Candidate head:** `d71b0200fc4e500232c3ba0d17706d45bf1e0892`
+**Candidate head:** `2ed239c359757b7272bdc020f3b2a136a387bd50`
 **Candidate branch:** `Refactor/M1-Owner-Hosting-Sync`
 **Candidate scope:** `all`
-**Candidate path-set:** `sha256:e145218a4e1083ba65f834e87c70b9cc4319b39607d95137a7a118349d742337` `(13 paths)`
-**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable\2f434374-df78-46b7-bff7-23badf4c4dcf\scratchpad\review-bundle-M1-P2`
-**Candidate bundle identity:** `sha256:b118a67ea800e2281854fe5d9897b292bc38bc5aef18618306c64cef1d8cf89c`
+**Candidate path-set:** `sha256:e2d0d735313a91408ab69593c761ef665b4325be6591ce5d901d6c7f1b350d4d` `(15 paths)`
 **Work-order path:** `reviews/Refactor-M1-Owner-Hosting-Sync.md`
 **Work-order mode:** `new`
 **Pass judgment:** `approved`
@@ -25,6 +23,11 @@ This is a fresh frozen watermark for the landed-base candidate, not an extension
 `reviews/Refactor-M1-Platform-Contract.md` work order: that artifact exists on no branch and in no surviving
 checkout. The candidate is the eight preserved staged commits plus one added commit that advances the Payment
 consumer pin.
+
+The candidate was re-shaped from a rebase onto main into a merge of main, so it publishes without a
+force-push. The reviewed content is byte-identical across that reshape, verified by an empty diff against
+the rebased head, so this descriptor records the merge-form SHAs rather than opening a new pass. The
+disposable candidate bundle was removed after the pass completed.
 
 Lenses applied: extraction fidelity against the pre-extraction platform code, service-boundary ownership,
 fail-closed behaviour of the new Auth client restriction, published-package closure, and legacy-contract
