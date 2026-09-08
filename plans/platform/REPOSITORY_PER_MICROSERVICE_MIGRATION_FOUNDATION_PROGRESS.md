@@ -7,8 +7,10 @@
 - Branch: `Refactor/M1-Platform-Expand`
 - PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
 - Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand passed exact-head
-  package, composition, and targeted browser validation before the M3 landing and is being revalidated on the
-  exact combined base. Owner Hosting Sync may then enter exact-head validation.
+  package, composition, and browser validation on the combined base, but merge-group run `34174839388`
+  exposed a Payment authorization-reconciliation defect in the B2B 3DS path. The owning Platform Expand
+  repair is under focused validation before the four stages are restacked and republished. Owner Hosting Sync
+  may then enter exact-head validation.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
@@ -29,11 +31,14 @@ rewritten heads. Local
 review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
 retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
 associations into the B2B and Customer owners before system composition consumes their combined roster.
+Platform Expand now also owns the merge-group repair that accepts Stripe's authoritative `requires_capture`
+state when optional `capture_before` metadata is absent; Payment still refuses to infer local authorization
+expiry without provider evidence.
 
 ## Next Steps
 
-- Publish the combined-base Platform Expand restack, restack the three dependent M1 stages without changing
-  their publication boundaries, and re-enter exact-head validation and the merge queue.
+- Commit and publish the Platform Expand Payment reconciliation repair, restack the three dependent M1 stages
+  without changing their publication boundaries, and re-enter exact-head validation and the merge queue.
 - Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
   publication caused by Owner Hosting Sync to its immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
@@ -89,6 +94,15 @@ associations into the B2B and Customer owners before system composition consumes
   confirmation, ticket creation, ticket listing, and QR display. A local post-fix run authorised all three
   card payments but its downstream confirmation assertions encountered workstation Service Bus and SQL health
   degradation, so the exact-head merge-group Customer run remains the acceptance evidence for this repair.
+- The subsequent exact merge-group run `34174839388` at `be47d6beec91744955930e5fd75b61c5770e6281`
+  passed 31/32 B2B UI scenarios. Its sole failure completed Stripe's 3DS challenge and returned 204 from B2B
+  acceptance, then Payment rejected the `requires_capture` observation and exhausted all three deliveries of
+  `concertable.payment.capture-escrow.v1` as `PaymentProviderUnavailableException`; no capture event or concert
+  draft could follow. The owning repair accepts an authorized observation without optional `capture_before`,
+  normalizes Stripe.NET's missing-timestamp Unix-epoch sentinel back to absence, and retains fail-closed expiry
+  evaluation when no provider deadline exists. Payment unit tests pass 552/552, including the exact
+  `RequiresAction` to `Authorized` regression and adapter normalization. The focused resolver integration test
+  compiles locally; its execution awaits CI because this workstation's Docker endpoint is unavailable.
 
 ## Reviews
 
