@@ -7,7 +7,7 @@
   consumer work for the frontend platform publisher cutover.
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-FrontendRegistryPackageConsumers`
 - Branch: `Refactor/FrontendRegistryPackageConsumers`
-- PR: none yet. Phase 3 import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) merged as `162b8412a`; mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: [#964](https://github.com/Concertable/concertable/pull/964) OPEN for the 8B safe half, base `main`, at head `6c722c2c4`; run 34281482043 green, including all seven `carve-fe` surfaces and `fe-boundaries`. Phase 3 import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) merged as `162b8412a`; mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **all seven tiers are published and current with `main`.** The `alpha` dist-tag
   is `0.1.0-alpha.0.6314` for `@concertable/{shared,web,mobile,customer,b2b,web-b2b,build-config}`; every
   tier's last source commit is at height ≤ 6300, so the published set matches `main` exactly.
@@ -46,11 +46,9 @@ spawning the npm `.cmd` shim fails with `EINVAL` on Windows (#428, `162b8412a`).
 
 ## Next Steps
 
-**1. Land this branch's 8B safe half.** Commit the per-surface lockfiles, the `npm ci` carve restore and the
-retired `build-config` special case; review against `reviews/Refactor-FrontendRegistryPackageConsumers.md`;
-open the PR and take `carve-fe` (all seven surfaces) plus `fe-boundaries` to green. `carve-fe` is the
-decisive gate — it is the only thing that proves `npm ci` accepts a Windows-generated lockfile on the Linux
-runner. `run_fe` is true for this diff (it touches `app/**` and `app/scripts/carve-fe.mjs`).
+**1. Merge PR #964.** The 8B safe half is implemented, reviewed and green: run 34281482043 passed all
+seven `carve-fe` surfaces plus `fe-boundaries` at head `6c722c2c4`. Take it through the merge queue and own
+the queue run and any generated platform-sync PR to terminal.
 
 **2. Then 8B's remaining two deliverables, both gated on 8A.** They cannot land while `platform-frontend`
 does not exist, because either one breaks every carve restore the moment it merges:
@@ -100,6 +98,26 @@ publisher is `platform-frontend`, for all four platform IDs.
 - `0e3d8f5a6` makes full merge-queue E2E the strict default, preserves the no-duplicate-local-E2E workflow, and keeps findings on the reviewed branch unless they are proven independent.
 
 ## Verification
+
+- **Authoritative carve gate (2026-09-08), PR #964 run 34281482043 at head `6c722c2c4`.** All seven
+  `carve-fe` surfaces passed — `web/{customer,admin}`, `web/b2b/{venue,artist,business}` and both mobile
+  surfaces — each restoring from its committed lock with `npm ci` and building standalone, with the mobile
+  pair taking `@concertable/build-config` off the feed rather than a local pack. `fe-boundaries`, `build`,
+  `split-inventory`, `local-platform-pack`, `container-images` and `ci-complete` also passed; the backend
+  carve and E2E matrices are empty for a frontend-only diff, as designed.
+
+- **Local carve gate (2026-09-08).** `node scripts/carve-fe.mjs web/customer` restored from the feed with
+  `npm ci` against the committed lock and completed `vite build` standalone — `standalone restore + build
+  OK`. It took 45 minutes locally against 28 seconds on the runner, so the Linux gate is the practical one.
+  The run also exposed a defect worth not re-deriving: `rmSync` of the temp npm cache raised `EPERM`, and
+  because that throw came from `finally` it replaced the successful result with a non-zero exit. Windows
+  holds those cache files open long enough for it to be routine, and on Linux the same throw would mask a
+  genuine carve failure just as easily; cleanup is now retried and non-fatal.
+
+- **Local mobile carve is not evidence — the disk filled.** `mobile/customer` failed inside `npm ci` with
+  `ENOSPC`; `C:` reached zero free, with `%TEMP%` at 32 GB and `.worktrees` at 37.7 GB across the parallel
+  sessions, and Docker holding 6.47 GB of reclaimable images. Nothing about the candidate; the CI run above
+  is the mobile evidence.
 
 - **Checkpoint 8B measurement (2026-09-08), taken before any edit.** Against `origin/main` `ef8d505fd`
   (commit height 6432): all 14 workspaces declare `@concertable/*: "*"`, so the registry switch exists only
