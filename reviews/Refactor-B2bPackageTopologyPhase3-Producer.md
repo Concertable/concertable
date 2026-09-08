@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `in-progress`
-**Reviewed up to commit:** `6474cec75d05fecf1dcd0cbc4a4c21a42bc6b9ac`  `(2026-09-08)`
-**Judgment:** `changes-requested`
+**Review status:** `complete`
+**Reviewed up to commit:** `997deab6360bd6fd97a4c012a3f3c0f544d28378`  `(2026-09-08)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
 
@@ -75,3 +75,42 @@ All three fixed on this branch before delivery.
 - TS3 — `useArtistQuery`, `useVenueQuery`, `useUpdateArtistMutation` and `useUpdateVenueMutation` now take
   `tenantId: string | undefined` as a required parameter. The emitted `dist` declarations carry the tenant
   argument, which is the exact shape the previous publication round was missing.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `6474cec75d05fecf1dcd0cbc4a4c21a42bc6b9ac`
+**Candidate head:** `997deab6360bd6fd97a4c012a3f3c0f544d28378`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Producer`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:84299898ee70d5bdf58e10cabd341748a8448f8640272adf9cdbcfe4f77a6e1b` `(10 paths)`
+**Candidate bundle:** derived in place from the frozen range; the pass-1 disposable bundle was removed on
+completion
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No issues found in the remediation delta. Checked the queue's failure and ordering paths (`enqueue`'s
+chain still cannot reject the queue itself, while the caller's promise still rejects for the latest
+selection), the generation guard's interaction with `select` and `clear`, the `isLoading` derivation
+against the pinned `query-core` implementation, and the four widened signatures against every caller in
+the workspace. Every remaining `void`ed session call was already unawaited before this branch. No
+security-sensitive path is touched.
+
+### Carried to the consumer PR
+
+Neither is a defect on this branch, and neither is an open finding here; both are checks PR #950 owns
+because it owns the files.
+
+- **C1** — `useMyArtist`/`useMyVenue` now report
+  `isLoading: true` while no tenant is resolved, which is correct only because a consumer never mounts
+  them for a manager who has no matching membership. The web SPAs satisfy that through their
+  `requireArtist`/`requireVenue` route guards. The mobile B2B screens have no equivalent guard, so #950's
+  review must confirm `RootNavigator`/`TenantChooser` keep `MyArtistScreen`/`MyVenueScreen` unmounted
+  until a membership resolves, rather than leaving a membership-less user on a permanent spinner.
+- **C2** — `app/web/b2b/artist/src/features/artist/guards.ts` calls `artistApi.getArtist()` directly from
+  `beforeLoad`, outside React Query. The `server-state` standard puts every server read behind a
+  `useQuery`/route loader that shares the cache; as written the guard refetches the profile on every
+  navigation and its result never seeds `artistKeys.myForTenant`. Raise it against #950, which owns that
+  file.
