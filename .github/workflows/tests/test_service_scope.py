@@ -134,12 +134,24 @@ def dependency_closure(spec: dict, job: str) -> set[str]:
     return closure
 
 
+def empty_matrix_guarded_jobs(spec: dict) -> set[str]:
+    # Derived from the workflow, not from MATRIX_GUARDS: a job guarded this way that nobody added to
+    # that table would otherwise be free to skip queue E2E again. It cannot come back empty while the
+    # matrix-guard cases above pass, because those assert this exact idiom on each named job.
+    return {
+        job
+        for job, body in spec["jobs"].items()
+        if "!= '[]'" in str(body.get("if", ""))
+    }
+
+
 def queue_e2e_dependency_cases() -> list[tuple[str, bool, set[str]]]:
     """Queue E2E must survive the empty matrices produced by frontend-only diffs."""
     spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    guarded = empty_matrix_guarded_jobs(spec)
     cases = []
     for job in QUEUE_E2E_JOBS:
-        blocked_by = dependency_closure(spec, job).intersection(MATRIX_GUARDS)
+        blocked_by = dependency_closure(spec, job).intersection(guarded)
         cases.append((job, not blocked_by, blocked_by))
     return cases
 

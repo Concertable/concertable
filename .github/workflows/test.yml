@@ -908,8 +908,8 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     # Never depend on a service-scoped matrix job here. Frontend-only changes deliberately produce empty
-    # backend matrices, and GitHub skips a downstream job before evaluating its own `if` when a dependency
-    # is skipped. The aggregate gate independently waits for architecture-tests when that tier is in scope.
+    # backend matrices, and a skipped dependency fails the implicit `success()` over `needs`, taking this
+    # job down with it. ci-complete independently waits for architecture-tests when that tier is in scope.
     needs: [build, changes]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. It skips only when the
