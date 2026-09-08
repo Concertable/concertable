@@ -37,7 +37,8 @@ re-verified against `origin/main` @ `15ce7946f`.
 
 - **Phase 2a** — `IDealMapper`, the `DealMapper` facade and its four arms deleted (6 files). Replaced by
   `Mappers/DealMapper.cs` (Mapperly `[Mapper]`, `[MapDerivedType]` over the four pairs, generating `ToDto`
-  and `ToDtos`) and `Mappers/DealMappers.cs` (C# 14 `extension(DealDto)` block carrying `ToEntity`).
+  and `ToDtos`). `ToEntity` is an abstract member on `DealDto` overridden one line per arm, so the DTO→entity
+  switch is gone too and no extension class survives.
   `DealService` drops the `IDealMapper` dependency; the keyed `IDealMapper` registrations and the matching
   rows in `DealStrategyArchitectureTests` and `DealStrategyFactoryTests` are gone. New `DealMapperTests`
   covers both directions per `DealType`, which is also the exhaustiveness guard the `RequireAll` row used
