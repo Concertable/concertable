@@ -3,8 +3,10 @@
 - Plan: `plans/layering/DEAL_LAYERING_AND_MAPPER_COLLAPSE_PLAN.md`
 - Roadmap: `plans/layering/LAYERING_ROADMAP.md`
 - Roadmap item: `layering/deal-layering-and-mapper-collapse`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-layering_deal-layering-and-mapper-collapse`
-- Branch: `Refactor/layering_deal-layering-and-mapper-collapse`, based on `origin/main` @ `15ce7946f`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-layering_deal-vocabulary-and-mapper-collapse`
+- Branch: `Refactor/layering_deal-vocabulary-and-mapper-collapse`, based on `origin/main` @ `15ce7946f`
+  (the branch and worktree keep the original name; renaming them is blocked while commits are unpushed, and
+  the PR title is what matters)
 - PR: none yet
 - Dependency/package gates: `Riok.Mapperly` needs pinning in `api/Concertable.B2B/Directory.Packages.props`
   (Phase 2) and `api/Concertable.Payment/Directory.Packages.props` (Phase 3). It is already pinned at 4.3.1 and
@@ -13,7 +15,7 @@
 
 ## Current state
 
-**Phase 1 is complete and committed** (`3d4fa7ab4`). Phase 2 is the next action.
+**Phase 1 is complete and committed** (`3d4fa7ab4`, revised by `31229cbc1`). Phase 2 is the next action.
 
 The plan was originally drafted against `Docs/launch_seal-and-postgres-plans`, whose Concert module predates
 the Application/Booking/Opportunity split. Every file path and family roster in the plan has since been
@@ -21,7 +23,7 @@ re-verified against `origin/main` @ `15ce7946f`.
 
 ## Completed milestones
 
-- **Phase 1** — `DealType`/`DealTypeNames` moved into `Concertable.B2B.Deal.Domain`;
+- **Phase 1** — `DealType` moved into `Concertable.B2B.Deal.Domain`;
   `PaymentMethod` moved into the new service-local `Concertable.B2B.Enums`, registered in
   `api/Concertable.slnx`; `Deal.Domain` repointed off `Deal.Contracts` onto `Concertable.B2B.Enums`;
   `Deal.Contracts` takes a reference on `Deal.Domain` for `DealType`; 51 files repointed off the old

@@ -5,8 +5,8 @@
 Two coupled corrections, in order:
 
 1. **Layering** — a `*.Domain` project must not reference a `*.Contracts` project. Deal is the proving ground:
-   its two shared enums move to a B2B-local vocabulary project, and `Deal.Domain` loses its `ProjectReference`
-   to `Deal.Contracts`. The domain then cannot see a wire DTO, and the compiler enforces it.
+   its two shared enums move to the homes that actually own them, and `Deal.Domain` loses its
+   `ProjectReference` to `Deal.Contracts`. The domain then cannot see a wire DTO, and the compiler enforces it.
 2. **Mappers** — the remaining "mapper" families that carry no dependencies and no behaviour collapse into
    static, total, dependency-free mappers plus one honestly-named factory. 17 files become 4.
 
@@ -26,8 +26,8 @@ namespace. It uses no DTO. But the reference is assembly-wide, so `DealDto` (wit
 attributes), `DealTerms`, `IDealModule`, `CreateDealError`, `UpdateDealError` and the whole
 `Contracts/Strategies` family sit on the domain's reference graph as collateral.
 
-`Deal.Contracts` is therefore two projects wearing one name: shared **vocabulary** (the enums, which Domain
-legitimately needs) and **wire contracts plus strategy machinery** (which Domain must never see).
+`Deal.Contracts` is therefore two projects wearing one name: shared **enums** (which Domain legitimately
+needs) and **wire contracts plus strategy machinery** (which Domain must never see).
 
 12 Domain projects across B2B, Messaging and Payment carry the same reference. The Customer service mostly does
 not — `Customer.Ticket.Domain`, `Customer.Review.Domain` and `Customer.Venue.Domain` reference only
@@ -114,9 +114,10 @@ latest stable). The `entity → DTO` direction needs none of it: entity getters 
 
 The two enums are not one concern and do not share a home.
 
-- **`DealType` and `DealTypeNames` are Deal's own domain vocabulary** — the domain owns what kinds of deal
-  exist; Contracts merely exposes that on the wire. They move into `Concertable.B2B.Deal.Domain`, and
-  `Deal.Contracts` takes a `ProjectReference` on `Deal.Domain` to reach them. The dependency then points
+- **`DealType` is Deal's own domain vocabulary** — the domain owns what kinds of deal
+  exist; Contracts merely exposes that on the wire. It moves into `Concertable.B2B.Deal.Domain`, and
+  `Deal.Contracts` takes a `ProjectReference` on `Deal.Domain` to reach it. `DealTypeNames` does **not** go
+  with it: those are the JSON `$type` discriminator strings, so they live beside `DealDto` in Contracts. The dependency then points
   inward, which is the direction the layer graph wants.
 - **`PaymentMethod` is not deal-specific** — 66 B2B files use it and nothing about it belongs to a deal. It
   moves to `api/Concertable.B2B/src/Concertable.B2B.Enums` (`net10.0`), a service-local project: no
