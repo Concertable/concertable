@@ -6,6 +6,7 @@
 
 **Review status:** `complete`
 **Reviewed up to commit:** `2ed239c359757b7272bdc020f3b2a136a387bd50`  `(2026-09-08)`
+**Security-reviewed up to commit:** `7624809c43a3942f167f4dbe9c29d23fceb154ba`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -78,3 +79,24 @@ No other findings. The following were examined and are clean:
   advance: `B2B.Web`, `B2B.Workers`, `B2B.Seed.Simulator` and `Customer.Web`.
 - `B2B.Application.Infrastructure`, the project that fails on main, builds clean at the advanced pin.
 - Remote CI, the merge queue and `Publish images` remain the authoritative gates for this candidate.
+
+### Security pass
+
+Independent security review over `21760e777..7624809c4`, prompted by the merge gate classifying
+`FrontendAuthExtensions.cs` as security-sensitive. **No HIGH or MEDIUM findings.** Verified:
+
+- `RestrictToEnabledClients`/`EnabledClients` is fail-closed on every path. Flag absent or false keeps the
+  base four-client roster unchanged, so the flag is a pure opt-in narrowing; flag true with an absent or
+  empty list registers zero clients; an unknown name throws at `AddAuthHost()`; an enabled name with no
+  settings section crashes startup. No path widens the roster.
+- No widening of redirect URIs, post-logout URIs or CORS origins. The union of `B2BLocalSpaSurfaces`
+  and `CustomerLocalSpaSurfaces` auth rosters is exactly base `LocalSpaSurfaces.Authenticated`, same ports
+  and names, with Business still carrying no auth client. The emitted key triple and the API
+  `Cors__AllowedOrigins__{index}` set are identical to base, order included.
+- Name-to-client-id pairing is uncrossed, so no client inherits another's scopes.
+- `WithSpaClients` clears and rewrites inside one `WithEnvironment` callback, so no partially-applied or
+  stale-but-trusted registration is reachable; competing calls degrade to last-wins, which drops clients
+  rather than trusting stale ones.
+- No authentication bypass or privilege escalation: resources, scopes, PKCE, client secrets, token
+  lifetimes and the E2E client gate are untouched, and the B2B hosting churn is a mechanical conversion to
+  a C# 14 `extension` block.
