@@ -163,6 +163,15 @@ publisher is `platform-frontend`, for all four platform IDs.
 
 ## Reviews
 
+- **Checkpoint 8B safe-half full review:** `reviews/Refactor-FrontendRegistryPackageConsumers.md`, range
+  `3052fb9ac..73e36b581` (12 paths). One LOW finding, `FRP1`: the candidate makes a committed per-surface
+  lockfile a required input to the `carve-fe` gate without adding `npm run lock:carve` to `app/README.md`'s
+  command block, so a developer who adds a dependency to a surface gets a red carve job with no pointer to
+  the fix. Fixed on this branch. The pass records eight verified-clean checks, of which two were load
+  bearing: `app/package-lock.json` cannot desync because its `packages[""]` does not record `scripts`, and
+  the Windows-generated locks carry every platform variant of each native dependency, so the Linux runner's
+  `npm ci` resolves its own binaries. No changed path qualifies for a security marker.
+
 - **Import-boundary full code/security review:** `reviews/Feature-platform_polyrepo_import-boundary.md`, range `9a18371a0..8a80bd3a` plus the cross-platform runner fix. Finding `NAT1` (MEDIUM correctness) identified direct `.cmd` spawning as Windows-incompatible; fixed by invoking dependency-cruiser's JavaScript entrypoint through `process.execPath` and verified in the clean Node 20 container. No other correctness, workflow-security, architecture-boundary, convention, or changed-behaviour coverage findings remain.
 - **Import-boundary incremental review:** range `da3b75a7..f353a70b` (2 commits), covering only the review artifact and plan-ledger delivery checkpoints. No findings; watermark advanced to `f353a70b6841f03c6339a7b2590dd7126b480499`.
 - **Import-boundary current-main incremental review:** range `f353a70b..0e4009ff`; branch-authored delta is plan/review checkpoints only and merge `0e4009ff8` imports already-landed main without changing the PR net boundary/workflow diff. No findings; watermark advanced to `0e4009ff81950c283396e07fe5f75ef31d409530`.
