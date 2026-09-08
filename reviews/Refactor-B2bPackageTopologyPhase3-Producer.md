@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `db82bf40333620dae19e3320a05e085fa89cce17`  `(2026-09-08)`
+**Reviewed up to commit:** `f3c5d9ed4e1bbc24a64a65254ee6e19b3290c62f`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -136,3 +136,26 @@ is empty, so the merge changed nothing this branch authors; the incoming `api/`,
 content is `main`'s own, already reviewed on PRs #959 and #961. This branch's delta against `origin/main`
 is unchanged at the 16 `app/b2b/shared` files plus its ledger and this work order, and it still matches no
 `security_paths` pattern.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `844fb94368e5fe8cdd71b01350289ed376373600`
+**Candidate head:** `f3c5d9ed4e1bbc24a64a65254ee6e19b3290c62f`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Producer`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:d70d10ad0c489c2725a2e1604ffd85f2596cf208e908a06a0c1c44ea72aff1e3` `(15 paths)`
+**Candidate bundle:** derived in place from the frozen range
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No issues found. The range is a third conflict-free merge of `origin/main` plus one ledger entry. The
+merge was taken because PR #964 landed the carve rework on base, replacing the moving `alpha` tag with a
+standalone per-surface `package-lock.json` that resolves it to one frozen version — a change to the exact
+mechanism this chain's consumer stage is gated on, not incidental drift. `git diff 844fb9436..HEAD --
+app/b2b` is empty, so the merge changed nothing this branch authors, and the b2b package rebuilt green at
+the merged head (9 files/35 tests). The only authored change is the ledger entry recording that PR #950
+must run `npm run lock:carve` after this producer publishes. This branch's delta against `origin/main`
+still matches no `security_paths` pattern.
