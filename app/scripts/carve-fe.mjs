@@ -151,5 +151,13 @@ try {
   }
 } finally {
   if (keep) console.log(`\n(kept carve work: ${work})`);
-  else rmSync(work, { recursive: true, force: true });
+  else {
+    // An exception thrown from finally discards the carve's own result, and Windows holds npm cache
+    // files open long enough to make EPERM here routine. The work dir is disposable either way.
+    try {
+      rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (error) {
+      console.warn(`\n(could not remove carve work ${work}: ${error.message})`);
+    }
+  }
 }
