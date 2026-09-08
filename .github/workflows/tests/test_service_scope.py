@@ -134,6 +134,10 @@ def main() -> int:
         print(f"{status} {name} empty-matrix guard: {condition!r}")
     total = len(CASES) + len(MATRIX_GUARDS)
     print(f"\n{total - failures}/{total} passed")
+    package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
+    publication = subprocess.run([sys.executable, package_policy], check=False)
+    if publication.returncode != 0:
+        failures += 1
     return 1 if failures else 0
 
 

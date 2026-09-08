@@ -1296,7 +1296,6 @@ jobs:
         run: |
           python -m pip install --quiet pyyaml
           python .github/workflows/tests/test_service_scope.py
-          python .github/workflows/tests/test_publish_packages_policy.py
 
   ci-complete:
     # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
