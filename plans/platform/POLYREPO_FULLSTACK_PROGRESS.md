@@ -6,8 +6,8 @@
 - Also delivers: `REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md` **checkpoint 8B** — the `concertable`-side
   consumer work for the frontend platform publisher cutover.
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-FrontendRegistryPackageConsumers`
-- Branch: `Chore/FrontendCarveLockRefresh`
-- PR: 8B safe half [#964](https://github.com/Concertable/concertable/pull/964) MERGED as `6cd7fd615`; its publish run [34284459421](https://github.com/Concertable/concertable/actions/runs/34284459421) succeeded and moved every tier's `alpha` to `0.1.0-alpha.0.6462`. The lock refresh that publish made necessary is open on `Chore/FrontendCarveLockRefresh`. Phase 3 import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) merged as `162b8412a`; mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- Branch: none — both delivery slices merged and their branches are deleted; the remaining work is 8A-gated and has no branch yet.
+- PR: 8B safe half [#964](https://github.com/Concertable/concertable/pull/964) MERGED as `6cd7fd615` and its lock refresh [#965](https://github.com/Concertable/concertable/pull/965) MERGED as `eefd70efc`. #964’s publish run [34284459421](https://github.com/Concertable/concertable/actions/runs/34284459421) succeeded and moved every tier's `alpha` to `0.1.0-alpha.0.6462`. The refresh that publish made necessary has landed, and `eefd70efc` triggered no publish of its own, so the feed and all seven locks now agree at that version. Phase 3 import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) merged as `162b8412a`; mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **all seven tiers are published, and every surface lock pins them.** The
   `alpha` dist-tag is `0.1.0-alpha.0.6462` for
   `@concertable/{shared,web,mobile,customer,b2b,web-b2b,build-config}`, published by the 8B merge itself.
@@ -46,13 +46,7 @@ spawning the npm `.cmd` shim fails with `EINVAL` on Windows (#428, `162b8412a`).
 
 ## Next Steps
 
-**1. Land the lock refresh on `Chore/FrontendCarveLockRefresh`.** The 8B safe half merged as `6cd7fd615`
-and republished every tier at `0.1.0-alpha.0.6462`, which left the seven locks it had just landed pinned
-at `0.1.0-alpha.0.6314`. They are regenerated; take that PR through the queue. It touches only
-`app/<surface>/package-lock.json` and this ledger, so it publishes nothing and closes the loop in one
-step.
-
-**2. Then 8B's remaining two deliverables, both gated on 8A.** They cannot land while `platform-frontend`
+**1. 8B's remaining two deliverables, both gated on 8A.** They cannot land while `platform-frontend`
 does not exist, because either one breaks every carve restore the moment it merges:
 
 - *Declare the registry switch.* Replace `@concertable/{shared,web,mobile,build-config}: "*"` in each
@@ -100,6 +94,11 @@ publisher is `platform-frontend`, for all four platform IDs.
 - `0e3d8f5a6` makes full merge-queue E2E the strict default, preserves the no-duplicate-local-E2E workflow, and keeps findings on the reviewed branch unless they are proven independent.
 
 ## Verification
+
+- **Refresh landed and the loop closed (2026-09-09).** PR #965 merged as `eefd70efc` with all seven
+  `carve-fe` surfaces green. No publish workflow ran on that commit — its nine changed paths match none of
+  the twelve patterns in `publish-fe-packages.yml`, checked pattern by pattern before enqueueing — so the
+  feed stayed at `0.1.0-alpha.0.6462` and every surface lock on `main` pins exactly that.
 
 - **8B safe half landed and published (2026-09-08).** PR #964 merged as `6cd7fd615` through the queue with
   `skip-e2e` — no positive end-to-end trigger, since the diff changed no product source, wire contract or
