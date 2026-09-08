@@ -14,14 +14,14 @@
       }
     ],
     "blockingTestEdges": [],
-    "crossAreaEdgeCount": 59,
+    "crossAreaEdgeCount": 60,
     "crossAreaEdgesByKind": {
       "apphost": 15,
       "apphost-support": 1,
       "e2e": 26,
       "runtime": 13,
       "startup-test": 1,
-      "unit-test": 3
+      "unit-test": 4
     },
     "crossTargetEdgeCount": 25,
     "crossTargetEdges": [
@@ -264,6 +264,7 @@
       "api/Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj",
       "api/Concertable.B2B/src/Concertable.B2B.TestKit/Concertable.B2B.TestKit.csproj",
       "api/Concertable.B2B/src/Modules/Admin/Concertable.B2B.Admin.Contracts/Concertable.B2B.Admin.Contracts.csproj",
+      "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Contracts/Concertable.B2B.Application.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Contracts/Concertable.B2B.Artist.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Contracts/Concertable.B2B.Booking.Contracts.csproj",
       "api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Contracts/Concertable.B2B.Concert.Contracts.csproj",
@@ -532,7 +533,7 @@
         "area": "Concertable.B2B",
         "kind": "runtime",
         "name": "Concertable.B2B.Application.Contracts",
-        "packable": false,
+        "packable": true,
         "target": "b2b"
       },
       "api/Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Concertable.B2B.Application.Domain.csproj": {
@@ -2329,10 +2330,12 @@
     ]
   },
   "frontend": {
-    "workspaceCount": 14,
+    "workspaceCount": 15,
     "workspaces": {
       "app": {
-        "concertableDeps": [],
+        "concertableDeps": [
+          "@concertable/build-config"
+        ],
         "packageName": "concertable-app",
         "private": true,
         "target": "(dissolves)"
@@ -2345,6 +2348,12 @@
         "private": false,
         "target": "b2b"
       },
+      "app/build-config": {
+        "concertableDeps": [],
+        "packageName": "@concertable/build-config",
+        "private": false,
+        "target": "platform-frontend"
+      },
       "app/customer/shared": {
         "concertableDeps": [
           "@concertable/shared"
@@ -2355,6 +2364,7 @@
       },
       "app/mobile/b2b": {
         "concertableDeps": [
+          "@concertable/build-config",
           "@concertable/mobile",
           "@concertable/shared"
         ],
@@ -2364,6 +2374,7 @@
       },
       "app/mobile/customer": {
         "concertableDeps": [
+          "@concertable/build-config",
           "@concertable/customer",
           "@concertable/mobile",
           "@concertable/shared"
@@ -2378,13 +2389,15 @@
         ],
         "packageName": "@concertable/mobile",
         "private": false,
-        "target": "platform-web"
+        "target": "platform-frontend"
       },
       "app/shared": {
-        "concertableDeps": [],
+        "concertableDeps": [
+          "@concertable/build-config"
+        ],
         "packageName": "@concertable/shared",
         "private": false,
-        "target": "platform-web"
+        "target": "platform-frontend"
       },
       "app/web/admin": {
         "concertableDeps": [
@@ -2445,11 +2458,12 @@
       },
       "app/web/shared": {
         "concertableDeps": [
+          "@concertable/build-config",
           "@concertable/shared"
         ],
         "packageName": "@concertable/web",
         "private": false,
-        "target": "platform-web"
+        "target": "platform-frontend"
       }
     }
   },

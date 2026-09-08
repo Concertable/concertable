@@ -15,27 +15,56 @@ if (!installTarget || !packageName) {
   );
 }
 
-// One representative export per published tier. Node checks stay light (a pure util / constant /
-// type) so a throwaway NodeNext consumer resolves the tier plus its @concertable deps from the feed
-// without dragging heavy component transitive types in. Mobile is metro-only (react-native runtime).
-function b2bChecks(name, tenantExport = "features/tenant") {
+// One representative export per published tier. Node checks normally stay light so a throwaway
+// NodeNext consumer resolves the tier plus its @concertable deps from the feed. The cross-platform
+// B2B producer deliberately compiles and bundles its active-profile facades because those entrypoints
+// and their runtime dependencies are the capability its downstream consumer stage requires.
+function b2bChecks(
+  name,
+  tenantExport = "features/tenant",
+  verifyActiveProfiles = false,
+) {
   const tenantModule = `${name}/${tenantExport}`;
+  const activeProfileNodeChecks = verifyActiveProfiles
+    ? [
+        `import { artistApi, useMyArtist } from "${name}/features/artists";`,
+        `import type { CreateArtistRequest } from "${name}/features/artists/types";`,
+        `import { venueApi, useMyVenue } from "${name}/features/venues";`,
+        `import type { CreateVenueRequest } from "${name}/features/venues/types";`,
+        'if (typeof artistApi.createArtist !== "function" || typeof useMyArtist !== "function") throw new Error("Missing B2B artist facade");',
+        'if (typeof venueApi.createVenue !== "function" || typeof useMyVenue !== "function") throw new Error("Missing B2B venue facade");',
+        "const artistRequest = {} as CreateArtistRequest;",
+        "const venueRequest = {} as CreateVenueRequest;",
+        "void artistRequest;",
+        "void venueRequest;",
+      ]
+    : [];
+  const activeProfileMetroChecks = verifyActiveProfiles
+    ? [
+        `import { artistApi, useMyArtist } from "${name}/features/artists";`,
+        `import { venueApi, useMyVenue } from "${name}/features/venues";`,
+      ]
+    : [];
 
   return {
     node: [
       `import { TENANT_HEADER } from "${tenantModule}";`,
       `import type { TenantRole } from "${name}/features/tenant/types";`,
       `if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected ${name} TENANT_HEADER");`,
-      `const role = "Admin" as TenantRole;`,
+      `const role = "owner" as TenantRole;`,
       "void role;",
+      ...activeProfileNodeChecks,
     ],
     metro: [
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
       'import { Text } from "react-native";',
       `import { TENANT_HEADER } from "${tenantModule}";`,
+      ...activeProfileMetroChecks,
       "function App() {",
-      "  return React.createElement(Text, null, TENANT_HEADER);",
+      verifyActiveProfiles
+        ? '  return React.createElement(Text, null, `${TENANT_HEADER}:${typeof artistApi.createArtist}:${typeof venueApi.createVenue}:${typeof useMyArtist}:${typeof useMyVenue}`);'
+        : "  return React.createElement(Text, null, TENANT_HEADER);",
       "}",
       "registerRootComponent(App);",
     ],
@@ -43,6 +72,29 @@ function b2bChecks(name, tenantExport = "features/tenant") {
 }
 
 const CHECKS = {
+  "@concertable/build-config": {
+    node: [
+      'import { sourceAlias } from "@concertable/build-config/vite";',
+      'import { nodeTests } from "@concertable/build-config/vitest";',
+      'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
+      'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+    ],
+    nodeRuntime: [
+      'import { sourceAlias } from "@concertable/build-config/vite";',
+      'import { nodeTests } from "@concertable/build-config/vitest";',
+      'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
+      'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+    ],
+    commonJsRuntime: [
+      'const createDependencyCruiserConfig = require("@concertable/build-config/dependency-cruiser");',
+      'const withPackageResolution = require("@concertable/build-config/metro");',
+      'const boundaryConfig = createDependencyCruiserConfig({ workspaces: ["app/shared"] });',
+      'if (boundaryConfig.forbidden[0].severity !== "error") throw new Error("Unexpected boundary severity");',
+      'const metroConfig = withPackageResolution({ resolver: {} }, __dirname, ["react"]);',
+      'if (!metroConfig.resolver.nodeModulesPaths.length) throw new Error("Missing Metro package roots");',
+    ],
+    extendsTypeScriptConfig: true,
+  },
   "@concertable/shared": {
     node: [
       'import { GENRE_LABELS, type Genre } from "@concertable/shared/types";',
@@ -106,7 +158,11 @@ const CHECKS = {
       'void request;',
     ],
   },
-  "@concertable/b2b": b2bChecks("@concertable/b2b"),
+  "@concertable/b2b": b2bChecks(
+    "@concertable/b2b",
+    "features/tenant",
+    true,
+  ),
   "@concertable/web-b2b": b2bChecks("@concertable/web-b2b", "features/tenant/constants"),
   "@concertable/mobile": {
     metro: [
@@ -174,6 +230,9 @@ function verifyNodeConsumer() {
     directory,
   );
   writeJson(directory, "tsconfig.json", {
+    ...(checks.extendsTypeScriptConfig
+      ? { extends: "@concertable/build-config/typescript" }
+      : {}),
     compilerOptions: {
       module: "NodeNext",
       moduleResolution: "NodeNext",
@@ -182,6 +241,9 @@ function verifyNodeConsumer() {
       skipLibCheck: true,
       jsx: "react-jsx",
       outDir: "dist",
+      ...(checks.extendsTypeScriptConfig
+        ? { noEmit: false, allowImportingTsExtensions: false }
+        : {}),
     },
     include: ["*.ts"],
   });
@@ -189,13 +251,14 @@ function verifyNodeConsumer() {
   if (checks.nodeRuntime) {
     writeFileSync(join(directory, "runtime.ts"), checks.nodeRuntime.join("\n") + "\n");
   }
+  if (checks.commonJsRuntime) {
+    writeFileSync(join(directory, "runtime.cjs"), checks.commonJsRuntime.join("\n") + "\n");
+  }
   run(["exec", "--", "tsc"], directory);
-  run([
-    "exec",
-    "--",
-    "node",
-    checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js",
-  ], directory);
+  run(["exec", "--", "node", checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js"], directory);
+  if (checks.commonJsRuntime) {
+    run(["exec", "--", "node", "runtime.cjs"], directory);
+  }
 }
 
 function verifyMetroConsumer() {

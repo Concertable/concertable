@@ -1,12 +1,12 @@
-# Code review — Refactor/launch_deal-lifecycle-modules-phase2
+﻿# Code review — Refactor/launch_deal-lifecycle-modules-phase2
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`  _(2026-09-06)_
-**Security-reviewed up to commit:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`  _(2026-09-06)_
+**Reviewed up to commit:** `a8afc00f8`  _(2026-09-07)_
+**Security-reviewed up to commit:** `a8afc00f8`  _(2026-09-07)_
 **Judgment:** `approved`
 
 ## Legacy review history
@@ -1450,3 +1450,484 @@ variable between those two runs, which is what makes this evidence rather than a
 `api/Concertable.B2B/Concertable.B2B.slnx` build: 0 errors. B2B API E2E is running at the time of writing and
 had already cleared the seeding failure — zero `Seeder ... failed` and zero `Cannot insert explicit value`
 entries, against ten of each before the fix. Exact-head CI and the merge queue own the rest.
+## Review pass — 2026-09-06 — concert dev seeder publish window
+
+**Candidate base:** `3a4b6d5b2afe0d8bca96f3936af627e8681fc695`
+**Candidate head:** `1ca86b620e66ba3d0b0773d69837cc7254b7e64a`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. One seeder change, no HTTP surface, no authorisation path, no tenant-scoped query — the
+security watermark moves with it.
+
+`ConcertDevSeeder` published `ConcertCreatedEvent` after `SaveChangesAsync`. An outbox write resolves its
+context through `IDbContextAccessor`, and under seeding that accessor is set only inside
+`SeedingDomainEventDispatchInterceptor`'s post-save dispatch window, so the publish threw and took `b2b-web`
+down with it. `ConcertService` performs the same post-save publish correctly because outside a seeding scope
+the accessor is set — the pattern is invalid only in a seeder, which is why copying it here failed.
+
+Removal rather than rework is the right call: `origin/main`'s seeder has no publish, so this restores
+known-good behaviour rather than inventing a new mechanism. The `IBus` dependency is removed with it, leaving
+no unused constructor parameter.
+
+Checked rather than assumed, because a second instance would cost another merge-queue cycle: **no other dev
+seeder in the repository publishes from a seed body.** A sweep of every `*DevSeeder.cs` for `PublishAsync` and
+`SendAsync` returns this file alone, now cleared. `ConcertDevSeeder` is `Order => 7`, the last B2B seeder, so
+no later seeder was masked behind this failure.
+
+### Validation
+
+Reproduced identically in the merge queue (run `34046097585`, failed) and locally: `Seeder ConcertDevSeeder
+failed`, `b2b-web: Finished`, then ten `Readiness check timed out` failures. The preceding identity-insert
+failure is gone from the same run — zero `Cannot insert explicit value` entries — which is what allowed
+seeding to reach Order 7 for the first time on this branch. Exact-head CI and the merge queue own the rest.
+## Review pass — 2026-09-06 — scope the identity rewrite to its own insert
+
+**Candidate base:** `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`
+**Candidate head:** `e8a889c678c0bac48b8a828a1c3a671ab7e89d79`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. One file, correcting a regression this branch introduced in `fd3d9a230`.
+
+That commit widened `SeedingIdentityInterceptor` to match `MERGE` as well as `INSERT INTO`, and in doing so
+replaced the per-insert column list with a scan of every bracketed list in the command. Concert's save batches
+an insert into `Concerts`, which carries an explicit `Id`, with one into `SelfBillingAgreements`, which does
+not. The first table's identity column satisfied the check for the second, so the interceptor set
+`IDENTITY_INSERT ON` for a table supplying no identity value and SQL Server rejected the insert from the
+opposite direction.
+
+The previous pass named this exact risk — "a false positive would need a command that both names an
+identity-mapped table and carries that table's identity column inside some bracketed list" — and the change
+shipped anyway, without running the dev seed path. That is the process failure worth recording, not the regex.
+
+The fix restores per-insert scoping with two patterns rather than one permissive one: `INSERT INTO <table>
+(cols)`, and `MERGE <table> ... INSERT (cols)` bounded by `[^;]*?` so a MERGE cannot borrow the column list of
+a later statement in the same batch. Each match now carries the column list of the insert that names its
+table, which is the invariant the original single-pattern implementation had and the widened one lost.
+
+The multi-table hazard noted previously is unchanged and still latent: `On(tables)` can emit more than one
+`SET IDENTITY_INSERT ... ON`, which SQL Server rejects. It is not reachable here because scoping means only
+tables whose own insert carries an identity column are selected, and `BookingFactory` deliberately splits its
+two identity inserts into separate saves. It remains recorded in `api/Concertable.Shared/TECH_DEBT.md`.
+
+### Validation
+
+The dev seed path is being run locally through `./scripts/e2e.ps1 api b2b` for this change, which is what
+found the regression rather than the merge queue — the queue reported it only as ten health-check timeouts on
+run `34049878505`. `Concertable.Seed.Shared` builds with 0 errors. Exact-head CI owns the rest.
+## Review pass — 2026-09-06 — redirect the E2E host output off the native-path limit
+
+**Candidate base:** `5e2dcf6048c6d71533f1946ed23643d36bdcf71e`
+**Candidate head:** `a88321bf536dd5a3ba0481c299482bb80fe3f7ae`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:001b4d225cce11cbdb19220f1028a258988da88738f6279f5eb7a921ba954b7f` `(6 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-launch-deal-lifecycle-modules-phase2\32880e0b-1527-45aa-a4c6-0107603eb71c\scratchpad\candidate-bundle-a88321bf5`
+**Candidate bundle identity:** `sha256:53fa1c2303d86fe8c807c1c78d2287611d15d66b69474e419a692711955b6c27`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Four `BaseOutputPath` declarations and two documentation entries; no production source and
+no test source is touched, so the branch's reviewed behaviour is unchanged.
+
+The pass worth recording is that the prescribed fix was wrong and measurement caught it. The handoff diagnosed
+`payment-workers-e2e`'s `DllNotFoundException ... (0x800700CE)` as a missing `longPathAware` application
+manifest, reasoning that `LongPathsEnabled=1` is inert for native module loading without one. The first half is
+true; the conclusion is not. A manifest was wired in and **verified present in the emitted apphost** — the SDK's
+`CreateAppHost` copies Win32 resources from the managed assembly, so `<ApplicationManifest>` does reach the
+executable — and the host failed identically. Had the manifest been spread across the sibling hosts on the
+strength of the hypothesis, the branch would have carried four inert files and the local loop would still be
+dead.
+
+What the failure actually is: the Windows DLL loader caps a native asset path at **250 characters**, found by
+bisecting the load through junctions of varying length rather than inferred from `MAX_PATH`. That number
+explains the whole observation, which the 260 assumption could not — `Concertable.Payment.E2ETests.Workers`
+sits at 252 and dies, while `Concertable.Customer.E2ETests.Web` (250) and `Concertable.Payment.E2ETests.Web`
+(248) start, which is why exactly one host of the four failed.
+
+`BaseOutputPath` to `artifacts/e2e/<host>/` takes the longest from 252 to 202. The alternative of a repo-wide
+artifacts layout was rejected: it would re-address build output for every project to fix a Windows-local
+failure, and two consumers (`scripts/local-platform.ps1`'s `Assert-DataAccessAssembly`, and
+`.github/workflows/test.yml`'s literal `playwright.ps1` path) read output from its default location. That same
+constraint is why `Concertable.B2B.E2ETests` (236) and `Concertable.Customer.AppHost` (234) keep their `bin/`
+output despite sitting only 14 characters from the cap; the residual exposure is recorded in
+`api/TECH_DEBT.md`, and `docs/LOCAL_DEV.md` now carries the cap, the disproven manifest, and the
+output-directory-plus-57 budget a new host has to meet.
+
+The four declarations are deliberately per-csproj rather than hoisted into a shared props file. Each service
+folder is independently buildable by design — its `Directory.Build.targets` reaches `api/`-level shared files
+only through `Exists()` guards — so a shared import would add cross-folder wiring to carry one property, and a
+fifth E2E host is caught by the documented budget instead.
+
+### Validation
+
+`./scripts/e2e.ps1 api b2b` was run to completion on this head. The stack boots, `payment-workers-e2e` reaches
+`Running` and stays there, every seeder completes (zero `Seeder ... failed`, zero `0x800700CE`), and all ten
+B2B API E2E tests execute and report individually: **5 passed, 5 failed**. The five failures are exactly the
+five money-movement timeouts the handoff predicted — both `ConcertCancelledTests` escrow refunds,
+`ConcertDraftTests.ShouldCreateDraftAndPayVenue_WhenVenueHireApplicationAccepted`, and both
+`ConcertFinishedTests` artist payouts — which are pre-existing on this branch and owned by a separate session.
+Restoring the loop, not fixing those, was this change's job.
+
+Three of the four redirected hosts were exercised by that run: `b2b-web`, `payment-web-e2e` and
+`payment-workers-e2e` all reached `Running` from their new output paths. `Concertable.Customer.E2ETests.Web`
+builds and emits its executable there but is only booted by `./scripts/e2e.ps1 api customer`, which this pass
+did not run. Exact-head CI owns the rest.
+## Review pass — 2026-09-06 — file the native-path debt under its owning services
+
+**Candidate base:** `0bd4b6d36482ee0366c2cf4f4411eb530c18ee6b`
+**Candidate head:** `2030c3ee36b00fe55fb522374ab9f72f5423742a`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:6822519bf6f967cf9ee4941fb587ffdc6265f0f4b9a02bf17bb7d3f201c2d69a` `(3 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-launch-deal-lifecycle-modules-phase2\32880e0b-1527-45aa-a4c6-0107603eb71c\scratchpad\candidate-bundle-2030c3ee3`
+**Candidate bundle identity:** `sha256:ae126dd085da03189b0df2c8f4dbe43a95a24c2b6bce40bcacb2ed0c22975b77`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Three tech-debt files; no source of any kind.
+
+Corrects the previous pass's own placement error rather than anything on the branch. `a88321bf5` recorded the
+residual native-path exposure as a single combined entry in `api/TECH_DEBT.md`, covering
+`Concertable.B2B.E2ETests` and `Concertable.Customer.AppHost` together. `docs-and-debt` requires debt in the
+`TECH_DEBT.md` of the area that owns the problem, and `api/TECH_DEBT.md` states its own scope as debt spanning
+services — which this is not. The two projects share a cause but not a fix: they sit in different services, are
+independently repairable, and only one of them is blocked.
+
+Splitting them makes that asymmetry visible where each owner will read it. `Concertable.B2B.E2ETests` is blocked
+by two consumers reading its output at a literal `bin/` path, so its entry records that constraint;
+`Concertable.Customer.AppHost` has no such consumer — verified, not assumed: every reference to it in
+`scripts/setup-local-dev.ps1` and `.github/workflows/test.yml` names the project directory, not the build
+output — so its entry records that it was omitted for scope alone and can take the same redirect whenever it is
+picked up. The combined entry stated neither, because a single entry could not.
+
+The measured 250-character cap and the per-host budget stay in `docs/LOCAL_DEV.md` and are linked from both
+entries rather than restated, so the two copies cannot drift.
+
+### Validation
+
+Documentation only — no build or test surface is touched, and `api/TECH_DEBT.md` is byte-identical to its state
+before `a88321bf5`. The fix this pass reorganizes remains verified by the `./scripts/e2e.ps1 api b2b` run
+recorded in the preceding pass. Exact-head CI owns the rest.
+
+## Review pass — 2026-09-07 — drive the five E2E payment failures to green
+
+**Candidate base:** `027b513365d1e2b3d0e64b4a5c3f8e9a7b6c4d21`
+**Candidate head:** `5b4280f804600ea5516714b3ac09be2ab2ce6595`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Five defects were found and fixed; each is stated with the evidence that identified it.
+
+`538bbc568` — **escrow authorization under-sized.** `98b56896a` made payment sessions consumer-agnostic and
+deleted `ManagerPaymentService.CreateHoldSessionAsync`, whose last act was to hold `amount + platformFee`.
+`PaymentSessionService.CreateAsync` authorizes exactly what its caller names and nothing carried the uplift
+across, while `EscrowService` still records the fee on top of the payee's gross. A flat-fee escrow therefore
+claimed a payer total of fee + £10 against a charge of fee alone and Stripe refused the refund. The deposit
+path kept the uplift, so only authorize-then-capture lost it, and no test asserted an escrow amount.
+`Escrow.Authorize` sizes the hold where the platform fee already lives.
+
+`ccad3f460` — **seeded applications carried no Payment method commitment.** The carve moved VenueHire and the
+door-split deals onto Payment-owned method references; nothing creates that operation for a seeded
+application, so the deposit was rejected `PaymentMethodRequired` and settlement failed
+`A usable payment method is required`. Provider state cannot be seeded, so the arrange creates each
+commitment through its real production API and confirms a real Stripe setup intent. Two harness defects
+surfaced with it: `PinPaymentWeb` never set `ServiceBus__ServiceName` — unlike `PinPaymentWorkers`, which
+sets it explicitly because `SubstituteE2EProject` carries reference wiring but not static environment values
+— so the payment web host crash-looped and every test failed on a health timeout rather than a test result;
+and the payout gate counted rows with a connect account, which is satisfied by demo users the tests never
+touch and says nothing about the payer half.
+
+`69a556476` — **swallowed Stripe failures.** `StripeSessionClient` caught `StripeException` at four sites and
+returned `ProviderUnavailable` with no record. Four full E2E runs diagnosing a 409 produced no evidence
+because none existed. This was the change that made the remaining two defects findable in one run.
+
+`90e55a7ab` — **the Stripe key was set by constructor side effect.** Stripe.net reads it from a global that
+`StripeApiClient` and `StripeAccountClient` assign in their own constructors. `StripeSessionClient` holds no
+client, so whether a payment session could reach Stripe depended on some other service being constructed
+first: the first session of a process failed `No API key provided`, surfacing as an opaque
+`provider_unavailable`, while the identical call later in the run succeeded. The same hazard exists in the
+deployed host. Injecting an `IStripeClient` is the real fix and is filed as debt.
+
+`5b4280f80` — **v4 operation ids where Payment requires v7.** `ConcertEntity` minted both operation ids with
+`Guid.NewGuid()`; `SettlementOperationFingerprint.ValidateOperationId` rejects anything but v7, so every
+settlement that actually charges threw inside Payment's gRPC handler. The two `ShouldCompleteConcert_*` tests
+passed throughout because they assert concert state and never reach the charge. B2B mints v7 everywhere else.
+
+Three of the five — the authorization sizing, the Stripe key, and the operation-id version — are production
+defects on real money paths, not harness issues.
+
+### Validation
+
+`./scripts/e2e.ps1 api b2b` — **10 of 10 passed**, exit 0, with zero Stripe rejections and zero UUIDv7
+errors in the forwarded resource logs. The suite ran in its natural order, which matters: the key defect was
+an initialisation-ordering one, so a filtered run could have passed for the wrong reason.
+
+Nothing was skipped, quarantined, or given a longer timeout. The payout readiness gate keeps its original
+three-minute budget and only became stricter — it now waits for the owners the suite transacts as, on both
+provisioning halves, through a Db class Payment owns, and re-runs after each reset because the reset replays
+the registration chain.
+
+UI E2E is being validated separately and is not asserted here. Exact-head CI owns the rest.
+
+## Review pass — 2026-09-07 — repair the test construction sites the signature changes broke
+
+**Candidate base:** `814e1ece5209f5219ce556427056baa4a0131e8e`
+**Candidate head:** `a98a4e5ff96416cb1e9bd8e379441964c21c5950`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Three test fixtures construct `EscrowService` and `StripeSessionClient` directly and were
+not updated when those constructors gained `IPaymentSessionService` and `ILogger`. The preceding passes were
+verified by building only the projects that changed and by running the B2B API E2E suite, neither of which
+compiles Payment's own unit and integration projects — so the break reached CI. The corrective action is
+procedural, not a code change: verify a signature change with a whole-solution build, which is what CI runs.
+
+### Validation
+
+`local-platform.ps1 build api/Concertable.slnx --configuration Release` — build succeeded, exit 0, zero
+errors, matching the configuration and scope of the CI job that failed. The B2B API E2E result from the
+preceding pass stands; these edits touch test construction only and no production path.
+
+## Review pass — 2026-09-07 — declare the Reunion carriers the E2E admin surface consumes
+
+**Candidate base:** `ff5ee2a600000000000000000000000000000000`
+**Candidate head:** `9e08250dcf681980d50dc1c6df5a492fe32db2f8`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. `ReunionPackages_AreOwnedDirectlyByTheirSourceConsumers` enforces that a project's Reunion
+package references match what its own source declares, in both directions, keying on the literal `using`.
+The method-verification endpoint observes a `Result` via `TryGetValue` on an inferred local, so it consumed
+a carrier without naming Reunion anywhere, while the csproj claimed both `Reunion` and `Reunion.Errors`.
+The `Reunion` reference is correct and the source now declares it; `Reunion.Errors` was never needed and is
+dropped rather than kept alive by an unused using.
+
+Two CI failures in a row came from verifying a change against the projects I had edited instead of the gates
+that own the rule. The whole-solution build catches signature changes; the owning architecture suite catches
+reference-graph changes. Both are cheap and both are now run before pushing.
+
+### Validation
+
+`local-platform.ps1 test Concertable.B2B.ArchitectureTests --configuration Release` — **32 of 32 passed**,
+exit 0, including the test that failed in CI. `Concertable.B2B.E2ETests.Server` builds clean in Release
+without `Reunion.Errors`, confirming the dropped reference was genuinely unused. The B2B API E2E result and
+the whole-solution Release build from the preceding passes stand; this change touches one using and one
+package reference.
+
+## Review pass — 2026-09-07 — gate the Customer fixture on Payment's provisioned owners
+
+**Candidate base:** `9f329cfdc676ad00b336417897569c6d3f1ba627`
+**Candidate head:** `fb1046be8`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved-with-remediation`
+
+### Findings
+
+No new findings. The Customer E2E fixture had no readiness gate on Payment's payout provisioning, so ticket
+checkout raced the handlers that write `StripeCustomerId` and `StripeAccountId` and returned 409
+`payment.operation.provider_unavailable`. B2B gained this gate earlier on this branch; Customer is the same
+defect in the sibling fixture and is pre-existing rather than a regression from this branch.
+
+Two things were established before writing the gate rather than assumed. The payee resolves to
+`TenantSeedIds.For(SeedUsers.VenueManagerId(1))` = `ccd6850f-4c9d-db0b-251d-825df8a66eef`, computed from the
+same MD5 derivation the seed uses and present in `StripeTestAccounts.ByOwnerId` — so the owner is wired and
+waiting terminates. And `payment.PayoutAccounts` sits in the Payment resetter's `TablesToIgnore`, so the rows
+survive a reset; the gate is therefore in `InitializeAsync` only, and a per-reset re-assert would poll for a
+condition already true.
+
+`GetPayableOwnerIdsAsync` requires both provisioning halves, which is correct for a tenant that both receives
+and pays but can never complete for a consumer, since a ticket buyer is only ever charged and is issued no
+connect account. `GetChargeableOwnerIdsAsync` covers the customer half alone so each side of the gate asserts
+against the guard that actually governs it. Every id is derived from its seed API; no GUID is written as a
+literal.
+
+### Validation
+
+`local-platform.ps1 build` of `Concertable.Customer.E2ETests.csproj` — build succeeded, exit 0. Both changed
+files are project references rather than packed packages, so no platform repack is implicated.
+
+**Remediation owed:** the gate itself is unverified by a run. The verifying execution of
+`Concertable.Customer.E2ETests` was killed during stack startup before any test result, and was deliberately
+not relaunched. The failure it targets is reproduced and understood — 409 `provider_unavailable` at eight
+seconds, twice — and the change is confined to test-tier code with no production path, but the green run is
+outstanding and is owed before this suite can be called verified. B2B API E2E remains 10/10 on this branch.
+CI runs no B2B or Customer E2E gate, so exact-head CI does not cover this.
+
+## Review pass — 2026-09-07 — announce a new customer as a payment-method owner
+
+**Candidate base:** `866571dd3`
+**Candidate head:** `95161fc14`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings. Nothing published `PaymentMethodOwnerRegisteredEvent`, so no customer ever held a
+`payment.PayoutAccounts` row and `PaymentSessionService` refused every ticket purchase as
+`ProviderUnavailable`. The chain now matches the one B2B already uses for tenants: raise on the entity in
+`FromRegistration`, translate in a single pre-commit handler, register against the closed
+`IDomainEventHandler<T>` interface, declare the publish on both the topology and the web host.
+
+Two deliberate departures from the B2B template, both narrower rather than wider. Payment's own event type
+is published instead of a wire-compatible mirror, because Customer already compiles against
+`Payment.Contracts` for the ticket flow and a second copy of the record buys only a hand-sync liability;
+B2B's mirror exists to keep B2B off that dependency entirely. And the fixture gate asserts the buyer and
+that one concert's payee rather than every wired Stripe account — the first attempt required all four, which
+is unsatisfiable in a stack whose payout owners come from the B2B simulator, and it failed in the queue
+before this was understood.
+
+**Provenance.** This is not a regression from this branch. Customer API E2E last passed on 2026-09-04
+(merge-queue run `33860333526`, step *Run Customer API E2E tests* = success). `21bc9f9c7` then migrated the
+ticket flow onto payment operation references on main, routing it through a service that requires a
+provisioned payer. `e2e-api-tests` is gated on `github.event_name == 'merge_group'`, so the 50 commits that
+followed had no suite to catch it, and this branch took eight queue failures for a defect it did not
+introduce. `PaymentSessionService.cs` and `TicketService.cs` are byte-identical to main here.
+
+### Validation
+
+`./scripts/e2e.ps1 api customer` — exit 0,
+`[PASS] Concertable.Customer.E2ETests.Payments.TicketPurchaseTests.Purchase_PaymentSucceeds_CreatesTicket`.
+B2B API E2E remains 10/10 on this branch and passes in the merge queue. The remediation owed by the
+preceding pass is discharged: the gate is now green rather than merely diagnostic.
+
+Browser-tier E2E is unverified locally and runs only in the queue; it is the one gate outstanding.
+
+## Review pass — 2026-09-07 — drive the Payment Element as Stripe renders it
+
+**Candidate base:** `80c70b520`
+**Candidate head:** `1aeabdb5d`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved-with-remediation`
+
+### Findings
+
+No new findings. All 14 browser payment scenarios failed on two shapes, both read off the failure
+screenshots in the queue run's `e2e-ui-diagnostics` artifact rather than inferred: the Element renders the
+card form inline with no tab strip, and offers no saved card although one is attached.
+
+`SelectCardAsync` waited unconditionally on a `Card` tab. Stripe draws the tab strip under `layout: "tabs"`
+only when the account has more than one payment method enabled, and the intent is created with
+`AutomaticPaymentMethods` — so the method list comes from the Stripe account, not from this repository. The
+wait now falls through to the inline form, which makes the suite robust to a dashboard toggle instead of
+hostage to one.
+
+`AttachTestCardAsync` left the method at `allow_redisplay: unspecified`; a customer session only re-offers
+one marked `always`. The saved-card path therefore clicked Confirm against empty fields and never produced
+the `/confirm` request it waits for.
+
+**Provenance.** Not a regression from this branch. `StripeCardEntry`, `StripePaymentForm` and the session
+configurators are byte-identical to main; the branch's only UI-step edits are a seed-state rename, an
+owner-keyed account lookup and a dropped null-forgiving operator. The browser tier last ran on 2026-09-04
+(run `33860333526`, `e2e-ui-tests: success`) because `e2e-ui-tests` needs `e2e-api-tests`, which failed on
+all eight preceding queue attempts — so this is the first observation in three days, not a new break.
+
+### Validation
+
+`local-platform.ps1 build` of `Concertable.B2B.E2ETests.Ui.csproj` — exit 0. B2B and Customer API E2E both
+green (`e2e-api-tests: success` in queue run `34127943014`).
+
+**Remediation owed:** neither fix is verified by a browser run. The local browser tier cannot start on this
+workstation — the Business SPA on `https://localhost:5177` never passes readiness, with `app/node_modules`,
+`app/web/shared/dist` and a valid dev certificate all present, so every scenario fails at fixture startup
+and the tier yields no signal locally. The queue is currently the only environment that can execute it. The
+local startup failure is unrelated to these two fixes and is owed its own diagnosis.
+
+## Review pass — 2026-09-07 — commit a saved payment method for off-session reuse
+
+**Candidate base:** `1481c4201`
+**Candidate head:** `daf297e14`
+**Candidate branch:** `Refactor/launch_deal-lifecycle-modules-phase2`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No new findings against the change itself. `PaymentSessionService.SetupPaymentMethodAsync` hardcoded
+`PaymentSession.OnSession`, so every SetupIntent went to Stripe as `usage: "on_session"` — a
+customer-present mandate. The venue-hire deposit is then taken off-session when the venue manager accepts,
+and Stripe refused any card requiring authentication with `authentication_required`. The booking stayed
+pending, no concert was created, and the scenario timed out polling `/api/concert/application/{id}`.
+
+Off-session is right for both setup kinds rather than a venue-hire special case: every payment method this
+platform saves is reused with the payer absent — the venue-hire deposit at accept, door-split and versus
+settlement at completion via `PayoutCompleteStep`.
+
+One property of the change worth recording: `PaymentSessionFingerprint` includes `session`, so a setup
+operation already persisted as `OnSession` fingerprint-differs on replay and returns `OperationConflict`.
+Immaterial here (E2E resets the database per run, and the service has no production rows) but it is a real
+consequence rather than a silent one.
+
+**Provenance — this one *is* the branch's.** The preceding passes' claim that the 3DS defect pre-dates the
+branch is wrong. Before `62b9fde66` (branch-only, 2026-09-05) the apply-time capture ran through
+`StripeAccountClient.CreateSetupSessionAsync`, which set `Usage = "off_session"` explicitly; that commit
+re-pointed apply checkout at `SetupPaymentMethodAsync` and lost it. `PaymentSessionService` itself came from
+`233ca5c90` on main, but nothing routed venue-hire apply through it until the branch commit, so main was
+never broken. It went unseen because the last `e2e-ui-tests` that actually executed is run `33860333526`
+(2026-09-04, head `2979ab78f`), which contains neither commit; the ten `merge_group` runs since all failed
+before reaching that job.
+
+### Validation
+
+`local-platform.ps1 test` of `Concertable.B2B.E2ETests.Ui.csproj --filter "DisplayName~3DS challenge on
+venue hire"` — **`Test Run Successful. Total tests: 1, Passed: 1`** (5.29 min). Zero occurrences of
+`authentication_required` in the run, against six in the pre-fix run, so the fix is the mechanism rather
+than a coincident pass. This discharges the remediation the preceding pass owed: the browser tier does now
+run on this workstation. Its earlier failure to start was orphaned `vite`/`npm run dev` processes left by
+force-killed runs holding the SPA ports — clearing them was the unblock, and it explains the recorded
+"Business SPA on `https://localhost:5177` never passes readiness" symptom.
+
+A new `PaymentSessionServiceTests` case pins that a payment-method commitment persists as `OffSession`.
+
+**Defect found and not fixed here.** With the deposit now succeeding, the run shows
+`PaymentTransactionHandler` throwing `Payment operation escrow/booking:48 has no provider transaction` three
+times and dead-lettering `payment-succeeded.v1`: the resolver reads `PaymentSessionOperations`, but an
+escrow deposit is taken through the legacy `HoldAsync` path that writes no such row. `EscrowConfirmedHandler`
+therefore never runs and the escrow stays `Pending` with no ledger posting. This is pre-existing (`8fb94d140`,
+main, 2026-09-05) — the fix moved it from the failed path to the succeeded path rather than causing it — and
+no suite catches it, because the scenarios assert the draft concert and the Stripe-side capture, not
+Payment's own bookkeeping. Rewritten as the single HIGH entry in `api/Concertable.Payment/TECH_DEBT.md`,
+replacing the two narrower entries that described only the failure path and the now-fixed 3DS symptom.
