@@ -84,7 +84,7 @@ sequence. There is never a repository-wide forced bump that can strand every ser
 - Carve CI proves each deployable closure restores from the GitHub Packages feed. AppHosts, E2E projects,
   and the optional `UseLocalCore` path are intentionally exempt from the current source-boundary check.
 - All service folders currently pin the same
-  `ConcertablePlatformVersion=0.1.0-alpha.0.745`.
+  `ConcertableDotNetPlatformVersion=0.1.0-alpha.0.745`.
 
 ### Compile-time dependency graph
 
