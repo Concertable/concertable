@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `97b447bcfa679be55d4c6ec666b5909c287ceb5c`  `(2026-09-06)`
-**Security-reviewed up to commit:** `97b447bcfa679be55d4c6ec666b5909c287ceb5c`  `(2026-09-06)`
+**Reviewed up to commit:** `5c94815a0046a28d8b539b06e76ed04513039eac`  `(2026-09-08)`
+**Security-reviewed up to commit:** `5c94815a0046a28d8b539b06e76ed04513039eac`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -127,3 +127,54 @@ already committed repairs. Security lens found no new risk in this metadata, val
 No findings. The tracked review transition and PR #947 checkpoint accurately record the published draft,
 explicit #633 base, Docker resume condition, and completed M2 review state. Security lens found no risk in
 the review-only and plan-only tail.
+
+## Review pass — 2026-09-08 — incremental current-main merge resolution
+
+**Candidate base:** `7ec03757b590ad593dab52009bf64902661ce2e4`
+**Candidate head:** `5c94815a0046a28d8b539b06e76ed04513039eac`
+**Candidate branch:** `Refactor/RepoSplit-M2-Owner-Operations`
+**Candidate scope:** `eng/repository-split/map.yaml, plans/platform/POLYREPO_ROADMAP.md, plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md, plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md, scripts/test-owner-operations.ps1`
+**Candidate path-set:** `sha256:c510a91f0a258e49fb1b7b0a4f8b8a5c4907e34ceb72f15cddccd6b9658555b5` `(5 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-RepoSplit-M2-Owner-Operations/53d78a68-154d-489a-b5ec-e6d8655ec00c/scratchpad/review-m2-merge-0f1429b22e314038a1491df3fb29289f`
+**Candidate bundle identity:** `sha256:f4dcfdb4294b9be7c6e49451aed8fa8481526f07b5930b7d72856194c57daa4f`
+**Work-order path:** `reviews/Refactor-RepoSplit-M2-Owner-Operations.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The recorded watermark `97b447bcf` is not an ancestor of this head: the landed-main restack rewrote that
+ancestry, and its live equivalent is `7ec03757b`. This pass therefore bases on `7ec03757b` and re-stamps both
+top-level markers onto live ancestry. Every earlier pass descriptor, finding, severity and disposition is
+preserved unchanged above.
+
+The candidate is bounded because a merge head's full range is dominated by landed main. It is exactly the
+union of M2's own commits since that base (`c74ca5f3a`, `42b035c1c`, `73ef5db31`) and the paths the three
+`origin/main` merges resolved rather than took verbatim from a parent.
+
+### Findings
+
+- [x] **M2-007 — LOW — needless indirection** — `scripts/test-owner-operations.ps1:25`
+  `Get-CompatibleRelativePath` existed only because `[IO.Path]::GetRelativePath` is absent from Windows
+  PowerShell 5.1. `73ef5db31` replaced its URI implementation with that very API, leaving a single-call-site
+  forwarding wrapper whose name advertises a constraint the script's `#requires -Version 7.0` already rules
+  out, and whose `GetFullPath` calls duplicate what `GetRelativePath` performs internally. Inline the
+  framework call.
+  Resolved by `5c94815a0`: the helper is deleted and its one call site calls
+  `[IO.Path]::GetRelativePath($source, $template.FullName)` directly. Both arguments were already absolute.
+  The complete owner-operation gate passes after the change.
+
+No other findings. `73ef5db31` is correct: `[IO.Path]::GetRelativePath` is the cross-platform API, and the
+`[Uri]::MakeRelativeUri` form it replaced genuinely mis-handles absolute POSIX paths, which is what stopped
+the Linux gate. The `POLYREPO_ROADMAP.md` resolution keeps main's stream ordering and restores only the M2
+detail main's row dropped. The foundation ledger is taken from main byte-for-byte, so M2 contributes nothing
+to the M1 stream's live state and cannot collide with it again. The `map.yaml` auto-merge is correct in both
+directions: M2's three System exclusions, their matching dissolves and the exact `OwnerOperations.psm1`
+rename all survive, and main's Search and AppHost.Shared note rewrites are taken. Main added no `scripts/`
+entrypoint, so the exclusion set is still complete, and no landed context escaped the manifests — the gate
+still proves 24. The `REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md` auto-merge keeps M2's delegator sentence
+and main's expanded B2B packable roster.
+
+Security lens: no findings. The candidate touches one test script and four plan documents. Every
+security-sensitive path in M2's contribution — `.github/workflows/test.yml`, and the Auth and Payment
+`initial-migrations.ps1`, `migrations.psd1`, `setup-local-dev.ps1` and `tools/OwnerOperations.psm1` — is
+byte-identical to its blob at the previously security-approved `97b447bcf`, so that approval carries forward
+and the re-stamp records the same verified state at a live SHA.
