@@ -44,7 +44,7 @@ B2B Workers remains an Azure Functions v4 isolated runtime, but its production a
 its production host is native Azure Functions on Azure Container Apps. Functions Consumption is not part of
 the target: it cannot run the same custom container used by standalone AppHosts, system E2E, and rollback.
 
-The current lockstep `ConcertablePlatformVersion` and platform-sync PR are replaced by independently
+The current lockstep `ConcertableDotNetPlatformVersion` and platform-sync PR are replaced by independently
 versioned release trains plus Renovate PRs. Breaking package changes use an expand/publish/migrate/contract
 sequence. There is never a repository-wide forced bump that can strand every service on a red pin.
 

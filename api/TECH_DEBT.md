@@ -245,7 +245,7 @@ operation being added; declaration-contract exceptions remain excluded.
 
 ### Auth builds against a pinned shared-platform package while the rest of the solution builds from source
 
-`api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertablePlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
+`api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertableDotNetPlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
 
@@ -363,7 +363,7 @@ Api-layer shared library both modules already consume — and the frontend has h
 asymmetric with the wire contract it mirrors.
 
 It could not be fixed in the PR that introduced the second copy, because `Concertable.Shared.Api` is
-consumed as a **published package pinned to `ConcertablePlatformVersion`** — a type added to its source
+consumed as a **published package pinned to `ConcertableDotNetPlatformVersion`** — a type added to its source
 is invisible to consumers until it is published and `platform-sync` bumps the pin. So it is a
 publish-first cut-over, not an edit.
 
