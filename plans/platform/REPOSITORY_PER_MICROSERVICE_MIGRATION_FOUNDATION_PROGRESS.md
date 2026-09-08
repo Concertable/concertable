@@ -3,33 +3,36 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
-- Branch: `Refactor/M1-Platform-Expand`
-- PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
-- Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand exact-head run
-  `34189563168` passed. Merge-group run `34190370396` then passed every B2B browser scenario and six of seven
-  Customer scenarios. The remaining signup scenario received HTTP 429 from Auth because the persistent E2E
-  host applied the production ten-request credential budget across scenario-isolated database and login
-  state. The shared E2E Auth environment now relaxes that cross-scenario budget using the same test-only
-  configuration seam as the integration fixtures; production rate limiting is unchanged. Owner Hosting Sync
-  may enter exact-head validation after the repaired Platform Expand merge-group passes.
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Fix-package-publication-version-collision`
+- Branch: `Fix/package-publication-version-collision`
+- PR: #953, publication-rail repair after M1 Platform Expand PR #942
+- Dependency/package gates: PR #942 landed at `8899eae33` after exact merge-group run `34195643637` passed
+  84 jobs with both browser suites green. Its causal package run `34198511871` computed version
+  `0.1.0-alpha.0.1329`, but a prior non-main manual run had already published that version from #633's head;
+  duplicate skipping therefore left the feed's AppHost.Shared and Frontend.Hosting binaries stale. The
+  publication rail now forbids arbitrary-ref dispatch, checks every packed package for an existing or
+  non-advancing SemVer before push, and restores the exact version it just published. Its own main merge
+  triggers the required fresh release.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
   remain unavailable on the current GitHub entitlement.
-- Last reconciled: 2026-09-07 — current `origin/main` commit
-  `12efedd68da08d92b08990a30e76dab5546b5ed4`, which includes PR #633, B2B producer PR #949, and M3 PR #948;
-  the corrective topology commits `82bf5dbbb` and `bb59d9ba3`; and the fixed M1 repository topology.
+- Last reconciled: 2026-09-08 — current `origin/main` commit
+  `8899eae3355cb3f47c4ac23acb5e2ba89b31cd62`, which includes PR #633, B2B producer PR #949, M3 PR #948,
+  Platform Expand PR #942, the corrective topology commits `82bf5dbbb` and `bb59d9ba3`, and the fixed M1
+  repository topology.
 
 ## Current state
 
 Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
-public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Existing private
+public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Platform Expand is
+landed and awaits a corrected package publication before Owner Hosting Sync can consume its new contracts.
+Existing private
 `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
 The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
-creation is part of M1. Four clean M1 branches preserve the Platform Expand, Owner Hosting Sync, AppHost Sync,
-and Platform Contract boundaries above landed `origin/main` commit `12efedd68`; Git owns their current
-rewritten heads. Local
+creation is part of M1. Platform Expand is landed; three clean dependent branches preserve the Owner Hosting
+Sync, AppHost Sync, and Platform Contract boundaries at heads `cbca8d48f`, `6895b13cb`, and `64f0c4dc1`
+above it. Local
 review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
 retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
 associations into the B2B and Customer owners before system composition consumes their combined roster.
@@ -44,11 +47,11 @@ AppHost topology.
 
 ## Next Steps
 
-- Commit and publish the Platform Expand E2E rate-limit isolation repair, restack the three dependent M1
-  stages without changing their publication boundaries, and re-enter exact-head validation and the merge
-  queue.
-- Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
-  publication caused by Owner Hosting Sync to its immutable digest.
+- Land the publication-rail repair and require its causal main run to publish all 58 packages at one version
+  newer than `0.1.0-alpha.0.1329`, with exact-version restore green and no duplicate skips.
+- Land the generated platform-sync PR, then restack Owner Hosting Sync onto that exact main without changing
+  its eight-commit publication boundary.
+- Deliver Owner Hosting Sync through PR #943. Follow its Auth image publication to the immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
 
 ## Completed work
@@ -59,9 +62,9 @@ AppHost topology.
   their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
 - Extraction-map preflight reports 4,793 tracked paths, 4,793 target claims, 82 unclaimed tracked paths, and
   zero multiply-claimed paths; 6C is not ready.
-- Platform Expand was rebased onto current `origin/main` `12efedd68`. The shared inventory and plan conflicts
-  preserved M3's landed `app/build-config` ownership and `platform-frontend` identity while restoring M1 as
-  the active foundation ledger; no runtime-code conflict occurred.
+- Platform Expand landed through PR #942 at `8899eae33`. The shared inventory and plan reconciliation
+  preserved M3's landed `app/build-config` ownership and `platform-frontend` identity while retaining M1 as
+  the active foundation ledger.
 - M3 landed through PR #948 at `12efedd68`; its product-neutral `@concertable/build-config` ownership remains
   independent of M1's .NET hosting stack and no repository boundary changed.
 - Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
@@ -74,8 +77,8 @@ AppHost topology.
 
 ## Verification
 
-- Ancestry from landed `origin/main` commit `12efedd68` through Platform Expand is verified; the three
-  dependent stages are being restacked in order before combined-base CI is treated as current evidence.
+- Platform Expand is exact on landed `origin/main` commit `8899eae33`; the three dependent stages retain
+  their verified serial ancestry and await the corrected package release/platform-sync base.
 - Pre-M3 exact-head PR run `34166392329` passed all 81 executed jobs, including package preparation, generated
   inventory, solution/image builds, five service carves, architecture, unit, and integration matrices.
 - Package inventory and local platform preparation pass with 58 packages. Auth Hosting, B2B Hosting, Auth
@@ -142,6 +145,14 @@ AppHost topology.
   survives those database resets and accumulated more than ten credential-page requests in one minute. The
   shared E2E Auth environment now sets the credential permit limit through Auth's supported configuration
   seam, matching integration-test isolation without changing the production default or any browser timeout.
+- Exact merge-group run `34195643637` passed 84 jobs at merge SHA `8899eae33`, including API E2E and both
+  complete browser suites, and PR #942 landed. Causal package run `34198511871` packed 58 projects at
+  `0.1.0-alpha.0.1329`, but skipped 57 immutable duplicates because workflow-dispatch run `33683064354` had
+  pre-published that version from non-main #633 head `83c01d3b`; only the newly packable
+  B2B.Application.Contracts was added. The former floating restore passed against that mixed feed version,
+  proving it was not an adequate publication gate. The repair makes main-push ancestry exclusive, requires
+  every packed package's computed lockstep version to be absent and advance beyond its own feed history before
+  any push, removes duplicate skipping, applies NuGet SemVer precedence, and verifies that exact version.
 
 ## Reviews
 
