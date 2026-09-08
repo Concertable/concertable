@@ -280,7 +280,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - run: python -m pip install --quiet pyyaml
       - run: python eng/repository-split/inventory.py --check
+      - run: python eng/repository-split/validate_map.py --owner-operations-only
 
   local-platform-pack:
     runs-on: ubuntu-latest
@@ -1284,6 +1286,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Test repository-split owner operations
+        shell: pwsh
+        run: |
+          ./scripts/test-owner-operations.ps1
+          ./scripts/test-system-bootstrap.ps1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
