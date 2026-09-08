@@ -393,6 +393,55 @@ The existing service-internal KeyedStrategies library remains the shared selecti
 runtime behaviour keys belong to their family; public persisted capability identities are resolved by
 that owner's descriptor/factory. Neither customers nor templates register CLR implementations.
 
+### Step names and the future acceptance union
+
+ICommitmentReferenceStep is a source-code name, not a target step contract. Its entire callable contract
+is PaymentOperationReference Resolve(ApplicationEntity). It resolves an identifier; it does not perform
+Apply, Accept, method setup or amount authorisation. The target reads the immutable reference from the
+owned commitment record. Do not retain a redundant resolver, rename it into an acceptance step, or make
+it a union. References to the old name elsewhere in this plan identify the source being replaced.
+
+For the proposed entry families, name the executable selection for its responsibility:
+
+| Thing | Proposed name | Meaning |
+|---|---|---|
+| Acceptance operation | AcceptAsync | The workflow action, including mandatory shared checks and transition |
+| Distinct acceptance contracts, if required | IAcceptXStep / IAcceptYStep | Placeholder names for genuinely different callable capabilities |
+| Their union | AcceptStep | One selected executable capability, not an acceptance request or result |
+| Its factory | IAcceptStepFactory | Returns AcceptStep after selecting the implementation |
+| Commitment-start union | CommitmentStep | The method-setup or amount-authorisation capability in section 16.9 |
+| Its factory | ICommitmentStepFactory | Returns CommitmentStep; unrelated to the former reference resolver |
+
+Using the current C# 15 union declaration syntax, the future acceptance family would be:
+
+~~~csharp
+internal union AcceptStep(IAcceptXStep, IAcceptYStep);
+
+internal interface IAcceptStepFactory
+{
+    AcceptStep Create(AcceptBehaviour behaviour);
+}
+~~~
+
+X/Y and AcceptBehaviour are illustrative, not new approved behaviours to implement. Replace X/Y with
+the actual responsibility when distinct contracts exist. A common IAcceptStep is appropriate when all
+implementations share an honest invocation contract; it is not an artificial parent needed by the union.
+Several implementations may inhabit IAcceptXStep without adding union cases. ApplicationWorkflow owns
+the match on IAcceptXStep / IAcceptYStep and passes the corresponding required typed input. It does not
+match on concrete implementation classes, template IDs or the former whole-deal DealType.
+
+The existing KeyedUnionBuilder<TKey, TUnion> leaves TUnion unconstrained, so a native struct union does
+not itself require redesigning the builder or widening its enum key constraint. Registration callbacks
+construct the native union instead of record wrappers; the module-local factory still resolves keyed DI.
+Keep the existing overlap check: an implementation must not satisfy two cases of the same family.
+Qualify non-empty factory results and missing-case compiler diagnostics when adopting native syntax.
+
+Microsoft's [union reference](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/union)
+and [C# 15 specification](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-15.0/unions.md),
+checked 8 September 2026, permit interface cases and matching on their contained values. This is a future
+language-target illustration, not a claim that the current checkout compiles it or an SDK-upgrade task.
+The union holds executable services; persisted configuration remains data and contains no such services.
+
 ### Matching belongs in the owning workflow
 
 ![Typed dispatch and workflow ownership](figures/commercial-dispatch.svg)
@@ -2523,12 +2572,17 @@ internal interface IAmountAuthorisationStep
         HoldCommitmentInput input, CancellationToken ct = default);
 }
 
-internal abstract record CommitmentCapability
+internal abstract record CommitmentStep
 {
-    private CommitmentCapability() { }
+    private CommitmentStep() { }
 
-    public sealed record Method(IMethodSetupStep Step) : CommitmentCapability;
-    public sealed record Hold(IAmountAuthorisationStep Step) : CommitmentCapability;
+    public sealed record Method(IMethodSetupStep Step) : CommitmentStep;
+    public sealed record Hold(IAmountAuthorisationStep Step) : CommitmentStep;
+}
+
+internal interface ICommitmentStepFactory
+{
+    CommitmentStep Create(CapabilityReference capability);
 }
 
 internal abstract record CommitmentInput
@@ -2544,20 +2598,20 @@ internal sealed record PreparedCommitment(
     CapabilityReference Capability,
     CommitmentInput Input);
 
-var builder = new KeyedUnionBuilder<CommitmentBehaviour, CommitmentCapability>(services);
+var builder = new KeyedUnionBuilder<CommitmentBehaviour, CommitmentStep>(services);
 
-builder.Case<IMethodSetupStep>(step => new CommitmentCapability.Method(step))
+builder.Case<IMethodSetupStep>(step => new CommitmentStep.Method(step))
     .UseScoped<SaveMethodStep>(CommitmentBehaviour.SaveMethod)
     .UseScoped<VerifyMethodStep>(CommitmentBehaviour.VerifyMethod);
 
-builder.Case<IAmountAuthorisationStep>(step => new CommitmentCapability.Hold(step))
+builder.Case<IAmountAuthorisationStep>(step => new CommitmentStep.Hold(step))
     .UseScoped<AuthoriseAmountStep>(CommitmentBehaviour.AuthoriseAmount);
 
 builder.Build();
 ~~~
 
 The key and factory are module-local. The descriptor/factory resolves the persisted capability ID/version
-to this closed supported key before returning CommitmentCapability. Unknown or disabled versions fail
+to this closed supported key before returning CommitmentStep. Unknown or disabled versions fail
 preparation. Application and Invitation each register their entry-facing family; stateless reference and
 consent rules may be shared, but there is no cross-module service locator. This is one execution approach
 for template and builder output, not a remaining DealType engine beside a configurable engine.
@@ -2588,12 +2642,12 @@ public async Task<Result<CommitmentCheckout, StartApplicationCommitmentError>> S
         return new StartApplicationCommitmentError.Preparation(error!);
     }
 
-    var capability = commitmentFactory.Create(prepared.Capability);
-    var started = await ((capability, prepared.Input) switch
+    var selectedStep = commitmentStepFactory.Create(prepared.Capability);
+    var started = await ((selectedStep, prepared.Input) switch
     {
-        (CommitmentCapability.Method(var step), CommitmentInput.Method(var input)) =>
+        (CommitmentStep.Method(var step), CommitmentInput.Method(var input)) =>
             step.StartAsync(input, ct),
-        (CommitmentCapability.Hold(var step), CommitmentInput.Hold(var input)) =>
+        (CommitmentStep.Hold(var step), CommitmentInput.Hold(var input)) =>
             step.StartAsync(input, ct),
         _ => throw new InvalidOperationException("Validated commitment contracts do not match.")
     });

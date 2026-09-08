@@ -18,10 +18,14 @@ The architecture and coordinated PR slices are a discussion-refined review draft
 database migration or deployment is authorised or performed. Recommendations and unresolved policies
 are explicitly separated from established decisions in the plan.
 
-The latest update adds section 16's code-level approval walkthrough: concrete Apply/Send/Accept and
+Section 16 provides the code-level approval walkthrough: concrete Apply/Send/Accept and
 commitment-start methods, entity/request/read shapes, separate invitation API/service/workflow, collaborator
 contracts and atomic Booking convergence. It does not declare the whole programme implementation-ready;
 B6/B7 financial-operation definitions still need equally concrete review before enabling those capabilities.
+
+The latest clarification fixes the proposed step/factory names and distinguishes reference lookup from
+executable steps in section 4. AcceptStep is the future union name if acceptance earns distinct contracts;
+section 16.9 now consistently uses CommitmentStep / ICommitmentStepFactory. No runtime code changed.
 
 Tommy requested B2B ownership. The prior direct-offers plan and ledger are replaced, not retained as
 parallel instructions. The old launch item now routes to this B2B owner. Historical text remains in Git.
@@ -31,7 +35,7 @@ draft remains with its separate owner; this plan owns only B2B scope and the req
 
 ## Next Steps
 
-Paused: Tommy - review section 16's concrete entry design and D17-D18, alongside sections 3-4's configuration/dispatch model. Resolve the policies needed by each admitted slice and complete B6/B7's remaining operation contracts before their implementation. Application implementation or migration requires separate explicit authorisation.
+Paused: Tommy - review sections 3-4 and 16's proposed structure and D17-D18. Before approval, reconcile the remaining collaborator/entity names and null-forgiving snippets with the discussion; resolve policies needed by each admitted slice and complete B6/B7's operation contracts before their implementation. Application implementation or migration requires separate explicit authorisation.
 
 On feedback, update this plan and the existing product-decision owners in Concertable/docs as appropriate.
 Do not infer approval of every recommendation from permission to write/read the draft.
@@ -61,9 +65,9 @@ Do not infer approval of every recommendation from permission to write/read the 
   unchanged by that refresh. Extracted B2B main remains older than PR633. Docs main
   includes PR11; organiser research 5ac4048 is local/unpublished evidence, not approved product policy.
 - This commit: B2B and root plan graphs pass with zero errors/warnings. Workflow v2 validates the B2B
-  artifact owner, worktree/branch and explicit design-review pause. The sandbox runner initially failed
-  to start; the read-only checks passed on retry through the working local runner.
-- All 27 local links/anchors, three SVG XML documents and delimiters for 18 C# excerpts validate;
+  artifact owner, worktree/branch and design-review pause. The commercial plan tree has no remaining
+  superseded commitment union/factory names; source-history reference-step names are deliberately retained.
+- At d3faa0f0e, all 27 local links/anchors, three SVG XML documents and delimiters for 18 C# excerpts validate;
   delimiter checks are not compilation. Scoped diff whitespace passes. Only the existing plan and
   ledger changed; diagrams are unchanged from their prior rendered/visual checks.
 - The prior broad B2B docs-reachability check found four baseline errors at 85ed6353:
@@ -74,8 +78,9 @@ Do not infer approval of every recommendation from permission to write/read the 
 
 ## Reviews
 
-This update received a code-example/contract consistency self-review. No independent implementation-
-readiness review, application test or C# compilation is claimed. This remains a design draft for Tommy.
+The naming clarification received a scoped consistency self-review against the actual reference strategy,
+keyed builder and current first-party C# union documentation. No independent implementation-readiness
+review, application test or C# compilation is claimed. This remains a design draft for Tommy.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -86,6 +91,10 @@ readiness review, application test or C# compilation is claimed. This remains a 
   IApplyStep and ICommitmentReferenceStep, not IAcceptStep. The target stores commitment references and
   removes the redundant acceptance resolver after conversion; starting a commitment is the real union
   example. A reference alone is not proof of payment readiness.
+- Future acceptance union naming and native-interface matching are specified in section 4; distinct
+  implementations sharing one contract do not require separate cases. Native union adoption is not an
+  SDK upgrade authorised by this clarification. Keep the separate proposed acceptance record; questions
+  about its purpose did not withdraw that design choice.
 - Configuration contains the actual selected commercial design; a template supplies reusable defaults.
   Version meanings, template provenance, issued proposals and accepted snapshots are separate concerns.
 - Stored compatibility needs structural/semantic and live checks as well as typed code. Section 16's
