@@ -30,12 +30,19 @@ callback ordering, digest pinning, and test coverage of the narrowing.
 
 No findings. The following were examined and are clean:
 
-- **This is the stage where the allowlist becomes live, and every host declares one.** All five AppHosts
-  call `WithSpaClients`: B2B gets Venue/Artist/Admin, Customer gets Customer, the root system host gets
-  `SystemLocalSpaSurfaces.AuthClients` — the union, which reproduces base `LocalSpaSurfaces.Authenticated`
-  exactly — and Payment and Search pass an explicit empty roster `WithSpaClients([])`. No host is left
-  relying on an implicit default, which is what makes P4's deletion of that default safe rather than
-  hopeful. Verified by enumerating every `AppHost.cs` that calls `AddAuth`, not by sampling.
+- **This is the stage where the allowlist becomes live, and five of the six hosts declare one.** B2B gets
+  Venue/Artist/Admin, Customer gets Customer, the root system host gets `SystemLocalSpaSurfaces.AuthClients`
+  — the union, which reproduces base `LocalSpaSurfaces.Authenticated` exactly — and Payment and Search pass
+  an explicit empty roster `WithSpaClients([])`. **The sixth, `Concertable.Auth.AppHost`, declares none and
+  still relies on the default `WithLocalSpaClient` loop.** That is base-identical behaviour here and so is
+  not a defect on this candidate, but it becomes one at Platform Contract, which deletes that loop and would
+  leave Auth's own host registering zero SPA clients silently — no graph test covered it, because the roster
+  assertions added here cover B2B, Customer, Payment and Search only. Fixed on Platform Contract by
+  `2bddce4f9`, which declares an explicit empty roster and adds the missing graph test.
+
+  An earlier draft of this pass claimed all hosts were covered, from a `git grep "AddAuth("` that silently
+  missed the generic `AddAuth<Projects.Concertable_Auth>(` call. The exhaustive check is
+  `find api -name AppHost.cs` with a pattern matching both call forms.
 - **Callback ordering is sound.** `AddAuth` registers its four `WithLocalSpaClient` callbacks first, then
   the host's `WithSpaClients` callback clears every inherited `Auth__SpaClients__` key and rewrites the
   restricted set. Aspire runs environment callbacks in registration order, and the clear plus rewrite are
@@ -100,4 +107,5 @@ tunnel-rewritten service URL.
   unit and integration matrices.
 - The local compile floor through `scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release`
   succeeded with 0 errors against 58 source-built platform packages.
-- Merge-queue full E2E against live main is the authoritative remaining gate.
+- Merge-queue API E2E against live main is the authoritative remaining gate; the browser suites are
+  excluded by `skip-e2e-ui` per the tier decision above.
