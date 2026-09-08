@@ -1,6 +1,6 @@
 # B2B commercial execution: architecture and coordinated delivery plan
 
-Status: **proposed architecture for Tommy's review; application implementation and database migration are not authorised.**
+Status: **discussion-refined architecture draft, updated 8 September 2026; application implementation and database migration are not authorised.**
 
 This is the B2B-owned successor to the direct-offers draft, not a second plan running alongside it.
 It covers B2B commercial configuration, templates, both booking entry paths, event/resource context and
@@ -8,6 +8,11 @@ the B2B PostgreSQL migration. Shared-package changes and foreign contract consum
 It does not own Payment, Customer, Search or Auth implementation or provider migrations.
 
 Next action: [the progress ledger](COMMERCIAL_EXECUTION_PROGRESS.md#next-steps).
+
+For the latest discussion, start with the [configuration and entity sketches](#keep-lifecycle-sections-make-their-connections-explicit),
+[factory and capability matching](#matching-belongs-in-the-owning-workflow),
+[operation catalogue and Application flow](#the-operation-catalogue-and-owned-facts), and
+[existing-code migration map](#source-to-target-migration-of-existing-responsibilities).
 
 ## Read this first
 
@@ -53,8 +58,10 @@ The implementation baseline is the monorepo's merged B2B source, not the older e
 | PR633 | Merge 516f4cc25936289744babef3f98b1a297035fbb6 | Opportunity/Application/Booking/Concert ownership is established, not work to reinvent |
 | Initial investigation baseline | ed5c0fce602fc6a2e9aaa65cfe74970c51dc7c90 | Includes subsequent Application contract packaging and confirmed-term polymorphic serialization |
 | Authoring refresh | f72431d7b6800b72f855706cd7fa1469681406de | PR947 adds owner-local migration/setup tooling; no lifecycle runtime change relative to the investigation baseline |
+| Discussion refresh | 3826320d1cd171705dffe1a74340e62b9a1e14c2 | Later host/package/CI changes inspected; Application/Booking/Concert/Deal runtime source remains unchanged from the authoring refresh |
 | Extracted Concertable/b2b main | fded052cdbf6f0f4c8f55ef7414c13ffc19ab33c | Still older than PR633's lifecycle split; not the source to design against |
 | Concertable/docs main | 99ad353b9cb26921ad8914e0f1449202574e330e | Includes docs PR11; no newer remote docs found during authoring |
+| Organiser research, not merged policy | Docs/Organiser-Commercial-Research at 5ac4048a6f4145f1e8f22d1e043aff33da47ba3f | Sixteen scenarios and five worked arrangements inform the design; demand, funding permissions and disputed-outcome authority remain unproven |
 
 The plan lives inside the authoritative B2B subtree so it travels with B2B when extraction is qualified.
 Before every delivery slice, re-resolve which repository/branch owns its current source and published
@@ -70,6 +77,8 @@ contracts. This plan is not permission to overwrite the retained B2B repository 
   capabilities; genuinely different contracts use discriminated types.
 - Configurable commercial execution is the selected direction. B2B comes first; external ticketing
   remains a workable route. Future discovery/native ticketing is not discarded.
+- Mixing and matching semantically compatible capabilities is the objective, including within an
+  operation. Restrictions must describe real dependencies, not recreate whole-deal preset bundles.
 - One coordinated architecture may require multiple coherent PRs and producer/consumer gates.
 - The provider migration in this plan is B2B-only, including required shared-library compatibility.
 - Planning is authorised. Application changes, migration execution, deployment and data destruction are not.
@@ -172,6 +181,164 @@ Keep enums for closed capability families and honest input/result alternatives. 
 can map to built-in configurations during cutover. DealType must stop limiting customer-authored combinations;
 deleting every enum is neither the goal nor a prerequisite.
 
+### Keep lifecycle sections, make their connections explicit
+
+The discussion retains the four-section organisation. It rejects neither mix-and-match nor the
+lifecycle boundaries. The problem with four independent bags is treating every combination as valid.
+The target is semantically constrained composition, including several compatible responsibilities
+inside one operation, without introducing a whole-deal class for each combination.
+
+These are proposed C# contract sketches, not implemented APIs or a complete compilable listing.
+They show the intended boundaries; the operation catalogue in section 4 and qualification gates in
+section 13 constrain the final contracts. No placeholder context object is an approved API.
+
+~~~csharp
+public sealed record DealConfiguration(
+    CommercialTerms Terms,
+    EntryDefinition Entry,
+    BookingDefinition Booking,
+    ConcertDefinition Concert);
+
+[Union]
+public abstract partial record EntryDefinition
+{
+    public partial record Application(ApplicationEntryDefinition Definition);
+    public partial record DirectInvitation(DirectInvitationEntryDefinition Definition);
+}
+
+public sealed record ApplicationEntryDefinition(
+    ApplyDefinition Apply,
+    AcceptDefinition Accept);
+
+public sealed record DirectInvitationEntryDefinition(
+    SendDefinition Send,
+    AcceptDefinition Accept);
+
+public sealed record BookingDefinition(
+    ConfirmationDefinition Confirm,
+    CancellationDefinition Cancel);
+
+public sealed record ConcertDefinition(
+    CompletionDefinition Complete,
+    CancellationDefinition Cancel);
+~~~
+
+The Union attribute above denotes B2B's existing Dunet pattern, not a dependency on preview native C#
+unions or assumed first-class EF union mapping. Extra operations such as evidence submission and amendment
+are explicit owned operations, not an invitation to hide them inside Complete.
+
+| Definition | Meaning and required content |
+|---|---|
+| CommercialTerms | Named entitlement/calculation definitions, parties and supply direction, schedules and advance-credit relationships, evidence/production requirements and amendment policy |
+| ApplyDefinition / SendDefinition | Requirements that must hold to submit that particular entry; shared identity, authority and eligibility invariants remain mandatory code |
+| AcceptDefinition | Required consent/approval conditions and entry-commitment selections, bound to named parties and commercial obligations; no invented extra signature or schedule choice |
+| ConfirmationDefinition | Supported booking actions and the facts required to confirm, including named funding and production requirements when selected |
+| CompletionDefinition | Supported completion, calculation and settlement actions with explicit terms/evidence/result references and due conditions |
+| CancellationDefinition | Applicable rules and supported consequences evaluated against the incident and existing financial facts; not unconditional replay of a refund step |
+
+Application and invitation can share the AcceptDefinition data vocabulary and pure consent rules while
+owning different entities, endpoints and histories. A concrete entry selects exactly one branch. A template
+can offer both entry alternatives at instantiation; an execution instance never runs both entry paths.
+Opportunity publication/visibility and Show inventory remain their owners' data, not fields forced into
+every DealConfiguration merely because those owners have workflows.
+
+Terms are declared once. A collection references a scheduled amount; a balance references its entitlement
+and credited advances; an approval references the particular requirement or statement. Changing a fee must
+not require editing a duplicate fee hidden inside Booking and another copy inside Concert.
+
+Focused examples of the typed binding vocabulary:
+
+~~~csharp
+public readonly record struct TermReference<TTerms>(Guid Id);
+
+public sealed record FixedFeeTerms(Money Fee);
+
+public sealed record RevenueShareTerms(
+    Percentage Rate,
+    RevenueBasisDefinition Basis);
+
+public sealed record FixedFeeCalculationDefinition(
+    TermReference<FixedFeeTerms> Terms);
+
+public sealed record RevenueShareCalculationDefinition(
+    TermReference<RevenueShareTerms> Terms);
+~~~
+
+TermReference identifies a named definition within the same configuration, not a cross-module ORM
+navigation. A FixedFeeTerms reference cannot be passed to the RevenueShareCalculationDefinition
+constructor. However, someone can construct a reference using the wrong Guid: validation must prove that
+the target exists, has the declared type and belongs to this configuration. Empty IDs/default structs and
+unknown wire discriminators are rejected. Typed references do not make arbitrary persisted IDs safe.
+
+Money has amount/currency semantics; Percentage has validated bounds; RevenueBasisDefinition states
+channels, cutoff, refunds/fees/tax treatment and permitted deductions. They are required domain values,
+not dictionaries. Guarantee-plus and higher-of have explicitly different formulas even when their
+calculator interfaces share the same inputs. Existing Versus keeps its current additive meaning.
+
+An entitlement describes what is earned; a schedule describes when particular amounts become due.
+An advance is credited once against that entitlement. A refundable security deposit is a different
+purpose and cannot silently become an earned fee or an ordinary credited advance.
+
+### DealEntity and DealDto remain data, not the execution engine
+
+The four existing DealEntity subclasses use TPT at the inspected baseline. The proposed replacement is
+one editable deal root containing the typed configuration, with optional template provenance. A focused
+shape, omitting creation/update methods and the selected concurrency mapping, is:
+
+~~~csharp
+internal sealed class DealEntity : IIdEntity, ITenantScoped
+{
+    private DealEntity() { }
+
+    public int Id { get; private set; }
+    public Guid TenantId { get; set; }
+    public Guid? TemplateId { get; private set; }
+    public int? TemplateRevision { get; private set; }
+    public DealTemplateEntity? Template { get; private set; }
+    public DealConfiguration Configuration { get; private set; } = null!;
+}
+
+public sealed record DealTemplateReference(Guid Id, int Revision);
+
+public sealed record DealDto(
+    int Id,
+    DealTemplateReference? Template,
+    DealConfiguration Configuration);
+~~~
+
+Template is an ordinary same-module EF navigation to the catalogue header. TemplateId plus
+TemplateRevision pins the source edition, backed by the revision relationship/constraint; both are present
+or both absent. Do not add a redundant TemplateRevisionId unless it deliberately replaces that composite
+identity. A separate revision navigation is optional. None of these navigations determines execution from
+Template.CurrentRevision.
+
+The reference DTO describes provenance; it is not the template definition. Template details have their
+own API and are not eagerly embedded in every DealDto. A deal authored without a template still has exactly
+the same Configuration. There is no Custom deal subtype and no second custom execution engine.
+
+Deal is the editable starting offer. Issued proposal revisions are entry-owned copies; Booking freezes
+the accepted revision, parties and signatures. Updating Deal or its template cannot change an issued or
+accepted revision. Concert consumes the accepted snapshot and amendment references, not the mutable Deal.
+
+Keep different kinds of version separate:
+
+| Value | Why it exists |
+|---|---|
+| Configuration schema version | Selects the reader for a persisted document shape; belongs to its storage/wire envelope and changes only when that schema evolves |
+| Template revision | Identifies which published defaults produced the proposal; needed for reproducibility, not step dispatch |
+| Proposal / contract revision | Identifies what was offered or agreed and exactly what a signature covers |
+| Capability semantics version | Prevents an old agreement silently running a changed formula or financial rule |
+| EF concurrency token / HTTP ETag | Detects stale edits; not a user-editable business version or replacement for agreement history |
+
+There is no requirement for a generic integer Version on every type. Map concurrency under B1 and require
+the client to return its expected token on edits. EF tracking alone cannot detect a stale form if the
+server reloads a newer row and discards the client's original token.
+
+ImmutableArray<T> is a .NET System.Collections.Immutable collection, suitable for immutable value
+snapshots where its serializer is qualified. It is not required by this architecture and does not make
+element objects or database rows immutable. EF entity navigation collections keep supported backing
+collections; document immutability and accepted-row protection are separate invariants.
+
 ## 4. Where keyed strategies and keyed unions earn their place
 
 **Yes: the keyed union factory is valuable as requirements become more distinct, specifically when a shared
@@ -182,9 +349,42 @@ action acquires genuinely different required inputs or results. It is not necess
 | Change £500 deposit to £750 | Typed configuration parameter | No |
 | Reuse a receipt-approval policy in 100 tenant templates | Composition of existing capabilities | No |
 | Select one of several calculators with the same input/output contract | Keyed strategy behind a named resolver | No |
-| Accept normally versus accept while selecting a permitted installment schedule | Keyed union of honest interfaces paired with a tagged command | Yes, when the action contract genuinely differs |
+| Calculate a fixed fee versus a receipt-based fee | Distinct typed calculation inputs behind a named resolver; union if the caller needs the heterogeneous capability family | A contract boundary, not a template boundary |
 | Require an independently negotiated agent approval | Its own action/endpoint and durable approval fact | Not an excuse to add optional fields to Accept |
-| Add another party's signed consent and return a countersignature deadline | New legitimate typed arm/outcome, if part of that shared action | Yes |
+| Another signatory or a schedule selection | Model the actual independent act or genuinely changed input/result | Not required merely because a template is custom; neither is an assumed initial acceptance arm |
+
+### Workflow, operation, definition, capability and implementation
+
+| Level | Responsibility | Application example |
+|---|---|---|
+| Workflow | Owns lifecycle orchestration and transitions | ApplicationWorkflow |
+| Operation | A business action, not automatically a strategy interface | ApplyAsync or AcceptAsync |
+| Operation definition | Configured responsibilities, parameters and prerequisites | ApplicationEntryDefinition.Apply / Accept |
+| Step family | One independently varying responsibility inside the operation | Payment commitment reference |
+| Capability interface | Honest required inputs and result for that responsibility | ICommitmentReferenceStep |
+| Implementation | Compiled behaviour satisfying that interface | MethodSetupCommitmentReferenceStep |
+| Execution instance | Durable progress for one configured action on one agreement | Advance collection action with its attempts |
+
+An operation may compose several step families. One IConfirmStep implementation per combination of
+funding, rider approval and timing would reproduce the whole-deal explosion below a different name.
+Mandatory authorisation, current consent, exclusivity and idempotency cannot be removed by configuration.
+Do not force every operation to have an artificial common step interface or a union.
+
+At 3826320d the actual ApplicationWorkflow has ApplyAsync and AcceptAsync, but selects IApplyStep and
+ICommitmentReferenceStep, not IAcceptStep. AcceptedApplication is one accepted snapshot, not a union.
+The generic keyed-union infrastructure has no current lifecycle consumer; its retained capability is
+not evidence that Apply or Accept needs a new union immediately.
+
+Runtime factories, callable interfaces, implementations and registrations stay in the executing module.
+Deal owns the common persisted definition vocabulary and catalogue validation, not all implementations.
+Keep that vocabulary data-only: no module entities, DbContexts, scoped services or imports of runtime
+interfaces into definition contracts. Module registrations expose descriptive compatibility metadata
+to validation; they do not expose a cross-module service locator. Qualify the Contracts dependency graph
+before moving types so no Deal-to-Application-to-Deal assembly cycle is introduced.
+
+The existing service-internal KeyedStrategies library remains the shared selection mechanism. Closed
+runtime behaviour keys belong to their family; public persisted capability identities are resolved by
+that owner's descriptor/factory. Neither customers nor templates register CLR implementations.
 
 ### Matching belongs in the owning workflow
 
@@ -193,29 +393,122 @@ action acquires genuinely different required inputs or results. It is not necess
 Controllers bind an action-specific request, invoke the application service and map the response.
 Services expose reads and use cases; workflow methods own lifecycle transitions.
 The module-local factory returns the selected typed capability.
-The owning workflow matches that capability with the typed command once and owns the shared checks,
-state transition and persistence/outbox boundary.
+The owning workflow matches that capability with the typed command when invocation contracts differ,
+and owns shared checks, state transitions and persistence/outbox boundaries. A named pure calculation
+resolver owns calculation dispatch; callers do not repeat that match in every workflow.
 
 For example, ApplicationWorkflow and DirectInvitationWorkflow each own their entry lifecycle.
 BookingWorkflow owns confirmation/cancellation before confirmation; ConcertWorkflow owns downstream
 execution. ShowWorkflow owns reservation/evidence lifecycle operations where orchestration is warranted.
 There is no universal DealWorkflow switching over every action in every module.
 
-Illustrative target shape, not an existing API or application implementation:
+The initial draft's standard-versus-schedule-selection acceptance example is superseded. The research
+does not establish a need to choose a schedule during acceptance when the proposal already specifies it.
+The following researched calculation family instead demonstrates the mechanism. These are proposed
+types; only the KeyedUnionBuilder API used below already exists.
 
 ~~~csharp
-var result = (acceptFactory.Create(selection), command) switch
+internal enum CalculationBehaviour
 {
-    (Accept.Standard(var capability), AcceptCommand.Standard input) =>
-        await capability.AcceptAsync(proposal, input.Signature, ct),
-    (Accept.Scheduled(var capability), AcceptCommand.Scheduled input) =>
-        await capability.AcceptAsync(proposal, input.Signature, input.Schedule, ct),
-    _ => RequestDoesNotMatchCapability()
+    Fixed,
+    RevenueShare,
+    GuaranteePlusShare,
+    HigherOfGuaranteeOrShare
+}
+
+internal interface IFixedFeeCalculator
+{
+    Money Calculate(FixedFeeTerms terms);
+}
+
+internal interface IRevenueShareCalculator
+{
+    Money Calculate(RevenueShareTerms terms, ApprovedRevenueBasis revenue);
+}
+
+internal interface IGuaranteeShareCalculator
+{
+    Money Calculate(GuaranteeShareTerms terms, ApprovedRevenueBasis revenue);
+}
+
+[Union]
+internal abstract partial record CalculationCapability
+{
+    public partial record Fixed(IFixedFeeCalculator Calculator);
+    public partial record RevenueShare(IRevenueShareCalculator Calculator);
+    public partial record GuaranteeShare(IGuaranteeShareCalculator Calculator);
+}
+
+var builder = new KeyedUnionBuilder<CalculationBehaviour, CalculationCapability>(services);
+
+builder.Case<IFixedFeeCalculator>(calculator => new CalculationCapability.Fixed(calculator))
+    .UseScoped<FixedFeeCalculator>(CalculationBehaviour.Fixed);
+
+builder.Case<IRevenueShareCalculator>(calculator => new CalculationCapability.RevenueShare(calculator))
+    .UseScoped<RevenueShareCalculator>(CalculationBehaviour.RevenueShare);
+
+builder.Case<IGuaranteeShareCalculator>(calculator => new CalculationCapability.GuaranteeShare(calculator))
+    .UseScoped<GuaranteePlusShareCalculator>(CalculationBehaviour.GuaranteePlusShare)
+    .UseScoped<HigherOfGuaranteeOrShareCalculator>(CalculationBehaviour.HigherOfGuaranteeOrShare);
+
+builder.Build();
+~~~
+
+Both guarantee/share implementations occupy the SAME capability case. The key chooses the implementation;
+the case tells the caller which input contract it must satisfy. A new customer template changes neither.
+GuaranteeShareTerms contains the guarantee, percentage and defined revenue basis. ApprovedRevenueBasis is
+an internal fact tied to this contract/evidence revision, with its approved eligible amount and currency;
+it is not a client assertion, raw import, optional context or unrestricted promoter P&L.
+
+Fixed and revenue calculations have different required inputs. Higher-of versus additive calculations
+can share the guarantee/share input contract. Preparation must prove that the approved basis matches the
+configured basis; it cannot swap net receipts for gross merely because both contain Money.
+
+The family-specific factory wraps the existing keyed catalog and returns CalculationCapability. A
+definition-binding boundary resolves the typed terms and required facts, rejecting mismatches before
+invocation. Its prepared inputs have explicit shapes:
+
+~~~csharp
+[Union]
+internal abstract partial record CalculationInput
+{
+    public partial record Fixed(FixedFeeTerms Terms);
+    public partial record RevenueShare(RevenueShareTerms Terms, ApprovedRevenueBasis Revenue);
+    public partial record GuaranteeShare(GuaranteeShareTerms Terms, ApprovedRevenueBasis Revenue);
+}
+~~~
+
+CalculationInput is an internal invocation value, not another persisted configuration or a user request.
+The binding operation returns a typed pending/rejection outcome if required evidence is unavailable.
+No nullable receipt argument is added to fixed-fee calculation to manufacture a shared header.
+
+Inside the named resolver, returning Result<Money, CalculateEntitlementError>, the match is:
+
+~~~csharp
+var capability = calculationFactory.Create(selection.Behaviour);
+
+return (capability, input) switch
+{
+    (CalculationCapability.Fixed(var calculator), CalculationInput.Fixed(var terms)) =>
+        calculator.Calculate(terms),
+    (CalculationCapability.RevenueShare(var calculator), CalculationInput.RevenueShare(var terms, var revenue)) =>
+        calculator.Calculate(terms, revenue),
+    (CalculationCapability.GuaranteeShare(var calculator), CalculationInput.GuaranteeShare(var terms, var revenue)) =>
+        calculator.Calculate(terms, revenue),
+    _ => new CalculateEntitlementError.IncompatibleInput()
 };
 ~~~
 
-The mismatch case is a domain rejection, not a permissive fallback. A client-selected URL, discriminator
-or action link does not prove eligibility. The workflow checks the selected configuration and actor.
+Here selection is the already validated calculation selection, input is the prepared union above, and
+IncompatibleInput is the proposed operation-owned mismatch error. The supported semantics version must
+already have been resolved by the factory boundary. These are separate branches, not three calculations
+executed for one fee. Statement preparation freezes the selected definition, inputs and output afterward.
+Explicit coverage tests must accompany the rejection arm: it prevents unsafe invocation but cannot prove
+that a newly added valid combination was implemented.
+
+Where a workflow itself needs different capability contracts, use the same factory/case mechanism there
+and match with the action-specific command. A capability/command mismatch is a domain rejection, not a
+fallback to another template. A URL, discriminator or action link never proves eligibility.
 
 Use action links and typed request bodies for distinct actions, consistent with the existing checkout UI.
 A wire discriminator mapping at the boundary is representation mapping, not duplicated business dispatch.
@@ -240,6 +533,137 @@ factory/registration surface, not every enum constraint in the codebase.
 The acceptance test is practical: adding a tenant template changes no workflow match; adding a genuinely
 different acceptance contract changes the owning union, typed endpoint/action and workflow pairing, without
 editing unrelated lifecycle modules.
+
+Preserve KeyedUnionBuilder's actual guarantees: enum coverage, declared/inhabited cases, no implementation
+overlapping multiple declared cases, duplicate-key rejection and consistent lifetimes. Many implementations
+of one case interface are already supported. Those checks do not prove compatible definition bindings,
+complete workflow matches, consent or provider readiness. Test those separately.
+
+### The operation catalogue and owned facts
+
+This is the target traceability map, not a claim that every new endpoint already exists. Each admitted
+operation must have its exact request/result union, definition schema and pending/error outcomes approved
+before its implementation slice. An implementation agent must not invent the missing commercial contract.
+
+| Operation / owner | Configuration consumed and required inputs | Result and persisted owner | Failure / consumer |
+|---|---|---|---|
+| Publish / Opportunity | Real slot, advertised proposal, visibility/eligibility and owner authority | Opportunity publication/state; commercial defaults reference | Ineligible owner/context rejected; Application consumes a real published opportunity |
+| Apply / Application | Application entry Apply definition; opportunity/artist/principal; submitted consent; any configured entry prerequisite | Application, first issued proposal and attributed consent | Duplicate/closed/unsupported entry or unmet requirement; artist and organiser see the next authorised action |
+| Send / DirectInvitation | Invitation Send definition; actual sender/recipient principals and slot; offered configuration | Addressed invitation and issued proposal; no synthetic Application | Visibility/authority/recipient validation; recipient-only negotiation access |
+| Counter / actual entry | Expected proposal revision, proposed replacement configuration and actor | New immutable proposal revision with attributable changes | Stale revisions and incompatible changes rejected; prior consent does not sign replacement terms |
+| Accept / actual entry | Exact proposal revision/hash, required consent, configured commitments, parties and resource context | Accepted source + Show claim + Booking/contract + outbox under the section 6 transaction | Stale consent, missing authority/prerequisite or competing claim; returns the same Booking on a valid replay |
+| Confirm / Booking | Accepted Confirm definition, current booking facts, configured requirement/funding actions | Booking actions/attempts and confirmed handoff once required facts hold | Pending funding or approval remains visible; provider outcome processors resume the owning action |
+| Submit/approve requirement / owning stage | Named requirement and version, responsible actor, evidence or exact statement revision | Submission/approval/waiver fact with authority; shared raw evidence stays in Show | Wrong actor/revision rejected; waiting stage reevaluates readiness |
+| Calculate / Concert resolver | Named typed calculation and precisely bound approved evidence/costs/credits | Explainable statement revision; no provider movement | Missing facts remain pending or rejected; approval UI consumes the exact statement |
+| Collect/release / current stage | Due obligation/action, authorised payer/recipient, approved amount, commitment and source-funds prerequisites | Stage action identity; correlated Payment operation outcomes | Authentication, collection, transfer and payout failures stay distinct; no new collection for an unknown prior outcome |
+| Amend/cancel / current stage | Accepted revision, affected parties/resources, incident/changed terms and completed actions | New contract revision or attributed consequence, obligation adjustments and resource changes | No deletion of earlier consent/payment; disputes and unrecoverable amounts retain a responsible actor |
+
+ApplicationWorkflow and DirectInvitationWorkflow each own their entry. BookingWorkflow and
+ConcertWorkflow own their stages. Show orchestrates shared resource/evidence operations where needed.
+Independent submission/approval actions are not forced into an Accept command merely to give it more arms.
+
+Apply's recommended flow is common creation plus selected prerequisite checks. The current
+VenueHireApplyStep's distinguishing work is payment-method validation before the same ApplicationEntity
+creation. Extract that responsibility; select it because the configured commitment requires it, with the
+actual payer, not because an enum says VenueHire. Reuse the existing payment-session validation contract.
+Retain an IApplyStep only when a remaining Apply variation genuinely earns that contract.
+
+Accept loads the entry-owned issued proposal, checks its expected revision and consent, and consumes the
+configured commitments. A focused target interface illustrates the retained strategy boundary:
+
+~~~csharp
+internal interface IApplicationCommitmentReferenceStep
+{
+    PaymentOperationReference Resolve(
+        ApplicationEntity application,
+        CommitmentDefinition definition);
+}
+~~~
+
+CommitmentDefinition names the supported reference behaviour, stable definition identity, payer-role
+binding and obligation/scope it covers. ApplicationEntity is the actual owned aggregate with its
+proposal/commitment history, not a context invented to carry unrelated optional properties. The method
+resolves a reference only; eligibility and actual payment readiness are checked separately.
+
+The relevant fragment inside ApplicationWorkflow.AcceptAsync, after loading/validating the proposal, is:
+
+~~~csharp
+if (proposal.Configuration.Entry is not EntryDefinition.Application(var entry))
+    return new AcceptApplicationError.InvalidEntryRoute();
+
+var commitments = new List<PaymentOperationReference>();
+
+foreach (var definition in entry.Accept.Commitments)
+{
+    var step = commitmentFactory.Create(definition.Behaviour);
+    commitments.Add(step.Resolve(application, definition));
+}
+~~~
+
+Here proposal denotes the explicitly loaded Application proposal revision, not an existing
+CurrentProposal property. The factory is Application-owned; its behaviour selection is not DealType.
+The fragment is not the whole acceptance method: it omits the mandatory consent/claim/transaction work
+listed above and must never be copied as a complete accept implementation. Resolving a reference is not
+proof that its payment setup, authorisation or funding succeeded.
+
+An invitation-facing resolver consumes its own root/definition. Shared pure reference rules may consume
+explicit origin/party/obligation values; neither route accepts the other's entity or a nullable
+ApplicationOrInvitationContext. If the target records a ready commitment reference directly and reference
+resolution ceases to vary, remove that redundant strategy instead of maintaining variation artificially.
+
+Confirmation is requested, then progresses when its prerequisites become true. For example, collect a
+configured advance after acceptance, observe its funding result, obtain the configured rider approval,
+and confirm when both required facts hold. Do not require the advance to be funded before allowing the
+only operation that can request its collection. The readiness/dependency model must reject such cycles.
+Provider calls and human decisions are not awaited inside a long-lived database transaction.
+
+Completion similarly coordinates due calculations, approvals and individually identified financial
+actions. A statement can become ready while collection still awaits authentication. A failed bank payout
+does not make the payer's already fulfilled collection due again. A timer/worker resumes the same action
+identity; it does not re-run all preceding steps or construct another completion payment.
+
+### Source-to-target migration of existing responsibilities
+
+| Existing source at 3826320d | Target responsibility / change |
+|---|---|
+| Application StandardApplyStep / VenueHireApplyStep | Common creation plus configured payment-method prerequisite; remove the subject-name payment decision |
+| Application commitment steps and ApplicationCheckoutService | Configured commitment family and party-aware action links; preserve legacy operation references when reading migrated agreements |
+| Booking FlatFeeConfirmStep | Capture capability consuming the identified authorisation and amount; no FlatFeeContract cast to discover financial behaviour |
+| Booking VenueHireConfirmStep | Supported collection/deposit capability using agreed payer/recipient and amount; venue hire is a supply subject, not its dispatch key |
+| Booking VerifiedConfirmStep | No additional financial action where none is configured; mandatory verification/confirmation prerequisites still apply |
+| Booking per-deal contract factories | Freeze one accepted configuration/parties/consent payload; preserve existing terms and historical meaning during conversion |
+| Concert settlement amount resolvers | Typed calculation families and statement preparation, including exact receipt/refund/deduction semantics |
+| Concert DealPayeeResolver families | Explicit agreement party bindings; new routing/representative mandates only when separately authorised |
+| Concert PayoutCompleteStep / ReleaseEscrowCompleteStep | Reuse supported Payment operations per identified obligation/action; remove the one-completion-payment assumption |
+| Booking/Concert cancellation steps | Supported consequences evaluated from cancellation terms and actual completed financial facts, not a blanket deal-type refund branch |
+| Deal mapper/updater and four TPT subclasses | One editable root and component-level discriminated configuration; changing issued terms creates a new proposal rather than editing its history |
+| ConfirmedBookingTerms and public/read contracts | Freeze the new accepted payload once and qualify producer/consumer cutover; do not mirror a new subtype hierarchy in Concert |
+| Validators, eligibility, repositories, state machines | Retained owners extended for configuration/authority/version/claim checks; not replaced by the template catalogue |
+| Outbox and outcome processors | Stable per-action correlation, duplicates/reordering/unknown outcomes and stage-specific resume; preserve Payment ledger authority |
+| Frontend four-deal forms and action links | Built-in preset regression surface, then guided supported composition; state/actor/configuration-driven typed actions and readable previews |
+
+The existing four arrangements first map to explicit equivalent configurations. Preserve additive
+Versus, supply direction, commitment meaning and operation correlation. Do not leave DealType execution
+running permanently beside custom execution. A temporary compatibility reader/converter has a named
+removal/retention condition and cannot silently reinterpret previously signed agreements.
+
+### Compatibility is more than a list of permitted presets
+
+| Combination | Required decision |
+|---|---|
+| Fixed fee + credited advance + post-performance balance | Supported when amount, timing, credit and cancellation rules are explicit |
+| Fixed fee + production or revenue-evidence approval | Potentially valid: approval can gate performance/release without determining the fee |
+| Revenue share + fixed pre-event advance | Potentially valid: define credit, funding and cancellation treatment; the final share can remain unknown |
+| Pre-event percentage of unknown final receipts | Reject or require an explicitly supported provisional basis; no guessed final amount |
+| Fixed-fee terms bound to a revenue-share calculation | Reject typed reference/input mismatch |
+| Net receipts plus a duplicate deduction of already-netted fees | Reject/reconcile the economic basis; individually valid components can still double-count |
+| Mandatory approval due only after an action which itself requires that approval | Reject the dependency cycle or impossible due order |
+| Application and invitation entry branches in one accepted entry instance | Reject; different negotiations may still compete for the same real slot |
+
+Three layers are required: typed callable contracts, structural/semantic validation of persisted
+references and dependencies, and live execution checks for evidence, authority, funding and availability.
+Validated configuration is not proof of future funds. Database checks/unique/exclusion constraints defend
+storage and races; PostgreSQL cannot prove the meaning of a customer-authored commercial composition.
 
 ## 5. Proposed entities and database ownership
 
@@ -436,7 +860,8 @@ revision. TemplateRevision owns the immutable body/hash/schema version and fork/
 
 Use explicit boundary serialization and compatibility validation for polymorphic configurations.
 Npgsql's EF JSON mapping supports useful fixed structures, but this plan does not assume every existing
-TPH hierarchy or arbitrary union automatically maps correctly through ToJson.
+entity hierarchy or arbitrary union automatically maps correctly through ToJson. The inspected Deal
+mapping actually uses TPT; older B2B roster prose saying TPH is not current mapping evidence.
 
 ### Permissions and publication
 
@@ -521,6 +946,43 @@ same provider operation before another charge is created. Completed deposits are
 balance fails. A failed bank payout after a successful recipient transfer is not an unpaid payer debt.
 
 ## 9. Financial scenarios and missing capabilities
+
+### Organiser research: implementation consequences, not new product policy
+
+The 8 September organiser-commercial-workflows report in Concertable/docs, research commit 5ac4048,
+supports constrained reuse for recurring organisers. It does not prove demand for an unrestricted builder,
+willingness to pay, access to a particular provider account or authority to adjudicate a dispute.
+Its five worked arrangements become design/verification fixtures, with admission boundaries explicit:
+
+| Research fixture | Required model / observable result | Scope boundary |
+|---|---|---|
+| R1: GBP 600 support, GBP 150 advance, GBP 450 balance through either entry | Distinct negotiation histories; equivalent accepted economics; stale GBP 550 offer rejected; one slot claim; failed balance preserves advance | Core two-route and schedule qualification |
+| R2: GBP 1,800 room hire, higher-of headliner and two GBP 350 support fees, Skiddle evidence | One Show with four private agreements; receipts 15,100 less approved costs 3,600; max(3,000, 70% of 11,500) = 8,050; credit 1,000 once, leaving 7,050 | Evidence/import permission and an independently authorised funding route; no implicit custody of ticket proceeds |
+| R3: recurring club nights and bar shortfall | Each accepted night retains its own terms; a template edit affects new proposals only; 2,500 minimum less 2,100 eligible bar takings gives a 400 disputed shortfall, not a 2,500 extra charge | Recurrence/template isolation is core; bar-till evidence/shortfall is a later capability unless expressly admitted; unrelated DJ payment follows an agreed partial-release policy |
+| R4: DICE postponement after GBP 1,000 reached the artist | New total 5,500 leaves 4,500 after credit; alternatively agreed cancellation entitlement 800 produces a 200 recovery obligation without erasing the payout | Human agreement/dispute authority and refund/reversal availability are explicit; fan-ticket duties remain separate |
+| R5: two rooms, limited agent and failed bank payout | Different rooms may coexist; one artist cannot hold overlapping exclusive commitments; signing authority does not confer money-receipt authority; successful 700 transfer is not recollected after payout failure | No implied shared-crew/travel constraint or agency collection mandate |
+
+These examples omit separately disclosed tax and platform/provider fees, as the research does. They are
+invented qualification cases, not customer transactions, legal defaults or evidence of prevalence.
+R2's higher-of formula is deliberately different from the existing additive Versus and from the
+product owner's surplus example below; neither example silently replaces the other's agreed definition.
+
+The report's C1-C16 matrix maps to this plan as follows: entry/claims C1-C2; Show/private agreements C3;
+requirements C4; schedules C5; imports/declarations/deductions C6-C8; calculation/statements/disputes C9-C10;
+collection/transfer/payout C11-C12; representation C13; amendments/cancellation C14-C15; reuse C16.
+An unadmitted capability must return an understandable unsupported/prerequisite reason, not appear as an
+executable template. Keep full source research with its docs owner rather than copying its source register.
+
+For first delivery retain the four current arrangements as migration/regression cases. The configured
+beta still requires guided changes to supported behaviour: for example advance-before-confirmation versus
+approved-evidence settlement, with appropriate approvals and timing. Merely editing an amount or saving
+another fixed preset does not complete the endorsed proposition.
+
+Prioritise named obligations, fixed advances/balances, explicit additive/higher-of calculations,
+receipt/deduction approval, amendments and recoverable actions. Public/community authoring, arbitrary
+formula graphs, cross-event loss pools, complex multi-recipient funding and broad provider automation
+remain conditional expansions. A missing connector may use an explicitly approved sourced declaration;
+an unknown feed is never silently treated as complete or as zero.
 
 ### Same terms, two entry routes
 
@@ -647,7 +1109,7 @@ First-party references:
 |---|---|---|
 | Module migrations | 11 migration-owning B2B contexts; 33 migration/designer/snapshot files at inspected baseline | Provider-correct schema for each owner; not the old 24-file B2B count |
 | Messaging tables | Shared inbox/outbox own their tables; business contexts borrow mappings | One migration owner per table, Npgsql migration support for B2B, SQL Server support retained for others |
-| Concurrency | Application/Booking/Concert byte-array versions plus invoice-sequence rowversion | Update mappings and callers; retain conflict classification and invoice allocation correctness |
+| Concurrency | Application/Booking/Concert byte-array versions through IConcurrencyVersioned plus State concurrency tokens; invoice-sequence rowversion | Update mappings and callers; preserve both token and lifecycle-state conflict protection and invoice allocation correctness |
 | Spatial | Artist, Venue, User and ConcertVenueReadModel geography columns | Preserve coordinates, units, SRID and translated queries |
 | Provider setup | UseSqlServer registrations, design-time factories, SQL connection/Dapper, AppHost | Npgsql registrations/connection handling and B2B-only PostgreSQL/PostGIS hosting |
 | Index SQL | SQL Server filtered-index syntax in lifecycle/invitation mappings | Equivalent PostgreSQL predicates and uniqueness semantics |
@@ -750,7 +1212,7 @@ duplicates provider-specific persistence/constraint work. Neither route requires
 ### Dependency graph
 
 ~~~text
-Design + retained-data decision
+Complete contract/compatibility design + retained-data decision
           |
 Shared provider compatibility [external producer owner]
           |
@@ -780,6 +1242,25 @@ Every slice inherits the verification allocation in section 13. Each names its a
 proofs and must leave intermediate builds/current supported journeys green. B2/B3 or other adjacent work
 may share a PR when their actual scope remains coherent; a required producer publication cannot be folded
 away by using an unpublished local dependency.
+
+### Contract-design gate before implementation
+
+This document is the overarching owner, including its code sketches, not a direction to let an
+implementation agent invent the missing execution model. Before authorising B4-B7 application work:
+
+1. Pin each admitted operation's definition discriminators/parameters, interface signatures, typed
+   requests/results/errors, actor and prerequisite facts, operation identity and persistence owner using
+   section 4's catalogue. No unexplained Context, generic object input or unresolved producer output.
+2. Pin definition-to-capability input pairing and stage/phase admissibility. Validate the same registry
+   metadata used for authoring and execution, including missing inputs, impossible due order and cycles.
+3. Trace R1 and R2 from template through both entries, accepted snapshot, confirmation, calculation,
+   approval and recovery, naming every output consumer. Retain current four-arrangement golden cases.
+4. Resolve the section 14 policies needed by the admitted subset. Mark excluded capabilities unavailable;
+   do not silently adopt all later research examples as initial product scope.
+
+The provider and entry/configuration delivery order remains a recommendation; this refresh does not
+authorise database work or change another owner's ledger. Exact C# namespace/method refinements may occur
+during implementation, but inputs/results, ownership, compatibility and failure meaning are design gates.
 
 ### Prerequisite P1: shared provider support, separately owned
 
@@ -856,11 +1337,16 @@ away by using an unpublished local dependency.
   behaviours, including differing payer-at-keyboard timing.
 - **Scope:** substantial vertical domain/API/UI slice; no general template editor prerequisite.
 
+Use the already designed future configuration/accepted-input boundary even while only the four current
+arrangements are enabled. A temporary conversion is a migration boundary, not a separate custom-deal engine.
+
 ### B5: persisted configuration and hybrid template catalogue
 
 - **Depends on:** B4; supported capability metadata/version policy; catalogue permission/publication decisions.
 - **Changes:** Deal catalogue/header/revision/grant entities, typed configuration serialization/validation,
   built-in configuration mapping, tenant authoring/fork/publication and paged discovery UI.
+- **Design consumption:** section 3's data/EF/DTO boundaries and section 4's family/binding catalogue;
+  stage-owned factories replace DealType-driven dispatch, without widening every enum constraint.
 - **Contracts/persistence:** same accepted-configuration model for built-ins/custom templates; schema and
   capability versions pinned, JSONB bodies, indexed relational metadata and typed action descriptors.
 - **Consumers:** both entry proposal editors, Booking/Concert factories and configuration readers.
@@ -869,6 +1355,8 @@ away by using an unpublished local dependency.
   agreement survives template edit/retirement; existing arrangement regression fixtures.
 - **Completion:** a tenant creates/publishes/uses a template without enum or code changes, and its
   accepted agreement follows the same engine as a built-in.
+- **Boundary:** this is engine/catalogue completion, not the complete configurable beta. B6/B7 supply
+  the materially different guided behaviours, ordinary amendments and financial recovery required by it.
 - **Scope:** new domain catalogue plus editor/discovery; not arbitrary customer code execution.
 
 ### B6: evidence, schedules and independently tracked obligations
@@ -883,6 +1371,8 @@ away by using an unpublished local dependency.
   external ticketing starts with supported link/manual evidence, not an assumed API.
 - **Verification:** documented promoter/club calculations, refund revisions, due conditions, mismatched
   capability/command pairs, failed collection after deposit, duplicate/reordered provider outcomes.
+- **Research fixtures:** R1/R2 calculations and action traces; R3 recurrence isolation. Bar-shortfall
+  execution stays disabled unless its evidence/approval/funding policy is separately included.
 - **Completion:** demonstrate fixed deposit/balance and approved-receipt-share workflows, each saved as a
   tenant template, with materially different orchestration and visible partial states.
 - **Scope:** substantial financial domain work. Pooled multi-recipient funding stays disabled without its
@@ -899,6 +1389,8 @@ away by using an unpublished local dependency.
 - **Verification:** re-sign changed terms, reject stale amendment, conflicting new date, cancellation
   after deposit/transfer, failed payout without recollection, old capability execution after retirement,
   backup/restore with partially completed actions.
+- **Research fixtures:** R4 preserves paid advances and explicit recovery; R5 preserves representative
+  limits and separates a failed bank payout from the completed payer collection/recipient transfer.
 - **Completion:** the full scenario matrix in section 13 passes on the qualified B2B baseline; supported
   external consumers and provider contracts are compatible; no unresolved money is hidden as Paid.
 - **Scope:** cross-lifecycle correctness and operations; not a bookkeeping-only final PR.
@@ -947,6 +1439,11 @@ physical frontend folder is outside api/Concertable.B2B.
 | Cancellation/amendment | New agreed facts/adjustments; no overwritten signed history or reopened sealed row |
 | Outbox crash/retry | Claim/reclaim and idempotency preserve one business effect under concurrent dispatch |
 | Retained-data migration | IDs, money totals, signed artifacts and in-flight work reconciled; restore/rollback rehearsed |
+| Typed definition binding | Wrong term kind, missing reference, other configuration's ID and unsupported capability version rejected before invocation |
+| Mixed requirements | Fixed fee with an independent evidence/rider gate can be valid; requiring unknown receipts for a fixed calculation is not manufactured |
+| Impossible dependency | Cycle, unreachable mandatory approval or amount unknowable at its due time is rejected with an actionable reason |
+| Many implementations in one union case | Both additive and higher-of implementations resolve through the same guarantee/share interface; new template needs no registration |
+| Explicit financial semantics | Higher-of, additive, net/gross, advance credit and permitted deductions reproduce their own agreed arithmetic; no double deduction/credit |
 
 Final B2B completion means the supported arrangements are selectable, negotiable, executable, observable
 and recoverable through real B2B journeys. It is not satisfied by JSON storage, four built-in dropdown
@@ -961,7 +1458,7 @@ options, a successful schema migration alone, or an internal demonstration witho
 | D3 | Agreed in this conversation | This implementation plan belongs inside B2B; other services are dependency owners |
 | D4 | Recommended | Hybrid catalogue; enums for supported behaviour, ordinary IDs for templates |
 | D5 | Recommended | Show + ShowSpace + Slot + claims/reservations; private context created unobtrusively from invitation UI |
-| D6 | Recommended | Platform/private/explicitly shared templates initially; no open community catalogue yet |
+| D6 | Recommended | Platform/private templates first; grant-based sharing only when deliberately enabled, with its authority tests; no open community catalogue |
 | D7 | Recommended | Retain current tenancy infrastructure; no Finbuckle migration without an evidenced missing requirement |
 | D8 | Recommended | Migrate B2B after shared compatibility, before the major new context/configuration schema |
 | D9 | Open policy | Independently funded, undisputed obligations may progress; specify when an all-or-nothing policy is allowed |
@@ -969,6 +1466,9 @@ options, a successful schema migration alone, or an internal demonstration witho
 | D11 | Open product policy | Delegation scope, signing authority, and conditional bookings before room/funding confirmation |
 | D12 | Open naming | Keep internal Concert execution ownership; choose clear user-facing naming for non-performance engagements |
 | D13 | Recommended boundary | Supported typed composition, not arbitrary scripts or unrestricted formula graphs |
+| D14 | Agreed direction in discussion | Mix and match semantically compatible capabilities, including within an operation; four lifecycle sections remain a useful organisation, not independent unvalidated bags |
+| D15 | Recommended technical shape | Operations can compose several step families; retain ordinary strategies where contracts match and unions where they genuinely differ; no assumed IAcceptStep or schedule-choice branch |
+| D16 | Design gate | Finalise the admitted operation schemas/signatures, binding rules and output consumers before implementation; snippets are proposed contracts, not compiled or executed evidence |
 
 Writing this review draft resolves neither D9-D12 nor implementation authority.
 After discussion, put accepted product decisions in their existing Concertable/docs owners and reconcile
@@ -981,7 +1481,8 @@ this plan to them. Do not publish recommendations as already agreed product poli
 Paths below are B2B-relative unless explicitly identified as a shared or frontend owner:
 
 - src/Modules/Application/.../Services/ApplicationWorkflow.cs and ApplicationCheckoutService.cs:
-  current proposal/acceptance snapshot, signatures/fingerprint, payment commitment and artist/venue assumptions.
+  current signatures/fingerprint and acceptance snapshot, payment commitment and artist/venue assumptions.
+  Proposal revision history and CurrentProposal are not existing implementation facts.
 - src/Modules/Booking/.../Entities/BookingEntity.cs, BookingWorkflow.cs and BookingEntityConfiguration.cs:
   required application/opportunity identities, contract creation, operation matching and unique indexes.
 - src/Modules/Concert/.../Entities/ConcertEntity.cs, Contract-derived creation and ConcertAvailability.cs:
@@ -995,6 +1496,9 @@ Paths below are B2B-relative unless explicitly identified as a shared or fronten
 - B2B AcceptApplicationPage, ApplyAction and MyConcertPage: action-link/checkout and contract UI are real
   consumer seams; invitations are not already represented by those journeys.
 - B2B initial-migrations.ps1 and migrations.psd1 at f72431d7: current owner-local migration tooling.
+- B2B KeyedUnionBuilder/KeyedUnionCatalog at 3826320d: enum coverage, many implementations per interface
+  case, no overlapping cases and lifetime validation; existing Deal wrappers, not the generic core, bind
+  execution to DealType.
 
 These are investigation findings, not claims of fresh runtime/test execution during plan authoring.
 
@@ -1006,6 +1510,14 @@ research/evidence/2026-09-07-launch-proposition-audit including its 8 September 
 research/post-launch/DEAL_SCALE_RESEARCH; research/post-launch/WORKFLOW_DIVERGENCE_DECISION.
 Older research remains evidence/alternatives, not authority to reverse the latest entry-path decision.
 Some narrative passages still describe pre-PR633 runtime ownership; the named merged source wins.
+
+Additional evidence read: Concertable/docs research/evidence/2026-09-08-organiser-commercial-workflows.md
+at local commit 5ac4048a6f4145f1e8f22d1e043aff33da47ba3f, branch Docs/Organiser-Commercial-Research,
+based on docs main 99ad353b. At this refresh it is not pushed/merged; its source register and recommendations
+are research, not approved product policy. Its verified local checkout is
+C:/Users/TommySeery/source/repos/Concertable-docs.worktrees/Docs-Organiser-Commercial-Research.
+After publication, follow the docs research index rather than relying on a remembered worktree path.
+This update does not edit the research owner's branch or create another research ledger.
 
 ### One owner per workstream
 
