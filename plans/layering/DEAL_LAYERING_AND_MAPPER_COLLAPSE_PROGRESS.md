@@ -11,12 +11,12 @@
 - Dependency/package gates: `Riok.Mapperly` 4.3.1 was already pinned in `api/Concertable.B2B/Directory.Packages.props`
   and is now referenced by `Deal.Application`. Phase 3 needs the same pin in
   `api/Concertable.Payment/Directory.Packages.props`.
-- Last reconciled: 2026-09-07 against `origin/main` @ `15ce7946f` in this worktree
+- Last reconciled: 2026-09-08 against `origin/main` @ `15ce7946f` in this worktree
 
 ## Current state
 
-**Phase 1 complete. Phase 2 half done** — the `IDealMapper` family is gone; `IDealUpdater` is untouched
-pending a design decision (see Next Steps).
+**Phases 1 and 2 complete.** Both Deal families are gone and the module holds no `IDealStrategy` at all.
+Phase 3 (Payment `ITransactionMapper`, B2B `IUserMapper`) is the only remaining work and is independent.
 
 The plan was originally drafted against `Docs/launch_seal-and-postgres-plans`, whose Concert module predates
 the Application/Booking/Opportunity split. Every file path and family roster in the plan has since been
@@ -48,10 +48,34 @@ re-verified against `origin/main` @ `15ce7946f`.
   `PackageReference` on `Deal.Application` was needed. `[MapperIgnoreSource(nameof(DealEntity.TenantId))]`
   declares the one deliberate source-only member — tenancy is ambient and absent from the DTO.
 
+- **Phase 2b** — `IDealUpdater`, the `DealUpdater` facade and its four arms deleted (6 files), replaced by
+  `Deal.Application/Updaters/DealUpdater.cs`: a static `Update(DealEntity, DealDto)` entry point owning the
+  deal-type mismatch guard, a private `DealType` → arm switch, an abstract `DealUpdater<TEntity, TDto>`
+  template base holding the single downcast, and four private nested one-line arms. `DealUpdater` is the only
+  name the file exposes. `DealService` drops the dependency and now holds only `IDealRepository`; the keyed
+  registrations, both `AddDealStrategies` overloads and `RequireAll<IDealUpdater>()` are gone from
+  `Deal.Infrastructure`.
+
+  `DealStrategyFactoryExtensions` went with them — its `Create(DealDto)` / `Create(DealEntity)` overloads had
+  no callers left once the `IDealMapper` facade was deleted in `1b70cd0b8`, and the Deal module now has no
+  `IDealStrategy` implementation at all. `Deal.Infrastructure` no longer registers `IDealStrategyFactory<>`;
+  every module that consumes it (Application, Booking, Concert) registers it through its own
+  `AddXDealStrategies` and `AddDealStrategyFactory` uses `TryAdd`, so nothing lost a registration.
+
+  `DealStrategyFactoryTests` was deleted rather than rewritten, `KeyedRegistrations_CoverEveryStrategyFamilyAndDealTypeExactlyOnce`
+  dropped from `DealStrategyArchitectureTests`, and `DealStrategyBuilderTests` repointed onto
+  `new DealStrategyBuilder(services)` — mirroring `DealUnionBuilderTests` — so no production member survives
+  only to serve a test. New `DealUpdaterTests` covers a write per `DealType`, `DealType` coverage of the
+  theory, and the mismatch and invalid-terms failures.
+
 ## Latest verification
 
-- `Concertable.B2B.Deal.UnitTests` builds clean and passes **58/58**, which transitively proves
-  Deal.Contracts, Deal.Domain, Deal.Application and Deal.Infrastructure compile.
+- `Concertable.B2B.Deal.UnitTests` builds clean and passes **57/57**, which transitively proves
+  Deal.Contracts, Deal.Domain, Deal.Application and Deal.Infrastructure compile. (58 before Phase 2b: the
+  seven `DealStrategyFactoryTests` cases and one architecture fact went, seven `DealUpdaterTests` cases came.)
+- `Concertable.B2B.Deal.Api` and `Concertable.B2B.Concert.UnitTests` build clean, and Concert passes
+  **105/105** — the other consumer of the shared `DealStrategyFactory` / `DealStrategyBuilder` machinery,
+  which this phase deliberately leaves in place.
 - **`LayeringArchitectureTests` has never been executed.** `Concertable.B2B.ArchitectureTests` references the
   composition root, which does not build — see the blocker below. PR CI is its first real run; expect to fix
   the pending list there if it is wrong.
@@ -93,6 +117,28 @@ locally.
 - **`Apply` as an abstract member on `DealEntity` was designed and rejected.** `DealTerms.Render()` proves the
   shape works in this codebase, but `DealTerms` lives in Contracts and may see a DTO; `DealEntity` lives in
   Domain and, after Phase 1, may not. Do not re-propose it.
+- **The entity↔DTO correlation cannot be made compiler-visible under dispatch. This is settled — stop
+  looking.** Domain cannot see Contracts and a DTO may not mutate, so neither hierarchy can be parameterized
+  by the other and every shape reduces to one runtime-guarded seam. The generic template base does **not**
+  close it: `TEntity : DealEntity` and `TDto : DealDto` are independent constraints, so
+  `DealUpdater<FlatFeeDealEntity, DoorSplitDealDto>` compiles. `CollectionSyncer<TEntity, TDto>` is safe only
+  because `OpportunitySyncer`'s call site knows the concrete syncer statically; Deal's call site holds an
+  abstract `DealDto`. What the base genuinely buys — and why it was still the right shape — is the pair
+  declared once per arm in type arguments, the downcast written once instead of four times, and one-line arms.
+- **The `DealType` → arm dispatch is a switch, never a table.**
+  `DealStrategyArchitectureTests.DealTypeFrozenDictionaries_AreAbsent` bans `FrozenDictionary<DealType` across
+  the Deal and Concert modules and still guards Concert's live keyed families; weakening it to hold four
+  stateless Deal arms would have been the wrong trade. A private switch expression inside `DealUpdater` needs
+  no change to that guard. The FSM design ruling ("NO frozen table") points the same way.
+- **Deviation from `keyed-strategies`, deliberate and recorded.** That standard's answer for behaviour keyed by
+  a closed key is the validated keyed registry — exactly what Phase 2 removes. It is removed because these arms
+  carry no collaborators and no behaviour beyond one `entity.Update(primitives)` call, so composition-time
+  coverage was being bought with a six-file DI family. Coverage is now a unit test. Reviewers should read this
+  as an intended exception, not an oversight.
+- **`DealDto.ToEntity()` stays the create path.** It was deliberately not folded into the updater arms even
+  though one `DealType` → arm dispatch point could serve both: virtual dispatch on the DTO gives
+  compiler-enforced exhaustiveness that the switch cannot, so create keeps the stronger guarantee and only
+  update pays for the seam.
 - **The surviving keyed families are not targets.** `IContractFactory` (Booking.Domain),
   `IDealPayeeResolver` and `ISettlementAmountResolver` (Concert.Application) carry real behaviour.
 
@@ -102,16 +148,13 @@ None yet.
 
 ## Next Steps
 
-**Blocked on a design decision, not on work.** `IDealUpdater` is the only remaining Deal family: the
-interface in `Deal.Application/Interfaces`, the `DealUpdater` facade and four arms in
-`Deal.Infrastructure/Services/Updaters`, plus the keyed registrations and `RequireAll<IDealUpdater>()`.
+**Phase 3 — Payment `ITransactionMapper` and B2B `IUserMapper`.** Independent of everything above.
+`ITransactionMapper` (interface, facade, three arms in `Payment.Application/Mappers`) becomes one static
+Mapperly mapper, which needs `Riok.Mapperly` pinned in `api/Concertable.Payment/Directory.Packages.props`;
+`TransactionMapperTests` is rewritten against it. `IUserMapper` (`B2B User.Infrastructure/Mappers`) is deleted
+outright — no dependencies, and its `Task.FromResult` wrapper goes with it. Gate on
+`Concertable.Payment.UnitTests` plus the Payment integration suite.
 
-The straight translation is a tuple-pattern switch over `(existing, deal)` calling `entity.Update(...)`,
-which Tommy has flagged as too verbose given both sides always vary together. Agree the shape before
-writing it; the mechanical work behind it is under an hour.
-
-Once that is settled: delete the six `IDealUpdater` files, repoint `DealService.UpdateAsync`, drop the
-keyed registrations and the remaining `DealStrategyFactoryTests`/`DealStrategyArchitectureTests` rows,
-then gate on `Concertable.B2B.Deal.UnitTests`.
-
-Phase 3 (Payment `ITransactionMapper`, B2B `IUserMapper`) is independent and can proceed in parallel.
+**Then open the PR.** Nothing before Phase 3 needs the composition root, and the branch has never been pushed;
+`LayeringArchitectureTests` gets its first real execution in PR CI, so expect to correct the pending-module
+allowlist there.

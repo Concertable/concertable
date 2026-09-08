@@ -94,6 +94,24 @@ compiler-enforced exhaustiveness — `DealTerms.Render()` is exactly that shape 
 Contracts and may see a DTO, whereas `DealEntity` lives in Domain and, after Phase 1, may not. Correct layering
 wins over the nicer dispatch.
 
+**Entity→DTO correlation cannot be compiler-verified under dispatch, in any shape.** With `Deal.Domain`
+unable to see `Deal.Contracts` and a DTO forbidden from mutating, neither hierarchy can be parameterized by
+the other, so every candidate shape reduces to exactly one runtime-guarded seam. A generic template base —
+`DealUpdater<TEntity, TDto>`, the `CollectionSyncer<TEntity, TDto>` shape — does not close that gap either:
+its constraints are `TEntity : DealEntity` and `TDto : DealDto` independently, so `DealUpdater<FlatFeeDealEntity,
+DoorSplitDealDto>` still compiles. What it does buy is real and is why it wins: the pair is declared once per
+arm in type arguments, the downcast exists once in the base rather than once per arm, and the arm bodies are
+one line each. `CollectionSyncer` gets its safety from a call site that knows the concrete syncer statically;
+Deal has no such call site, so dispatch is unavoidable and the seam is priced, not removed.
+
+**One dispatch point, and it is a `switch`, not a table.** `DealStrategyArchitectureTests.DealTypeFrozenDictionaries_AreAbsent`
+bans `FrozenDictionary<DealType` across the Deal and Concert modules and still guards Concert's live keyed
+families, so the `DealType` → arm dispatch is a private switch expression inside the updater. This is a
+deliberate, recorded deviation from the `keyed-strategies` standard, whose answer for behaviour keyed by a
+closed key is the validated keyed registry: that registry is what Phase 2 removes, because these arms carry no
+collaborators and no behaviour beyond one `entity.Update(primitives)` call, so the composition ceremony bought
+nothing. Exhaustiveness moves to a test, as already accepted below.
+
 **Capability matching is not applicable.** A capability registry is a predicate for gating links without
 instantiating a workflow. It answers yes/no; it does not dispatch to an implementation.
 
@@ -145,17 +163,27 @@ with Deal absent from the allowlist. Build/integration verification inherits `do
 
 - `DealMappers` — static, C# 14 extension members, `entity → DTO` only. Mapperly `[MapDerivedType]` over the
   four arms, plain `[Mapper]`, no visibility overrides.
-- `DealFactory` — `Create(DealDto) → Result<DealEntity, ValidationErrors>` switching to
-  `XDealEntity.Create(primitives)`; `Apply(DealEntity, DealDto) → UnitResult<ValidationErrors>` as a tuple
-  pattern switch to `entity.Update(primitives)`, whose default arm absorbs the deal-type mismatch guard
-  currently hand-written in `DealUpdater.Apply`.
-- Delete `IDealMapper`, `DealMapper` and the four arms; `IDealUpdater`, `DealUpdater` and the four arms.
-- `DealService.Validate` becomes `DealFactory.Create(deal).ToUnit()`. Named honestly it is still
+- `DealDto.ToEntity()` — an abstract member per arm calling `XDealEntity.Create(primitives)`, so the
+  DTO→entity create path needs no separate factory and the compiler enforces its exhaustiveness.
+- `DealUpdater` — one file in `Deal.Application/Updaters`: a static `Update(DealEntity, DealDto)` entry point
+  owning the deal-type mismatch guard, a private `DealType` → arm switch, an abstract
+  `DealUpdater<TEntity, TDto>` template base holding the one downcast, and four private nested one-line arms
+  calling `entity.Update(primitives)`. No DI, no async, no persistence; `DealUpdater` is the only name visible
+  outside the file.
+- Delete `IDealMapper`, `DealMapper` and the four arms; `IDealUpdater`, the `DealUpdater` facade and the four
+  arms; and `DealStrategyFactoryExtensions`, left unreachable once the Deal module has no `IDealStrategy`.
+- `DealService.Validate` becomes `deal.ToEntity()` matched down to a unit. Named honestly it is still
   construct-and-discard; lifting the per-arm guards out of the entities is explicitly **not** in scope.
+  `DealService` loses its `IDealUpdater` dependency and is left holding only `IDealRepository`.
 - Remove both `RequireAll` rows and the keyed registration blocks in
   `Deal.Infrastructure/Extensions/ServiceCollectionExtensions.cs`.
-- Rewrite the `DealStrategyArchitectureTests` and `DealStrategyFactoryTests` rows that name deleted types.
-- Add an exhaustiveness test asserting both switches carry an arm per `DealType`.
+- Delete `DealStrategyFactoryTests` outright — with no Deal `IDealStrategy` left it has nothing to assert —
+  drop `KeyedRegistrations_CoverEveryStrategyFamilyAndDealTypeExactlyOnce` from `DealStrategyArchitectureTests`,
+  and repoint `DealStrategyBuilderTests` onto `new DealStrategyBuilder(services)` so no production member
+  survives only to serve a test.
+- Add `DealUpdaterTests` asserting a write per `DealType`, that the theory covers every `DealType`, and that a
+  mismatched type and invalid terms both fail and leave the entity untouched. `DealMapperTests` already carries
+  the equivalent guard for the mapper and `ToEntity`.
 
 **Consumption contract:** `IDealService` and `IDealModule` keep their current signatures; no caller outside the
 Deal module changes.
