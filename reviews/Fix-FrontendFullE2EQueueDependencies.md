@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a7491192e18f2b92b0f7df0eda1ad980eec67793`  `(2026-09-08)`
-**Security-reviewed up to commit:** `a7491192e18f2b92b0f7df0eda1ad980eec67793`  `(2026-09-08)`
+**Reviewed up to commit:** `c7392d65e` `(2026-09-08)`
+**Security-reviewed up to commit:** `c7392d65e` `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -71,3 +71,46 @@ an E2E job still fires after the rewiring. The fix's own correctness is proven s
 `workflow-tests`, which computes the dependency closure from the frozen workflow; a full browser run would
 not prove it better, because this candidate's own diff is not frontend-only and so produces no empty backend
 matrix to exercise.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `a7491192e18f2b92b0f7df0eda1ad980eec67793`
+**Candidate head:** `c7392d65e`
+**Candidate branch:** `Fix/FrontendFullE2EQueueDependencies`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Fix-FrontendFullE2EQueueDependencies.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The delta is the `origin/main` merge `602c747cc` (PR #947, repository-split owner operations) plus one
+follow-up. Main's own 41 files arrive already reviewed and merged on `main`; the reviewable surface is the
+merge resolution and its interaction with this candidate.
+
+### Findings
+
+- [x] **F3 — LOW — reuse** — `.github/scripts/e2e-ghcr-login.test.mjs`
+  Main landed the same CRLF normalisation in #947. The merge resolution kept this branch's `/
+?/g` over
+  main's `/
+/g`; the only difference is lone-CR handling, which a git checkout never produces, so the file
+  was carrying a diff for no behavioural gain. Reverted to main's version in `c7392d65e`, removing the file
+  from this candidate entirely.
+
+### Verification
+
+- The merge's `test.yml` additions land in `split-inventory` and `workflow-tests` only, and touch no `needs`
+  edge in the queue-E2E closure. `workflow-tests` still runs `test_service_scope.py` after main's prepended
+  owner-operations steps.
+- `python .github/workflows/tests/test_service_scope.py` passes 19/19 at the merged head, queue-E2E
+  independence included.
+- `node --test` passes 3/3 and 4/4 across both `.github/scripts` test files.
+- Negative tests at the merged head: re-adding `architecture-tests` to `e2e-api-tests`'s `needs` fails the
+  guard for both queue lanes (exit 1), and it still fails when `architecture-tests` is also removed from
+  `MATRIX_GUARDS` — proving the derived set, not the hand-written table, is what holds the gate.
+
+### Security pass
+
+The delta changes `.github/workflows/test.yml`, a security-sensitive path, so the marker is restamped here.
+Main's additions introduce no `permissions`, `secrets.*`, `GITHUB_TOKEN`, `pull_request_target` or registry
+credential change; they add two `python` validation steps and a `pwsh` step invoking two in-repo scripts.
+This candidate's own surface is unchanged from the full pass and remains free of any security-relevant edit.
