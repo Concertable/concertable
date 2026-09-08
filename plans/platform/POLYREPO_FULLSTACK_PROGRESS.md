@@ -194,6 +194,14 @@ publisher is `platform-frontend`, for all four platform IDs.
 
 ## Reviews
 
+- **Lock-refresh review:** `reviews/Chore-FrontendCarveLockRefresh.md`, range `6cd7fd615..<refresh head>`
+  (8 paths). No findings. The load-bearing check was per-entry drift rather than the tier version: diffing
+  every `packages` entry against the previous generation showed 3–5 changes per lock, of which exactly one
+  is not a tier — `electron-to-chromium` `1.5.424` → `1.5.425`, build-time-only and accepted deliberately
+  rather than hand-suppressed. Root specifiers remain `alpha` in all seven, no lock carries machine-specific
+  or secret content, `app/package.json` is untouched so no publish re-triggers, and
+  `node --test scripts/carve-fe.test.mjs` passes 8/8.
+
 - **Checkpoint 8B safe-half full review:** `reviews/Refactor-FrontendRegistryPackageConsumers.md`, range
   `3052fb9ac..73e36b581` (12 paths). One LOW finding, `FRP1`: the candidate makes a committed per-surface
   lockfile a required input to the `carve-fe` gate without adding `npm run lock:carve` to `app/README.md`'s
@@ -221,6 +229,16 @@ publisher is `platform-frontend`, for all four platform IDs.
 - No open finding is evidenced. Delivery of the two fixed findings remains gated on the new review-fix PR.
 
 ## Decisions, discoveries, blockers, and deviations
+
+- **A lock refresh is never purely a tier bump — it also lands whatever transitive patch versions floated.**
+  Regenerating onto `0.1.0-alpha.0.6462` moved exactly one non-`@concertable` entry in all seven locks:
+  `electron-to-chromium` `1.5.424` → `1.5.425`, pulled by `browserslist` at `^1.5.420`, a build-time-only
+  ISC data package that publishes a new patch daily. Verified by diffing every `packages` entry against the
+  previous generation: 3–5 changed entries per lock, of which exactly one is not a tier. Do not hand-edit a
+  generated lock to suppress that — it would make the file unreproducible from `npm run lock:carve` and the
+  next regeneration would silently undo it. The consequence for Phase 4 is a requirement, not a nuisance:
+  whatever opens the refresh must report the non-tier delta rather than presenting itself as a
+  version-only change, because that delta is the only part of a refresh a reviewer actually has to judge.
 
 - **Every frontend republish stales the seven committed locks, and Phase 4 must own the refresh.** The
   publish workflow triggers on `app/package.json` among the tier paths, so a change touching only the root
