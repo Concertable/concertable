@@ -213,6 +213,16 @@ not substitute the moving `alpha` tag for the exact package dependency gate.
   the regenerated lockfiles**, or its carves will silently install the stale package instead of the
   tenant-scoped one. `app/web/b2b/{artist,venue}` and `app/mobile/b2b` additionally gain a
   `@concertable/b2b` dependency on that branch, which only a regenerated lockfile can resolve.
+- **PR #951's first merge-group attempt was ejected by a latent E2E wait bug, not by its own change.**
+  Merge-group run [34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) failed
+  one UI scenario of 32 — `Venue manager completes 3DS challenge on flat fee` timed out after 30s in
+  `Then a draft concert is created`, `waiting for navigation to "**/my/concerts/concert/**" until "Load"`.
+  `VenueManagerSteps.DraftConcertCreated` was the last step still calling `WaitForURLAsync` with
+  Playwright's default `WaitUntil = Load`; the concert page holds connections open (Stripe iframes, Google
+  Maps), so the load event need not fire inside the timeout even though the route already changed. The repo
+  already owns the fix — `WaitForSpaUrlAsync` (`WaitUntilState.Commit`), used throughout the Customer UI
+  suite — and the step now uses it. `app/b2b/shared` is imported by no surface, so this branch's own change
+  cannot reach that scenario.
 - The feed `alpha` tag is not a reproducible Phase 2 dependency gate: it advanced from the verified
   `0.1.0-alpha.0.4314` to `0.1.0-alpha.0.5913`, which does not contain Phase 2's additive active-profile
   exports. Do not alter production pins or topology to conceal this drift; preserve package publication
