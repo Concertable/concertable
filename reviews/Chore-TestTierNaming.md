@@ -735,8 +735,8 @@ needing a host, HTTP or a database is an integration test" — these need the re
 ---
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`  `(2026-09-06)`
-**Security-reviewed up to commit:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`  `(2026-09-06)`
+**Reviewed up to commit:** `fdce0c077350a0b0d866c6974a734e694ea7955d`  `(2026-09-08)`
+**Security-reviewed up to commit:** `fdce0c077350a0b0d866c6974a734e694ea7955d`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-06 — full
@@ -929,3 +929,92 @@ checks, and it reported nothing for an hour. The cause was not this branch's `st
   merge queue only ever targets `main`. E2E is unaffected, being gated on
   `github.event_name == 'merge_group'`, so a stacked PR gets the intended PR tier — build, carve, unit,
   architecture, startup, integration — and not the 25-minute suite.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `a50f2e89c0f92d4579c3ba3fc71287b0c27b8a74`
+**Candidate head:** `fdce0c077350a0b0d866c6974a734e694ea7955d`
+**Candidate branch:** `Chore/TestTierNaming`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:c23d8a321fe2eb305068dbcb7dd9dd713b8e631513b5aacc7cec3bb2399531f9` `(186 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable--worktrees-Chore-TestTierNaming/192f0d8e-a9ba-4372-a2e3-9b77f2e399c2/scratchpad/rev-bundle-946`
+**Candidate bundle identity:** `sha256:43055f6614ad2b729db25be135728fcb61eba8c3b77d2a3ddc43f036ebb449aa`
+**Work-order path:** `reviews/Chore-TestTierNaming.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+**Remediation head:** F16 fixed in this pass.
+
+The 186-path range is almost entirely `main`: merge `288330fa3` plus the merge of #943 that preceded it.
+**The branch-authored net change since the watermark is zero code.** Proved rather than asserted — the
+PR-owned change set (`git diff origin/main...<rev>` with `reviews/` excluded) is byte-identical at the
+watermark and at HEAD apart from one rename-similarity score, `R061` -> `R053` on
+`Concertable.Auth.StartupTests/WebHostTests.cs`, which moves only because `main` grew the content the
+rename is scored against. Three separate pairs cancel exactly:
+
+- **CI ordering.** `7e81aefcf` and its revert `775c14b4b`: `git diff 7e81aefcf^ 775c14b4b` is empty, so
+  `.github/workflows/test.yml` is at its pre-ordering tree.
+- **Seeding coverage.** `827c8d24e` + `3f4f04a3b` and their revert `fdce0c077`:
+  `git diff 827c8d24e^ fdce0c077 -- api/Concertable.Shared eng/repository-split api/Concertable.slnx` is
+  empty. Independently: `api/Concertable.Shared/src/Seed/` and `api/Concertable.Shared/TECH_DEBT.md` are
+  byte-identical to `origin/main`, `Concertable.Seed.Shared.UnitTests` is gone from disk with no residual
+  reference anywhere in the tree, and `python eng/repository-split/inventory.py --check` passes.
+- **The work order.** `06b5e99c2`'s pass section and watermark were reverted with the code they described,
+  which is why this pass runs from `a50f2e89` again rather than from `3f4f04a3b`.
+
+Layers: native/general and conventions run by the parent over the frozen bundle rather than dispatched —
+this host is configured without subagent dispatch, which `review` Stage 3 covers by falling back to the
+parent on the same descriptor. Changed-behaviour test impact: no behaviour changed. Routed rules re-read
+from the frozen tree via `skill_router.py`, whose output is dominated by `main`-inherited frontend and
+Auth-hosting paths reviewed on #942/#943.
+
+Security layer: **no qualifying vulnerability.** The Auth test content that arrived through `288330fa3`
+(`ResourceGraphTests.WithSpaClients_ReplacesExistingRegistrations`, `WebHostTests`' three SPA-client
+cases) is #943's, reviewed there, and it tightens posture — `RestrictToEnabledClients`, and stale redirect
+URIs and CORS origins asserted absent. All six of `main`'s Auth host assertions survive the rename, split
+across the two files, with none dropped. The revert's only security-adjacent effect is returning
+`SeedingIdentityInterceptor` to `main`'s form.
+
+### Findings
+
+- [x] **F16 — MEDIUM — routing** — `.agents/skill-routes.json:117`
+  The branch created a fifth tier and six projects holding 1,125 lines of test code, and left the route
+  table pointing at the tier's old home. `python .agents/hooks/skill_router.py --skills-for` on
+  `Concertable.Auth.StartupTests/AppModelStartupContractTests.cs` returned only `csharp-naming` and
+  `csharp-style` — no `composition-testing`, no tier guidance at all — while the same query on
+  `AppHost.ArchitectureTests/InventoryTests.cs` still returned `composition-testing` under a note reading
+  *"the architecture tier holds both static ArchUnitNET rules and dynamic host-graph checks"*, which this
+  branch made false: the host graphs left that tier and only the inventory stayed. `AGENTS.md` makes the
+  route table the write-time enforcement mechanism, so the tier whose entire purpose is to be the gate had
+  no rule routed to it. Fixed: a `\.StartupTests[^/]*/.*\.cs$` route to `composition-testing`,
+  `dependency-injection` and `microservice-boundaries` with the tier's own question as its note, and the
+  architecture note narrowed to code-structure rules plus the coverage inventory.
+
+### Verification — executed, not read
+
+- **The whole tier, run locally:** 38 tests, all passing, no infrastructure of any kind —
+  Auth 10 (2 s), B2B 10 (8 s), Customer 4 (4 s), Payment 6 (2 s), Search 6 (1 s), AppHost 2 (2 s).
+- `python eng/repository-split/inventory.py --check` — current, no test-tier cross-repository
+  `ProjectReference`.
+- `python -m unittest discover -s .agents/hooks/tests` — 15 tests, OK, after the F16 edit.
+- `skill_router.py --skills-for` on a `.StartupTests` file before and after F16 — `composition-testing`
+  absent, then present.
+- **Remote CI at this exact head** (`gh pr view 946`, run `34234812121`): `build`, `split-inventory`, all
+  five `carve-*`, `container-images`, every `unit-tests` and `architecture-tests` shard, and all six
+  `startup-tests` shards green. One red job, `fe-boundaries`, failed in `Install frontend dependencies`
+  with `npm error code EEXIST` on an `_cacache` rename — a runner cache race, on a job whose inputs this
+  head does not touch and which was green on the two preceding heads. Not a defect of this branch;
+  re-run is bound to a monitor rather than assumed.
+
+### Checked and deliberately not raised
+
+- **The find-based carves include `*.StartupTests.csproj`.** `carve-payment`, `carve-search`, `carve-b2b`
+  and `carve-customer` exclude `*E2ETests*`, `*.ArchitectureTests.csproj` and the service's own
+  `AppHost`/`Hosting` project by name, so the new startup projects are in, and each one carries a
+  `ProjectReference` to the excluded `<Service>.AppHost.csproj`. That resolves transitively and would fail
+  the carve if the AppHost escaped its service folder — it does not: every standalone AppHost references
+  only its sibling `Hosting`, `Web` and `Workers`. All four carves are green at this head, so the tier is
+  inside the carve gate rather than outside it, which is the better of the two outcomes. `carve-auth` uses
+  an explicit four-project allowlist and simply does not include Auth's startup project.
+- **`Concertable.Testing.Architecture` now serves the startup tier under an architecture name.** Renaming
+  it is a published-package change with the same publish-then-bump two-step as F6, and the tier's own name
+  is still an open decision, so it is not raised as a finding here.
