@@ -3,11 +3,13 @@
 - Plan: `plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/b2b-package-topology`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Producer`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Producer`
 - Branch: `Refactor/B2bPackageTopologyPhase3-Producer`
 - PR: producer PR [#949](https://github.com/Concertable/concertable/pull/949) merged as
-  `15ce7946f0e8ffd1376d599d15639426c9076527`; its package-only tenant-scope follow-up is being prepared on
-  the same producer branch from that landed `main`.
+  `15ce7946f0e8ffd1376d599d15639426c9076527`; its package-only tenant-scope follow-up is producer PR
+  [#951](https://github.com/Concertable/concertable/pull/951) on the same producer branch. The consumer
+  stage is draft PR [#950](https://github.com/Concertable/concertable/pull/950), based on this branch and
+  retargeting to `main` when #951 lands.
 - Dependency/package gates: the Phase 2 baseline is satisfied by feed-verified
   `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314` from terminal
   publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
@@ -48,6 +50,13 @@ exposed an incomplete publication boundary: its source calls tenant-scoped `useV
 signatures, while the published declarations correctly contain the pre-tenant signatures because the public
 package changes remained in the consumer stage. A package-only follow-up now extracts the complete
 tenant-scoped `app/b2b/shared` delta, including serialized tenant selection, onto the landed producer baseline.
+
+That follow-up is PR #951. It was 118 commits behind `origin/main`, so current `main` was merged in as
+`6474cec75` — a conflict-free merge whose exact head passed CI run
+[34274926997](https://github.com/Concertable/concertable/actions/runs/34274926997). Its full review then
+recorded and resolved three MEDIUM findings. The consumer stage, PR #950, is still a draft based on this
+branch and must be revalidated against the exact published version this producer emits, never against
+source-built packages or the moving `alpha` tag.
 
 ## Next Steps
 
@@ -142,6 +151,16 @@ not substitute the moving `alpha` tag for the exact package dependency gate.
   the published `useVenueQuery()` and `useMyVenue(options?)` declarations did not yet contain the tenant
   arguments used by the prepared consumer. The extracted follow-up package passes 9 files/34 tests, its
   build, boundary tests 8/8, and dependency/entrypoint lint across all 13 workspaces.
+- At PR #951 head `6474cec75` (current `main` merged in, conflict-free), exact-head CI run 34274926997
+  passed every job including all seven `carve-fe` jobs, `fe-boundaries`, `local-platform-pack`,
+  `container-images` and `ci-complete`.
+- After the review fixes, the ordered web-package build passed end to end: universal shared 9 files/26
+  tests, mobile shared 3 files/3 tests, cross-platform B2B 9 files/35 tests, manager-web B2B 13 files/28
+  tests, and all six package builds. Frontend boundary tests passed 10/10 and dependency/entrypoint lint
+  reported zero violations across all 13 workspaces. `git diff --check` passed. The emitted
+  `@concertable/b2b` declarations now carry `useArtistQuery(tenantId: string | undefined)`,
+  `useVenueQuery(tenantId: string | undefined)` and `useMyVenue(tenantId, options?)` — the exact shape the
+  `0.1.0-alpha.0.6301` carve proved missing.
 - Feed carves of the combined artist and venue consumers restored the current `alpha`
   (`0.1.0-alpha.0.5913`) and correctly failed because that moving tag lacks Phase 2's active-profile
   exports. The exact feed-verified Phase 2 artifact `0.1.0-alpha.0.4314` remains resolvable, but
@@ -157,11 +176,17 @@ not substitute the moving `alpha` tag for the exact package dependency gate.
   `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
   of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
   `6e87fcf36`.
-- Phase 3 producer review is complete through rebased head `e1dc7a380`. Four findings were resolved across the producer
-  commits, including B2B ownership of write contracts, active-profile publication verification, corrected
-  phase status, and real artist/venue `features/*/types` exports. Final functional and security review found
-  no remaining issue; the canonical work order is
-  `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`.
+- The PR #949 producer review completed through rebased head `e1dc7a380` with four findings resolved across
+  its commits — B2B ownership of write contracts, active-profile publication verification, corrected phase
+  status, and real artist/venue `features/*/types` exports. That work order was spent when #949 merged and
+  is not on disk.
+- The PR #951 follow-up carries its own work order at
+  `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`. Its full pass over
+  `ef8d505fd..6474cec75` recorded three MEDIUM findings — tenant-selection serialization that left
+  `configure`/`resolve` outside the queue, `isLoading` reporting `false` while a disabled query waits for a
+  tenant, and optional `tenantId` parameters that let a stale consumer of the published package compile.
+  All three are resolved. No frozen path matches the merge gate's `security_paths` inventory, so the pass
+  carries no security marker.
 
 ## Decisions, discoveries, blockers, and deviations
 
