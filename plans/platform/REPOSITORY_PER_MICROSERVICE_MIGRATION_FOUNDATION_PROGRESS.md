@@ -7,12 +7,12 @@
 - Branch: `Refactor/M1-Platform-Expand`
 - PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
 - Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand exact-head run
-  `34178610726` passed all 87 jobs. Merge-group run `34179430318` then exposed a reset race after the
-  cancellation/refund scenario: Payment's outbox dispatcher still owned an active row while the following
-  scenario reset the Payment database, and B2B was also retrying an unregistered `BookingConfirmedEvent`.
-  The owning Platform Expand repair now waits for the complete cancellation pipeline and Payment outbox
-  quiescence, and registers the missing B2B loopback topology, before the four stages are restacked and
-  republished. Owner Hosting Sync may then enter exact-head validation.
+  `34183872683` passed. Merge-group run `34184548934` then exercised browser E2E and exposed two backend
+  contract faults: the image-backed Payment E2E substitution reused an Aspire environment annotation so the
+  replacement host missed Stripe's discovered webhook secret, and `BookingConfirmedEvent` carried abstract
+  terms without a JSON discriminator. The owning Platform Expand repair gives the replacement a distinct
+  environment callback and makes all four confirmed-booking term variants round-trip over the wire before
+  the four stages are restacked and republished. Owner Hosting Sync may then enter exact-head validation.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
@@ -33,10 +33,12 @@ rewritten heads. Local
 review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
 retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
 associations into the B2B and Customer owners before system composition consumes their combined roster.
-Platform Expand owns both merge-group repairs: it accepts Stripe's authoritative `requires_capture` state
-when optional `capture_before` metadata is absent, and it makes cancellation scenarios wait for Payment
-refund completion, Booking and Concert cancellation, and Payment outbox quiescence before the next database
-reset. B2B now declares its staged-and-consumed `BookingConfirmedEvent` in both runtime and AppHost topology.
+Platform Expand owns the merge-group repairs: it accepts Stripe's authoritative `requires_capture` state
+when optional `capture_before` metadata is absent; makes cancellation scenarios wait for Payment refund
+completion, Concert cancellation, and Payment outbox quiescence before reset; gives substituted
+E2E projects distinct environment callback annotations; and defines the discriminator for every concrete
+`ConfirmedBookingTerms` wire shape. B2B declares its staged-and-consumed `BookingConfirmedEvent` in both
+runtime and AppHost topology.
 
 ## Next Steps
 
@@ -110,13 +112,26 @@ reset. B2B now declares its staged-and-consumed `BookingConfirmedEvent` in both 
   evaluation when no provider deadline exists. Payment unit tests pass 552/552, including the exact
   `RequiresAction` to `Authorized` regression and adapter normalization. The focused resolver integration test
   compiles locally; its execution awaits CI because this workstation's Docker endpoint is unavailable.
-- Exact-head run `34178610726` at `2373f68545919353a364aa2f8e75bc89c483a073` passed all 87 jobs, including
-  browser E2E. Its merge-group successor `34179430318` passed 31/32 B2B UI scenarios; the final scenario did
+- Exact-head run `34178610726` at `2373f68545919353a364aa2f8e75bc89c483a073` passed all 87 jobs. Its
+  merge-group successor `34179430318` passed 31/32 B2B UI scenarios; the final scenario did
   not start because its `BeforeScenario` Payment reset received HTTP 500. Diagnostics identify SQL deadlock
   victim 1205 in Respawn while Payment's outbox dispatcher was completing the preceding refund, plus repeated
-  B2B `BookingConfirmedEvent` registry failures. The repair establishes a causal boundary by verifying the
-  Stripe refund, both B2B terminal states, and zero active Payment outbox rows before returning from the
-  cancellation step, and adds the missing B2B publish/subscribe registration with composition coverage.
+  B2B `BookingConfirmedEvent` registry failures. The repair verifies the Stripe refund, Concert cancellation,
+  and zero active Payment outbox rows before returning from the cancellation step, and adds the missing B2B
+  publish/subscribe registration with composition coverage.
+- Exact-head run `34183872683` passed at `417e8b04f42883797c9de2d48460f3dbe7e7b45a`; pull-request policy
+  skipped both E2E jobs. Exact-tree merge-group run `34184548934` passed every non-browser gate, then B2B UI
+  passed 25/32. Six checkout scenarios received HTTP 500 for every Stripe webhook because the substituted
+  Payment project shared its environment annotation object with the explicit-start image and did not receive
+  `Stripe__WebhookSecret`. The same diagnostics independently exposed poisoned B2B
+  `BookingConfirmedEvent` outbox dispatches caused by deserializing abstract `ConfirmedBookingTerms`; they do
+  not cause the seventh scenario: that scenario completed its Stripe refund and Concert cancellation before
+  timing out on an invalid `BookingState.Cancelled` assertion. The UI invokes Concert cancellation, while a
+  confirmed Booking intentionally does not enter the Booking cancellation state machine; the repair removes
+  that invalid poll while retaining refund, Concert cancellation, and Payment outbox quiescence gates.
+  Environment callbacks are now cloned per substituted resource, and explicit `$type` mappings cover FlatFee,
+  VenueHire, DoorSplit, and Versus terms. The focused callback tests pass 7/7, Booking unit tests pass 13/13
+  including four nested abstract-contract round trips, and the B2B UI project builds successfully.
 
 ## Reviews
 
