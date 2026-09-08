@@ -5,13 +5,14 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `6d317d348d463b1828eda95f341ed38a45cf0439`  `(2026-09-08)`
+**Reviewed up to commit:** `4030eed8d31151f2ef49a17a4f214323f034745d`  `(2026-09-08)`
+**Security-reviewed up to commit:** `4030eed8d31151f2ef49a17a4f214323f034745d`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
 
 **Candidate base:** `c108226e9` (Platform Contract PR #945 head)
-**Candidate head:** `6d317d348d463b1828eda95f341ed38a45cf0439`
+**Candidate head:** `4030eed8d31151f2ef49a17a4f214323f034745d`
 **Candidate branch:** `Refactor/RepoSplit-M4-Closure-Repair`
 **Candidate scope:** `all`
 **Candidate path-set:** `sha256:7eb3c7d474174abbf905e3f31e017631a30f6b3ac74d95f43e3a81020213ac35` `(18 paths)`
@@ -77,3 +78,31 @@ this branch's obsolete history.
   build clean, the last one rebuilt after the pin alignment.
 - Exact-head PR CI and the merge queue are the authoritative gates. The PR does not exist yet; publishing the
   rebuilt branch requires a force-push, since the rebuild rewrote its history.
+
+### Extended to the landed M1 stack
+
+After the initial pass the candidate was brought onto the merged M1 stack: `0c7116ecc` merges
+`origin/main` at Platform Contract's merge `2b5e8aad0` plus the 1335 pin sync, cleanly with no conflicts, and
+`4030eed8d` re-aligns the `Concertable.Auth.Contracts` pin to 1335 because sync PR #957 could not reach a file
+that exists only on this branch. Nothing else changed and `Concertable.Auth.Contracts` rebuilds clean.
+
+The pin is deliberately **not** chased further. Platform Contract's own publish produced 1338 and sync PR
+#958 is taking main there, so aligning again would chase a version that moves on every merge. 1335 is a real
+published version that builds, the mismatch is transient, and the first sync after this lands corrects it
+through the grep-based discovery already verified above.
+
+### CI gate extension is correct for the seam
+
+`carve-auth` now archives `api/Concertable.Auth.Contracts` into the carved tree and adds it to `CarveAuth.slnx`,
+so the package-clean gate proves `Auth.Contracts` restores and builds from the feed alongside the Auth
+runtime. That is the right CI change to accompany the closure seam: `Auth.Contracts` has just joined Auth's
+deployable closure, and without this the carve job would not cover it. The `split-inventory` comment is
+widened to say the gate covers runtime as well as test-tier cross-repository edges.
+
+### Security pass
+
+`.github/workflows/` is a security-sensitive path, so this candidate requires a security marker. Its workflow
+diff carries no security-relevant change: no `permissions`, `secrets.*`, `GITHUB_TOKEN`, `pull_request_target`
+or registry-login edits — only a comment and the two `carve-auth` lines above. The one credential-adjacent
+change in the candidate moves in the fail-closed direction: an insecure `http://` gRPC address now throws
+unless `PaymentClient__AllowInsecureHttp` is set explicitly, where previously it was accepted.
