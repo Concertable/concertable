@@ -8,14 +8,15 @@
   (the branch and worktree keep the original name; renaming them is blocked while commits are unpushed, and
   the PR title is what matters)
 - PR: none yet
-- Dependency/package gates: `Riok.Mapperly` needs pinning in `api/Concertable.B2B/Directory.Packages.props`
-  (Phase 2) and `api/Concertable.Payment/Directory.Packages.props` (Phase 3). It is already pinned at 4.3.1 and
-  unused on `Chore/TestTierNaming` and sibling branches — reconcile rather than adding a second pin.
+- Dependency/package gates: `Riok.Mapperly` 4.3.1 was already pinned in `api/Concertable.B2B/Directory.Packages.props`
+  and is now referenced by `Deal.Application`. Phase 3 needs the same pin in
+  `api/Concertable.Payment/Directory.Packages.props`.
 - Last reconciled: 2026-09-07 against `origin/main` @ `15ce7946f` in this worktree
 
 ## Current state
 
-**Phase 1 is complete and committed** (`3d4fa7ab4`, revised by `31229cbc1`). Phase 2 is the next action.
+**Phase 1 complete. Phase 2 half done** — the `IDealMapper` family is gone; `IDealUpdater` is untouched
+pending a design decision (see Next Steps).
 
 The plan was originally drafted against `Docs/launch_seal-and-postgres-plans`, whose Concert module predates
 the Application/Booking/Opportunity split. Every file path and family roster in the plan has since been
@@ -34,9 +35,21 @@ re-verified against `origin/main` @ `15ce7946f`.
   project. Rejected: `DealType` is Deal's own domain vocabulary and belongs in `Deal.Domain`, and the name
   was not carrying its weight. Do not reintroduce a single shared home for both enums.
 
+- **Phase 2a** — `IDealMapper`, the `DealMapper` facade and its four arms deleted (6 files). Replaced by
+  `Mappers/DealMapper.cs` (Mapperly `[Mapper]`, `[MapDerivedType]` over the four pairs, generating `ToDto`
+  and `ToDtos`) and `Mappers/DealMappers.cs` (C# 14 `extension(DealDto)` block carrying `ToEntity`).
+  `DealService` drops the `IDealMapper` dependency; the keyed `IDealMapper` registrations and the matching
+  rows in `DealStrategyArchitectureTests` and `DealStrategyFactoryTests` are gone. New `DealMapperTests`
+  covers both directions per `DealType`, which is also the exhaustiveness guard the `RequireAll` row used
+  to provide.
+
+  `Riok.Mapperly` was already pinned at 4.3.1 in `api/Concertable.B2B/Directory.Packages.props`; only the
+  `PackageReference` on `Deal.Application` was needed. `[MapperIgnoreSource(nameof(DealEntity.TenantId))]`
+  declares the one deliberate source-only member — tenancy is ambient and absent from the DTO.
+
 ## Latest verification
 
-- `Concertable.B2B.Deal.UnitTests` builds clean and passes **47/47**, which transitively proves
+- `Concertable.B2B.Deal.UnitTests` builds clean and passes **58/58**, which transitively proves
   Deal.Contracts, Deal.Domain, Deal.Application and Deal.Infrastructure compile.
 - **`LayeringArchitectureTests` has never been executed.** `Concertable.B2B.ArchitectureTests` references the
   composition root, which does not build — see the blocker below. PR CI is its first real run; expect to fix
@@ -84,25 +97,20 @@ locally.
 
 ## Reviews
 
-None yet — no implementation exists.
+None yet.
 
 ## Next Steps
 
-Execute Phase 2 in this worktree:
+**Blocked on a design decision, not on work.** `IDealUpdater` is the only remaining Deal family: the
+interface in `Deal.Application/Interfaces`, the `DealUpdater` facade and four arms in
+`Deal.Infrastructure/Services/Updaters`, plus the keyed registrations and `RequireAll<IDealUpdater>()`.
 
-1. Pin `Riok.Mapperly` in `api/Concertable.B2B/Directory.Packages.props` at the version
-   `Chore/TestTierNaming` already uses (4.3.1), and add the `PackageReference` to
-   `Concertable.B2B.Deal.Application`.
-2. Add `DealMappers` (static, C# 14 extension members, `[Mapper]` with no visibility overrides,
-   `[MapDerivedType]` over the four arms) covering `DealEntity → DealDto` only.
-3. Add `DealFactory` with `Create(DealDto)` and `Apply(DealEntity, DealDto)` switches over
-   `XDealEntity.Create`/`.Update`, the tuple pattern's default arm carrying the deal-type mismatch error that
-   `DealUpdater.Apply` currently hand-writes.
-4. Delete `IDealMapper`, `DealMapper` and the four arms; `IDealUpdater`, `DealUpdater` and the four arms.
-   Repoint `DealService` (`Validate`, `CreateAsync`, `UpdateAsync`, `FindByIdAsync`, `GetByIdsAsync`).
-5. Remove both `RequireAll` rows and the keyed registrations in
-   `Deal.Infrastructure/Extensions/ServiceCollectionExtensions.cs:47-66`, then fix
-   `DealStrategyArchitectureTests` and `DealStrategyFactoryTests` where they name deleted types.
-6. Add the exhaustiveness test asserting both switches carry an arm per `DealType`.
-7. Gate on `Concertable.B2B.Deal.UnitTests` building and passing. The full-solution build cannot be a gate
-   until the `AuthorizeAsync` package break above clears.
+The straight translation is a tuple-pattern switch over `(existing, deal)` calling `entity.Update(...)`,
+which Tommy has flagged as too verbose given both sides always vary together. Agree the shape before
+writing it; the mechanical work behind it is under an hour.
+
+Once that is settled: delete the six `IDealUpdater` files, repoint `DealService.UpdateAsync`, drop the
+keyed registrations and the remaining `DealStrategyFactoryTests`/`DealStrategyArchitectureTests` rows,
+then gate on `Concertable.B2B.Deal.UnitTests`.
+
+Phase 3 (Payment `ITransactionMapper`, B2B `IUserMapper`) is independent and can proceed in parallel.
