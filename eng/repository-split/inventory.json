@@ -317,7 +317,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 275,
+    "projectCount": 276,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -2157,6 +2157,13 @@
         "area": "Concertable.Shared",
         "kind": "unit-test",
         "name": "Concertable.Kernel.UnitTests",
+        "packable": false,
+        "target": "platform-dotnet"
+      },
+      "api/Concertable.Shared/tests/Concertable.Seed.Shared.UnitTests/Concertable.Seed.Shared.UnitTests.csproj": {
+        "area": "Concertable.Shared",
+        "kind": "unit-test",
+        "name": "Concertable.Seed.Shared.UnitTests",
         "packable": false,
         "target": "platform-dotnet"
       },
