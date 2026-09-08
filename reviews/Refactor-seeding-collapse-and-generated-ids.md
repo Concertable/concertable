@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `81e71ad9ae89ea5f9df0f33742dc35831f3f6c09`  `(2026-09-08)`
+**Reviewed up to commit:** `22278f8ba4e316a8e7b5f11529b2d5da51c4996d`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -88,3 +88,33 @@ outbox) and therefore cannot be made an error — but it means a mistyped or mis
 in PR 2 degrades to a silent no-op, which is precisely #633's failure shape. **The per-service seed-chain
 integration test (part 4 of the plan) is the gate that catches it, and it must assert seeded rows exist
 rather than merely that the chain completed.** A chain that ran nothing completes fine.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `95d1b0d788b12a9c8181e299cd94bbea884899bb`
+**Candidate head:** `22278f8ba4e316a8e7b5f11529b2d5da51c4996d`
+**Candidate branch:** `Refactor/seeding-collapse-and-generated-ids`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:57930c2b6ebef2c04dac700eafb7ed52b7bd1b545479c5a2337e7c146b3900bb` `(2 paths)`
+**Candidate bundle:** `C:/Users/TOMMYS~1/AppData/Local/Temp/claude/C--Users-TommySeery-source-repos-Concertable/aa836791-44eb-4f47-90ee-746a762db16f/scratchpad/review-bundle-seeding-inc`
+**Candidate bundle identity:** `sha256:53c00f7ef47fa8072d4a234f94bb6c34fb2bffe8a9d31e091461ae9d442edf80`
+**Work-order path:** `reviews/Refactor-seeding-collapse-and-generated-ids.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Adds `UseSeedChainTests`, closing the coverage gap the first pass left implicit: `SeedChain` was tested
+in isolation, but nothing proved EF invokes the callback at all, so the headline change rested on the API
+compiling. Also adds the `Microsoft.EntityFrameworkCore.InMemory` reference it needs — already pinned in
+`api/Concertable.Shared/Directory.Packages.props`, and not a banned unit-tier symbol.
+
+### Findings
+
+- [x] **SEED-3 — MEDIUM — test-coverage** — `api/Concertable.Shared/tests/Concertable.Seed.Shared.UnitTests/UseSeedChainTests.cs:50`
+  `UseSeedChain_ContextCreated_RunsNoOtherContextsSeeders` asserted only
+  `DoesNotContain("other-context")`, which passes vacuously when no seeder runs at all — so it could not
+  distinguish correct per-context scoping from a callback EF never invokes. Caught by sabotage, not by
+  reading: reducing `UseSeedChain` to `=> builder` failed only the ordering test while this one stayed
+  green, which is precisely the "gate looks like proof but does not bite" failure the branch is meant to
+  design out.
+  Fixed in the same commit: it now also asserts the seeded context's own seeder ran, and the same mutation
+  fails both tests.
