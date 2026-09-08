@@ -22,11 +22,6 @@ function Write-Fixture([string]$Path, [string]$Value) {
     New-Item -ItemType Directory -Path (Split-Path $Path -Parent) -Force | Out-Null
     [IO.File]::WriteAllText($Path, $Value)
 }
-function Get-CompatibleRelativePath([string]$BasePath, [string]$Path) {
-    return [IO.Path]::GetRelativePath(
-        [IO.Path]::GetFullPath($BasePath),
-        [IO.Path]::GetFullPath($Path))
-}
 function global:dotnet {
     $arguments = @($args)
     $global:OwnerTestCalls.Add($arguments)
@@ -93,7 +88,7 @@ try {
             Write-Fixture (Join-Path $carve $appHost) (Get-Content -LiteralPath (Join-Path $source $appHost) -Raw)
             Copy-Item -LiteralPath (Join-Path $source 'setup-local-dev.ps1') -Destination $carve
             foreach ($template in Get-ChildItem -LiteralPath $source -Filter 'appsettings.Development.json.example' -Recurse -File) {
-                $relative = Get-CompatibleRelativePath $source $template.FullName
+                $relative = [IO.Path]::GetRelativePath($source, $template.FullName)
                 Write-Fixture (Join-Path $carve $relative) (Get-Content -LiteralPath $template.FullName -Raw)
             }
             & (Join-Path $carve 'setup-local-dev.ps1') -WhatIf
