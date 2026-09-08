@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `f3c5d9ed4e1bbc24a64a65254ee6e19b3290c62f`  `(2026-09-08)`
+**Reviewed up to commit:** `5edf8db4ad01052165ae5d18d76cf69b7c9e5cda`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -159,3 +159,28 @@ app/b2b` is empty, so the merge changed nothing this branch authors, and the b2b
 the merged head (9 files/35 tests). The only authored change is the ledger entry recording that PR #950
 must run `npm run lock:carve` after this producer publishes. This branch's delta against `origin/main`
 still matches no `security_paths` pattern.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `4ced8ff376ea213ee2f031921c3a3dc2e9699001`
+**Candidate head:** `5edf8db4ad01052165ae5d18d76cf69b7c9e5cda`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Producer`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:8bb06ecf88e26f242f724ec2fef2ec11de7f00cb993de63d4841ea3b77be0615` `(2 paths)`
+**Candidate bundle:** derived in place from the frozen range
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No issues found. The range repairs the merge-group ejection: `VenueManagerSteps.DraftConcertCreated` was
+the last caller still waiting on Playwright's default `WaitUntil = Load` for a client-side route change,
+and the concert page holds connections open, so the wait could exhaust its 30s even after the route
+changed. It now calls the repository's own `WaitForSpaUrlAsync` (`WaitUntilState.Commit`), the helper
+written for this exact failure and already used across the Customer UI suite. The scenario ends on that
+step, so the committed URL is the assertion and no readiness is being skipped; the scenarios that continue
+past it gate readiness through `MyConcertPage` element waits. Checked against `e2e-scenarios`,
+`csharp-style` and `csharp-naming`; the explicit 30s timeout is dropped because the helper takes none and
+Playwright's default already is 30s. Release build of `Concertable.B2B.E2ETests.Ui` succeeds. The changed
+path matches no `security_paths` pattern.
