@@ -3,98 +3,183 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-RepoSplit-M3-Frontend-Build-Config`
-- Branch: `Refactor/RepoSplit-M3-Frontend-Build-Config`
-- PR: [#948](https://github.com/Concertable/concertable/pull/948), draft; restacked directly onto exact landed
-  `origin/main` `516f4cc25936289744babef3f98b1a297035fbb6`. Local, upstream, and PR head were proven equal
-  at `b6596ca8573d0dd4b3f398248190f1d3a64b48ac`; this commit carries the focused split-inventory
-  repair found by that head's CI.
-- Dependency/package gates: PR #633 and the exact landed-main restack/review are complete. M3 does not depend
-  on M1 or M2. Its merge must causally trigger the real `@concertable/build-config` publication and feed
-  verification before this delivery is terminal.
-- Last reconciled: 2026-09-07 against landed `origin/main`
-  `516f4cc25936289744babef3f98b1a297035fbb6`, patch-equivalent restacked candidate
-  `93d102222f9cc25b5f4b68af97e6f08df59f16b0`, and the focused M3 validation and review evidence below.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-M1-Owner-Hosting-Sync`
+- Branch: `Refactor/M1-Owner-Hosting-Sync`
+- PR: #943, M1 P2 Owner Hosting Sync, restacked on the post-platform-sync main
+- Dependency/package gates: PR #942 landed at `8899eae33` after exact merge-group run `34195643637` passed
+  84 jobs with both browser suites green. Its causal package run `34198511871` computed version
+  `0.1.0-alpha.0.1329`, but a prior non-main manual run had already published that version from #633's head;
+  duplicate skipping therefore left the feed's AppHost.Shared and Frontend.Hosting binaries stale. The
+  publication rail now forbids arbitrary-ref dispatch, checks every packed package for an existing or
+  non-advancing SemVer before push, and restores the exact version it just published. Its own main merge
+  triggers the required fresh release.
+  AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
+  Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
+  inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
+  remain unavailable on the current GitHub entitlement.
+- Last reconciled: 2026-09-08 — current `origin/main` commit
+  `21760e777ecc6df0680bd846e8f814f035627ac4`, the platform-sync PR #954 merge, which includes PR #633, B2B
+  producer PR #949, M3 PR #948, Platform Expand PR #942, publication-rail repair PR #953, the corrective
+  topology commits `82bf5dbbb` and `bb59d9ba3`, and the fixed M1 repository topology.
 
 ## Current state
 
-Checkpoint 6A is terminal and checkpoint 6B preparation is active. Existing private `auth`, `b2b`,
-`customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities. The remaining
-selected repositories are `platform-dotnet`, `platform-frontend`, and separate `system`; none is created by
-this packet. General shared frontend code covers web and mobile while those remain package tiers, not
-repository boundaries.
-
-M1 is published as four draft stacked PRs #942-#945. M2 is published as independent sibling draft PR #947.
-M3's seven commits were restacked without conflict from #633 snapshot `ad4ad986f` onto the exact landed-main
-merge `516f4cc25`; `git range-diff` reports every old/new pair as patch-equivalent (`=`) and preserves the
-original order. The reviewed pre-checkpoint candidate is `93d102222`, and draft PR #948 was force-with-lease
-updated to checkpoint `b6596ca85`. Its first exact-head CI exposed a stale generated split inventory: the
-generator still named the obsolete `platform-web` target and did not assign the new build-config workspace.
-The focused repair assigned that owned topology and regenerated the inventory. Exact-head CI run
-`34162425623` is green. This commit closes the remaining publication-rail omission by adding build-config to
-the main-branch frontend publisher and its clean feed-consumer verification.
-M3 extracts the product-neutral `@concertable/build-config` package, makes product workspaces own their
-package lists, and uses the shared Metro resolver for both mobile applications without encoding product
-ownership into the platform tier.
+Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
+public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Platform Expand is landed and
+its corrected package publication is complete: run `34203007892` published all 58 packages at
+`0.1.0-alpha.0.1330` and platform-sync PR #954 landed those pins at `21760e777`. Owner Hosting Sync is
+restacked on that exact main and is the active delivery stage.
+Existing private
+`auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
+The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
+creation is part of M1. Platform Expand is landed; three clean dependent branches preserve the Owner Hosting
+Sync, AppHost Sync, and Platform Contract boundaries at heads `cbca8d48f`, `6895b13cb`, and `64f0c4dc1`
+above it. Local
+review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
+retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
+associations into the B2B and Customer owners before system composition consumes their combined roster.
+Platform Expand owns the merge-group repairs: it accepts Stripe's authoritative `requires_capture` state
+when optional `capture_before` metadata is absent; makes cancellation scenarios wait for Payment refund
+completion, Concert cancellation, and Payment outbox quiescence before reset; gives substituted
+E2E projects distinct environment callback annotations; and defines the discriminator for every concrete
+`ConfirmedBookingTerms` wire shape. It also removes Auth's production credential request budget from the
+shared E2E environment so per-scenario login resets cannot leak limiter state between otherwise isolated
+Customer and B2B scenarios. B2B declares its staged-and-consumed `BookingConfirmedEvent` in both runtime and
+AppHost topology.
 
 ## Next Steps
 
-- Validate and review this publication-rail repair, push one stable candidate, require exact-head PR CI, then
-  make PR #948 ready and deliver it independently through the merge queue.
-- Bind the post-merge frontend publication run to #948's landing commit and require
-  `@concertable/build-config` to pass the workflow's clean feed-consumer verification before calling M3
-  terminal.
-- Keep M1, M2, and M3 separate. Do not create repositories, import history, publish packages, or perform a
-  service cutover from this preparation branch.
+- Deliver Owner Hosting Sync through PR #943 from its restacked head. Its eight staged commits are preserved
+  above `21760e777` and carry one added commit that advances the Payment consumer pin to the published
+  `0.1.0-alpha.0.1330` escrow contract, because main's image rail cannot compile B2B without it.
+- Take the PR out of draft, own its CI and merge-queue gates to terminal, and follow its Auth image
+  publication to the immutable digest.
+- Require `Publish images` green on the resulting main before P3: it has failed on main since `516f4cc25`
+  for B2B.Web and B2B.Workers, so that rail is the gate the added pin commit exists to clear.
+- Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
 
 ## Completed work
 
-- Checkpoint 6A closed through `.github` PRs #1 and #2; all eleven reusable workflows passed from the public
-  fixture before shared policy was applied and read back.
-- Corrective commits `82bf5dbbb` and `bb59d9ba3` established the retained target identities; the later
-  `f4709fe4b` record preserves the selected `platform-dotnet`, `platform-frontend`, and `system` topology.
-- M1 is represented by draft PRs #942-#945 and creates no repository.
-- M2 remains owned by its sibling worktree; its current delivery gate is recorded there.
-- M3 implementation commits are now `9a4e894f8` and `901b27c72` on landed main. The generic Metro resolver
-  preserves #633's Stripe and React Native package visibility without product-specific platform code.
-- The original seven-commit sequence was preserved as `9a4e894f8`, `901b27c72`, `b53944dfd`, `cdecab835`,
-  `0cdf50364`, `2dbd0a7ac`, and `93d102222`; the exact old/new range-diff is patch-equivalent throughout.
-- Checkpoint `b6596ca85` carried the refreshed landed-main review and preparation metadata and was published
-  to draft PR #948 with local/upstream/PR head equality proven.
-- This commit assigns `app/build-config` to the corrected `platform-frontend` extraction target, replaces the
-  obsolete `platform-web` generator/map label, and refreshes the generated inventory.
+- Checkpoint 6A closed through `.github` PR #1 (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and policy repair
+  PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
+- Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
+  their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
+- Extraction-map preflight reports 4,793 tracked paths, 4,793 target claims, 82 unclaimed tracked paths, and
+  zero multiply-claimed paths; 6C is not ready.
+- Platform Expand landed through PR #942 at `8899eae33`. The shared inventory and plan reconciliation
+  preserved M3's landed `app/build-config` ownership and `platform-frontend` identity while retaining M1 as
+  the active foundation ledger.
+- M3 landed through PR #948 at `12efedd68`; its product-neutral `@concertable/build-config` ownership remains
+  independent of M1's .NET hosting stack and no repository boundary changed.
+- Platform frontend service URL propagation now resolves both HTTPS and HTTP Aspire endpoints and both hyphenated
+  and normalized resource names, so the B2B mobile API tunnel is emitted correctly.
+- Review remediation added exact Auth SPA replacement and unknown-client fail-closed coverage, retained legacy
+  hosting compatibility until the final contract stage, made resolver assertions portable across Windows and
+  Linux, completed the exact platform extraction table, added owner Auth-roster assertions to the B2B,
+  Customer, and system graphs, and added deterministic coverage that exercises every owner frontend path through
+  the production B2B and Customer hosting extensions in both extracted-only and monorepo-preferred layouts.
 
 ## Verification
 
-- Landed-main integrity: seven-commit `git range-diff` is patch-equivalent throughout and
-  `git diff --check 516f4cc25..93d102222` passed.
-- Frontend boundaries: 10/10 tests passed; dependency lint reported zero violations across all 13 workspaces.
-- Package matrix: all six packages built; 109 package tests passed across the five packages with test scripts.
-- Product builds: all five web builds, both mobile TypeScript checks, and both Android/Hermes exports passed.
-  The sandbox denied execution of `hermesc.exe`; the unchanged commands passed outside that restriction.
-- Isolation: both fresh feed-restored mobile carves passed typecheck and Android/Hermes export with shared
-  assets resolved from `node_modules/@concertable/mobile` and source package directories absent.
-- Independent packed consumer: CommonJS dependency-cruiser/Metro, ESM Vite/Vitest, TypeScript config and
-  package subpath resolution passed; the tarball contained only the eight intended files.
-- Split inventory: `python eng/repository-split/inventory.py --check` passes; a focused assertion proves
-  `app/build-config` targets `platform-frontend` and no frontend workspace remains unassigned.
+- Platform Expand is exact on landed `origin/main` commit `8899eae33`; the three dependent stages retain
+  their verified serial ancestry and await the corrected package release/platform-sync base.
+- Pre-M3 exact-head PR run `34166392329` passed all 81 executed jobs, including package preparation, generated
+  inventory, solution/image builds, five service carves, architecture, unit, and integration matrices.
+- Package inventory and local platform preparation pass with 58 packages. Auth Hosting, B2B Hosting, Auth
+  AppHost, and B2B AppHost build successfully against the locally prepared platform packages; the compatibility
+  form of Auth Hosting and B2B Hosting also builds at the AppHost Sync boundary.
+- `Concertable.AppHost.Shared` passes 16/16 tests. Auth architecture passes 9/9 tests. B2B package-mode
+  architecture passes 35/35 against the current Payment.Hosting producer placed at #633's pinned package slot;
+  Search architecture passes 4/4 and Payment architecture passes 13/13. B2B and Customer Hosting also build
+  independently against the locally prepared platform packages. Customer's current Hosting and architecture-test
+  assemblies compile in isolation and the two extracted/monorepo frontend-layout cases pass 2/2.
+- The post-repair package-clean gates pass `Concertable.AppHost.Shared` 18/18,
+  `Concertable.Payment.E2ETests.Server` 7/7, and B2B architecture 32/32. The B2B UI project is rebuilt
+  package-clean before publication; the exact browser scenario remains a remote gate because this
+  workstation's Docker endpoint is unavailable.
+- The former #633 Customer compile blocker and Payment.Hosting package slot are now eligible for exact landed-base
+  revalidation; their previous blocked result is not carried forward as current evidence.
+- The targeted local 3DS UI E2E suite passes 8/8. This includes the formerly failing venue-manager flat-fee
+  successful-challenge scenario. Its deterministic cause was a missing `ApplicationAcceptedEvent` B2B
+  subscription in `B2BTopology`; the repair provisions the exact
+  `concertable-b2b-application-accepted` subscription and locks it down with composition coverage. The
+  scenario URL wait is 30 seconds so a genuine failure terminates sooner. Remote merge-group E2E remains the
+  authoritative delivery gate.
+- Platform Expand merge-group commit `f0ad78ad1` proved the B2B UI suite green at 32/32, including every 3DS
+  path. Customer UI passed 6/7; the sole failure trace showed the card-number input remained exactly empty
+  because the generic successful-test-card step selected the saved-card path even though the isolated Stripe
+  fixture creates fresh customers without attached cards. Platform Expand now routes that step through the
+  explicit successful new-card path; the same merge-group artifact already proves that path completes Stripe
+  confirmation, ticket creation, ticket listing, and QR display. A local post-fix run authorised all three
+  card payments but its downstream confirmation assertions encountered workstation Service Bus and SQL health
+  degradation, so the exact-head merge-group Customer run remains the acceptance evidence for this repair.
+- The subsequent exact merge-group run `34174839388` at `be47d6beec91744955930e5fd75b61c5770e6281`
+  passed 31/32 B2B UI scenarios. Its sole failure completed Stripe's 3DS challenge and returned 204 from B2B
+  acceptance, then Payment rejected the `requires_capture` observation and exhausted all three deliveries of
+  `concertable.payment.capture-escrow.v1` as `PaymentProviderUnavailableException`; no capture event or concert
+  draft could follow. The owning repair accepts an authorized observation without optional `capture_before`,
+  normalizes Stripe.NET's missing-timestamp Unix-epoch sentinel back to absence, and retains fail-closed expiry
+  evaluation when no provider deadline exists. Payment unit tests pass 552/552, including the exact
+  `RequiresAction` to `Authorized` regression and adapter normalization. The focused resolver integration test
+  compiles locally; its execution awaits CI because this workstation's Docker endpoint is unavailable.
+- Exact-head run `34178610726` at `2373f68545919353a364aa2f8e75bc89c483a073` passed all 87 jobs. Its
+  merge-group successor `34179430318` passed 31/32 B2B UI scenarios; the final scenario did
+  not start because its `BeforeScenario` Payment reset received HTTP 500. Diagnostics identify SQL deadlock
+  victim 1205 in Respawn while Payment's outbox dispatcher was completing the preceding refund, plus repeated
+  B2B `BookingConfirmedEvent` registry failures. The repair verifies the Stripe refund, Concert cancellation,
+  and zero active Payment outbox rows before returning from the cancellation step, and adds the missing B2B
+  publish/subscribe registration with composition coverage.
+- Exact-head run `34183872683` passed at `417e8b04f42883797c9de2d48460f3dbe7e7b45a`; pull-request policy
+  skipped both E2E jobs. Exact-tree merge-group run `34184548934` passed every non-browser gate, then B2B UI
+  passed 25/32. Six checkout scenarios received HTTP 500 for every Stripe webhook because the substituted
+  Payment project shared its environment annotation object with the explicit-start image and did not receive
+  `Stripe__WebhookSecret`. The same diagnostics independently exposed poisoned B2B
+  `BookingConfirmedEvent` outbox dispatches caused by deserializing abstract `ConfirmedBookingTerms`; they do
+  not cause the seventh scenario: that scenario completed its Stripe refund and Concert cancellation before
+  timing out on an invalid `BookingState.Cancelled` assertion. The UI invokes Concert cancellation, while a
+  confirmed Booking intentionally does not enter the Booking cancellation state machine; the repair removes
+  that invalid poll while retaining refund, Concert cancellation, and Payment outbox quiescence gates.
+  Environment callbacks are now cloned per substituted resource, and explicit `$type` mappings cover FlatFee,
+  VenueHire, DoorSplit, and Versus terms. The focused callback tests pass 7/7, Booking unit tests pass 13/13
+  including four nested abstract-contract round trips, and the B2B UI project builds successfully.
+- Exact-head run `34189563168` passed all required executable gates at `e2af6b9ce`. Its exact-tree merge-group
+  run `34190370396` passed every non-browser job, the API E2E suite, all 32 B2B UI scenarios, and six of seven
+  Customer UI scenarios. The final Customer signup login was rejected with HTTP 429 and `Retry-After: 60`:
+  scenario hooks deliberately reset login capture before every scenario, but Auth's in-memory IP limiter
+  survives those database resets and accumulated more than ten credential-page requests in one minute. The
+  shared E2E Auth environment now sets the credential permit limit through Auth's supported configuration
+  seam, matching integration-test isolation without changing the production default or any browser timeout.
+- Exact merge-group run `34195643637` passed 84 jobs at merge SHA `8899eae33`, including API E2E and both
+  complete browser suites, and PR #942 landed. Causal package run `34198511871` packed 58 projects at
+  `0.1.0-alpha.0.1329`, but skipped 57 immutable duplicates because workflow-dispatch run `33683064354` had
+  pre-published that version from non-main #633 head `83c01d3b`; only the newly packable
+  B2B.Application.Contracts was added. The former floating restore passed against that mixed feed version,
+  proving it was not an adequate publication gate. The repair makes main-push ancestry exclusive, requires
+  every packed package's computed lockstep version to be absent and advance beyond its own feed history before
+  any push, removes duplicate skipping, applies NuGet SemVer precedence, and verifies that exact version.
 
 ## Reviews
 
-The fresh frozen-head full review over `516f4cc25936289744babef3f98b1a297035fbb6..93d102222f9cc25b5f4b68af97e6f08df59f16b0`
-approved the complete 30-path landed-main candidate with no functional or security findings. This commit adds
-the CI-driven inventory/map repair; the durable work order
-`reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md` owns its required incremental watermark before the
-next push.
+The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its last immutable full pass requested one
+delivery-gated change: publish and pin the Owner Hosting Auth image before AppHost Sync. All other findings are
+repaired on their owning stages. The landed-base candidate requires a new frozen review watermark after current
+package and composition validation completes.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- `platform-frontend` owns general shared web/mobile packages and tooling. Web and mobile remain package
-  tiers within that repository; they are not separate repositories.
-- Product packages own their workspace membership. Shared build helpers accept explicit caller-owned inputs
-  and do not import B2B or Customer manifests.
-- The extraction generator and map use the selected `platform-frontend` identity and assign
-  `app/build-config` to that target; the superseded `platform-web` label must not return.
-- The shared Metro helper discovers project and package `node_modules` roots generically, preserving native
-  package visibility introduced by #633 without a Stripe-specific platform rule.
-- No repository creation, history import, visibility change, package publication, or cutover was performed.
+- The cross-service Payment package pin drifted behind a contract it already consumed. `538bbc568` added
+  `IEscrowOperationsClient.AuthorizeAsync` to Payment's client and switched B2B's checkout service onto it in
+  one commit, but B2B and Customer pin Payment through `ConcertablePaymentVersion`, which stayed at
+  `0.1.0-alpha.0.1322`. The CI compile floor builds Payment from source through `local-platform.ps1`, so only
+  image publication exercised the real feed pin and it failed there with CS1061. `platform-sync.yml` bumps
+  only `ConcertablePlatformVersion`, leaving this pin hand-maintained; the same drift will recur until a gate
+  builds a consumer's deployable closure against the published Payment version.
+- Existing service, `infra`, and `config` repository IDs and active owner ledgers override historical labels;
+  they are not renamed or replaced.
+- Shared packages have two repository owners: `platform-dotnet` and `platform-frontend`. The frontend owner
+  contains general shared web/mobile code; web and mobile remain package tiers, not repositories.
+- `system` is a separate container-composition and black-box qualification boundary.
+- M1 creates no repositories and makes no further topology decision.
+- The current GitHub entitlement returns 403 for private-repository ruleset, merge-queue, and branch-protection
+  reads. There is no technical private-main enforcement substitute on this entitlement: targets remain private
+  and non-canonical behind an administrator-operated CI/PR gate until an entitlement upgrade is verified.
