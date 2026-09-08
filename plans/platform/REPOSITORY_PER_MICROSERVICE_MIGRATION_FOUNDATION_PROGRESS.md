@@ -6,11 +6,13 @@
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
 - Branch: `Refactor/M1-Platform-Expand`
 - PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
-- Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand passed exact-head
-  package, composition, and browser validation on the combined base, but merge-group run `34174839388`
-  exposed a Payment authorization-reconciliation defect in the B2B 3DS path. The owning Platform Expand
-  repair is under focused validation before the four stages are restacked and republished. Owner Hosting Sync
-  may then enter exact-head validation.
+- Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand exact-head run
+  `34178610726` passed all 87 jobs. Merge-group run `34179430318` then exposed a reset race after the
+  cancellation/refund scenario: Payment's outbox dispatcher still owned an active row while the following
+  scenario reset the Payment database, and B2B was also retrying an unregistered `BookingConfirmedEvent`.
+  The owning Platform Expand repair now waits for the complete cancellation pipeline and Payment outbox
+  quiescence, and registers the missing B2B loopback topology, before the four stages are restacked and
+  republished. Owner Hosting Sync may then enter exact-head validation.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
@@ -31,14 +33,15 @@ rewritten heads. Local
 review remediation preserves the legacy Auth and B2B hosting contracts through the consumer-migration stage,
 retires them only in Platform Contract, keeps the platform SPA surface product-neutral, and moves Auth client
 associations into the B2B and Customer owners before system composition consumes their combined roster.
-Platform Expand now also owns the merge-group repair that accepts Stripe's authoritative `requires_capture`
-state when optional `capture_before` metadata is absent; Payment still refuses to infer local authorization
-expiry without provider evidence.
+Platform Expand owns both merge-group repairs: it accepts Stripe's authoritative `requires_capture` state
+when optional `capture_before` metadata is absent, and it makes cancellation scenarios wait for Payment
+refund completion, Booking and Concert cancellation, and Payment outbox quiescence before the next database
+reset. B2B now declares its staged-and-consumed `BookingConfirmedEvent` in both runtime and AppHost topology.
 
 ## Next Steps
 
-- Commit and publish the Platform Expand Payment reconciliation repair, restack the three dependent M1 stages
-  without changing their publication boundaries, and re-enter exact-head validation and the merge queue.
+- Commit and publish the Platform Expand merge-group repair, restack the three dependent M1 stages without
+  changing their publication boundaries, and re-enter exact-head validation and the merge queue.
 - Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
   publication caused by Owner Hosting Sync to its immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
@@ -49,7 +52,7 @@ expiry without provider evidence.
   PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
 - Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
   their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
-- Extraction-map preflight reports 4,769 tracked paths, 4,769 target claims, 79 unclaimed tracked paths, and
+- Extraction-map preflight reports 4,793 tracked paths, 4,793 target claims, 82 unclaimed tracked paths, and
   zero multiply-claimed paths; 6C is not ready.
 - Platform Expand was rebased onto current `origin/main` `12efedd68`. The shared inventory and plan conflicts
   preserved M3's landed `app/build-config` ownership and `platform-frontend` identity while restoring M1 as
@@ -78,6 +81,10 @@ expiry without provider evidence.
   Search architecture passes 4/4 and Payment architecture passes 13/13. B2B and Customer Hosting also build
   independently against the locally prepared platform packages. Customer's current Hosting and architecture-test
   assemblies compile in isolation and the two extracted/monorepo frontend-layout cases pass 2/2.
+- The post-repair package-clean gates pass `Concertable.AppHost.Shared` 18/18,
+  `Concertable.Payment.E2ETests.Server` 7/7, and B2B architecture 32/32. The B2B UI project is rebuilt
+  package-clean before publication; the exact browser scenario remains a remote gate because this
+  workstation's Docker endpoint is unavailable.
 - The former #633 Customer compile blocker and Payment.Hosting package slot are now eligible for exact landed-base
   revalidation; their previous blocked result is not carried forward as current evidence.
 - The targeted local 3DS UI E2E suite passes 8/8. This includes the formerly failing venue-manager flat-fee
@@ -103,6 +110,13 @@ expiry without provider evidence.
   evaluation when no provider deadline exists. Payment unit tests pass 552/552, including the exact
   `RequiresAction` to `Authorized` regression and adapter normalization. The focused resolver integration test
   compiles locally; its execution awaits CI because this workstation's Docker endpoint is unavailable.
+- Exact-head run `34178610726` at `2373f68545919353a364aa2f8e75bc89c483a073` passed all 87 jobs, including
+  browser E2E. Its merge-group successor `34179430318` passed 31/32 B2B UI scenarios; the final scenario did
+  not start because its `BeforeScenario` Payment reset received HTTP 500. Diagnostics identify SQL deadlock
+  victim 1205 in Respawn while Payment's outbox dispatcher was completing the preceding refund, plus repeated
+  B2B `BookingConfirmedEvent` registry failures. The repair establishes a causal boundary by verifying the
+  Stripe refund, both B2B terminal states, and zero active Payment outbox rows before returning from the
+  cancellation step, and adds the missing B2B publish/subscribe registration with composition coverage.
 
 ## Reviews
 
