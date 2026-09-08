@@ -26,6 +26,7 @@ ALL = "ALL"
 MATRIX_GUARDS = {
     "unit-tests": "unit_projects",
     "architecture-tests": "architecture_projects",
+    "startup-tests": "startup_projects",
     "integration-tests": "integration_projects",
 }
 QUEUE_E2E_JOBS = ("e2e-api-tests", "e2e-ui-tests")

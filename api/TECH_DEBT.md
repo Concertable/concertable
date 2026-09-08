@@ -219,23 +219,19 @@ receiver-owned members grouped in `XExtensions` and related mapping receivers gr
 Every touched container migrates completely; new extension members use `extension()` from the start
 (see the `csharp-style` skill). Signature-bound generator/framework declarations are excluded.
 
-### Architecture-test class names restate the project that already names them
+### Test class names still restate the project that already names them
 
-`csharp-naming` says a qualifier exists only to contrast with a sibling. A class inside
-`Concertable.<Service>.ArchitectureTests` therefore carries neither the service nor the tier in its own name,
-because the project already states both. Five projects break that: `PaymentArchitectureTests`,
-`CustomerArchitectureTests`, `SearchArchitectureTests`, `AuthArchitectureTests` and `AppHostArchitectureTests`
-each restate their whole project name, and `PaymentContractReferenceTests` /
-`PaymentPublishedPackageReferenceTests` restate the service half. The tier already contains the right shape —
-B2B's `ControllerBoundaryTests`, `ModuleBoundaryTests`, `TenantWriteGuardTests` and `B2BHostGraphTests` each
-name the subject under test rather than the project.
+`csharp-naming` says a qualifier exists only to contrast with a sibling, so a class inside
+`Concertable.<Service>.ArchitectureTests` carries neither the service nor the tier in its own name. The
+startup-tier split fixed most of this — `ResourceGraphTests`, `WebHostTests`, `WorkerHostTests` — but three
+classes still restate half their project: `PaymentContractReferenceTests` and
+`PaymentPublishedPackageReferenceTests` repeat the service, and B2B's `ReunionArchitectureTests` repeats the
+tier. The correct shape is already beside them in `ControllerBoundaryTests`, `ModuleBoundaryTests` and
+`TenantWriteGuardTests`.
 
-The rename is not a suffix strip. Each of the five covers several unrelated subjects — `PaymentArchitectureTests`
-alone asserts the Web host graph, the Workers host graph and the AppHost graph — so a single new name would be
-as uninformative as the old one; they split by subject the way B2B already is.
-
-**Resolves when:** every class in an `*.ArchitectureTests` project is named for the subject it asserts, with no
-class repeating its project's service or tier, splitting any class that covers more than one subject.
+**Resolves when:** those three name only the subject they assert — the service prefix and the `Architecture`
+tier word dropped — and no class in an `*.ArchitectureTests` or `*.StartupTests` project repeats its
+project's service or tier.
 
 ### Extension-container names do not consistently identify their receiver
 
