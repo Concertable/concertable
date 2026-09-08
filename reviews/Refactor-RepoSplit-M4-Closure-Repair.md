@@ -67,17 +67,24 @@ handling, and package-pin consistency.
 
 ### E2E tier
 
-To be set at delivery from the merged diff. The candidate changes Payment's runtime transport configuration
-and a published package boundary, so it is not obviously skippable in the way Platform Contract was; decide
-it against the `merge` skill's positive-trigger list on the final head rather than inheriting a label from
-this branch's obsolete history.
+`skip-e2e-ui`, decided on the final head rather than inherited from this branch's obsolete history.
+
+A positive trigger is present: the Payment gRPC transport change is a cross-service wire concern, because
+B2B and Customer reach Payment over gRPC. So end-to-end coverage is **not** skipped — API E2E is retained,
+and it is the suite that actually exercises that path, driving B2B checkout through to Payment over gRPC
+against live main. `PaymentTransportTests` covers the mechanism in the integration tier over dynamically
+allocated ports, and `carve-auth` now proves the closure seam builds package-clean.
+
+The browser suites are excluded because nothing in the candidate changes a user-facing flow: they would
+re-drive the same B2B-to-Payment path with a UI layer on top of it, adding ~30 minutes and no coverage of
+what changed. A transport regression fails API E2E first and faster.
 
 ### Validation
 
 - `Concertable.Payment.Web`, `Concertable.Payment.IntegrationTests` and `Concertable.Auth.Contracts` all
   build clean, the last one rebuilt after the pin alignment.
-- Exact-head PR CI and the merge queue are the authoritative gates. The PR does not exist yet; publishing the
-  rebuilt branch requires a force-push, since the rebuild rewrote its history.
+- Exact-head PR CI and the merge queue, including API E2E against live main, are the authoritative gates.
+  Delivered as PR #959; the rebuilt branch was force-pushed by Tommy, since the rebuild rewrote its history.
 
 ### Extended to the landed M1 stack
 
