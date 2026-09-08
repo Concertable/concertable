@@ -7,7 +7,7 @@
 - Branch: `Docs/launch_booking-entry-direct-offers`
 - PR: not opened
 - Dependency/package gates: planning-only; external compatibility requirements are specified in the plan, not claimed delivered
-- Last reconciled: 2026-09-08 against Git/worktree identities, monorepo main 3826320d, docs main 99ad353b and the local organiser research at 5ac4048
+- Last reconciled: 2026-09-08 against Git/worktree identities, monorepo main ef8d505f, docs main 99ad353b and the local organiser research at 5ac4048
 
 Metadata paths are relative to the B2B source root, currently api/Concertable.B2B within the recorded
 Git worktree. This plan/ledger moves with B2B when the extraction owner qualifies its source cutover.
@@ -18,9 +18,10 @@ The architecture and coordinated PR slices are a discussion-refined review draft
 database migration or deployment is authorised or performed. Recommendations and unresolved policies
 are explicitly separated from established decisions in the plan.
 
-The latest update makes operation composition, typed definition bindings, concrete factory matching and
-the existing-code migration explicit. It incorporates the five research arrangements as qualification
-fixtures without turning every researched capability or unresolved policy into approved initial scope.
+The latest update adds section 16's code-level approval walkthrough: concrete Apply/Send/Accept and
+commitment-start methods, entity/request/read shapes, separate invitation API/service/workflow, collaborator
+contracts and atomic Booking convergence. It does not declare the whole programme implementation-ready;
+B6/B7 financial-operation definitions still need equally concrete review before enabling those capabilities.
 
 Tommy requested B2B ownership. The prior direct-offers plan and ledger are replaced, not retained as
 parallel instructions. The old launch item now routes to this B2B owner. Historical text remains in Git.
@@ -30,7 +31,7 @@ draft remains with its separate owner; this plan owns only B2B scope and the req
 
 ## Next Steps
 
-Paused: Tommy - review the refined design in sections 3-4 and the research scope in section 9; resolve the required section 14 policies and continue section 12's contract-design gate before B4-B7 implementation. Application implementation or migration requires a separate explicit authorisation.
+Paused: Tommy - review section 16's concrete entry design and D17-D18, alongside sections 3-4's configuration/dispatch model. Resolve the policies needed by each admitted slice and complete B6/B7's remaining operation contracts before their implementation. Application implementation or migration requires separate explicit authorisation.
 
 On feedback, update this plan and the existing product-decision owners in Concertable/docs as appropriate.
 Do not infer approval of every recommendation from permission to write/read the draft.
@@ -47,16 +48,24 @@ Do not infer approval of every recommendation from permission to write/read the 
   registration and matching, Application acceptance flow, operation ownership and current-code migration maps.
 - Incorporated research R1-R5, compatibility counterexamples and slice-specific verification; removed
   the unsupported schedule-selection acceptance example from the dispatch diagram.
+- Specified entry-local drafts, issued proposal/consent storage, shared accepted Booking input, explicit
+  Apply/Send/both Accept methods, payer-only commitment start and the full route/use-case inventory.
+- Replaced the tentative acceptance reference-strategy sketch with recorded commitment references;
+  demonstrated the genuine method-setup/amount-authorisation union and two implementations in one case.
+- Identified the existing normal-return transaction semantics; required failed-Result rollback, fresh-scope
+  recovery, post-flush ETags and one Booking creation path. Added acceptance/counter/commitment race proofs.
 
 ## Verification
 
-- Source authority refreshed through 3826320d; extracted B2B main remains older than PR633. Docs main
+- Source authority refreshed through ef8d505f; entry/Booking/Deal runtime files inspected at 3826320d are
+  unchanged by that refresh. Extracted B2B main remains older than PR633. Docs main
   includes PR11; organiser research 5ac4048 is local/unpublished evidence, not approved product policy.
-- This update: B2B and root plan graphs pass with zero errors/warnings. Workflow v2 repository provider
-  validates the B2B artifact paths, Git worktree/branch identity and explicit design-review pause.
-- All 25 local file/anchor links and three SVG XML documents validate. The edited dispatch diagram was
-  rendered and visually checked; the other two diagrams are unchanged from their prior visual checks.
-- Scoped diff whitespace check passes. Only the existing plan, ledger and dispatch SVG are changed.
+- This commit: B2B and root plan graphs pass with zero errors/warnings. Workflow v2 validates the B2B
+  artifact owner, worktree/branch and explicit design-review pause. The sandbox runner initially failed
+  to start; the read-only checks passed on retry through the working local runner.
+- All 27 local links/anchors, three SVG XML documents and delimiters for 18 C# excerpts validate;
+  delimiter checks are not compilation. Scoped diff whitespace passes. Only the existing plan and
+  ledger changed; diagrams are unchanged from their prior rendered/visual checks.
 - The prior broad B2B docs-reachability check found four baseline errors at 85ed6353:
   missing CLAUDE siblings in the two Dashboard test directories; missing AGENTS in E2EAdmin integration
   and KeyedStrategies unit test directories. These are not introduced by the plan; the owning test-guidance
@@ -65,8 +74,8 @@ Do not infer approval of every recommendation from permission to write/read the 
 
 ## Reviews
 
-This update received a consistency/self-review and diagram inspection. No independent implementation-
-readiness review or C# compilation is claimed. This remains a design draft for Tommy's review.
+This update received a code-example/contract consistency self-review. No independent implementation-
+readiness review, application test or C# compilation is claimed. This remains a design draft for Tommy.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -74,13 +83,16 @@ readiness review or C# compilation is claimed. This remains a design draft for T
   A named calculation resolver owns pure calculation dispatch. Data-only templates do not require new
   enum members or union arms; multiple implementations already fit one interface case.
 - Apply/Accept are operations, not a requirement for two union parents. Current Application uses
-  IApplyStep and ICommitmentReferenceStep, not IAcceptStep. Commitment reference resolution remains a
-  strategy unless its contract genuinely diverges; a reference is not proof of payment readiness.
+  IApplyStep and ICommitmentReferenceStep, not IAcceptStep. The target stores commitment references and
+  removes the redundant acceptance resolver after conversion; starting a commitment is the real union
+  example. A reference alone is not proof of payment readiness.
 - Configuration contains the actual selected commercial design; a template supplies reusable defaults.
   Version meanings, template provenance, issued proposals and accepted snapshots are separate concerns.
-- Stored compatibility needs structural/semantic and live checks as well as typed code. Final admitted
-  schemas, signatures, bindings, output consumers and recovery contracts remain a named design gate;
-  do not delegate those decisions to an implementation agent or treat snippets as compiled evidence.
+- Stored compatibility needs structural/semantic and live checks as well as typed code. Section 16's
+  entry contracts await approval; richer B6/B7 schemas and policies remain a named design gate. Do not
+  delegate missing commercial decisions to an implementation agent or treat snippets as compiled evidence.
+- D17-D18 are recommendations, not agreed product policy: private drafts, two initial legal principals
+  with representation, separate invitation edge/workflow, and result-aware atomic acceptance.
 - Source ownership must be refreshed again before delivery; a B2B README or extracted checkout alone
   does not establish that its source includes the merged architecture.
 - The main checkout owns unrelated work. Do not switch/reset/stash/edit it to continue this plan.
