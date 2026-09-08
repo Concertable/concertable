@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `24a7e93aa2661c7ecf31cd608460eaac654fd5fa`  `(2026-09-08)`
-**Security-reviewed up to commit:** `24a7e93aa2661c7ecf31cd608460eaac654fd5fa`  `(2026-09-08)`
+**Reviewed up to commit:** `ad2ec396e9f6d76533efe231c2fb0e5306a0f741`  `(2026-09-08)`
+**Security-reviewed up to commit:** `ad2ec396e9f6d76533efe231c2fb0e5306a0f741`  `(2026-09-08)`
 **Judgment:** `approved`
 
 Checkpoint 7B of [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md).
@@ -174,6 +174,28 @@ the first pass and not the handoff's nine.
 Scope is clean: `git diff origin/main..HEAD -U0` over `api/`, `scripts/`, `.github/workflows/` and
 `plans/` contains no line that does not carry the property name. The only non-rename content on the
 branch is the new test and this work order.
+
+## Review pass — 2026-09-08 — incremental over the plan record
+
+**Candidate base:** `924b1ce7c79e412ffc1b58da94d6a91077f49560`
+**Candidate head:** `ad2ec396e9f6d76533efe231c2fb0e5306a0f741`
+**Candidate branch:** `Refactor/DotNetPlatformPublisherConsumers`
+**Candidate scope:** `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
+**Candidate path-set:** `sha256:6412878393176ddc7c938d3b44105ff751bf3f4005ca3fad7dc583988d4b53c2` `(1 path)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-DotNetPlatformPublisherConsumers\2897c3da-9893-4e4e-8d18-8e435457a178\scratchpad\review-bundle-7b-p4`
+**Candidate bundle identity:** `sha256:997f2a695bae80e42098357cea442d10a3a567d6fdcbf3eadeb3e99e9ef429d8`
+**Work-order path:** `reviews/Refactor-DotNetPlatformPublisherConsumers.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. Documentation-only, and it exists to stop a real loss: the publication half's mechanism
+was worked out here, and this work order is deleted once the branch merges, so checkpoint 7 — its
+durable owner — now carries it. `plan_graph.py` reports 0 errors and 0 warnings. Per `docs-and-debt` it
+adds no second copy of a rule: it records the checkpoint's own decisions and points at
+`inventory.json` and the existing "Replacement for platform-sync" section rather than restating
+either.
 
 ## Security review
 
