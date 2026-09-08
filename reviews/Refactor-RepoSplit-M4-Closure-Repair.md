@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `8090cc46f1cbdba29923c02008104c7ad81b3707`  `(2026-09-08)`
-**Security-reviewed up to commit:** `8090cc46f1cbdba29923c02008104c7ad81b3707`  `(2026-09-08)`
+**Reviewed up to commit:** `967277325e28392bf034d39dc18f744fc7d59805`  `(2026-09-08)`
+**Security-reviewed up to commit:** `967277325e28392bf034d39dc18f744fc7d59805`  `(2026-09-08)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -215,3 +215,28 @@ this pass repoints all resolve to the existing `https://` pinned endpoint, so th
   Search, Auth and the umbrella AppHost, to be resolved by splitting per subject as B2B already is.
 - `api/Concertable.Payment/TECH_DEBT.md` — `AddStripeCli`'s blocking environment callback making a host graph
   unresolvable without a live Stripe CLI.
+
+### Extended over the main merge
+
+`967277325` merges `origin/main`, which had moved the per-service host-graph classes out of
+`*.ArchitectureTests` into a new `*.StartupTests` tier. Four conflicts, all reviewed:
+
+- **B2B / Customer `ResourceGraphTests`** — M4's Payment transport assertions carried onto main's class,
+  keeping main's required `scheme` parameter and adding `targetPort` so the 8081 grpc listener is assertable.
+  `PublishGraphWithStripeCli_IsValid` becomes `async Task` because M4's fail-closed `AllowInsecureHttp` check
+  awaits the resolved environment.
+- **Search `ResourceGraphTests`** — rename detection paired the deleted `PaymentArchitectureTests.cs` with
+  this file and silently pulled the project-overload transport test into it, which does not compile there.
+  Search is restored byte-identical to `origin/main`, and the test is re-homed as
+  `ProjectHostedPaymentWeb_AdvertisesNoDedicatedGrpcTransport` in `Concertable.Payment.StartupTests`.
+- **`eng/repository-split/inventory.json`** — generated, so regenerated with `inventory.py` rather than
+  hand-resolved; `--check` is clean.
+
+The `api/TECH_DEBT.md` naming entry was rewritten rather than left as landed: the startup-tier split already
+resolved most of what it described, and only `PaymentContractReferenceTests`,
+`PaymentPublishedPackageReferenceTests` and `ReunionArchitectureTests` still repeat their project.
+
+Post-merge: `Concertable.Payment.StartupTests` 7/7, `Concertable.Search.StartupTests` 6/6,
+`Concertable.B2B.StartupTests` 12/13 and `Concertable.Customer.StartupTests` 7/8 — each single failure being
+the `AddStripeCli` local-secret block, proven by re-running B2B with `Stripe__SecretKey` cleared, which passes
+4/4. No security-relevant change in the merge resolution.
