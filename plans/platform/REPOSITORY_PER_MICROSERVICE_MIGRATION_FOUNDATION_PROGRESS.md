@@ -3,9 +3,9 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Fix-package-publication-version-collision`
-- Branch: `Fix/package-publication-version-collision`
-- PR: #953, publication-rail repair after M1 Platform Expand PR #942
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-M1-Owner-Hosting-Sync`
+- Branch: `Refactor/M1-Owner-Hosting-Sync`
+- PR: #943, M1 P2 Owner Hosting Sync, restacked on the post-platform-sync main
 - Dependency/package gates: PR #942 landed at `8899eae33` after exact merge-group run `34195643637` passed
   84 jobs with both browser suites green. Its causal package run `34198511871` computed version
   `0.1.0-alpha.0.1329`, but a prior non-main manual run had already published that version from #633's head;
@@ -18,15 +18,17 @@
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
   remain unavailable on the current GitHub entitlement.
 - Last reconciled: 2026-09-08 — current `origin/main` commit
-  `8899eae3355cb3f47c4ac23acb5e2ba89b31cd62`, which includes PR #633, B2B producer PR #949, M3 PR #948,
-  Platform Expand PR #942, the corrective topology commits `82bf5dbbb` and `bb59d9ba3`, and the fixed M1
-  repository topology.
+  `21760e777ecc6df0680bd846e8f814f035627ac4`, the platform-sync PR #954 merge, which includes PR #633, B2B
+  producer PR #949, M3 PR #948, Platform Expand PR #942, publication-rail repair PR #953, the corrective
+  topology commits `82bf5dbbb` and `bb59d9ba3`, and the fixed M1 repository topology.
 
 ## Current state
 
 Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
-public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Platform Expand is
-landed and awaits a corrected package publication before Owner Hosting Sync can consume its new contracts.
+public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Platform Expand is landed and
+its corrected package publication is complete: run `34203007892` published all 58 packages at
+`0.1.0-alpha.0.1330` and platform-sync PR #954 landed those pins at `21760e777`. Owner Hosting Sync is
+restacked on that exact main and is the active delivery stage.
 Existing private
 `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
 The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
@@ -47,11 +49,13 @@ AppHost topology.
 
 ## Next Steps
 
-- Land the publication-rail repair and require its causal main run to publish all 58 packages at one version
-  newer than `0.1.0-alpha.0.1329`, with exact-version restore green and no duplicate skips.
-- Land the generated platform-sync PR, then restack Owner Hosting Sync onto that exact main without changing
-  its eight-commit publication boundary.
-- Deliver Owner Hosting Sync through PR #943. Follow its Auth image publication to the immutable digest.
+- Deliver Owner Hosting Sync through PR #943 from its restacked head. Its eight staged commits are preserved
+  above `21760e777` and carry one added commit that advances the Payment consumer pin to the published
+  `0.1.0-alpha.0.1330` escrow contract, because main's image rail cannot compile B2B without it.
+- Take the PR out of draft, own its CI and merge-queue gates to terminal, and follow its Auth image
+  publication to the immutable digest.
+- Require `Publish images` green on the resulting main before P3: it has failed on main since `516f4cc25`
+  for B2B.Web and B2B.Workers, so that rail is the gate the added pin commit exists to clear.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
 
 ## Completed work
@@ -163,6 +167,13 @@ package and composition validation completes.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- The cross-service Payment package pin drifted behind a contract it already consumed. `538bbc568` added
+  `IEscrowOperationsClient.AuthorizeAsync` to Payment's client and switched B2B's checkout service onto it in
+  one commit, but B2B and Customer pin Payment through `ConcertablePaymentVersion`, which stayed at
+  `0.1.0-alpha.0.1322`. The CI compile floor builds Payment from source through `local-platform.ps1`, so only
+  image publication exercised the real feed pin and it failed there with CS1061. `platform-sync.yml` bumps
+  only `ConcertablePlatformVersion`, leaving this pin hand-maintained; the same drift will recur until a gate
+  builds a consumer's deployable closure against the published Payment version.
 - Existing service, `infra`, and `config` repository IDs and active owner ledgers override historical labels;
   they are not renamed or replaced.
 - Shared packages have two repository owners: `platform-dotnet` and `platform-frontend`. The frontend owner
