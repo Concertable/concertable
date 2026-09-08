@@ -30,7 +30,7 @@ intent that confirms it was meant to be a package.
 ## Options
 
 ### A — Publish the shared test libs as (test-support) packages *(recommended)*
-Consume by pinned `PackageReference` (`ConcertablePlatformVersion`), exactly like Kernel/Messaging.
+Consume by pinned `PackageReference` (`ConcertableDotNetPlatformVersion`), exactly like Kernel/Messaging.
 - **Pro:** carve-consistent; split-ready; kills the leak; publishable test-support packages are normal
   (`Microsoft.AspNetCore.Mvc.Testing`).
 - **Con:** every shared-test-helper edit then takes the **publish-first + pin-bump cycle** (as we just
@@ -53,7 +53,7 @@ to keep the inner loop fast.
 ## Execution (if A)
 
 1. Add `Concertable.Testing`, `Concertable.Testing.Integration`, `Concertable.Testing.E2E` to the platform
-   **publish set** + pin them in `Directory.Packages.props` (`ConcertablePlatformVersion`).
+   **publish set** + pin them in `Directory.Packages.props` (`ConcertableDotNetPlatformVersion`).
 2. Convert **every** consumer `ProjectReference` → `PackageReference` — all module unit/integration test
    projects across **B2B, Customer, Search** + the B2B/Customer E2E projects (~15+ `.csproj`s).
 3. Extend the `UseLocalCore` (`Directory.Build.targets`) swap to cover the test libs for local dev.
