@@ -3,16 +3,15 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-M1-Platform-Expand`
-- Branch: `Refactor/M1-Platform-Expand`
-- PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
-- Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand exact-head run
-  `34189563168` passed. Merge-group run `34190370396` then passed every B2B browser scenario and six of seven
-  Customer scenarios. The remaining signup scenario received HTTP 429 from Auth because the persistent E2E
-  host applied the production ten-request credential budget across scenario-isolated database and login
-  state. The shared E2E Auth environment now relaxes that cross-scenario budget using the same test-only
-  configuration seam as the integration fixtures; production rate limiting is unchanged. Owner Hosting Sync
-  may enter exact-head validation after the repaired Platform Expand merge-group passes.
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Fix-package-publication-version-collision`
+- Branch: `Fix/package-publication-version-collision`
+- PR: pending publication-rail repair after M1 Platform Expand PR #942
+- Dependency/package gates: PR #942 landed at `8899eae33` after exact merge-group run `34195643637` passed
+  84 jobs with both browser suites green. Its causal package run `34198511871` computed version
+  `0.1.0-alpha.0.1329`, but a prior non-main manual run had already published that version from #633's head;
+  duplicate skipping therefore left the feed's AppHost.Shared and Frontend.Hosting binaries stale. The
+  publication rail now forbids arbitrary-ref dispatch, rejects a non-advancing lockstep version before push,
+  and restores the exact version it just published. Its own main merge triggers the required fresh release.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
@@ -24,7 +23,9 @@
 ## Current state
 
 Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
-public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Existing private
+public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Platform Expand is
+landed and awaits a corrected package publication before Owner Hosting Sync can consume its new contracts.
+Existing private
 `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
 The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
 creation is part of M1. Four clean M1 branches preserve the Platform Expand, Owner Hosting Sync, AppHost Sync,
@@ -44,9 +45,10 @@ AppHost topology.
 
 ## Next Steps
 
-- Commit and publish the Platform Expand E2E rate-limit isolation repair, restack the three dependent M1
-  stages without changing their publication boundaries, and re-enter exact-head validation and the merge
-  queue.
+- Land the publication-rail repair and require its causal main run to publish all 58 packages at one version
+  newer than `0.1.0-alpha.0.1329`, with exact-version restore green and no duplicate skips.
+- Land the generated platform-sync PR, then restack Owner Hosting Sync onto that exact main without changing
+  its eight-commit publication boundary.
 - Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
   publication caused by Owner Hosting Sync to its immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
@@ -142,6 +144,13 @@ AppHost topology.
   survives those database resets and accumulated more than ten credential-page requests in one minute. The
   shared E2E Auth environment now sets the credential permit limit through Auth's supported configuration
   seam, matching integration-test isolation without changing the production default or any browser timeout.
+- Exact merge-group run `34195643637` passed 84 jobs at merge SHA `8899eae33`, including API E2E and both
+  complete browser suites, and PR #942 landed. Causal package run `34198511871` packed 58 projects at
+  `0.1.0-alpha.0.1329`, but skipped 57 immutable duplicates because workflow-dispatch run `33683064354` had
+  pre-published that version from non-main #633 head `83c01d3b`; only the newly packable
+  B2B.Application.Contracts was added. The former floating restore passed against that mixed feed version,
+  proving it was not an adequate publication gate. The repair makes main-push ancestry exclusive, requires
+  the computed lockstep version to advance beyond the feed before any push, and verifies that exact version.
 
 ## Reviews
 
