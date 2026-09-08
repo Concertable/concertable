@@ -910,7 +910,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes, local-platform-pack, architecture-tests, startup-tests]
+    needs: [build, changes, local-platform-pack, unit-tests, architecture-tests, startup-tests]
     # A cheap gate with an empty matrix skips, and a skipped need would otherwise cascade into skipping
     # this job — silently, which for Concertable.Auth (a service with startup tests and no architecture
     # tests) would mean an Auth-only PR running neither integration nor E2E. Gate on no need having
@@ -955,7 +955,7 @@ jobs:
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes, architecture-tests, startup-tests]
+    needs: [build, changes, unit-tests, architecture-tests, startup-tests]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
     # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
