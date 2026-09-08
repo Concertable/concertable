@@ -7,12 +7,12 @@
 - Branch: `Refactor/M1-Platform-Expand`
 - PR: #942; first stage of the four-branch M1 stack in PRs #942-#945
 - Dependency/package gates: PR #633 and M3 PR #948 landed on `origin/main`; Platform Expand exact-head run
-  `34183872683` passed. Merge-group run `34184548934` then exercised browser E2E and exposed two backend
-  contract faults: the image-backed Payment E2E substitution reused an Aspire environment annotation so the
-  replacement host missed Stripe's discovered webhook secret, and `BookingConfirmedEvent` carried abstract
-  terms without a JSON discriminator. The owning Platform Expand repair gives the replacement a distinct
-  environment callback and makes all four confirmed-booking term variants round-trip over the wire before
-  the four stages are restacked and republished. Owner Hosting Sync may then enter exact-head validation.
+  `34189563168` passed. Merge-group run `34190370396` then passed every B2B browser scenario and six of seven
+  Customer scenarios. The remaining signup scenario received HTTP 429 from Auth because the persistent E2E
+  host applied the production ten-request credential budget across scenario-isolated database and login
+  state. The shared E2E Auth environment now relaxes that cross-scenario budget using the same test-only
+  configuration seam as the integration fixtures; production rate limiting is unchanged. Owner Hosting Sync
+  may enter exact-head validation after the repaired Platform Expand merge-group passes.
   AppHost Sync and Platform Contract remain gated on publishing the Owner Hosting
   Auth image, pinning its immutable digest, and qualifying all four standalone Auth client rosters. Package
   inventory and ACL checks require a credential with `read:packages`; private-repository merge-queue rulesets
@@ -37,13 +37,16 @@ Platform Expand owns the merge-group repairs: it accepts Stripe's authoritative 
 when optional `capture_before` metadata is absent; makes cancellation scenarios wait for Payment refund
 completion, Concert cancellation, and Payment outbox quiescence before reset; gives substituted
 E2E projects distinct environment callback annotations; and defines the discriminator for every concrete
-`ConfirmedBookingTerms` wire shape. B2B declares its staged-and-consumed `BookingConfirmedEvent` in both
-runtime and AppHost topology.
+`ConfirmedBookingTerms` wire shape. It also removes Auth's production credential request budget from the
+shared E2E environment so per-scenario login resets cannot leak limiter state between otherwise isolated
+Customer and B2B scenarios. B2B declares its staged-and-consumed `BookingConfirmedEvent` in both runtime and
+AppHost topology.
 
 ## Next Steps
 
-- Commit and publish the Platform Expand merge-group repair, restack the three dependent M1 stages without
-  changing their publication boundaries, and re-enter exact-head validation and the merge queue.
+- Commit and publish the Platform Expand E2E rate-limit isolation repair, restack the three dependent M1
+  stages without changing their publication boundaries, and re-enter exact-head validation and the merge
+  queue.
 - Deliver Platform Expand and Owner Hosting Sync in order through their existing PRs. Follow the Auth image
   publication caused by Owner Hosting Sync to its immutable digest.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
@@ -132,6 +135,13 @@ runtime and AppHost topology.
   Environment callbacks are now cloned per substituted resource, and explicit `$type` mappings cover FlatFee,
   VenueHire, DoorSplit, and Versus terms. The focused callback tests pass 7/7, Booking unit tests pass 13/13
   including four nested abstract-contract round trips, and the B2B UI project builds successfully.
+- Exact-head run `34189563168` passed all required executable gates at `e2af6b9ce`. Its exact-tree merge-group
+  run `34190370396` passed every non-browser job, the API E2E suite, all 32 B2B UI scenarios, and six of seven
+  Customer UI scenarios. The final Customer signup login was rejected with HTTP 429 and `Retry-After: 60`:
+  scenario hooks deliberately reset login capture before every scenario, but Auth's in-memory IP limiter
+  survives those database resets and accumulated more than ten credential-page requests in one minute. The
+  shared E2E Auth environment now sets the credential permit limit through Auth's supported configuration
+  seam, matching integration-test isolation without changing the production default or any browser timeout.
 
 ## Reviews
 
