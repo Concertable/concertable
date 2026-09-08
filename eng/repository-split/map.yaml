@@ -52,7 +52,7 @@ targets:
     rename:
       api/Concertable.Search/: ""
     notes:
-      - Needs a Customer seed simulator before its standalone host can converge.
+      - Rebuilds rating projections from B2B-owned events replayed by the B2B simulator; no Customer simulator dependency.
 
   customer:
     repo: Concertable/customer
@@ -109,8 +109,8 @@ targets:
       api/: "src/"
     notes:
       - Owns Messaging Inbox/Outbox migrations.
-      - AppHost.Shared still mixes generic primitives with Auth-specific
-        composition; the Auth-specific half re-homes to auth before extraction.
+      - AppHost.Shared owns only product-neutral resource and topology primitives;
+        Auth owns SPA registration behavior and B2B/Customer own their surface rosters.
 
   platform-frontend:
     repo: Concertable/platform-frontend

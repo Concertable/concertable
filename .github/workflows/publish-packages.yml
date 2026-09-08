@@ -24,7 +24,9 @@ on:
       - main
     paths:
       - 'api/**'
-  workflow_dispatch:
+      # A publication-policy repair must be able to republish without an unrelated api/** touch.
+      - '.github/workflows/publish-packages.yml'
+      - '.github/scripts/package_publication_policy.py'
 
 permissions:
   contents: read
@@ -32,10 +34,13 @@ permissions:
 
 env:
   FEED: https://nuget.pkg.github.com/Concertable/index.json
+  FEED_DOWNLOAD: https://nuget.pkg.github.com/Concertable/download
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     # `dotnet pack` restores the whole solution, including Concertable.Auth — which since Phase 2b
     # consumes the shared platform as packages from the feed. Without the feed credential Auth's
     # restore 401s (NU1301) and pack fails. The repo GITHUB_TOKEN reads the org packages this repo
@@ -58,16 +63,21 @@ jobs:
       - name: List packages
         run: ls -l ${{ runner.temp }}/nupkgs
 
+      - name: Require a new lockstep package version
+        id: version
+        run: python .github/scripts/package_publication_policy.py "${{ runner.temp }}/nupkgs"
+
       - name: Push to GitHub Packages
         run: |
           dotnet nuget push "${{ runner.temp }}/nupkgs/*.nupkg" \
             --source "$FEED" \
-            --api-key "${{ secrets.GITHUB_TOKEN }}" \
-            --skip-duplicate
+            --api-key "${{ secrets.GITHUB_TOKEN }}"
 
   verify-restore:
     runs-on: ubuntu-latest
     needs: publish
+    env:
+      VERSION: ${{ needs.publish.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -80,8 +90,8 @@ jobs:
         # A fresh consumer referencing EVERY published Concertable.* package, restored from the
         # feed alone. If any package declares a feed-absent Concertable.* dependency (the BUILD1
         # trap: a packable lib that ProjectReferences a non-packable one) this restore fails
-        # NU1101. Floating '*-*' takes the version just pushed by the publish job; nuget.org is
-        # inherited (no <clear/>) so the packages' external dependencies resolve normally.
+        # NU1101. VERSION is the exact version validated and pushed by the publish job; nuget.org
+        # is inherited (no <clear/>) so the packages' external dependencies resolve normally.
         #
         # The package list is GENERATED from the <IsPackable>true</IsPackable> projects — the same
         # single source of truth that drives `dotnet pack` — so it can't drift from what publishes:
@@ -114,7 +124,7 @@ jobs:
             echo '<Project Sdk="Microsoft.NET.Sdk">'
             echo '  <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>'
             echo '  <ItemGroup>'
-            echo "$packable" | sed 's#.*#    <PackageReference Include="&" Version="*-*" />#'
+            echo "$packable" | sed "s#.*#    <PackageReference Include=\"&\" Version=\"$VERSION\" />#"
             echo '  </ItemGroup>'
             echo '</Project>'
           } > consumer.csproj

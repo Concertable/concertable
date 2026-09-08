@@ -127,7 +127,8 @@ shared runtime. The target keeps that distinction.
 Current packable ownership is:
 
 - Auth: `Concertable.Auth.Contracts`.
-- B2B: Artist, Concert, Tenant, User, and Venue Contracts plus `Concertable.B2B.Seed.Contracts`.
+- B2B: Admin, Application, Artist, Booking, Concert, Deal, Tenant, User, and Venue Contracts plus
+  `Concertable.B2B.Seed.Contracts`, `Concertable.B2B.Hosting`, and `Concertable.B2B.TestKit`.
 - Customer: `Concertable.Customer.Review.Contracts`, `Concertable.Customer.Ticket.Contracts`, and
   `Concertable.Customer.Hosting`.
 - Payment: `Concertable.Payment.Contracts` and `Concertable.Payment.Client`.
