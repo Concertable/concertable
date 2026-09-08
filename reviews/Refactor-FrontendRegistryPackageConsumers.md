@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `73e36b581f434b8d460da095cdc8a0168542945e`  `(2026-09-08)`
-**Judgment:** `changes-requested`
+**Reviewed up to commit:** `c7c8a6d6090d726d94ba091175a1ca8e3de0c676`  `(2026-09-08)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
 
@@ -87,3 +87,38 @@ Checks that could have produced a finding and did not, each confirmed against th
 `npm ci`'s behaviour inside a real carved install is not provable from the frozen tree. A local full carve of
 `web/customer` was running at freeze time and the `carve-fe` job over all seven surfaces is the authoritative
 evidence; neither is a finding, and both are recorded in the plan ledger's verification section.
+
+## Review pass — 2026-09-08 — incremental
+
+**Candidate base:** `73e36b581f434b8d460da095cdc8a0168542945e`
+**Candidate head:** `c7c8a6d6090d726d94ba091175a1ca8e3de0c676`
+**Candidate branch:** `Refactor/FrontendRegistryPackageConsumers`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:0e9332d5f6328336ebe8b4dbc5388f906356427213ea4138ede07e75a25ad4e0` `(4 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-FrontendRegistryPackageConsumers\5c97c8fc-deba-45af-ad34-2124ba6d754e\scratchpad\inc-bundle`
+**Candidate bundle identity:** `sha256:952506b54444a22112cc7f9754f0df3bb6b5c89277962c74b092d1002d2263f9`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+The delta is `FRP1`'s fix, the carve-cleanup fix the local gate exposed, and this branch's ledger
+checkpoints. The bundle carries the exact patch, the NUL path manifest, and an identity manifest recording
+the frozen tree OID; its `tree_export` field records `omitted-disk-capacity` rather than claiming an export,
+because `C:` reached zero free during this pass and no read-only subordinate consumed the tree — every
+identity a resumption needs is still pinned.
+
+### Findings
+
+No findings.
+
+- `app/scripts/carve-fe.mjs` — the cleanup is retried (`maxRetries: 5`, `retryDelay: 200`) and its failure
+  warns instead of propagating. It cannot mask a carve result in either direction: the body's own exception
+  still reaches the caller, and a successful build no longer exits non-zero. Nothing else in the `finally`
+  block changed, and the disposable work directory is the only thing whose removal is now optional.
+- `app/README.md` — documents the command and the invariant `FRP1` asked for, in the file that declares
+  itself the inventory and commands rather than in an always-loaded `AGENTS.md`. The stale
+  "12 workspaces" / "all 12" counts elsewhere in that file pre-existed this branch on lines it does not
+  touch, and are left to their owner.
+- `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md` — `plan_graph.py` reports 0 errors and 0 warnings; the
+  PR header, verification entries and `## Next Steps` name the merge as the one live gate, with the 8A
+  blocker fields intact below it.
+- No path in this delta qualifies for a security marker.
