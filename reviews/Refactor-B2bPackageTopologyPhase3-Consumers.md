@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `1c1ba53d61244c6f8feb6e4a0852ce3aa19c71d0`  `(2026-09-09)`
-**Security-reviewed up to commit:** `1c1ba53d61244c6f8feb6e4a0852ce3aa19c71d0`  `(2026-09-09)`
+**Reviewed up to commit:** `d9958fd079f7161ecadee40714a3c93e727b7d79`  `(2026-09-09)`
+**Security-reviewed up to commit:** `d9958fd079f7161ecadee40714a3c93e727b7d79`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-09 — full
@@ -95,3 +95,44 @@ All seven standalone lockfiles resolve every `@concertable/*` tier to exactly `0
 `0.1.0-alpha.0.6462` or `0.1.0-alpha.0.6498`. The venue, artist and mobile B2B locks now contain
 `@concertable/b2b`, which they declare and previously did not resolve. No source, manifest or committed
 specifier changed: the declarations stay `alpha` and the pin lives only in the lockfiles.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `33c1d6797c3dcfadf5b63c568a4885a0244641a5`
+**Candidate head:** `d9958fd079f7161ecadee40714a3c93e727b7d79`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Consumers`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:560d66d0a4fc5d6371b9888a42eb27a8a91e3e9191626298e7bceff4a7e8e3c4` `(6 paths)`
+**Candidate bundle:** derived in place from the frozen range
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+- [x] **2 — HIGH — an escrow observed in `Processing` could never be authorized.** `Processing` was the
+  only non-terminal state without an `Authorize` edge, so a manual-capture PaymentIntent sampled in
+  `processing` before `requires_capture` was refused with `IllegalTransition from Processing to
+  Authorized` and its capture never ran. Pre-existing on `main`; surfaced here because this queue run was
+  the first to sample that ordering. `PROVIDER_CONTRACT.md` already sanctions both legs of the sequence,
+  so the edge was missing rather than withheld. Added, declared in `SessionEdges`, and covered by
+  `Evaluate_AuthorizedAfterProcessing_IsApplied`.
+- [x] **3 — HIGH — invitation acceptance deadlocked on its own query.** `useAcceptInvitation` ran its POST
+  inside a `useQuery` and selected the tenant through `useTenant`, whose `selectTenant` awaits an
+  unfiltered `queryClient.invalidateQueries()`. From inside that `queryFn` the await waited on a refetch
+  of the same query, so the page held its `accept-pending` spinner indefinitely and `members-roster`
+  never rendered — three scenarios failed on it. Introduced by this candidate: the previous code left both
+  invalidations unawaited. Fixed at the call site, which refreshes memberships and calls
+  `tenantSession.select` directly; it finishes with `window.location.assign`, so the SPA cache
+  invalidation it deadlocked on was redundant there. `selectTenant` keeps its awaited invalidation
+  because the in-SPA tenant switcher depends on it for a deterministic refresh, and weakening that would
+  have traded this failure for a stale read in
+  `Switching organization scopes member management to the chosen tenant`.
+
+### Security
+
+`Processing -> Authorized` widens no authorization: `ResolveAuthorization` still requires an
+`Authorization` session kind, and `PaymentSessionStateMachine.Evaluate` still rejects `Authorized` for a
+`Payment` context, which the retained `Evaluate_AuthorizedForAutomaticPayment_IsRejected` covers. The
+accept flow performs the same membership refetch and the same `tenantSession.select`, which still filters
+a tenant absent from the caller's memberships, so no tenant becomes selectable that was not before.
