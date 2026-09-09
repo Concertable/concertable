@@ -1,6 +1,6 @@
 # B2B commercial execution: architecture and coordinated delivery plan
 
-Status: **Deal/Template structure and deliberate workflow-configuration coupling agreed on 9 September 2026. Commercial-value naming, physical mappings and remaining entry/financial contracts still require qualification. Not implementation-ready. Application implementation and database migration are not authorised.**
+Status: **Logical Deal/Template/configuration structure checkpointed on 9 September 2026, including reusable workflows, typed terms and typed step shapes. PostgreSQL persistence architecture is explicitly unresolved and requires an independent recommendation. Not implementation-ready. This checkpoint authorises documentation and a read-only review prompt, not application implementation or database migration.**
 
 This is the B2B-owned successor to the direct-offers draft, not a second plan running alongside it.
 It covers B2B commercial configuration, templates, both booking entry paths, event/resource context and
@@ -19,8 +19,9 @@ For the wider architecture, read the [configuration and entity sketches](#keep-l
 
 Deal remains the concrete, editable commercial arrangement. Every Deal has a Template and supplies its
 own negotiated commercial values; the Template is the reusable configured capability composition.
-Its configuration is organised by workflow, with configured steps and requirements, not a second
-configuration body on Deal. Section 3 records the agreed structure and its intentional module coupling.
+Its configuration is organised by reusable workflow configurations and typed configured steps, not a
+second configuration body on Deal. Modules own lifecycle prerequisites and their enforcement; the
+template does not author another lifecycle requirement graph. Section 3 records the current structure.
 Application and Direct Invitation negotiate independently and hand one immutable accepted agreement
 shape to Booking. Each lifecycle retains its own orchestration and typed capability matching.
 Show groups the event and its engagements; it does not replace PR633's per-booking Concert lifecycle.
@@ -33,12 +34,15 @@ The entity names and contracts below are proposed target names, not claims that 
 means the design proposed here. Sections marked "Decision" must not be treated as approved by merely
 reading this plan.
 
-The latest checkpoint confirms D29's Deal/Template structure and resolves D30's architectural choice:
-Deal owns the hierarchical template; participating modules expose a consistent configuration contract
-while retaining their own runtime workflows and implementations. This deliberately adds configuration
-coupling; it does not duplicate module state machines or require identical internal workflows.
-D23-D27 remain agreed and D28 remains unresolved. Tommy authorised recording the final architectural
-direction, not implementation, another ledger or a handoff.
+The latest checkpoint retains D29's Deal/Template structure and D30's architectural boundary, and records
+the subsequent typed-term, typed-step and workflow-reuse discussion. A template selects reusable workflow
+configurations; it does not exclusively own each configuration row. Participating modules retain their
+runtime workflows, mandatory guards and implementations. This deliberately adds configuration coupling;
+it does not duplicate module state machines or require identical internal workflows.
+D23-D27 remain agreed and D28 remains unresolved. Tommy authorised saving the concrete design and a
+read-only independent architecture handoff. The original workstream retains this plan and sole ledger.
+The PostgreSQL question must be concluded independently: earlier TPT, then TPC, then polymorphic-JSONB
+recommendations are not a qualified physical design. Section 7 records the exact unresolved decision.
 Earlier detailed entry and financial excerpts remain proposals requiring reconciliation and qualification.
 Older null-forgiving expressions and the rejected commandJournal collaborator name still require
 reconciliation before the relevant snippets can be approved.
@@ -77,9 +81,14 @@ The implementation baseline is the monorepo's merged B2B source, not the older e
 | Entry-contract refresh | ef8d505fdb0133d8b967d58634022192169e90e1 | Comparison from 3826320d changes startup-test/CI guidance and package pins, not the inspected entry/Booking/Deal runtime files |
 | Union/version clarification refresh | 5b367c5a4e3d63d1fcc185379adff90db35e03da | Checked 9 September: subsequent hosting, package, test and extraction changes do not change the inspected lifecycle contracts or keyed builder; B2B already pins Dunet 1.16.2 and uses it for ConfirmedBookingTerms |
 | Independent design discussion refresh | 64b3dccec2c48bf1327ce93f229a6628ccf1c325 | Previously inspected during this discussion: PR951 changes Payment reconciliation, not the four B2B financial formulas; the later comparison from 2df4105989ce462644cc9bc764138aeb0ecc958d changes package pins only. This planning checkout is not automatically current runtime source |
-| Extracted Concertable/b2b main | fded052cdbf6f0f4c8f55ef7414c13ffc19ab33c | Still older than PR633's lifecycle split; not the source to design against |
+| Previously inspected extracted Concertable/b2b main | fded052cdbf6f0f4c8f55ef7414c13ffc19ab33c | That inspected tip was older than PR633's lifecycle split; requalify current ownership/tips rather than designing against this old snapshot |
 | Concertable/docs main | 99ad353b9cb26921ad8914e0f1449202574e330e | Includes docs PR11; no newer remote docs found during authoring |
 | Organiser research, not merged policy | Docs/Organiser-Commercial-Research at 5ac4048a6f4145f1e8f22d1e043aff33da47ba3f | Sixteen scenarios and five worked arrangements inform the design; demand, funding permissions and disputed-outcome authority remain unproven |
+
+This save rechecked the owning worktree/branch, absence of an open owning PR and the empty local source
+diff from PR633 to owner HEAD 654d242fd over api/Concertable.B2B/src. The remote source tips above remain
+historical investigation evidence, not a fresh remote-runtime qualification. The independent reviewer
+must establish the current authoritative B2B repository/branch during extraction before concluding.
 
 The plan lives inside the authoritative B2B subtree so it travels with B2B when extraction is qualified.
 Before every delivery slice, re-resolve which repository/branch owns its current source and published
@@ -98,7 +107,9 @@ contracts. This plan is not permission to overwrite the retained B2B repository 
 - Mixing and matching semantically compatible capabilities is the objective, including within an
   operation. Restrictions must describe real dependencies, not recreate whole-deal preset bundles.
 - One coordinated architecture may require multiple coherent PRs and producer/consumer gates.
-- The provider migration in this plan is B2B-only, including required shared-library compatibility.
+- PostgreSQL is a prerequisite baseline for the deal-configuration refactor, as Tommy explicitly
+  clarified. The earlier provider-migration material is dependency/cutover context, not permission to
+  implement PostgreSQL now or choose SQL Server as this refactor's target.
 - Planning is authorised. Application changes, migration execution, deployment and data destruction are not.
 
 Durable product ownership remains in [SYSTEM](https://github.com/Concertable/docs/blob/main/SYSTEM.md),
@@ -166,19 +177,21 @@ move PR633's orchestration back into Deal or Show.
 
 ### Agreed Deal and Template design
 
-**D29/D30: the structure and ownership are agreed; the physical schema still requires qualification.**
-Tommy confirmed the workflow hierarchy and deliberate standardisation after the independent architecture
-assessment, and requested that the final direction be recorded. Deal owns the concrete arrangement and
-its required Template; modules own executable workflows. The name Parameters is rejected for commercial
-declarations. Their final names and exact value/storage types remain open; the ownership decision does
-not approve every earlier entity or API sketch.
+**D29/D30: preserve the logical structure below; do not promote its illustrative C# shapes into a
+qualified EF/PostgreSQL mapping.** Tommy requested that the established configuration design survive the
+handoff. Deal owns the concrete arrangement and its required Template relationship; modules own executable
+workflows. Terms is the selected commercial noun. WorkflowConfiguration and StepConfiguration distinguish
+stored selections from running workflows/steps. The sketches omit Entity/Definition suffixes and
+redundant Template prefixes; this is not authorisation for a repository-wide naming refactor.
 
 The central boundary is:
 
 | Concept | Owns | Does not own |
 |---|---|---|
 | Deal | One concrete commercial arrangement: identity, tenant authorship, required Template and actual negotiated commercial values | Another copy of the editable template composition; every lifecycle or its executions |
-| DealTemplate | Reusable configured capabilities, workflow grouping, requirements, typed input bindings and declarations/constraints for negotiable commercial terms | Every customer's negotiated amounts; executable services or implementation classes |
+| DealTemplate | A reusable composition selecting workflow configurations and typed commercial-term declarations | Every customer's negotiated amounts; exclusive ownership of every reusable workflow; executable services |
+| WorkflowConfiguration | One identified, reusable configuration for a supported workflow kind, containing typed configured steps | A runtime workflow/state machine; an exclusive TemplateId; actual deal values |
+| Term | Named, typed negotiable input and its constraints; shared declaration identity in the current logical model | A particular deal's amount or percentage; an executable step argument object |
 | Issued proposal | Entry-owned immutable offer document, context and exact consent target | A live view of Deal or current template metadata |
 | Accepted agreement | Booking-owned immutable accepted document and acceptance evidence | A dependency on the latest template or mutable offer |
 | Step execution | Executing module's durable action identity, pinned behaviour, prepared inputs, result and progress | Another provider financial ledger; a fresh charge identity for every attempt |
@@ -195,22 +208,32 @@ with its current meaning until its exact placement is qualified; this refactor d
 
 ### Commercial declarations and actual values
 
-Use "commercial terms" descriptively until the name is agreed. Do not silently reinstate Parameters,
-TemplateParameterEntity or DealParameterValueEntity as final names: Tommy distinguished these economic
-terms from the arguments actually passed to executable steps. Neither TermDefinitionEntity nor another
-blanket Definition suffix is approved merely because it appeared in an earlier sketch.
+Use Term for a declaration and DealTerm for the value supplied by a concrete deal. Initial primitive
+shapes discussed are MoneyTerm/PercentageTerm and MoneyDealTerm/PercentageDealTerm. These are not
+FlatFeeTerms/VenueHireTerms/VersusTerms entity subtypes for every possible commercial combination.
+Keep Parameters, CommercialTerm, DealParameterValueEntity and blanket Definition suffixes out of the
+selected naming. Typed executable argument records are a separate boundary from persisted terms.
 
 | Place | Flat Fee example |
 |---|---|
-| Template's commercial declaration | Fee is required Money, with supported currency and positive-amount constraints |
+| Term selected by the template | Fee is required Money, with supported currency and positive-amount constraints |
 | Deal's actual commercial value | Fee = GBP 500 |
-| Step's input binding | Its amount input comes from Fee |
+| FixedCalculationConfiguration.Fee | Named reference to the required MoneyTerm declaration |
 | Server-prepared executable request | Validated payer, payee, amount, operation identity and other inputs needed by that interface |
 
 The first row declares what can be negotiated; the second supplies a particular agreement's value.
-They are not two definitions of the deal. This logical distinction does not by itself prove that both
-must be standalone entity tables. Qualify typed value objects versus relational value rows together
-with querying, constraints, editing and DTOs before selecting the final mapping.
+They are not two definitions of the deal. The working relational model gives declarations an identity
+and stores one typed value per (DealId, TermId); the final physical mapping remains the section 7 review.
+A second fee creates another MoneyTerm identity and value, not another primitive type or whole-deal
+subclass. The same term identity within a deal means the same negotiated input; equal labels or equal
+amounts do not make different term identities interchangeable.
+
+Workflow reuse requires correcting the earlier template-exclusive term ownership too. In the current
+logical model, Term has no exclusive TemplateId: templates select shared immutable declarations, and
+configured steps refer to those same declarations. Actual DealTerm values remain deal-owned. Every
+referenced term must belong to the template's selected declaration set, have the required type and be
+usable by the selected workflow. The reviewer must qualify the relational keys, type enforcement and
+declaration ownership together; do not hide this problem behind a JSONB payload or an unexplained Guid.
 
 A suggested default, if admitted, is an authoring convenience copied when creating the deal; it is
 never a live fallback that changes existing values when a template default changes. A configured
@@ -219,32 +242,28 @@ another independently editable copy of Fee in each workflow's settings.
 
 ### Keep lifecycle sections, make their connections explicit
 
-The selected grouping is hierarchical ownership with explicit references for dependencies:
+The selected grouping preserves workflow hierarchy while allowing shared configurations:
 
 ~~~text
 Deal
 +-- Template -> DealTemplate
-+-- Negotiated commercial values
++-- Terms (actual DealTerm values)
     +-- Fee = GBP 500
 
 DealTemplate
-+-- Commercial term declarations (final name open)
++-- Terms -> shared Term declarations
 |   +-- Fee: Money, required, positive
-+-- Workflows
++-- Workflows -> reusable WorkflowConfiguration records
     +-- Application
     |   +-- Steps
-    |   |   +-- PaymentMethod: Authorise@1
-    |   |       +-- Amount input -> Fee
-    |   +-- Requirements
-    |       +-- Before Accept: the selected authorisation must be usable
+    |       +-- PaymentMethod: Authorise@1
+    |           +-- Typed amount source -> Fee
     +-- DirectInvitation
-    |   +-- Its own configured steps and requirements
+    |   +-- Its own configured steps
     +-- Booking
     |   +-- Steps for confirmation/cancellation
-    |   +-- Requirements
     +-- Concert
         +-- Steps for completion/cancellation
-        +-- Requirements
 ~~~
 
 This is the logical template shape, not four concurrently executing workflow instances. Application and
@@ -252,33 +271,42 @@ Direct Invitation remain alternatives; one concrete negotiation follows one entr
 into Booking. A template may support both routes. Opportunity publication, Show/resource management
 and other modules do not automatically become template sections merely because they have workflows.
 
-The provisional same-owner relational shape is:
+The concrete logical relationships to carry forward are:
 
-| Child | Parent and content | Important distinction |
+| Relationship | Cardinality / content | Important distinction |
 |---|---|---|
-| WorkflowEntity | TemplateId; supported workflow identity; configured Steps and Requirements | Configuration for an existing lifecycle, not a runtime ApplicationWorkflow/BookingWorkflow entity |
-| StepEntity | WorkflowId; configured-step identity; family; typed behaviour/version selection; family-specific settings | One configured use of a capability; a workflow may have several uses of the same family |
-| StepInputBindingEntity | Target StepId/input; typed commercial-term source or configured step-output source | A connection, not another amount or implementation |
-| RequirementEntity | WorkflowId; supported action/checkpoint; required fact/result and its source | Conditions before starting an action and conditions before completing it are distinct |
-| Commercial declaration/value shapes, names open | Declaration at template scope; actual values owned by Deal | Final entity/value-object and table/JSONB split is not settled |
+| Deal -> DealTemplate | Required many-to-one; Deal.TemplateId and Template navigation | Deal stores its values, not a duplicate configuration body |
+| DealTemplate <-> WorkflowConfiguration | Many-to-many; association table containing TemplateId and WorkflowId | Remove the earlier exclusive WorkflowConfiguration.TemplateId |
+| WorkflowConfiguration -> StepConfiguration | One-to-many; StepConfiguration.WorkflowId | Reusing a workflow reuses its contained configuration; no separate step-library aggregate is required initially |
+| DealTemplate <-> Term | Many-to-many; selected declaration membership | Shared declarations have no exclusive TemplateId in this working model |
+| Typed step -> typed Term | Named references such as Fee/Guarantee -> MoneyTerm and Share -> PercentageTerm | Not a generic argument bag or a copied deal value |
+| Deal -> DealTerm -> Term | Deal owns multiple typed values; one value per (DealId, TermId) | Values must match selected declarations, primitive types and constraints |
 
-Template -> Workflows -> Steps expresses ownership. Dependencies can cross that tree: Booking can
-consume a result produced during entry without owning or duplicating the entry step, and several steps
-can refer to the same commercial term. Links between alternative entry routes and their common downstream
-consumer must be typed and validated; a bare Guid does not prove an output is reachable in the selected route.
+These are logical entities/relationships, not a claim that every C# inheritance level needs a table.
+Association tables need not gain standalone C# join classes unless they have real additional data or
+constraints. Validate one supported workflow configuration per kind within a template, duplicate business
+identities and all term membership/type requirements; a HashSet or a simple pair-of-IDs join does not
+enforce those invariants by itself. Shared configuration is reusable only where its complete selections
+and declared inputs are compatible. It is not a generic workflow silently rebound to unrelated inputs.
 
-TemplateOperationEntity and OperationStepEntity are withdrawn from the initial template model.
+TemplateOperationEntity, OperationStepEntity, generic StepInputBindingEntity/InputBindings and a
+template-authored RequirementEntity lifecycle graph are withdrawn from the initial model. The earlier
+generic WorkflowPoint field is not part of the current base-step shape. Named typed term references
+replace the generic argument-table sketch. Module-published configuration contracts own the valid timing
+and prerequisites; template authors cannot independently move or remove mandatory guards.
 Apply, Accept, Checkout, Confirm, Complete and Cancel are workflow actions, not evidence that every method
 needs another entity or factory family. Fixed workflow code owns orchestration and mandatory transitions.
-Where authoring needs selectable placement/order, it must select supported action/checkpoint identities
-and persist explicit order/dependencies, not arbitrary methods or a second database-programmed workflow.
-The exact placement and requirement schemas remain a qualification gate, not permission to infer them.
+For example, selecting Authorise@1 entails its module-defined usable-authorisation requirement before
+Accept; there is no separately editable BeforeAccept requirement row. Booking may consume the resulting
+persisted commitment without owning or duplicating the entry workflow. Future typed step-output references
+or calculation composition require an explicit supported input/output contract; they are not approval for
+an arbitrary data-authored control-flow graph. Their exact schema is not yet agreed.
 
 Within the owning module, use normal EF relationships and FK constraints. Collections use `IReadOnlySet<T>`
 backed by `HashSet<T>` with `ReferenceEqualityComparer.Instance`. A set expresses unordered membership, not
 execution order, business-key uniqueness or deep immutability. Enforce uniqueness in the domain/database
-and preserve explicit order where behaviour requires it. Final keys must reject cross-template bindings,
-duplicate business identities and invalid source alternatives.
+and preserve explicit order where behaviour requires it. Final constraints and validation must reject
+incompatible term membership, duplicate identities and invalid source alternatives.
 
 `ImmutableArray<T>` remains a suitable choice for immutable DTO/value collections and issued/accepted
 document snapshots. It is complementary to the EF navigation shape, not replaced by `IReadOnlySet<T>`:
@@ -287,6 +315,148 @@ values rather than retaining tracked entity references. `ImmutableArray<T>` does
 objects or database rows immutable; seal persistence separately and qualify serializer round-trips.
 Preserve explicit execution order where relevant, and canonicalise unordered members before hashing
 an agreement rather than treating HashSet enumeration order as stable.
+
+### Concrete typed relationship members
+
+The following consolidates the members discussed, without choosing TPH, TPT, TPC or JSONB. Constructors,
+mutation/publication methods, validation, access metadata and aggregate concurrency are intentionally not
+shown; none is waived. Guid is the proposed identity for new definition records; the existing Deal int Id
+is retained. No migration or compiled EF model has qualified this sketch.
+
+~~~csharp
+internal sealed class Deal
+{
+    private readonly HashSet<DealTerm> terms = new(ReferenceEqualityComparer.Instance);
+
+    public int Id { get; private set; }
+    public Guid TenantId { get; private set; }
+    public Guid TemplateId { get; private set; }
+    public DealTemplate Template { get; private set; } = null!;
+    public PaymentMethod PaymentMethod { get; private set; }
+    public IReadOnlySet<DealTerm> Terms => this.terms;
+}
+
+internal sealed class DealTemplate
+{
+    private readonly HashSet<Term> terms = new(ReferenceEqualityComparer.Instance);
+    private readonly HashSet<WorkflowConfiguration> workflows = new(ReferenceEqualityComparer.Instance);
+
+    public Guid Id { get; private set; }
+    public IReadOnlySet<Term> Terms => this.terms;
+    public IReadOnlySet<WorkflowConfiguration> Workflows => this.workflows;
+}
+
+internal sealed class WorkflowConfiguration
+{
+    private readonly HashSet<StepConfiguration> steps = new(ReferenceEqualityComparer.Instance);
+
+    public Guid Id { get; private set; }
+    public WorkflowKind Kind { get; private set; }
+    public IReadOnlySet<StepConfiguration> Steps => this.steps;
+}
+
+internal abstract class Term
+{
+    public Guid Id { get; private set; }
+    public string Name { get; private set; } = null!;
+}
+
+internal sealed class MoneyTerm : Term
+{
+    public string Currency { get; private set; } = null!;
+    public decimal Minimum { get; private set; }
+    public bool MinimumInclusive { get; private set; }
+}
+
+internal sealed class PercentageTerm : Term
+{
+    public decimal Minimum { get; private set; }
+    public decimal Maximum { get; private set; }
+}
+
+internal abstract class DealTerm
+{
+    public int DealId { get; private set; }
+    public Deal Deal { get; private set; } = null!;
+    public Guid TermId { get; private set; }
+    public Term Term { get; private set; } = null!;
+}
+
+internal sealed class MoneyDealTerm : DealTerm
+{
+    public decimal Amount { get; private set; }
+    public string Currency { get; private set; } = null!;
+}
+
+internal sealed class PercentageDealTerm : DealTerm
+{
+    public decimal Percentage { get; private set; }
+}
+
+internal abstract class StepConfiguration
+{
+    public Guid Id { get; private set; }
+    public Guid WorkflowId { get; private set; }
+    public WorkflowConfiguration Workflow { get; private set; } = null!;
+    public int Version { get; private set; } = 1;
+}
+
+internal abstract class CalculationConfiguration : StepConfiguration
+{
+    public CalculationBehaviour Behaviour { get; private set; }
+    public BehaviourKey<CalculationBehaviour> Key => new(this.Behaviour, this.Version);
+}
+
+internal sealed class FixedCalculationConfiguration : CalculationConfiguration
+{
+    public Guid FeeId { get; private set; }
+    public MoneyTerm Fee { get; private set; } = null!;
+}
+
+internal sealed class RevenueShareCalculationConfiguration : CalculationConfiguration
+{
+    public Guid ShareId { get; private set; }
+    public PercentageTerm Share { get; private set; } = null!;
+    public RevenueBasis Basis { get; private set; }
+}
+
+internal sealed class GuaranteeShareCalculationConfiguration : CalculationConfiguration
+{
+    public Guid GuaranteeId { get; private set; }
+    public MoneyTerm Guarantee { get; private set; } = null!;
+    public Guid ShareId { get; private set; }
+    public PercentageTerm Share { get; private set; } = null!;
+    public RevenueBasis Basis { get; private set; }
+}
+~~~
+
+Ownership and inheritance are different relationships. WorkflowConfiguration.Steps contains a concrete
+FixedCalculationConfiguration instance. StepConfiguration -> CalculationConfiguration ->
+FixedCalculationConfiguration are inheritance levels of that same object, not three nested configuration
+objects. The template does not store the negotiated amount in FixedCalculationConfiguration.Fee.
+
+CalculationBehaviour/Basis and WorkflowKind are typed contract vocabulary; final enum members, supported
+combinations and persistence encoding must be qualified against the module registrations and current
+semantics. The family key is typed, not a general int/string chosen by the client. Use Version, not
+ImplementationVersion, for the persisted executable selection: it defaults to exactly 1 and is not an
+edit counter. A configuration edit token, document schema version and immutable identity serve different
+purposes and must not be conflated with it.
+
+The named property proves the intended C# relationship type; it does not prove that any persisted GUID
+targets the correct subtype. Validate both write and load/preparation boundaries and qualify actual FK,
+discriminator, uniqueness and check-constraint enforcement for the selected provider/mapping. In particular,
+a TPH FK to a base Terms table does not alone prove Money versus Percentage.
+
+Preparation resolves those declarations against the selected Deal's values, validates them and produces
+the exact input required by the callable case: FixedFeeTerms, RevenueShareTerms or GuaranteeShareTerms
+in section 4's calculator proposal. One module registration must describe both the configuration/input
+compatibility and executable case. The shared builders do not currently supply all that metadata; this
+is an extension to qualify, not a second hand-maintained behaviour-to-input dictionary.
+
+The full payment/preparation/collection/settlement/cancellation configuration subclasses have not been
+specified or approved merely by showing the calculation family. Their named required inputs must be
+designed with the same discipline. Additional fee/share combinations reuse supported input contracts;
+genuinely new calculation composition needs a defined typed contract, not another whole-deal subtype.
 
 ### The hierarchy of available behaviour stays in code
 
@@ -329,15 +499,19 @@ needs its already-planned direct composite-key support; this document does not c
 
 ### DealEntity and DealDto remain data, not the execution engine
 
-The proposed minimum shape, expressed without prematurely choosing commercial-value type names, is:
+The DTO/request content below is the established boundary, not a final compiled wire contract:
 
 | Boundary | Required content |
 |---|---|
-| DealEntity | Existing int Id; tenant ownership; required TemplateId/Template; actual typed negotiated values; existing commercial metadata; aggregate concurrency protection |
-| DealDto | Deal identity; selected Template identity/appropriate data-only template view; actual negotiated values; expected edit token |
-| Preset creation request | Selected permitted TemplateId and typed commercial values; no client-chosen payer authority or executable classes |
-| Future custom creation request | Supported workflow/step composition, typed commercial declarations/bindings and actual values; validate/create a private Template, then create an ordinary Deal against it |
+| Deal (current code: DealEntity) | Existing int Id; tenant ownership; required TemplateId/Template; typed DealTerm values; existing commercial metadata; aggregate concurrency protection |
+| DealDto | Deal identity; selected Template identity/appropriate data-only template view; typed Money/Percentage term-value cases and expected edit token; no duplicate editable configuration body |
+| Preset creation request | Selected permitted TemplateId and typed term values keyed by declaration identity; no client-chosen payer authority or executable classes |
+| Future custom creation request | Supported workflow configurations/typed step selections and declared terms plus actual values; validate/create a private Template, then create an ordinary Deal against it |
 | Issued/accepted document | Exact resolved composition, values, applicable context/parties and explicit supported versions, plus its document identity/hash |
+
+Use immutable DTO/value collections such as ImmutableArray of immutable typed cases at these boundaries;
+do not expose tracked EF objects or replace Money/Percentage with an object dictionary. Exact request type
+names, serializers, schema versions, read/detail projections and error contracts still require review.
 
 There is no nullable Template navigation on the custom route. A builder creates a private, initially
 unlisted instance of the same Template type, not a CustomTemplate subtype or one shared catch-all Custom
@@ -352,7 +526,7 @@ ownership-handoff snapshots are deliberate historical facts, not competing edita
 
 Deal and Template share the Deal module's persistence ownership under D30. Use their ordinary required
 FK/navigation relationship; exact keys, value mappings and concurrency enforcement remain D29 work.
-Executing modules consume published configuration views or immutable documents, not tracked WorkflowEntity
+Executing modules consume published configuration views or immutable documents, not tracked WorkflowConfiguration
 navigations into Deal's context. No second context owns or migrates these configuration tables.
 
 ### Editing, acceptance and retry examples
@@ -361,7 +535,8 @@ navigations into Deal's context. No second context owns or migrates these config
 |---|---|
 | Choose Flat Fee and supply GBP 500 | Create a Deal using the Flat Fee Template and its own Fee value; no copied editable template composition |
 | Negotiate GBP 650 before acceptance | Change the authorised draft deal/offer values and issue a new proposal revision; previous issued revisions and consents stay immutable. It is still Flat Fee, not custom |
-| Change selected capabilities or their connections | Create a different Template composition and revalidate the draft/proposal; not just a value update. Whether switching a draft's template replaces Deal identity or updates a non-key FK remains an EF design decision |
+| Share one workflow configuration between templates | Both reference the same sealed workflow and its contained typed steps. Deals keep separate values for the shared declarations; no per-template override mutates the shared workflow |
+| Change selected capabilities or their connections | Create new affected sealed workflow/term identities and a different Template composition, reusing unchanged compatible records; revalidate the draft/proposal. Whether switching a draft's template replaces Deal identity or updates a non-key FK remains an EF design decision |
 | Edit or retire a template after acceptance | Sealed composition is unchanged. A changed composition gets a new Template identity; retirement affects new selection, not the accepted document or its eligible executions |
 | Build custom, then save for reuse | Create a private Template and an ordinary Deal; later expose that same sealed composition in the owner's reusable catalogue without publishing it publicly by implication |
 | Retry partially completed finance | Resume the same durable step execution with its pinned behaviour/version, prepared inputs and business/payment operation ID; skip completed work and reconcile uncertainty before any new collection |
@@ -371,8 +546,19 @@ appropriate author-owned editable state. A post-acceptance change requires the s
 path; editing a template or a mutable Deal cannot alter an accepted agreement.
 
 Sealing is a real persistence invariant covering the entire template composition, not a private setter
-or an IReadOnlySet promise. Reuse the existing lifecycle-seal owner's design where applicable. The initial
-model does not require a separate template header/revision aggregate just to preserve old behaviour.
+or an IReadOnlySet promise. It includes shared WorkflowConfiguration, contained steps and referenced term
+declarations. Published records cannot be edited in place through another template. Referenced definitions
+cannot be cascade-deleted by removing one template; retirement affects future availability, not historical
+authority. Reuse the existing lifecycle-seal owner's design where applicable. No mandatory TemplateRevision
+or WorkflowRevision aggregate is selected merely to preserve the old composition.
+
+For the discussed Versus example, the template selects a GuaranteeShareCalculationConfiguration with
+GuaranteePlusShare@1, Guarantee -> MoneyTerm and Share -> PercentageTerm. A Deal supplies Guarantee =
+GBP 500 and Share = 10%; preparation produces the typed calculation input plus the approved revenue basis.
+The guarantee and percentage are not stored again inside the step. Changing GBP 500 to GBP 650 is value
+negotiation; changing GuaranteePlusShare to HigherOfGuaranteeOrShare is a capability/semantics change and
+is not the existing Versus preset. The latter behaviour remains a proposed extension, not a fifth initial
+arrangement or permission to alter existing semantics.
 
 Keep identities and versions purposeful:
 
@@ -380,6 +566,7 @@ Keep identities and versions purposeful:
 |---|---|
 | DealId | Identifies the concrete commercial arrangement while its permitted draft values evolve |
 | TemplateId | Identifies one sealed composition; a changed composition uses a new identity |
+| WorkflowConfigurationId | Identifies a reusable sealed workflow configuration independently of its selecting templates |
 | Configured StepId and commercial declaration identity | Distinguish instances and bind exact inputs/results; not implementation selectors |
 | `BehaviourKey<TBehaviour>.Version` | Pins executable semantics independently of template identity; default is 1 |
 | Published workflow slot/checkpoint identity | Pins the meaning and timing of supported configuration points; incompatible changes need a distinct contract identity/version and outstanding-work handling |
@@ -407,18 +594,18 @@ selections against the modules' supported configuration points. Deal therefore b
 configuration structure; do not claim that its former complete workflow ignorance is preserved.
 
 This is deliberate standardisation of configurable behaviour. Participating modules share the
-workflow/step/requirement model and the generic selection machinery, but need not have identical states,
+workflow-configuration/typed-step model and generic selection machinery, but need not have identical states,
 actions, step families or internal implementations. A family may use a strategy or a union according to
 its callable contracts. ApplicationWorkflow consumes the template's Application configuration;
-BookingWorkflow consumes its Booking configuration. WorkflowEntity is stored configuration, not the
+BookingWorkflow consumes its Booking configuration. WorkflowConfiguration is stored configuration, not the
 runtime workflow or another definition of its state machine.
 
 | Authoritative module contract and implementation | Template-owned selection |
 |---|---|
 | Supported workflow configuration points and step families | Configured instances at those points |
 | Callable interfaces, input/output types and allowed behaviour/version pairs | Selected typed behaviour/version and settings |
-| Semantic restrictions and result availability | Commercial-term/output bindings and compatible dependencies |
-| Legal states, mandatory checks, transitions and placement of execution hooks | Additional supported requirements and explicit ordering within an allowed configuration point |
+| Semantic restrictions and result availability | Named typed term references and supported data dependencies |
+| Legal states, mandatory checks, transitions and placement of execution hooks | Selection only within published contracts; no independently authored lifecycle requirements or guard placement |
 
 Templates must not reproduce complete handler sequences or transition tables. Removing the old
 per-DealType selection matrix is part of the cutover; keeping it beside the template would create two
@@ -448,8 +635,9 @@ editable catalogue table or hand-maintained second mapping of behaviours to impl
 
 The existing DI builders do not infer business meaning. Checkpoint timing, named inputs/outputs, result
 availability and financial compatibility need explicit module-authored descriptors and enforcement tests.
-For example, the Application section can select Authorise@1, bind its amount to Fee, and require usable
-authorisation before Accept. Checkout dispatches the configured step; Accept must check the required
+For example, the Application section can select Authorise@1 with its typed amount source referring to Fee.
+That module contract requires usable authorisation before Accept; template authors do not separately
+configure that lifecycle guard. Checkout dispatches the configured step; Accept must check the required
 persisted fact before state mutation or accepted handoff. An integration contract test must prove that a
 missing, expired or otherwise unusable authorisation prevents acceptance and emits no accepted handoff.
 Moving the check after acceptance must fail that test even when every DI registration remains valid.
@@ -473,10 +661,11 @@ to change exposed workflow points incompatibly. The future builder is constraine
 and compatible behaviours; it cannot redefine module lifecycles. Strong structure is required regardless
 of which qualified leaf values use JSONB; untyped payloads do not provide this contract.
 
-Remaining refinements are commercial-term naming and declaration/value EF/DTO shapes, exact supported
-placement/requirement descriptors and compatibility/version enforcement. The ownership choice is no
-longer open. The first four financial arrangements, separate entry routes and frozen financial execution
-remain requirements, and implementation still requires separate explicit authorisation.
+Remaining refinements are physical PostgreSQL mappings/constraints, complete DTO and family input shapes,
+published configuration-contract descriptors and compatibility/version enforcement. The independent
+review should preserve the established logical ownership unless it demonstrates a concrete contradiction;
+it must explain any required change rather than silently replacing it. The first four arrangements,
+separate entry routes and frozen execution remain requirements. Implementation needs explicit authority.
 
 ## 4. Where keyed strategies and keyed unions earn their place
 
@@ -498,7 +687,7 @@ action acquires genuinely different required inputs or results. It is not necess
 |---|---|---|
 | Workflow | Owns lifecycle orchestration and transitions | ApplicationWorkflow |
 | Workflow action | A business action, not automatically an entity or strategy interface | ApplyAsync or AcceptAsync |
-| Configured steps and requirements | Selected responsibilities, input bindings and prerequisites within a workflow | Entry payment preparation and the facts required before Accept |
+| Configured steps | Selected responsibilities and named typed inputs at module-published configuration contracts | Entry payment preparation whose module-owned contract requires usable evidence before Accept |
 | Step family | One independently varying responsibility inside the operation | Payment commitment preparation |
 | Capability interface | Honest required inputs and result for that responsibility | IPaymentMethodSetupStep |
 | Implementation | Compiled behaviour satisfying that interface | SavePaymentMethodStep or VerifyPaymentMethodStep |
@@ -1035,10 +1224,19 @@ removal/retention condition and cannot silently reinterpret previously signed ag
 
 | Initial preset | Current terms and payer | Application-path commitment | Booking / Concert behaviour to preserve |
 |---|---|---|---|
-| Flat Fee | Fee; venue pays artist | Amount authorisation before acceptance | Capture during confirmation, release at completion |
-| Door Split | ArtistDoorPercent of the existing revenue basis; venue pays artist | Payment-method verification before acceptance | No collection at confirmation; calculate and collect settlement later |
-| Versus | Guarantee PLUS revenue share; venue pays artist | Payment-method verification before acceptance | No guarantee prefunding at confirmation; calculate and collect the additive total later |
-| Venue Hire | HireFee; artist pays venue | Artist payment-method setup before Apply | Collect during confirmation, release at completion |
+| Flat Fee | Fee > 0; venue pays artist | Amount authorisation before acceptance | Capture during confirmation, release at completion |
+| Door Split | ArtistDoorPercent in [0, 100] of the existing revenue basis; venue pays artist | Payment-method verification before acceptance | No collection at confirmation; calculate and collect settlement later |
+| Versus | Guarantee >= 0 PLUS revenue share with ArtistDoorPercent in [0, 100]; venue pays artist | Payment-method verification before acceptance | No guarantee prefunding at confirmation; calculate and collect the additive total later |
+| Venue Hire | HireFee > 0; artist pays venue | Artist payment-method setup before Apply | Collect during confirmation, release at completion |
+
+The inspected ConcertEntity revenue basis is TicketsSold * TicketPrice + DoorRevenue. Door Split uses
+that basis * ArtistDoorPercent / 100m; Versus adds Guarantee to that share, not max(Guarantee, share).
+BeginSettlement captures SettlementGrossAmount once and reuses the stable settlement operation identity
+on retry; the persisted amount is configured with precision (18, 2). In the inspected shared Kernel,
+Money.Gbp constructs Money without rounding; ToMinorUnits explicitly rounds away from zero. Do not
+assume every Money-producing component rounds, or split one current settlement into separately persisted
+or paid components without fractional-cent parity tests. These facts constrain migration, not the choice
+of authoring storage or permission to replay completed payments.
 
 These are source-parity requirements, not newly selected finance policy. Existing Cash/Transfer metadata
 is not the payment-method setup/authorisation capability. Preserve revenue-basis, currency, rounding and
@@ -1255,9 +1453,10 @@ An amended acceptance cannot rely only on yesterday's availability projection.
 
 ### Relational composition with typed value documents
 
-Section 3 is the agreed structural model: Deal has its required Template and negotiated values; the Template
-owns its hierarchical composition. There is no separate TemplateRevision or Configuration root.
-Deal owns both aggregates under D30; exact same-owner EF mappings remain subject to D29 qualification.
+Section 3 is the logical model to preserve: Deal has its required Template and negotiated values; the
+Template selects reusable workflow configurations and shared typed term declarations. Workflows contain
+typed step configurations. There is no separate TemplateRevision or duplicate Deal.Configuration root.
+The Deal module owns this persisted configuration domain under D30; physical mappings remain open.
 Do not map a navigation to another module's runtime workflow or persist executable interfaces.
 
 The hybrid authoring direction remains: platform presets can be code-authored, reproducible compositions
@@ -1265,28 +1464,68 @@ installed as sealed Template rows, while future customer templates are authored 
 through the same persisted model and shared execution abstractions. The code-authored source is not a
 second runtime preset engine, and an updated preset must never overwrite a used composition in place.
 
-| Approach | Trade-off |
-|---|---|
-| Fully relational composition and values | Strong FK/uniqueness/query boundaries; heterogeneous leaf settings need carefully chosen typed mappings |
-| Template-owned JSONB composition | Compact immutable document loading, but internal references and cross-field compatibility lose ordinary FK enforcement |
-| Relational composition plus typed leaf/document JSONB, initial recommendation | Relational workflow/step ownership, bindings and requirements; JSONB only for qualified value shapes and immutable issued/accepted or prepared-execution documents |
+### PostgreSQL architecture decision for independent review
 
-Keep identities, tenant ownership, catalogue availability, relationships, concurrency and durable
-execution state relational. Qualify whether actual commercial values use relational typed rows or owned
-value shapes; their distinction from template declarations does not require a second configuration entity.
+**No physical inheritance/JSONB choice is approved by this checkpoint.** The discussion first recommended
+TPT to avoid a wide nullable table, then withdrew it in favour of TPC, then suggested typed polymorphic
+JSONB as the target with TPC as an interim. Those changing recommendations were not backed by a compiled
+provider mapping, a complete relationship design or representative performance evidence. Do not quote
+one as the settled best architecture or treat the latest suggestion as implementation authorisation.
+
+Tommy's requirement is target-first: conclude the best long-term PostgreSQL architecture now. If a
+demonstrably necessary EF/Npgsql feature prevents it today, identify that exact gap, choose the best
+supported interim and specify its exit/cutover condition. Do not substitute indefinite future evaluation
+for a conclusion, and do not call JSONB best merely because a framework feature is missing. PostgreSQL
+will already be in place before the commercial-configuration refactor; this is not another provider
+migration research assignment.
+
+| Candidate | What it changes | Constraint the review must resolve |
+|---|---|---|
+| TPH | One table for an entity hierarchy, discriminator and subtype-specific nullable columns | Required typed C# properties and discriminator-aware constraints can coexist with nullable storage; measure actual width/loading rather than assuming nulls make it invalid or slow |
+| TPT, previous recommendation withdrawn | Each mapped inheritance level gets a table; one concrete object joins its rows | Extra joins/table growth; not a requirement of strong typing and not the default to lock in |
+| TPC, last relational candidate | Each concrete type stores all its own and inherited fields in one table | Mixed-type queries use UNION ALL; no common base table for incoming abstract-step FKs or cross-table uniqueness; key generation must be unique across the hierarchy |
+| Typed JSONB payload with relational identities/relationships | Variable self-contained configuration data is a typed document rather than columns/tables per shape | Specify exactly where named term references live and how they retain required validation/FKs; do not silently trade them for unvalidated IDs or a generic binding bag |
+| Another demonstrated simpler relational/hybrid mapping | Domain and persistence inheritance need not be identical | Explain the concrete EF shape, constraints, loading and changes from section 3; no second execution engine |
+
+Persisting another template or selecting another already-supported implementation version generally
+adds data, not new C# input shapes or tables. New executable behaviour still requires code. A genuinely
+new primitive value kind or required callable-input contract is a different change. The earlier
+small primitive-Term/DealTerm TPH proposal is also a mapping candidate, not a reason to freeze a mixed
+strategy before evaluating the configuration graph as a whole.
+
+The intended relational boundary includes identities, tenant ownership, catalogue availability, shared
+relationships, concurrency and durable execution state. The reviewer must show where typed values and
+settings belong, and justify any boundary change. Their distinction from declarations does not require
+a second whole-deal configuration entity.
 JSONB is not permission for an untyped string/object dictionary or hiding queryable financial state.
 TemplateGrant, TemplateTag and separate capability-requirement catalogue tables are not initial requirements;
 admit them only with a real discovery/sharing lifecycle that needs them. Derived compatibility metadata
 must come from the same validated capability registrations, not a manually duplicated behaviour catalogue.
 
-Use explicit boundary serialization and compatibility validation for polymorphic configurations.
-Npgsql's EF JSON mapping supports useful fixed structures, but this plan does not assume every existing
-entity hierarchy or arbitrary union automatically maps correctly through ToJson. The inspected Deal
-mapping actually uses TPT; older B2B roster prose saying TPH is not current mapping evidence.
-For supported stable value shapes, qualify EF Core/Npgsql's current complex-type ToJson mapping;
-polymorphic documents need an explicit tested serializer/discriminator contract. See
-[Npgsql JSON mapping](https://www.npgsql.org/efcore/mapping/json.html) and
+Qualification evidence checked on 9 September 2026: EF supports TPH and TPC today; PostgreSQL/Npgsql
+already support JSONB and supported strongly typed JSON shapes. The specific missing feature discussed
+is EF complex-type inheritance, whose tracker is open/backlog without a release commitment. Complex
+types also do not support entity navigations; inheritance support alone would not map the proposed
+MoneyTerm Fee navigation inside JSON. Explicit serialization can handle other polymorphic documents,
+but is not equivalent to EF understanding the document for LINQ, updates and relationships. Distinguish
+stable EF/Npgsql support from preview features; do not promise EF 11 features on the inspected EF 10
+baseline. The actual current Deal mapping uses TPT, despite older roster prose saying TPH.
+
+First-party sources for the independent review: [EF inheritance](https://learn.microsoft.com/en-us/ef/core/modeling/inheritance),
+[EF performance guidance](https://learn.microsoft.com/en-us/ef/core/performance/modeling-for-performance),
+[Npgsql JSON mapping](https://www.npgsql.org/efcore/mapping/json.html),
+[EF complex types](https://learn.microsoft.com/en-us/ef/core/modeling/complex-types),
+[complex-type inheritance tracker](https://github.com/dotnet/efcore/issues/31250),
+[PostgreSQL JSONB](https://www.postgresql.org/docs/current/datatype-json.html) and
 [EF navigation collections](https://learn.microsoft.com/en-us/ef/core/modeling/relationships/navigations).
+
+The requested review deliverable is one coherent recommendation, not another catalogue of options:
+an entity diagram; concrete C#/EF and table/JSONB shapes; authoritative definition/editing boundaries;
+typed references and composition constraints; actual mixed-workflow loading/query behaviour; and a
+small number of genuine approval decisions with recommendations. If an interim is necessary, specify
+its exact technical blocker, supported mapping and cutover that preserves identities, pinned versions,
+accepted documents and partially completed financial execution. No performance measurements are claimed
+by this checkpoint. Source inspection and the named PR633/later authority must inform migration parity.
 
 ### Execution cost versus configuration scalability
 
@@ -1851,7 +2090,8 @@ arrangements are enabled. A temporary conversion is a migration boundary, not a 
 - **Design consumption:** section 3's resolved data/EF/DTO boundaries and section 4's family/binding
   catalogue; consume B4's shared generic factories, not another dispatch system.
 - **Contracts/persistence:** required Template plus deal-owned negotiated values; hierarchical configured
-  workflows/steps/requirements; one immutable accepted-document model for presets and future combinations.
+  reusable workflow configurations and typed steps/term references; one immutable accepted-document model
+  for presets and future combinations. Modules retain lifecycle requirements and guard placement.
   Schema/behaviour versions and checkpoint semantics are pinned; EF/DTO, JSONB and relational constraints
   require D29 qualification within D30's agreed ownership.
 - **Consumers:** both entry proposal editors, Booking/Concert configuration readers and contract renderers.
@@ -1972,13 +2212,13 @@ options, a successful schema migration alone, or an internal demonstration witho
 | D5 | Recommended | Show + ShowSpace + Slot + claims/reservations; private context created unobtrusively from invitation UI |
 | D6 | Recommended initial availability; later authoring deferred | Same four published platform presets for all eligible B2B tenants; no tenant-specific capability entitlements or customer builder required initially. Private/shared catalogue publication and grants belong to a later admitted scope, not B5 |
 | D7 | Recommended | Retain current tenancy infrastructure; no Finbuckle migration without an evidenced missing requirement |
-| D8 | Recommended | Migrate B2B after shared compatibility, before the major new context/configuration schema |
+| D8 | PostgreSQL prerequisite confirmed; delivery separately gated | PostgreSQL will precede this deal-configuration refactor. Qualify provider/shared compatibility and retained-data cutover with their existing owners; no migration execution is authorised here |
 | D9 | Open policy | Independently funded, undisputed obligations may progress; specify when an all-or-nothing policy is allowed |
 | D10 | Open evidence/authority | Inventory retained B2B data and approve its exact cutover/rollback procedure; assume retention meanwhile |
 | D11 | Open product policy | Delegation scope, signing authority, and conditional bookings before room/funding confirmation |
 | D12 | Open naming | Keep internal Concert execution ownership; choose clear user-facing naming for non-performance engagements |
 | D13 | Recommended boundary | Supported typed composition, not arbitrary scripts or unrestricted formula graphs |
-| D14 | Agreed organisation | Mix and match compatible capabilities; Template owns workflow-grouped selections and requirements, with shared commercial declarations and cross-step bindings. Application and Direct Invitation are alternative entry paths, not both executed |
+| D14 | Agreed organisation, typed refinement recorded | Mix compatible capabilities through reusable workflow configurations and named typed inputs; modules own lifecycle prerequisites. No template-authored requirement graph or generic binding bag. Application and Direct Invitation are alternatives, not both executed |
 | D15 | Initial technical shape | Workflow actions can compose several step families; strategies where contracts match and unions where they differ. No assumed IAcceptStep, schedule-choice branch or generic TemplateOperation/OperationStep entity |
 | D16 | Design gate | Entry/binding contracts are specified for review in section 16; richer B6/B7 operation schemas/signatures and policies still require the same review before implementation. No excerpt is compiled or executed evidence |
 | D17 | Recommended entry contract | Private entry-local drafts; exact issued-proposal consent; separate invitation minimal-API surface/service/workflow; recorded commitments and atomic result-aware Booking creation |
@@ -1993,8 +2233,8 @@ options, a successful schema migration alone, or an internal demonstration witho
 | D26 | Agreed bounded-context naming | Keep ApplicationService/ApplicationWorkflow and distinct public root contracts; module-local children may be ProposalEntity, ProposalConsentEntity, CommitmentEntity, AcceptanceEntity and RequestReceiptEntity. Qualify or alias at real cross-context collisions; EF does not require the Application prefix |
 | D27 | Agreed initial direction and parity constraint | Keep the four existing preset choices on one configuration engine; customer builder comes later. Preserve additive Versus and existing financial direction/timing/reference meaning. No permanent legacy-type engine beside custom execution |
 | D28 | Open implementation selection | Do not assume bespoke idempotency infrastructure. Evaluate a library for HTTP replay separately from durable business/payment operation identity. IdempotentAPI is a candidate, not an approved dependency; raw Guid-header binding and commandJournal naming are not approved contracts |
-| D29 | Agreed structure; physical qualification open | Keep Deal as the concrete arrangement with required Template and negotiated values. Template is the reusable composition, hierarchically grouped by workflow; a future custom builder creates the same private Template type. No duplicate Deal.Configuration or mandatory TemplateRevision entity. Commercial declaration/value naming, editing rules and exact EF/DTO mappings remain open; Parameters is not the chosen commercial noun |
-| D30 | Agreed architectural boundary; concrete contract qualification remains | Deal owns the strongly structured workflow-scoped Template. Accept deliberate configuration coupling and a consistent module extension model; modules retain their own lifecycles, supported points and implementations. No copied state machines, separate composition owner or disguised Payment-to-workflow hierarchy. One module-authored declaration feeds registration and validation metadata; enforcement and compatibility tests cover checkpoint timing as well as behaviour versions |
+| D29 | Logical structure checkpointed; independent PostgreSQL decision open | Required Deal.Template plus typed DealTerm values; Template selects reusable WorkflowConfigurations and shared Term declarations; workflows contain typed StepConfigurations with named required references. Use Terms, Version = 1 and suffix-free sketch names. No duplicate Deal.Configuration, mandatory revision aggregate or whole-deal subtype per combination. Section 3 records members/cardinalities; section 7 requires a concluded target and any genuinely necessary interim, not an assumed TPT/TPC/JSONB winner |
+| D30 | Agreed architectural boundary; concrete contract qualification remains | Deal owns stored composition, not running workflows. Accept deliberate configuration-contract coupling; modules retain lifecycles, mandatory guards, supported points and implementations. No template-authored lifecycle Requirements, copied state machine or separate composition owner. One module declaration feeds shared-factory registration and compatibility metadata; tests cover typed inputs, checkpoint timing and pinned versions |
 
 Recording D29/D30's architectural agreement does not resolve D9-D12, D28, the remaining physical/API
 contracts or implementation authority.
