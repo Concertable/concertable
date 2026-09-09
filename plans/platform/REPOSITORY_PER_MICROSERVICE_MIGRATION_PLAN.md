@@ -44,7 +44,7 @@ B2B Workers remains an Azure Functions v4 isolated runtime, but its production a
 its production host is native Azure Functions on Azure Container Apps. Functions Consumption is not part of
 the target: it cannot run the same custom container used by standalone AppHosts, system E2E, and rollback.
 
-The current lockstep `ConcertablePlatformVersion` and platform-sync PR are replaced by independently
+The current lockstep `ConcertableDotNetPlatformVersion` and platform-sync PR are replaced by independently
 versioned release trains plus Renovate PRs. Breaking package changes use an expand/publish/migrate/contract
 sequence. There is never a repository-wide forced bump that can strand every service on a red pin.
 
@@ -84,7 +84,7 @@ sequence. There is never a repository-wide forced bump that can strand every ser
 - Carve CI proves each deployable closure restores from the GitHub Packages feed. AppHosts, E2E projects,
   and the optional `UseLocalCore` path are intentionally exempt from the current source-boundary check.
 - All service folders currently pin the same
-  `ConcertablePlatformVersion=0.1.0-alpha.0.745`.
+  `ConcertableDotNetPlatformVersion=0.1.0-alpha.0.745`.
 
 ### Compile-time dependency graph
 
@@ -579,7 +579,7 @@ before its dependencies are green.
 | M1 | monorepo hosting boundary: deliver an additive generic platform API, sync the Auth/B2B/Customer hosting packages, sync standalone and aggregate System AppHosts, then contract the legacy product-aware platform API | no unresolved overlapping AppHost PR; each published package layer must advance before its consumer sync | package-clean builds; standalone B2B/Customer and umbrella composition tests; resolved Expo/Auth tunnel URLs; final package-only closure |
 | M2 | monorepo owner-local operations: split `api/initial-migrations.ps1` and `scripts/setup-local-dev.ps1` into five service migration owners plus platform-owned Messaging, service-local bootstrap, and container-only System bootstrap | current AuthDb migration state on main | empty-database migration proof and each standalone bootstrap dry run |
 | M3 | monorepo frontend boundary: split product workspace declarations out of `app/.dependency-cruiser.cjs`; package generic build configuration and keep product packages in B2B/Customer | none | boundary lint plus all web/mobile typecheck/build gates |
-| M4 | monorepo closure repair: replace Auth.Contracts-to-Messaging source coupling with its published package seam and fix B2B/Customer standalone Payment HTTPS discovery | M1 package/API shape; package baseline from G0 before publication | inventory has no blocking runtime edge; Auth/B2B/Customer clean carve builds and standalone composition tests |
+| M4 | monorepo closure repair: replace Auth.Contracts-to-Messaging source coupling with its published package seam and make B2B/Customer standalone Payment discovery protocol-correct | M1 package/API shape; package baseline from G0 before publication | inventory has no blocking runtime edge; Auth/B2B/Customer clean carve builds; standalone composition tests and a live Payment client/server handshake pass |
 | C1 | retained `infra` and `config`: preserve both histories, implement the ownership table above, and remove duplicated Terraform resource/state ownership | G0 Azure state result | fmt/validate; zero create/destroy migration plan if state exists; config schema/promotion dry run |
 | F0 | freeze one exact post-M1-M4/C1 monorepo SHA; regenerate map/inventory and produce signed bundle, per-target filter commands, commit/path maps, object counts, secret scans, and sampled blame | M1-M4 merged; relevant open PRs resolved | 0 unclaimed/duplicates/blocking edges and reviewed history audit |
 | R1 | import `platform-dotnet` and `platform-frontend` in parallel and prove independent publishers | G0, F0, explicit repository-creation authorization | clean clones, non-conflicting versions, registry-only consumer fixtures |
@@ -751,6 +751,36 @@ private extraction proof.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
+
+**7B splits into a pin rename that can land against the existing feed and a publication change that cannot.**
+The rename shipped first, on its own, because it is behaviour-preserving. Withdrawing the monorepo as
+publisher has to wait for 7A: the `carve-*` gates and all five service closures restore the platform from the
+feed, so removing the publisher before `platform-dotnet` publishes strands every one of them.
+
+The publication half's mechanism, in the order it must be written:
+
+1. **Filter the pack output, not `IsPackable`.** The ID split is machine-readable in
+   `eng/repository-split/inventory.json`, whose `target` per packable project the `split-inventory` gate
+   already checks for drift — 34 to `platform-dotnet`, 23 to the five retained services,
+   `Concertable.Testing.E2E` to `system`. Never hand-list it in the workflow. Setting `IsPackable=false`
+   on the platform projects is the wrong lever: `local-platform.ps1 prepare` packs all 58 from source to
+   feed the local inner loop and the carve gates. Instead drop the foreign-target `.nupkg` files between
+   `publish-packages.yml`'s pack and policy steps, which leaves `package_publication_policy.py` unchanged.
+2. **Split `verify-restore`'s generated consumer.** It pins every `IsPackable` project at the publish
+   job's `$VERSION`; once platform IDs stop publishing there, requesting them at that version fails
+   NU1101. Emit retained IDs at `$VERSION` and foreign IDs at the pinned `ConcertableDotNetPlatformVersion`,
+   which preserves the closure check that no retained package declares a feed-absent `Concertable.*`
+   dependency.
+3. **Hand the platform pin to `platform-dotnet`'s train.** `platform-sync.yml`'s bellwether is
+   `concertable.payment.client`, a *retained* package, so after step 1 its version no longer tracks the
+   platform train and the pin it bumps is wrong. Renovate owns the platform pin from there and
+   `platform-sync.yml` stops bumping it — see "Replacement for platform-sync". Retiring that workflow also
+   retires its only consumer, `bump-platform-version.sh`, and that script's test; delete the three together
+   rather than leaving a dead entry point.
+
+Steps 1 and 2 are writable now. Step 3 is blocked on facts that do not exist until 7A publishes:
+`platform-dotnet`'s bellwether package ID, its feed location, and its first version. It belongs with 7C and
+the Renovate rollout.
 
 ### 8. Cut over the frontend platform publisher
 
