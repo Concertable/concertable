@@ -169,7 +169,14 @@ AppHost topology.
 
 ## Reviews
 
-The local work order is `reviews/Refactor-M1-Platform-Contract.md`. Its last immutable full pass requested one
+The extraction-map closure's work order is `reviews/Chore-ExtractionMapClosure.md`, complete and approved
+with both the review and security watermarks stamped. Its full pass raised four findings: three were fixed on
+the branch, and the fourth — a live Google Maps key in `app/web/.env.development`, which the map now
+replicates into every product target — is `[wontfix]` there and live in `app/web/TECH_DEBT.md`, because its
+repair is a credential rotation independent of the map. That pass also added two map checks nothing had
+covered: rename-destination collisions per target, and a path holding two dispositions at once.
+
+The M1 work order is `reviews/Refactor-M1-Platform-Contract.md`. Its last immutable full pass requested one
 delivery-gated change: publish and pin the Owner Hosting Auth image before AppHost Sync. All other findings are
 repaired on their owning stages. The landed-base candidate requires a new frozen review watermark after current
 package and composition validation completes.
