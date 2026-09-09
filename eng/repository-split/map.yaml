@@ -123,7 +123,6 @@ targets:
       - app/scripts/check-fe-boundaries.test.mjs
       - app/scripts/patch-nativewind.js
       - app/scripts/verify-fe-package.mjs
-      - app/scripts/vite-development-https.ts
     rename:
       app/build-config/: "packages/build-config/"
       app/shared/: "packages/shared/"
