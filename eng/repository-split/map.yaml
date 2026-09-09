@@ -119,11 +119,21 @@ targets:
       - app/shared
       - app/web/shared
       - app/mobile/shared
+      - app/scripts/check-fe-boundaries.mjs
+      - app/scripts/check-fe-boundaries.test.mjs
+      - app/scripts/patch-nativewind.js
+      - app/scripts/verify-fe-package.mjs
+      - app/scripts/vite-development-https.ts
     rename:
       app/build-config/: "packages/build-config/"
       app/shared/: "packages/shared/"
       app/web/shared/: "packages/web/"
       app/mobile/shared/: "packages/mobile/"
+      app/scripts/: "packages/build-config/scripts/"
+    notes:
+      - Those five scripts ship from `@concertable/build-config` so a consumer repository gets them from
+        the feed instead of a sibling path. `carve-fe.mjs`, `carve-fe.test.mjs`, `version-fe-packages.mjs`
+        and `validate-b2b-phase3-consumers.mjs` are monorepo carve/publication gates and stay behind.
 
   system:
     repo: Concertable/system
