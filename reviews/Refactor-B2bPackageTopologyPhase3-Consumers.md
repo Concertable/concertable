@@ -1,12 +1,12 @@
-# Code review — Refactor/B2bPackageTopologyPhase3-Consumers
+﻿# Code review — Refactor/B2bPackageTopologyPhase3-Consumers
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `0a48ab4fcd98177150417e514430e6d1ed0a676c`  `(2026-09-09)`
-**Security-reviewed up to commit:** `0a48ab4fcd98177150417e514430e6d1ed0a676c`  `(2026-09-09)`
+**Reviewed up to commit:** `1c1ba53d61244c6f8feb6e4a0852ce3aa19c71d0`  `(2026-09-09)`
+**Security-reviewed up to commit:** `1c1ba53d61244c6f8feb6e4a0852ce3aa19c71d0`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-09 — full
@@ -73,3 +73,25 @@ The diff moves tenant selection and the request header, so it was reviewed for t
 - **Sign-out clears both.** `addUserUnloaded` clears the tenant session, and `clearMemberships` drops
   the cached identity query, so neither the selection nor another tenant's memberships outlive a session
   on a shared browser.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `1b50d34333a20c3f84ae32e8de4cbe8256d02c16`
+**Candidate head:** `1c1ba53d61244c6f8feb6e4a0852ce3aa19c71d0`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Consumers`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:fd9df82493e989672f13769067b6abafb62a545b002121f58fab4f18605f0303` `(7 paths)`
+**Candidate bundle:** derived in place from the frozen range
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No issues found. Generated lockfiles only, from `npm run lock:carve`.
+
+All seven standalone lockfiles resolve every `@concertable/*` tier to exactly `0.1.0-alpha.0.6503`, so
+`carve-fe.test.mjs`'s one-lockstep-version assertion holds and no surface is left on the superseded
+`0.1.0-alpha.0.6462` or `0.1.0-alpha.0.6498`. The venue, artist and mobile B2B locks now contain
+`@concertable/b2b`, which they declare and previously did not resolve. No source, manifest or committed
+specifier changed: the declarations stay `alpha` and the pin lives only in the lockfiles.
