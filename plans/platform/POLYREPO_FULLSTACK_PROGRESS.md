@@ -253,8 +253,12 @@ returns a number rather than `null`, for all four platform IDs.
   nothing had ever claimed the `app/` tree's scripts. 8A claims the five that are genuinely platform
   (`check-fe-boundaries.mjs` and its test, `patch-nativewind`, `verify-fe-package.mjs`,
   `vite-development-https`) and leaves `carve-fe.mjs`, `carve-fe.test.mjs`, `version-fe-packages.mjs` and
-  `validate-b2b-phase3-consumers.mjs` behind as monorepo carve/publication gates. Unclaimed is now 80; the
-  remaining 80 are other checkpoints' and are **not** evidence the map is closed.
+  `validate-b2b-phase3-consumers.mjs` behind as monorepo carve/publication gates. **Unclaimed is now 81:**
+  85 − 5 claimed + 1, because `emit_paths.py` is itself unclaimed, joining the four `eng/repository-split`
+  siblings that already were. The split tooling plausibly belongs in `archiveOnly` — it dies with the
+  monorepo, and `system`'s explicit `carve-e2e.ps1` claim would still win — but that disposition is the
+  map-closure owner's, not 8A's. The other 76 belong to other checkpoints and are **not** evidence the map
+  is closed.
 
 - **Paths handed to filter-repo are generated from `map.yaml`, never retyped beside it.**
   `eng/repository-split/emit_paths.py` emits a target's paths file. It writes `include` as filter lines and
