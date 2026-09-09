@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `674defe1ea861584d5bef318ffc922c7414828cd`  `(2026-09-09)`
+**Reviewed up to commit:** `6abb9e5191742b176ffbc133a8335ee585945c72`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -143,3 +143,32 @@ Rename only, no behaviour change; the 11 tests pass unchanged.
   `ILoggerFactory.CreateLogger`, the very method it calls. Raised by Tommy on review of the open PR, not by
   this file's earlier passes — the first pass checked these helpers for correctness and skipped their names.
   Fixed in `674defe1e`: `ResolveSeeders`, `CreateLogger`, `OrderSeeders`.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `e0681767be21390a5caae1c3e07700368a12d771`
+**Candidate head:** `6abb9e5191742b176ffbc133a8335ee585945c72`
+**Candidate branch:** `Refactor/seeding-collapse-and-generated-ids`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:e566364db9e24bba2ef2cccb2e3f98a03303e52db6c0c82883e7cf39dd18fccd` `(1 paths)`
+**Candidate bundle:** removed after pass completion
+**Candidate bundle identity:** derived from the descriptor above
+**Work-order path:** `reviews/Refactor-seeding-collapse-and-generated-ids.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Shape change only, no behaviour change; the 11 tests pass unchanged.
+
+### Findings
+
+- [x] **SEED-5 — LOW — naming** — `api/Concertable.Shared/src/Seed/Concertable.Seed.Shared/Extensions/SeedingDbContextOptionsExtensions.cs:24`
+  The two helpers were statics taking `IServiceProvider` as their first argument, which is what made
+  SEED-4's names awkward: a static `SeedersFor(provider, context)` has no subject. Moved onto an
+  `extension(IServiceProvider provider)` block so the receiver is the subject, per the style standard's
+  `extension()` rule. Raised by Tommy on the open PR.
+  Names stay verb-first — `GetSeeders`, `CreateSeedChainLogger`. `XFor` is a genuine .NET idiom only in
+  MVC's `HtmlHelper` extensions and as a qualifier on a verb (`GetMetadataForType`); the general
+  convention is `GetService`/`CreateLogger`. Recording the process error too: SEED-4 fixed these names,
+  then the extension change reintroduced `SeedersFor` on the argument that the receiver justified it —
+  shape and name are orthogonal, and conflating them undid a correct fix.
+  Both members are `private`, so they do not widen `IServiceProvider`'s surface outside this class.
