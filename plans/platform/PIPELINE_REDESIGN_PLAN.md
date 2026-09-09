@@ -452,6 +452,16 @@ always defensible: frontend-only, unit/integration/architecture test-tier-only, 
 workflow diffs. `merge`'s Step 4 still selects the tier; it simply can no longer select *off* for a
 runtime diff.
 
+One case would have become unmergeable, so it gets a named exception instead of a silent one.
+`PIPELINE_DEBT.md` records a published-package **expand** merge: the backend flips to the new wire shape
+while its consumer surfaces are deferred to the sync merge, so `carve-fe` needs the old shape and UI E2E
+needs the new one — full UI E2E cannot pass by construction, and the documented workaround was a generic
+`skip-e2e-ui`. That is exactly the runtime diff the rule above now refuses to let opt out. The classifier
+therefore honours one label, **`expand-merge`**, which drops the UI lane only and never the API lane that
+proves the backend flip. Naming the situation rather than the effect is the point: claiming it is a
+deliberate, greppable act pointing at a documented structural conflict, where `skip-e2e-ui` was
+indistinguishable from ordinary "this seems fine". It retires with that debt entry.
+
 ### Phase 4 — Modularize workflows into composite actions + scripts (portability + DRY).
 - **What:** Extract the repeated `setup-dotnet` / NuGet cache / feed-auth / carve blocks into
   `.github/actions/*` and `scripts/ci/*`. Behaviour-preserving.
