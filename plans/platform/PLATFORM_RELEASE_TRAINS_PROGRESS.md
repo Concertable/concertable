@@ -8,7 +8,8 @@
 - PR: none yet
 - Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
   train membership. Phases 1 and 2 have no dependency.
-- Last reconciled: 2026-09-09 against `origin/main` `081e149a2e0a4544e1c781adc5e322a6ee0e4f85`.
+- Last reconciled: 2026-09-09 against `origin/main` `081e149a2e0a4544e1c781adc5e322a6ee0e4f85`, merged
+  into this branch.
 
 ## Current state
 
@@ -31,16 +32,24 @@ None recorded — nothing implemented to review.
 
 ## Decisions and discoveries
 
-- The committed `<ConcertablePlatformVersion>` is not restored by any PR CI job; every .NET job
-  overrides it through `scripts/local-platform.ps1`. Any future reasoning that treats a green sync PR
-  as evidence a consumer compiles against the published pin is wrong.
+- The diagnosis — PR CI never restores the committed pin — is owned by `api/TECH_DEBT.md`, not by this
+  plan. Any future reasoning that treats a green sync PR as evidence a consumer compiles against the
+  published pin is wrong.
+- Two trains already exist on `main`: `ConcertableDotNetPlatformVersion` (9 pins) and
+  `ConcertablePaymentVersion` (4 pins, conditioned to fall back to the platform version under
+  `UseLocalPlatformPackages`). Phase 3 extends that precedent; it does not invent the split. The
+  property was renamed from `ConcertablePlatformVersion` — do not reintroduce the old name.
 - `publish-images.yml` is the only workflow that restores at the committed pin, which is why Phase 1
   must precede Phase 2.
 - The pin cannot be made current: the sync merge is itself an `api/**` push whose republish the cascade
   guard suppresses. Do not attempt to close that gap; remove the dependency instead.
-- `PIPELINE_REDESIGN_PLAN.md` N3 records the same per-merge tax and gives `platform-sync.yml` the
-  verdict "keep, simplify". This plan supersedes that verdict for the package half; the merge-queue
-  half of that plan is untouched.
+- `PIPELINE_REDESIGN_PLAN.md` N3 records the same per-merge tax and gave `platform-sync.yml` the
+  verdict "keep, simplify". That verdict now points here; the merge-queue half of that plan is
+  untouched.
+- `PLATFORM_SYNC_TOKEN` is left in place by Phase 2. The migration plan owns secret teardown at
+  cutover, and retiring it early would contradict that.
+- This plan was first authored against a checkout 868 commits behind `main`, which made its counts and
+  the single-pin premise wrong. Re-measure against `origin/main` before quoting any figure from it.
 
 ## Next Steps
 
