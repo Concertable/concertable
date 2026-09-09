@@ -37,10 +37,11 @@ function Invoke-PrettyTest([string]$suite, [string]$csproj, [string[]]$extra, [s
         '--logger', 'console;verbosity=normal'
     ) + $extra
     & $localPlatform test @testArgs *> $log
+    $processExitCode = $LASTEXITCODE
 
     if (-not (Test-Path $trx)) {
         Write-Host "  No results -- build or run failed. Full log: $log" -ForegroundColor Red
-        return [pscustomobject]@{ Suite = $suite; Passed = 0; Failed = 0; Total = 0 }
+        return [pscustomobject]@{ Suite = $suite; Passed = 0; Failed = 0; Total = 0; ExitCode = $processExitCode }
     }
 
     [xml]$xml = Get-Content $trx
@@ -59,7 +60,7 @@ function Invoke-PrettyTest([string]$suite, [string]$csproj, [string[]]$extra, [s
             $failed++
         }
     }
-    return [pscustomobject]@{ Suite = $suite; Passed = $passed; Failed = $failed; Total = ($passed + $failed) }
+    return [pscustomobject]@{ Suite = $suite; Passed = $passed; Failed = $failed; Total = ($passed + $failed); ExitCode = $processExitCode }
 }
 
 function Show-Summary([object[]]$summaries) {
@@ -79,6 +80,15 @@ function Show-Summary([object[]]$summaries) {
     Write-Host ""
 }
 
+function Complete-TestRun([object[]]$summaries) {
+    Show-Summary $summaries
+    $failed = ($summaries | Measure-Object Failed -Sum).Sum
+    $emptySuites = @($summaries | Where-Object Total -eq 0).Count
+    $abortedSuites = @($summaries | Where-Object ExitCode -ne 0).Count
+    if ($failed -gt 0 -or $emptySuites -gt 0 -or $abortedSuites -gt 0) { exit 1 }
+    exit 0
+}
+
 function Assert-DockerHealthy {
     # Structural gate: `docker ps` answering is NOT proof Docker is healthy (a
     # half-started engine forwards old containers' ports while new ones are dead).
@@ -86,6 +96,25 @@ function Assert-DockerHealthy {
     # non-zero on the half-started signature. Never boot the stack without it.
     & (Join-Path $PSScriptRoot 'docker-health.ps1')
     if ($LASTEXITCODE -ne 0) {
+        Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
+        exit 1
+    }
+}
+
+function Assert-PinnedImagesPullable {
+    # The stack runs Auth and Payment from digest-pinned ghcr.io images, so a boot needs a
+    # registry credential CI gets from its `Log in to GHCR` step. Without one the pull fails
+    # `unauthorized`, Aspire marks `auth` FailedToStart, every dependent cascades, and the
+    # fixture then reports a health-check timeout on an unrelated port - three layers from
+    # the cause. Fail here instead, naming the remedy.
+    $appHost = Join-Path $PSScriptRoot '../api/Concertable.B2B/src/Concertable.B2B.AppHost/AppHost.cs'
+    $image = (Select-String -Path $appHost -Pattern 'AuthImage = "([^"]+)"').Matches.Groups[1].Value
+    $digest = (Select-String -Path $appHost -Pattern 'AuthDigest = "([^"]+)"').Matches.Groups[1].Value
+    docker manifest inspect "$image@$digest" *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Cannot resolve the pinned Auth image $image@$digest." -ForegroundColor Red
+        Write-Host "Log in to the registry, then retry:" -ForegroundColor Red
+        Write-Host "  gh auth token | docker login ghcr.io -u <your-github-user> --password-stdin" -ForegroundColor Red
         Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
         exit 1
     }
@@ -111,7 +140,9 @@ function Assert-SpaDependencies {
     # one with `npm install`, which does not wipe the tree.
     $app = Join-Path $repoRoot 'app'
     $modules = Join-Path $app 'node_modules'
-    if (Test-Path (Join-Path $modules '.bin/vite.cmd')) { return }
+    # Probe the entrypoint the shim runs, not the shim: .bin/vite.cmd is a stub that outlives its own
+    # package, so it reports a complete workspace while `npm run dev` dies on a missing module.
+    if (Test-Path (Join-Path $modules 'vite/bin/vite.js')) { return }
 
     $command = if (Test-Path $modules) { 'install' } else { 'ci' }
     Write-Host "Installing SPA workspace dependencies (npm $command)..." -ForegroundColor Gray
@@ -195,6 +226,7 @@ function Show-Usage {
 function Invoke-UiCommand([string]$cmd) {
     if ($cmd -in @('run', 'b2b', 'customer', '3ds')) {
         Assert-DockerHealthy
+        Assert-PinnedImagesPullable
         Assert-HostCapacity
         & $localPlatform prepare
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -206,19 +238,19 @@ function Invoke-UiCommand([string]$cmd) {
         "run" {
             $b2b  = Invoke-PrettyTest 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
             $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
-            Show-Summary @($b2b, $cust)
+            Complete-TestRun @($b2b, $cust)
         }
         "b2b" {
             $b2b = Invoke-PrettyTest 'B2B' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
-            Show-Summary @($b2b)
+            Complete-TestRun @($b2b)
         }
         "customer" {
             $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
-            Show-Summary @($cust)
+            Complete-TestRun @($cust)
         }
         "3ds" {
             $r = Invoke-PrettyTest '3DS' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @('--filter', 'DisplayName~3DS')
-            Show-Summary @($r)
+            Complete-TestRun @($r)
         }
         "trace" { & (Join-Path $repoRoot "api/Concertable.Shared/tests/Concertable.Testing.E2E/ui-trace.ps1") }
         default { Show-Usage }
@@ -229,6 +261,7 @@ function Invoke-ApiCommand([string]$cmd) {
     $settings = @('--settings', $runsettings)
     if ($cmd -in @('run', 'b2b', 'customer')) {
         Assert-DockerHealthy
+        Assert-PinnedImagesPullable
         Assert-HostCapacity
         & $localPlatform prepare
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -237,19 +270,15 @@ function Invoke-ApiCommand([string]$cmd) {
         "run" {
             $b2b  = Invoke-PrettyTest 'B2B API'      "$b2bApi/Concertable.B2B.E2ETests.csproj"           $settings 'api-tests.last.log'
             $cust = Invoke-PrettyTest 'Customer API' "$customerApi/Concertable.Customer.E2ETests.csproj" $settings 'api-tests.last.log'
-            $summaries = @($b2b, $cust)
-            Show-Summary $summaries
-            if ((($summaries | Measure-Object Failed -Sum).Sum) -gt 0) { exit 1 } else { exit 0 }
+            Complete-TestRun @($b2b, $cust)
         }
         "b2b" {
             $b2b = Invoke-PrettyTest 'B2B API' "$b2bApi/Concertable.B2B.E2ETests.csproj" $settings 'api-tests.last.log'
-            Show-Summary @($b2b)
-            if ($b2b.Failed -gt 0) { exit 1 } else { exit 0 }
+            Complete-TestRun @($b2b)
         }
         "customer" {
             $cust = Invoke-PrettyTest 'Customer API' "$customerApi/Concertable.Customer.E2ETests.csproj" $settings 'api-tests.last.log'
-            Show-Summary @($cust)
-            if ($cust.Failed -gt 0) { exit 1 } else { exit 0 }
+            Complete-TestRun @($cust)
         }
         default { Show-Usage }
     }

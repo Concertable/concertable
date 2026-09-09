@@ -38,11 +38,6 @@ Work through these in order — functional bugs first, then missing features, th
 
 These do not affect runtime correctness but should be retired as modules stabilise.
 
-### A1 — B2B.Workers IVT for internal logger types
-**File:** `Concertable.B2B/Concertable.B2B.Workers/AssemblyInfo.cs` (line 4)
-**Problem:** Castle Core IVT granted so `Concertable.Workers.UnitTests` can mock loggers typed against internal Worker functions (`ConcertFinishedFunction` etc.).
-**Retire when:** Worker tests move into per-module test projects.
-
 ### A2 — Concert.Application IVT to Concertable.Infrastructure
 **File:** `Concertable.B2B/Modules/Concert/Concertable.Concert.Application/AssemblyInfo.cs` (line 10)
 **Problem:** Legacy `Concertable.Infrastructure` still hosts Payment + Ticket services that inject `Concert.Application` internals.

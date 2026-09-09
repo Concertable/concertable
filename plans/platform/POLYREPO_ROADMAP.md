@@ -9,8 +9,9 @@
 > Design every change as if that split already happened: would this still work if this service lived alone?
 > This roadmap tracks the work that makes that literally true.
 >
-> **Definition of done for the epic:** each service (`B2B`, `Customer`, `Auth`, `Payment`, `Search`,
-> `Shared`) builds, tests, **documents, and plans** itself standing alone; every cross-service dependency
+> **Definition of done for the epic:** each service (`B2B`, `Customer`, `Auth`, `Payment`, `Search`), both
+> platform repositories (`platform-dotnet`, `platform-frontend`), and `system` build, test, **document, and plan**
+> themselves standing alone; every cross-service dependency
 > is Contracts/published-package only; and the cut (§6) has run, so each service folder **is** its own
 > coherent, self-describing repo.
 >
@@ -32,11 +33,12 @@
 **Shipped — verified, don't rebuild:** in-monolith decomposition (god-`ConcertEntity` split, `Shared.*`
 collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first cross-process extraction
 (Customer on its own host + DB) · the **backend carve** (feed `PackageReference`s, per-folder CPM,
-`EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · the extraction mechanism, proven end to end on
+`EnforceServiceBoundary`, `carve-*` CI, `platform-sync` — the last superseded by §7) · the extraction
+mechanism, proven end to end on
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
-**In flight:** the **cut** (§6) — stages 1 and 2 delivered, extraction unblocked; and the **frontend
-full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
+**In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A delivered;
+extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phases 0–3 done, B2B topology left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
 `AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
@@ -66,13 +68,13 @@ Owned by [`MICROSERVICE_STEPS_PLAN.md`](MICROSERVICE_STEPS_PLAN.md) (+
 
 Cross-service deps go through published `Concertable.*` packages, not project references: feed
 `PackageReference`s, per-folder Central Package Management, the `EnforceServiceBoundary` guard, `carve-*`
-CI jobs, and `platform-sync` (MinVer bump + `<ConcertablePlatformVersion>` sync PR on every `api/**`
+CI jobs, and `platform-sync` (MinVer bump + `<ConcertableDotNetPlatformVersion>` sync PR on every `api/**`
 merge). This is the backend half of "builds alone from a feed." The lockstep pin and `platform-sync`
 it shipped are superseded by §7. Documented in
 [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md) ("Cross-service contract distribution" /
 "Per-folder build closures").
 
-## 3. Frontend full-stack carve — 🟡 in progress
+## 3. Frontend full-stack carve — 🟠 Phases 0–3 done; B2B topology in flight
 
 Owned by [`POLYREPO_FULLSTACK_PLAN.md`](POLYREPO_FULLSTACK_PLAN.md) /
 [`POLYREPO_FULLSTACK_PROGRESS.md`](POLYREPO_FULLSTACK_PROGRESS.md). Makes `customer` and `b2b` genuine
@@ -82,8 +84,11 @@ feed — the npm analogue of the backend carve.
 - [x] ✅ **Phase 0** — scoped npm registry + PAT.
 - [x] ✅ **Phase 1** — publish the universal core `@concertable/shared` (published, restorable).
 - [x] ✅ **Phase 2** — package the four remaining tiers + cut consumers over (done on branch, PR pending).
-- [ ] 🟡 **Phase 3** `platform/polyrepo-fullstack` — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
-  import-boundary rule, and close the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals.
+- [x] ✅ **Phase 3** `platform/polyrepo-fullstack` — every surface feed-restores its shared deps as the
+  seven-surface `carve-fe` matrix, the FE import-boundary rule is the `fe-boundaries` job (PR #428,
+  `162b8412a`), and the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals are closed.
+  Phase 4 (FE version-bump propagation) and Phase 5 (produce the repos) are absorbed by §6's cut; the
+  publisher half is that plan's checkpoint 8.
 
 - [ ] **B2B package topology** `platform/b2b-package-topology` - separate the manager-web tier as
   `@concertable/web-b2b`, retain `@concertable/b2b` as the cross-platform B2B core, and migrate web
@@ -146,26 +151,40 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
   [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md) /
   the active-stream records below. Git history retains the deleted umbrella ledger; it does not own
   execution.
-  Approved and in execution 2026-08-26. Nine repositories (five services, `platform-dotnet`,
-  `platform-web`, `fleet`, `.github`); nine stages; the Payment extraction is proven end to end.
-  **Stages 1–2 delivered** (all 45 test-tier cross-repository `ProjectReference`s are now packages).
+  Approved and in execution 2026-08-26. Eleven repositories (five services, `platform-dotnet`,
+  `platform-frontend`, `system`, `infra`, `config`, `.github`); seventeen checkpoints; the Payment extraction is
+  proven end to end.
+  **Checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A are delivered** (all 45 test-tier
+  cross-repository `ProjectReference`s are now packages, standalone AppHosts consume published Hosting/image
+  boundaries, and full-system E2E composition is system-owned). RT3 closed through
+  [PR #897](https://github.com/Concertable/concertable/pull/897)
+  (`2979ab78f4204eeed07cca06654777a37965f007`) and Stage 4 closed through
+  [PR #912](https://github.com/Concertable/concertable/pull/912)
+  (`62390281b4191a7166136d69163a2c6482f6a463`); Git history retains their deleted ledgers. The public
+  organization workflow foundation closed through
+  [`.github` PR #1](https://github.com/Concertable/.github/pull/1)
+  (`ab2a127cdba9bacd73411fba8cca2b6a20fc02c0`) and its live-policy verification repair through
+  [`.github` PR #2](https://github.com/Concertable/.github/pull/2)
+  (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`). All eleven reusable workflows passed from the exact-head
+  public fixture in [run 33894314188](https://github.com/Concertable/workflow-fixture/actions/runs/33894314188);
+  teams, owner access, release-environment policy, the main merge queue, and immutable-tag protection were
+  then applied and read back successfully.
   Preparation and delivery have separate dependency graphs: private service-repository preparation runs in
-  parallel, while canonical rename, publication, system consumption, source removal, deployment, and archive
+  parallel, while publication, system consumption, source removal, deployment, and archive
   remain ordered and require explicit authorization.
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
-  | Stage 3 RT3 | In flight only on `Plan/RepoSplit-Stage3-Hosting-rt3`; no sibling may edit its AppHosts, composition tests, review work order, or stream state. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_RT3_PROGRESS.md) |
+  | Foundation 6B / M1-M4 | Active across isolated packet worktrees: M3 landed through PR #948; M1 is the ordered four-stage hosting stack; M2 remains an independent sibling prepared from PR #633 and is reconciling with current main for delivery; and M4 follows the M1 package/API shape. This stream owns live-target identity reconciliation, package-ACL preflight, extraction-map readiness, and the preparation packets. Existing carve repository IDs and active owner ledgers override historical labels. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
   | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
-  | Stage 4 Fleet E2E | Paused on draft [PR #896](https://github.com/Concertable/concertable/pull/896); owns only fleet/TestKit/E2E source-boundary removal. | PR #896 carries `REPOSITORY_PER_MICROSERVICE_MIGRATION_STAGE4_FLEET_PROGRESS.md`. |
-  | Auth-next | Paused but implementable in the existing private `auth-next` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
-  | Payment-next | Reserved exclusively to the Payment preparation stream at `C:\Users\tommy\source\repos\payment-next` / `Chore/payment-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
-  | Search-next | Reserved exclusively to the Search preparation stream at `C:\Users\tommy\source\repos\search-next` / `Chore/search-promotion-preparation`; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
+  | Auth | Paused but implementable in the existing private `auth` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
+  | Payment | Reserved exclusively to the Payment preparation stream in the existing private `payment` repository; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
+  | Search | Reserved exclusively to the Search preparation stream in the existing private `search` repository; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_SEARCH_PROMOTION_PROGRESS.md) |
 
   Agents read this table and the named ledger before acting. One stream never edits a sibling ledger or
-  worktree. B2B-next preparation remains unassigned until its existing
-  `wip/b2b-frontend-fold-handoff` checkout is reconciled; system/fleet extraction remains with Stage 4 until
-  that composition boundary lands.
+  worktree. B2B preparation remains unassigned until its existing
+  `wip/b2b-frontend-fold-handoff` checkout is reconciled; the completed Stage 4 boundary leaves system
+  extraction available for its later repository-foundation checkpoint.
 
   **Post-cut development-fixture terminology.** Keep the current `SeedCatalog`, `Seed.Contracts`,
   `SeedState`, and `Seed.Simulator` names stable while repository ownership and publication boundaries are
@@ -195,8 +214,10 @@ split is. N3 re-homes its content to `Concertable/agent-standards` (the shared-i
 `SERVICE_BOUNDARIES.md`; every other section was already skill-owned) and deletes `api/AGENTS.md` +
 `api/CLAUDE.md`; the backend floor is thereafter the `.agents/skill-routes.json` routes over the `dotnet` plugin.
 
-The remaining sub-decision is still open: whether a true cut restructures to per-service colocation
-(`services/<x>/{api,web,mobile}`) or uses a multi-source mirror assembler.
+The repository topology is fixed: existing service, `infra`, and `config` identities remain; shared packages
+split into `platform-dotnet` and `platform-frontend`; and `system` owns container composition plus black-box
+qualification. General frontend sharing spans web and mobile, while web and mobile remain package tiers rather
+than repositories. Extraction layout mechanics must preserve this topology and do not reopen it.
 
 ### Original framing (kept for the trade-off it records)
 
@@ -216,18 +237,17 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
 ## 7. Published surface & release trains — 🔴 not started
 
 The cut specifies independent per-producer trains, distinct consumer properties and Renovate
-producer-pull, and it states the platform admission rule. Neither exists yet: all 55 `IsPackable`
-projects share one MinVer height and one `<ConcertablePlatformVersion>` pin, and no package has ever
-been tested against the admission rule. Both are cheaper to build inside one repo than to retrofit
-across nine.
+producer-pull, and it states the platform admission rule. Neither is finished: two trains exist
+(`ConcertableDotNetPlatformVersion`, `ConcertablePaymentVersion`) while the rest of the 58 `IsPackable`
+projects ride one MinVer height, and no package has ever been tested against the admission rule. Both
+are cheaper to finish inside one repo than to retrofit across nine.
 
-- [ ] 🔴 **Platform release trains** `platform/release-trains` — retire the per-merge pin-bump tax (423
-  bump commits / 221 sync merges of 5704 on `main`), build main's images from the commit's own source
-  rather than the stale pin, and split the lockstep version into the per-producer trains the cut
-  assumes. Owned by
+- [ ] 🔴 **Platform release trains** `platform/release-trains` — retire the per-merge pin-bump tax (455
+  bump commits / 238 sync merges of 6572 on `main`), build main's images from the commit's own source
+  rather than the stale pin, and finish the per-producer train split the cut assumes. Owned by
   [`PLATFORM_RELEASE_TRAINS_PLAN.md`](PLATFORM_RELEASE_TRAINS_PLAN.md) /
   [`PLATFORM_RELEASE_TRAINS_PROGRESS.md`](PLATFORM_RELEASE_TRAINS_PROGRESS.md).
-- [ ] 🔴 **Published surface admission** `platform/surface-admission` — apply the admission rule to all 55
+- [ ] 🔴 **Published surface admission** `platform/surface-admission` — apply the admission rule to all 58
   packages and produce a binding per-package verdict (platform / service-owned / vendor / promote), then
   execute it. Supplies train membership to `platform/release-trains`. Owned by
   [`PUBLISHED_SURFACE_ADMISSION_PLAN.md`](PUBLISHED_SURFACE_ADMISSION_PLAN.md) /

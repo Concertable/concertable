@@ -1,0 +1,92 @@
+# Code review — Refactor/RepoSplit-M3-Frontend-Build-Config
+
+> **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
+> findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
+> irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
+
+**Review status:** `complete`
+**Reviewed up to commit:** `3832378585110ade2a9460bdd6ca3b252e5723ab`  `(2026-09-07)`
+**Security-reviewed up to commit:** `3832378585110ade2a9460bdd6ca3b252e5723ab`  `(2026-09-07)`
+**Judgment:** `approved`
+
+## Review pass — 2026-09-06 — full
+
+**Candidate base:** `ad4ad986f4f61f328ec9aae14a5fec1ccde364db`
+**Candidate head:** `11b322e92e7d523133dc033b330414f3074fe2d6`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:402e544a97c4246285bfb269537b8b5e7346dabcb022687fd1c37e4d722d408f` `(27 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m3-7eae7b30cfdb49b38a71118447ab7ced`
+**Candidate bundle identity:** `sha256:e1500db5fbe0f85e7d42d1ef28cc58c3885fa70c91101958e35aeacc9892d494`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `new`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The extracted build-config package preserves independent CommonJS, ESM, TypeScript, and
+package-export consumption, both mobile applications use the shared Metro package-resolution contract,
+and the product workspaces retain their web/mobile package tiers under the authoritative
+`platform-frontend` boundary. The full package, web, mobile, isolation, boundary, and plan-graph gates
+passed. Security review found no new trust-boundary or dependency-resolution risk in the frozen delta.
+
+## Review pass — 2026-09-06 — incremental publication checkpoint
+
+**Candidate base:** `9216a0883ff407224af93b14ac69eff9ecd3041a`
+**Candidate head:** `84bb9f3a44f01530d14e102201827d393edba957`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The plan-only checkpoint records draft PR #948, its direct #633 branch base, the retained-service,
+`platform-dotnet`, `platform-frontend`, and separate `system` topology, and the delivery-time landed-main
+restack gate. Security review found no risk in the publication metadata. PR #633 advanced after the reviewed
+commit from the locally restacked `ad4ad986f` snapshot to `5e2dcf604`; the follow-up ledger correction records
+that moving-base fact without changing the reviewed implementation delta.
+
+## Review pass — 2026-09-07 — full landed-main restack
+
+**Candidate base:** `516f4cc25936289744babef3f98b1a297035fbb6`
+**Candidate head:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:42e5615b7456954e4d7cf5a132779e18617334802d930065db6510c13408615d` `(30 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m3-restack-00deaf4fb1714f30a57bfca135bb7307`
+**Candidate bundle identity:** `sha256:fcbd84efcc49a2664d1e70d4aa712e04904366f2a7b412968fad0fa80c17333f`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The seven-commit range-diff from the #633 snapshot to landed main is patch-equivalent throughout,
+and the landed #633 changes do not overlap the M3 path set. The shared build configuration remains
+product-neutral, product workspace ownership remains explicit, and both mobile applications consume the same
+generic package-resolution helper. Boundary tests/lint, all package tests/builds, all five web builds, both
+mobile typechecks and Android/Hermes exports, both feed-restored mobile carves, and an independent packed
+consumer passed. Security review found no credential, trust-boundary, or unsafe dependency-resolution change.
+
+## Review pass — 2026-09-07 — incremental split-inventory repair
+
+**Candidate base:** `93d102222f9cc25b5f4b68af97e6f08df59f16b0`
+**Candidate head:** `3832378585110ade2a9460bdd6ca3b252e5723ab`
+**Candidate branch:** `Refactor/RepoSplit-M3-Frontend-Build-Config`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:d739c088ef421df356566f84dc6afedfa96f47a97ee488f9958739bc497c16ee` `(6 paths)`
+**Candidate bundle:** `C:\Users\tommy\AppData\Local\Temp\concertable-review-m3-inventory-02d1fab668a448af8bc1cc9ae5a07401`
+**Candidate bundle identity:** `sha256:64fc63dc0ba20daf1f623c077975a398eeea32045fd79a56a8beb55bd4c4d686`
+**Work-order path:** `reviews/Refactor-RepoSplit-M3-Frontend-Build-Config.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. The inventory generator and extraction map now use the approved `platform-frontend` identity
+consistently and assign `app/build-config` to that target, with the package renamed to
+`packages/build-config/` during extraction. The regenerated inventory is current, all frontend workspaces
+are assigned, and the focused inventory check and plan-graph gate pass. Security review found no credential,
+trust-boundary, or dependency-resolution risk in the repair.

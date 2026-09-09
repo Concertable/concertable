@@ -1,6 +1,33 @@
-﻿# Concertable.B2B — Technical Debt
+# Concertable.B2B — Technical Debt
 
 When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
+---
+
+## MEDIUM
+
+### Operation-claim idempotency is copy-pasted per entity, in three different shapes
+
+Five long-running operations anchor themselves to a row with an operation id, and no two do it the same way.
+There is no shared domain vocabulary for "this row is claimed by this operation", so each entity invents one.
+
+| Entity | Field | Shape |
+|---|---|---|
+| `ApplicationEntity` | `AcceptanceOperationId` | caller supplies the id; `??=` then throw if it differs |
+| `ConcertEntity` | `SettlementOperationId` | the entity mints the id (`??= Guid.NewGuid()`); a separate `Ensure` method throws two different ways |
+| `ConcertEntity` | `CancellationOperationId` | — |
+| `BookingEntity` | `OperationId`, `CancellationOperationId` | neither a `Begin` nor an `Ensure` — a third shape |
+
+The two decisions that actually vary — who mints the id (caller or entity), and claim-versus-verify — are
+answered differently each time, so an operation that spans entities cannot reason about a claim uniformly.
+`ApplicationEntity.BeginAcceptance` also assigns before validating the assignment, and carries a no-argument
+overload whose only caller is a unit test.
+
+**Resolves when:** a composed domain type owns the claim, following the `EventRaiser` precedent — a small
+sealed class the entity holds rather than a base class it inherits — with one instance per claimable
+operation and a single vocabulary (`Claim` / `IsHeldBy`) that every entity above uses. Unlike `EventRaiser`
+this one persists, so the design must settle how the backing value maps (owned type or mapped backing field)
+before the entities are migrated.
 
 ---
 
@@ -14,6 +41,42 @@ When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECT
 
 ---
 
+### Venue dashboard revenue reads a table nothing writes
+
+`VenueDashboardService` (`GetAsync`, `GetPaymentRevenueAsync`) calls `IPaymentReportingClient.GetPaymentRevenueAsync` /
+`GetPaymentRevenueByMonthAsync`, which sum `PaymentTransactionEntity` rows. The only writer of that entity is Payment's
+`PaymentTransactionRecorder`, registered under the keyed value `TransactionTypes.Payment` (`"payment"`). Nothing in the
+system ever emits that key: `PaymentSessionProviderRequest` stamps the metadata `type` with the operation's own
+`OperationType`, and the only payment-kind operation is Customer's ticket purchase, whose type is `"ticket-purchase"`.
+The venue revenue KPI and its six-month chart are therefore structurally zero, with no exception and no failing test —
+`MockSettlementClient` hard-codes `Money.Gbp(0m)` and `[]`, so the B2B suite cannot see it.
+
+This is not introduced by the v1 cut-over's renaming: the pre-v1 `GetTicketRevenueAsync` summed the same table against
+the then-live `TransactionTypes.Ticket` key, which v1 deleted. B2B had no other reporting query to migrate to.
+
+**Resolves when:** the venue revenue widgets read the `ConcertSalesProjection` below instead of Payment, or Payment keys
+its transaction recorder on the operation kind rather than a `type` string no producer emits (and adds `AmountMinor` to
+`PaymentSessionProviderRequest.MetadataOf`, which the recorder reads and nothing writes).
+
+---
+
+### Accept checkout mints a throwaway authorization operation id
+
+`ApplicationCheckoutService` passes `Guid.CreateVersion7()` as the FlatFee authorization's `OperationId`, so
+every GET of the accept checkout page mints a fresh id. Every other operation-id site in B2B is `??=`-stable
+and uniquely indexed, and the accept path itself reuses `application.AcceptanceOperationId`.
+
+It does not double-charge today only because Payment's `ReserveInitialAsync` catches the duplicate key on
+`(OperationType, ClientReference)` and re-resolves the existing operation by reference. Correctness therefore
+rests on Payment's fallback rather than on the reference B2B already owns and freezes.
+
+Found by independent review during PR #633 (finding IR37).
+
+**Resolves when:** the accept checkout passes the application's own acceptance operation id rather than a
+fresh GUID, so the id is stable across reloads without relying on Payment's duplicate-key recovery.
+
+---
+
 ### No `ConcertSalesProjection`
 
 There is no sold-count / gross-revenue projection. B2B dashboards and settlement math can't read authoritative ticket sales data from Customer.
@@ -24,12 +87,12 @@ There is no sold-count / gross-revenue projection. B2B dashboards and settlement
 
 ---
 
-### E2E boots the whole real fleet from source references (won't survive the repo split)
+### E2E boots the whole real system from source references (won't survive the repo split)
 
 `Concertable.B2B.E2ETests/AppFixture.cs` launches `Concertable.B2B.AppHost` via
 `DistributedApplicationTestingBuilder.CreateAsync<Projects.Concertable_B2B_AppHost>()`, which composes
 **real** Payment + Auth + Search through `Projects.Concertable_*` *source* references. That's fine in
-the monorepo, but it's full-fleet E2E run from inside one service's repo — it conflates two test tiers
+the monorepo, but it's full-system E2E run from inside one service's repo — it conflates two test tiers
 and breaks at the repo split (the `Projects.Concertable_Payment_*` types vanish once Payment is a
 separate repo). E2E must never stub Payment (stubbing defeats E2E), so the fix is not "fake it here" —
 it's to split the tiers by *where they run*:
@@ -39,8 +102,8 @@ it's to split the tiers by *where they run*:
   behind their contracts — Payment via the existing `MockManagerPaymentClient` / `MockEscrowClient` /
   `MockCustomerPaymentClient` against `Payment.Contracts` — plus **consumer-driven contract tests** so
   the fakes can't silently drift. No Payment source or runtime needed.
-- **Full-fleet system E2E (rare / pre-release, centralised — not per-service-repo):** stands up the
-  real fleet from **published container images** (`AddProject<Projects.Concertable_Payment_Web>()` →
+- **Full-system E2E (rare / pre-release, centralised — not per-service-repo):** stands up the
+  real system from **published container images** (`AddProject<Projects.Concertable_Payment_Web>()` →
   `AddContainer("payment", "<registry>/payment:<version>")`). Same real Payment, pulled not compiled.
   This suite moves out of B2B's repo into a system/deployment pipeline.
 
@@ -144,6 +207,26 @@ the Versus concert was a real gap the old simulator catalog (concerts 13/12/10) 
 
 ## LOW
 
+### Action-link hrefs are hand-interpolated instead of generated from routes
+
+Every `ActionLink` in the Api layer builds its href with string interpolation — `ApplicationMapper`,
+`ConcertMappers`, `SelfBillingAgreementMappers` and `OpportunityMapper` (all in
+`Concert.Api/Mappers/`) plus `Conversations.Api/Mappers/MessageMappers` between them interpolate
+roughly a dozen `$"/api/..."` literals. Nothing ties a literal to the controller route it names, so a
+route rename leaves the emitted link pointing at a 404 and no build or test fails. The frontend
+compensates by stripping the `/api` prefix back off with a regex before re-issuing the call —
+`apiPath` in `app/web/b2b/shared/src/features/concerts/api/actionLinkApi.ts` — which only works while
+every literal happens to agree.
+
+`Href` (Concertable.Kernel) now validates the string at construction, but validating a string someone
+already hand-built is a checkpoint after the fact, not the fix — `LinkGenerator` means nobody builds it.
+
+**Resolves when:** the Api-layer mappers take `LinkGenerator` (or `IUrlHelper`) and produce every
+`ActionLink` from a named route rather than an interpolated literal, and the frontend's `apiPath` regex
+is deleted because the emitted href is already client-relative.
+
+---
+
 ### Admin verification queue enriches contact per row, not per page
 
 `VerificationService.GetPendingAsync` (Tenant.Infrastructure) awaits `IVenueModule`/`IArtistModule`
@@ -213,8 +296,8 @@ handle every variant exhaustively so invalid affordance combinations are unrepre
 
 The money value-type migration (PR1 #390 → sync #393) made every
 payment-client + `ISettlementAmountResolver` signature `Money`-typed, but `FlatFeeDeal.Fee` /
-`VenueHireDeal.HireFee` (contracts + `*DealEntity`) stayed `decimal`. The workflow steps (`HoldCheckoutStep`,
-`Capture`/`DepositEscrowAcceptStep`) lift them with `Money.Gbp(deal.Fee)` at the call sites — a legitimate
+`VenueHireDeal.HireFee` (contracts + `*DealEntity`) stayed `decimal`. Checkout and the confirm strategies
+lift them with `Money.Gbp(deal.Fee)` at the call sites — a legitimate
 boundary conversion (same pattern as Customer's `Money.Gbp(concert.Price * qty)`), but it assumes GBP and keeps
 a money value untyped in the domain, inconsistent with `EscrowEntity.Amount` which is a `Money` EF
 ComplexProperty. Deferred from the sync PR because the field-type change needs an EF ComplexProperty mapping +
@@ -328,3 +411,69 @@ that is never queried independently. Do not leave the rule absolute while the co
 
 Resolves when: `grep -n "ThreadReadStates" MessageRepository.cs` returns nothing, or the rule in
 `CODE_PATTERNS.md` states the child-collection exception explicitly.
+
+---
+
+### `app/web/shared` still hands B2B a Stripe payment-method id
+
+`StripePaymentForm.onSuccess` is typed `(paymentMethodId: string) => void` and `NewCardSection.onConfirmed`
+the same, so the shared web tier offers consumers the `pm_…` id it reads off the confirmed intent. B2B no
+longer sends it — apply and accept post only the e-signature, and Payment resolves the method from the
+reference — but the seam still exposes it, and a future consumer could pick it back up.
+
+**Why it is not fixed here:** `carve-fe` builds each app against `@concertable/web` **as published to the
+feed**, so narrowing the callback in `app/web/shared` and consuming the narrower shape in `app/web/b2b/*`
+in one PR fails that gate. Same publish-first split as the `ApplicationActions.decline` entry.
+
+**Resolves when:** `web` is republished with `onSuccess: () => void` / `onConfirmed: () => void`, the b2b
+and customer callers drop the argument, and `carve-fe` is green.
+
+---
+
+### `Concertable.B2B.E2ETests` builds to `bin/` 14 characters from the native-path limit
+
+`docs/LOCAL_DEV.md` records the measured 250-character cap on native DLL loading, which the four E2E host
+executables now clear by building to `artifacts/e2e/` via `BaseOutputPath`. This project still builds to
+`bin/`, where its `runtimes/win-x64/native/Microsoft.Data.SqlClient.SNI.dll` is 236 characters from a
+101-character worktree root. A branch folder 15 characters longer than
+`Refactor-launch_deal-lifecycle-modules-phase2` therefore kills the API E2E suite itself with
+`DllNotFoundException ... (0x800700CE)` before a single test runs.
+
+It cannot simply follow the four hosts, because two consumers address its output at its default location:
+`scripts/local-platform.ps1`'s `Assert-DataAccessAssembly` scans `<project>/bin/<configuration>` for the
+`Concertable.DataAccess.Infrastructure` version check, and `.github/workflows/test.yml` invokes
+`playwright.ps1` at a literal `.../Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/` path.
+
+**Resolves when:** this project builds through a short artifacts root like the E2E hosts do, with both
+consumers resolving the output path from MSBuild rather than assuming `bin/<configuration>/<tfm>`.
+
+---
+
+### `Concertable.B2B.TestKit.SeedState` names most of its seed handles `TestEntity`
+
+`TestEntity(int Id)` stands in for a flat-fee application, a door-split application, a versus application,
+a venue and two past applications — six different things behind one name that says nothing about any of
+them. A reader of `fixture.SeedState.FlatFeeApp.Id` cannot tell from the type what else that handle could
+carry, and any field a caller needs (an opportunity id, an artist id) has nowhere to live without either
+widening the shared placeholder for every unrelated consumer or minting a one-off beside it — which is what
+`TestApplication(int Id, int OpportunityId)` already is.
+
+**Resolves when:** each seed handle has a record named for what it is (`TestApplication`, `TestVenue`, …)
+carrying the fields that handle actually needs, and `TestEntity` is gone.
+
+---
+
+### Accept and apply checkout quote the base fee, not what the payer is charged
+
+`ApplicationCheckoutService` returns `new FlatPayment(flatFee.Fee)` / `new FlatPayment(venueHire.HireFee)`
+as the checkout amount, while Payment sizes the actual hold as fee plus the platform fee — £180 shown and
+£190 taken for the seeded flat-fee deal, £300 shown and £310 taken for venue hire. The two flows now agree
+with each other and with the escrow they create, so nothing reconciles wrongly; the number the payer reads
+before confirming is simply not the number that leaves their card.
+
+B2B cannot close this by arithmetic: the platform fee is Payment's, and duplicating it in B2B is the split
+brain this branch removed. `IEscrowOperationsClient.AuthorizeAsync` already computes the payer total server
+side and its `PaymentSessionDescriptor` is the natural place to return it.
+
+**Resolves when:** the escrow authorization reports the payer total it charged, `Checkout` carries that
+alongside the payee amount, and the B2B checkout surfaces the split rather than one figure that is neither.
