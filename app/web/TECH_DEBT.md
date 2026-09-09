@@ -41,7 +41,7 @@ every width and stays one unambiguous testid (Playwright strict mode stays happy
 ### Browser-storage classification is detection-by-regex, not prevention-by-construction
 
 First-party device storage has no single sanctioned accessor: `consent.ts` (`cookie-consent`),
-`ThemeProvider` (`theme`), and `useTenantStore` (zustand `persist` → `concertable.active-tenant`) each
+`ThemeProvider` (`theme`), and the B2B tenant session (`concertable.active-tenant`) each
 write `localStorage` their own way. The "new storage must be classified" guarantee is enforced by a
 **regex drift-guard** (`shared/src/lib/storageManifest.test.ts`) that scans for known write patterns
 (`setItem`, `document.cookie=`, `persist(`, `indexedDB.open(`) against `STORAGE_MANIFEST` — detection

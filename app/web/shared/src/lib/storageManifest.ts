@@ -74,10 +74,10 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     classification: "functional",
     apps: ["venue", "artist"],
     writeSites: [
-      "b2b/shared/src/features/tenant/store/useTenantStore.ts",
+      "b2b/shared/src/features/tenant/webTenantSession.ts",
     ],
     notes:
-      "Written by the zustand persist middleware (default localStorage); key set via its name option.",
+      "Written by the manager-web adapter for the cross-platform B2B tenant session.",
   },
   {
     key: "oidc.user:*, oidc.* state",

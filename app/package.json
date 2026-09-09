@@ -35,6 +35,7 @@
     "lock:carve": "node scripts/carve-fe.mjs --write-lock web/customer && node scripts/carve-fe.mjs --write-lock web/admin && node scripts/carve-fe.mjs --write-lock web/b2b/venue && node scripts/carve-fe.mjs --write-lock web/b2b/artist && node scripts/carve-fe.mjs --write-lock web/b2b/business && node scripts/carve-fe.mjs --write-lock mobile/customer && node scripts/carve-fe.mjs --write-lock mobile/b2b",
     "lint:boundaries": "node scripts/check-fe-boundaries.mjs",
     "test:boundaries": "node --test scripts/check-fe-boundaries.test.mjs scripts/carve-fe.test.mjs",
+    "validate:b2b-phase3-consumers": "node scripts/validate-b2b-phase3-consumers.mjs",
     "postinstall": "node scripts/patch-nativewind.js"
   },
   "overrides": {
