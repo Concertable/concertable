@@ -1,15 +1,17 @@
-"""Prove the CI service-scope classifier only ever narrows CI safely.
+"""Prove service scoping and queue E2E dependencies only ever narrow CI safely.
 
 The classifier decides which services a diff can affect, so an unrelated service's
 suites and standalone carve never gate a PR. Getting it wrong is silent: a suite
-that should have run simply does not. The block under test is extracted from
-test.yml itself rather than restated here, so the test cannot drift from the gate.
+that should have run simply does not. The classifier block and dependency graph
+are read from test.yml itself rather than restated here, so the test cannot drift
+from the gate.
 
     python .github/workflows/tests/test_service_scope.py
 """
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -24,8 +26,10 @@ ALL = "ALL"
 MATRIX_GUARDS = {
     "unit-tests": "unit_projects",
     "architecture-tests": "architecture_projects",
+    "startup-tests": "startup_projects",
     "integration-tests": "integration_projects",
 }
+QUEUE_E2E_JOBS = ("e2e-api-tests", "e2e-ui-tests")
 
 CASES: list[tuple[str, list[str], str]] = [
     ("payment only", ["api/Concertable.Payment/src/X/Y.cs"], "Payment"),
@@ -53,7 +57,10 @@ def extract_block() -> str:
     steps = spec["jobs"]["changes"]["steps"]
     detect = next(s for s in steps if s.get("id") == "detect")
     run = detect["run"]
-    start = run.index("# SERVICE SCOPE:")
+    # Include the api_files derivation immediately before the policy comment. Starting at the
+    # comment leaves api_files inherited from the caller's environment, so the test can silently
+    # classify every backend change as frontend-only instead of exercising the workflow logic.
+    start = run.index("api_files=$(", run.index("# SERVICE SCOPE:") - 200)
     end = run.index('echo "services=$services"')
     block = run[start:end]
     if "SERVICE_DIRS" not in block:
@@ -64,7 +71,9 @@ def extract_block() -> str:
 def bash() -> str:
     # On Windows a bare `bash` can resolve to a WSL stub that cannot exec; prefer Git Bash,
     # which is the shell this repository's other hooks already assume.
-    for candidate in (r"C:\Program Files\Git\usr\bin\bash.exe", r"C:\Program Files\Git\bin\bash.exe"):
+    # Git's public bin/bash wrapper initializes PATH with grep/sed/sort; invoking usr/bin/bash
+    # directly inherits only the Windows process PATH and silently leaves those tools unavailable.
+    for candidate in (r"C:\Program Files\Git\bin\bash.exe", r"C:\Program Files\Git\usr\bin\bash.exe"):
         if Path(candidate).exists():
             return candidate
     return "bash"
@@ -80,7 +89,11 @@ def run_case(block: str, files: list[str]) -> str:
         fh.write(script)
         path = fh.name
     try:
-        proc = subprocess.run([bash(), path], capture_output=True, text=True)
+        environment = os.environ.copy()
+        # Git Bash rewrites slash-bearing regex arguments as Windows paths unless conversion is
+        # disabled. CI runs on Linux, but the policy test must exercise the same regexes locally.
+        environment["MSYS2_ARG_CONV_EXCL"] = "*"
+        proc = subprocess.run([bash(), path], capture_output=True, text=True, env=environment)
         if proc.returncode != 0:
             raise SystemExit(f"FAIL: classifier errored: {proc.stderr.strip()}")
         line = next(
@@ -107,6 +120,43 @@ def matrix_guard_cases() -> list[tuple[str, bool, str]]:
     return cases
 
 
+def dependency_closure(spec: dict, job: str) -> set[str]:
+    closure: set[str] = set()
+    pending = [job]
+    while pending:
+        current = pending.pop()
+        needs = spec["jobs"][current].get("needs", [])
+        if isinstance(needs, str):
+            needs = [needs]
+        for dependency in needs:
+            if dependency not in closure:
+                closure.add(dependency)
+                pending.append(dependency)
+    return closure
+
+
+def empty_matrix_guarded_jobs(spec: dict) -> set[str]:
+    # Derived from the workflow, not from MATRIX_GUARDS: a job guarded this way that nobody added to
+    # that table would otherwise be free to skip queue E2E again. It cannot come back empty while the
+    # matrix-guard cases above pass, because those assert this exact idiom on each named job.
+    return {
+        job
+        for job, body in spec["jobs"].items()
+        if "!= '[]'" in str(body.get("if", ""))
+    }
+
+
+def queue_e2e_dependency_cases() -> list[tuple[str, bool, set[str]]]:
+    """Queue E2E must survive the empty matrices produced by frontend-only diffs."""
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    guarded = empty_matrix_guarded_jobs(spec)
+    cases = []
+    for job in QUEUE_E2E_JOBS:
+        blocked_by = dependency_closure(spec, job).intersection(guarded)
+        cases.append((job, not blocked_by, blocked_by))
+    return cases
+
+
 def main() -> int:
     block = extract_block()
     failures = 0
@@ -122,8 +172,17 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} {name} empty-matrix guard: {condition!r}")
-    total = len(CASES) + len(MATRIX_GUARDS)
+    for name, ok, blocked_by in queue_e2e_dependency_cases():
+        if not ok:
+            failures += 1
+        status = "ok  " if ok else "FAIL"
+        print(f"{status} {name} independent of empty matrices: {sorted(blocked_by)!r}")
+    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS)
     print(f"\n{total - failures}/{total} passed")
+    package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
+    publication = subprocess.run([sys.executable, package_policy], check=False)
+    if publication.returncode != 0:
+        failures += 1
     return 1 if failures else 0
 
 

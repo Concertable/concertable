@@ -79,7 +79,14 @@ def area_of(rel_path: str) -> str | None:
     return parts[1]
 
 
-TEST_KINDS = {"unit-test", "integration-test", "architecture-test", "fixture", "composition-test"}
+TEST_KINDS = {
+    "unit-test",
+    "integration-test",
+    "architecture-test",
+    "startup-test",
+    "fixture",
+    "composition-test",
+}
 SERVICE_OWNED_E2E_SUFFIXES = (".E2ETests.Server", ".E2ETests.Web", ".E2ETests.Workers", ".E2ETests.Stripe")
 SOURCE_MODE_E2E_COMPOSITION = "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj"
 
@@ -102,6 +109,8 @@ def classify(rel_path: str) -> str:
         return "unit-test"
     if name.endswith(".ArchitectureTests"):
         return "architecture-test"
+    if name.endswith(".StartupTests"):
+        return "startup-test"
     if name.endswith(".CompositionTests"):
         return "composition-test"
     if name.endswith(".AppHost"):
@@ -334,6 +343,16 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
+        blocking_runtime = inventory["dotnet"]["blockingRuntimeEdges"]
+        if blocking_runtime:
+            print(
+                "RUNTIME CROSS-REPOSITORY ProjectReference(s) — consume the dependency as a "
+                "published PackageReference:",
+                file=sys.stderr,
+            )
+            for e in blocking_runtime:
+                print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
+            return 1
         regressed = inventory["dotnet"]["blockingTestEdges"]
         if regressed:
             print(
@@ -362,7 +381,7 @@ def main() -> int:
             for e in forbidden_tooling:
                 print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
             return 1
-        print("inventory.json is current; no test-tier cross-repository ProjectReference")
+        print("inventory.json is current; no blocking runtime or test-tier cross-repository ProjectReference")
         return 0
 
     OUTPUT.write_text(current, encoding="utf-8")

@@ -37,7 +37,7 @@ collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
 **In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A delivered;
-extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
+extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phases 0–3 done, B2B topology left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
 `AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
@@ -72,7 +72,7 @@ merge). This is the backend half of "builds alone from a feed." Documented in
 [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md) ("Cross-service contract distribution" /
 "Per-folder build closures").
 
-## 3. Frontend full-stack carve — 🟡 in progress
+## 3. Frontend full-stack carve — 🟠 Phases 0–3 done; B2B topology in flight
 
 Owned by [`POLYREPO_FULLSTACK_PLAN.md`](POLYREPO_FULLSTACK_PLAN.md) /
 [`POLYREPO_FULLSTACK_PROGRESS.md`](POLYREPO_FULLSTACK_PROGRESS.md). Makes `customer` and `b2b` genuine
@@ -82,8 +82,11 @@ feed — the npm analogue of the backend carve.
 - [x] ✅ **Phase 0** — scoped npm registry + PAT.
 - [x] ✅ **Phase 1** — publish the universal core `@concertable/shared` (published, restorable).
 - [x] ✅ **Phase 2** — package the four remaining tiers + cut consumers over (done on branch, PR pending).
-- [ ] 🟡 **Phase 3** `platform/polyrepo-fullstack` — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
-  import-boundary rule, and close the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals.
+- [x] ✅ **Phase 3** `platform/polyrepo-fullstack` — every surface feed-restores its shared deps as the
+  seven-surface `carve-fe` matrix, the FE import-boundary rule is the `fe-boundaries` job (PR #428,
+  `162b8412a`), and the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals are closed.
+  Phase 4 (FE version-bump propagation) and Phase 5 (produce the repos) are absorbed by §6's cut; the
+  publisher half is that plan's checkpoint 8.
 
 - [ ] **B2B package topology** `platform/b2b-package-topology` - separate the manager-web tier as
   `@concertable/web-b2b`, retain `@concertable/b2b` as the cross-platform B2B core, and migrate web
@@ -170,7 +173,7 @@ lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's ro
 
   | Stream | State and exclusive owner | Durable record |
   |---|---|---|
-  | Foundation 6B / M1-M4 | Active across isolated packet worktrees: M1 is the ordered four-stage hosting stack; M2 remains an independent sibling prepared from PR #633, M3 is restacked directly onto the exact landed #633 main, and M4 follows the M1 package/API shape. This stream owns live-target identity reconciliation, package-ACL preflight, extraction-map readiness, and the preparation packets. Existing carve repository IDs and active owner ledgers override historical labels. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
+  | Foundation 6B / M1-M4 | Active across isolated packet worktrees: M3 landed through PR #948; M1 is the ordered four-stage hosting stack; M2 remains an independent sibling prepared from PR #633 and is reconciling with current main for delivery; and M4 follows the M1 package/API shape. This stream owns live-target identity reconciliation, package-ACL preflight, extraction-map readiness, and the preparation packets. Existing carve repository IDs and active owner ledgers override historical labels. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_FOUNDATION_PROGRESS.md) |
   | Customer | Active in the existing private `customer` checkout; package access and exact-head CI are green, and this stream owns only checkpoint-13 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_CUSTOMER_FRONTEND_PROGRESS.md) |
   | Auth | Paused but implementable in the existing private `auth` checkout; owns only checkpoint-10 repository preparation. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_AUTH_NEXT_PROGRESS.md) |
   | Payment | Reserved exclusively to the Payment preparation stream in the existing private `payment` repository; no open PR exists. | [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md`](REPOSITORY_PER_MICROSERVICE_MIGRATION_PAYMENT_PROMOTION_PROGRESS.md) |
