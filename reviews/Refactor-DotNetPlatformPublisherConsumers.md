@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `ad2ec396e9f6d76533efe231c2fb0e5306a0f741`  `(2026-09-08)`
-**Security-reviewed up to commit:** `ad2ec396e9f6d76533efe231c2fb0e5306a0f741`  `(2026-09-08)`
+**Reviewed up to commit:** `0315d1727f410ae8bc8c40554d46bb610d92686e`  `(2026-09-09)`
+**Security-reviewed up to commit:** `0315d1727f410ae8bc8c40554d46bb610d92686e`  `(2026-09-09)`
 **Judgment:** `approved`
 
 Checkpoint 7B of [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md).
@@ -196,6 +196,34 @@ durable owner — now carries it. `plan_graph.py` reports 0 errors and 0 warning
 adds no second copy of a rule: it records the checkpoint's own decisions and points at
 `inventory.json` and the existing "Replacement for platform-sync" section rather than restating
 either.
+
+## Review pass — 2026-09-09 — incremental over the second current-main merge
+
+**Candidate base:** `64b3dccec2c48bf1327ce93f229a6628ccf1c325`
+**Candidate head:** `0315d1727f410ae8bc8c40554d46bb610d92686e`
+**Candidate branch:** `Refactor/DotNetPlatformPublisherConsumers`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:5d6b52d1df5fe7bc64fce50ef524cd19ed8df2cd65908cac92ba0cc24495aecc` `(19 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\C--Users-TommySeery-source-repos-Concertable--worktrees-Refactor-DotNetPlatformPublisherConsumers\2897c3da-9893-4e4e-8d18-8e435457a178\scratchpad\review-bundle-7b-p5`
+**Candidate bundle identity:** `sha256:8aa29d5f24916e656fa772616b117e19858abf90fbe1bfd362beac848f0d6f64`
+**Work-order path:** `reviews/Refactor-DotNetPlatformPublisherConsumers.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+No findings. `origin/main` advanced 46 commits, including platform-sync #968 bumping every pin
+`1342` → `1347`, which conflicted in the same eight pin files. Resolved identically: main's content
+taken, then the rename re-applied. Re-verified at this head — normalising the property name in
+`git show origin/main:<file>` gives a zero-line diff for all eight; the old name appears nowhere in
+tracked `api/`, `.github/` or `scripts/`; and every referencing file still declares the property
+locally (1 declaration against 1/1/7/19/20/21/38/39 references), so nothing resolves to an empty
+`Version=""`. `git diff origin/main..HEAD -U0` over `api/`, `scripts/` and `.github/workflows/` again
+contains no line that does not carry the property name. The path-set digest is unchanged from the
+first merge pass, so the branch's shape is identical — only the pin values moved.
+
+Re-run at this head: the bump-script gate 4/4, `test_service_scope.py` 20/20, and
+`inventory.py --check` current.
 
 ## Security review
 
