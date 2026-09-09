@@ -1,22 +1,27 @@
-# B2B package topology cutover progress
+﻿# B2B package topology cutover progress
 
 - Plan: `plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/b2b-package-topology`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Consumers`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase3-Consumers`
 - Branch: `Refactor/B2bPackageTopologyPhase3-Consumers`
-- PR: draft consumer PR [#950](https://github.com/Concertable/concertable/pull/950), restacked on package-only
-  producer PR [#951](https://github.com/Concertable/concertable/pull/951) at exact producer candidate
-  `420345df04f7cd31e39015c92d6309cb5e0ff491`
-- Dependency/package gates: Phase 2 is satisfied by feed-verified
-  `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314`
-  from terminal publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
-  PR #949 published and feed-verified `0.1.0-alpha.0.6301`, but exact consumer validation proved its
-  public hooks still lacked the tenant-scoped signatures. The Phase 3 exact producer-publication gate is
-  therefore explicitly **unsatisfied** until PR #951 publishes and feed-verifies a newer exact version.
-- Last reconciled: 2026-09-08 against producer candidate `420345df0`, the locally restacked five-commit
-  consumer stage plus delivery checkpoint, green focused validation, and the coordinated hold keeping
-  PRs #951/#950 out of the merge queue until the ordered M1 stack PRs #942-#945 is terminal.
+- PR: producer PR [#949](https://github.com/Concertable/concertable/pull/949) merged as
+  `15ce7946f0e8ffd1376d599d15639426c9076527`; its package-only tenant-scope follow-up, producer PR
+  [#951](https://github.com/Concertable/concertable/pull/951), merged as
+  `2df4105989ce462644cc9bc764138aeb0ecc958d`. The active stage is consumer PR
+  [#950](https://github.com/Concertable/concertable/pull/950), based on `main`.
+- Dependency/package gates: the Phase 2 baseline is satisfied by feed-verified
+  `@concertable/b2b@0.1.0-alpha.0.4314` and `@concertable/web-b2b@0.1.0-alpha.0.4314` from terminal
+  publication run [32155494572](https://github.com/Concertable/concertable/actions/runs/32155494572).
+  Run [34165141235](https://github.com/Concertable/concertable/actions/runs/34165141235) feed-verified
+  `0.1.0-alpha.0.6301`, but the exact consumer carve proved the tenant-scoped public hook and store
+  declarations were still in the consumer stage. #951 supplies them; its frontend publication run
+  [34354787081](https://github.com/Concertable/concertable/actions/runs/34354787081) emits the exact
+  version that satisfies the Phase 3 consumer gate.
+- Last reconciled: 2026-09-09 against landed `origin/main` `2df4105989ce462644cc9bc764138aeb0ecc958d`,
+  merge-group run 34351208460 (32/32 B2B UI and 7/7 Customer UI scenarios green), and the merged
+  payment-resolver fix that unblocked it.
+
 
 ## Current state
 
@@ -45,16 +50,32 @@ Conflicts retained the landed M3 build-config API and carve coverage, and retain
 tenant-session implementation. The resulting stage diff contains no `app/b2b/shared` paths, preserving the
 corrected producer/publication boundary.
 
+That follow-up is PR #951. It was 118 commits behind `origin/main`, so current `main` was merged in as
+`6474cec75` — a conflict-free merge whose exact head passed CI run
+[34274926997](https://github.com/Concertable/concertable/actions/runs/34274926997). Its full review then
+recorded and resolved three MEDIUM findings. The consumer stage, PR #950, is still a draft based on this
+branch and must be revalidated against the exact published version this producer emits, never against
+source-built packages or the moving `alpha` tag.
+
 ## Next Steps
 
-Keep PRs #951 and #950 prepared but out of the merge queue until the ordered M1 stack PRs #942-#945 is
-terminal. Then refresh #951 onto exact `main`, deliver it first, and bind its frontend publication to the
-landing SHA. Do not merge #950 before that publication emits and feed-verifies an exact newer
-`@concertable/b2b` version. At that gate, set
+On PR #950's worktree, now that #951 is merged and its frontend publication is terminal: record the exact
+published `@concertable/b2b` version, run `npm run lock:carve` in `app/` so every standalone surface
+lockfile resolves `alpha` to that exact version, and commit the regenerated lockfiles. Then set
 `B2B_PHASE3_PRODUCER_VERSION` to that exact version and run `npm run validate:b2b-phase3-consumers` from
-`app/`; this pins the venue, artist, and mobile B2B carves to the named producer publication. Restack/retarget
-#950 onto the resulting exact `main`, run exact-head CI, then deliver. Do not substitute the moving `alpha`
-tag for the exact package dependency gate.
+`app/`, which pins the venue, artist, and mobile B2B carves to the named producer publication. Rebuild, run
+a fresh full review into `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md` (no work order is on
+disk), un-draft, and deliver. Only that newer exact version may satisfy the consumer stage's feed carves;
+do not substitute a stale lockfile pin or the moving `alpha` tag. The M1 queue hold on PRs #942-#945 is
+satisfied.
+
+## Superseded Next Steps
+
+Paused: authorized delivery owner - make green draft PR #949 ready and merge it, then allow the frontend
+publication workflow to publish and feed-verify one exact `@concertable/b2b` version. Only after that gate
+may the consumer/contraction stage run its exact-version standalone feed carves and proceed toward
+delivery. Do not substitute the moving `alpha` tag for the exact package dependency gate.
+
 
 ## Completed work
 
@@ -131,6 +152,25 @@ tag for the exact package dependency gate.
   `0.1.0-alpha.0.6300` passed clean Node and Metro/Android consumer verification: `@concertable/b2b`
   SHA-256 `dd07afac9032015419bf983d5443d604d6c6be24e8748d7964df0ef4133cb429` and
   `@concertable/web-b2b` SHA-256 `080b4f9f473afc6370c64de99c260a81f49e1760068977903f00ce450343eaad`.
+- Exact-head PR CI run 34161321266 passed, including `fe-boundaries` job 101863614281, all seven frontend
+  carve jobs 101863614328/329/339/370/375/409/438, and aggregate `ci-complete` job 101864711068.
+- PR #949 merged as `15ce7946f0e8ffd1376d599d15639426c9076527` after full-E2E merge-group run
+  34164789818 passed. Frontend publication run 34165141235 then published and feed-verified
+  `@concertable/b2b@0.1.0-alpha.0.6301`.
+- Exact-version consumer validation against `0.1.0-alpha.0.6301` failed deterministically in the venue carve:
+  the published `useVenueQuery()` and `useMyVenue(options?)` declarations did not yet contain the tenant
+  arguments used by the prepared consumer. The extracted follow-up package passes 9 files/34 tests, its
+  build, boundary tests 8/8, and dependency/entrypoint lint across all 13 workspaces.
+- At PR #951 head `6474cec75` (current `main` merged in, conflict-free), exact-head CI run 34274926997
+  passed every job including all seven `carve-fe` jobs, `fe-boundaries`, `local-platform-pack`,
+  `container-images` and `ci-complete`.
+- After the review fixes, the ordered web-package build passed end to end: universal shared 9 files/26
+  tests, mobile shared 3 files/3 tests, cross-platform B2B 9 files/35 tests, manager-web B2B 13 files/28
+  tests, and all six package builds. Frontend boundary tests passed 10/10 and dependency/entrypoint lint
+  reported zero violations across all 13 workspaces. `git diff --check` passed. The emitted
+  `@concertable/b2b` declarations now carry `useArtistQuery(tenantId: string | undefined)`,
+  `useVenueQuery(tenantId: string | undefined)` and `useMyVenue(tenantId, options?)` — the exact shape the
+  `0.1.0-alpha.0.6301` carve proved missing.
 - At rebased consumer head `33f797195`, all six ordered package builds/tests, all five production web builds,
   both mobile TypeScript checks and Android/Hermes exports, boundary tests (10/10), and dependency/entrypoint
   lint across all 13 workspaces passed. The exact-version carve-tooling cases passed; terminal standalone
@@ -140,6 +180,7 @@ tag for the exact package dependency gate.
   dependency/entrypoint lint across all 13 workspaces passed. The Hermes exports and mobile carve fixtures
   required unsandboxed reruns solely to execute the workspace Hermes binary and write temporary Git metadata.
   Terminal exact-feed validation remains correctly gated on PR #951's unpublished version.
+
 - Feed carves of the combined artist and venue consumers restored the current `alpha`
   (`0.1.0-alpha.0.5913`) and correctly failed because that moving tag lacks Phase 2's active-profile
   exports. The exact feed-verified Phase 2 artifact `0.1.0-alpha.0.4314` remains resolvable. The repaired
@@ -162,11 +203,25 @@ tag for the exact package dependency gate.
   `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
   of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
   `6e87fcf36`.
-- Phase 3 producer and consumer-stage reviews are independent. All six historical consumer findings remain
-  resolved, and a fresh full review of the corrected `420345df0..cb42b7810` consumer boundary found no new
-  functional, security, tier, or rebase-resolution issue. The canonical work order is
-  `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md`; the combined local proof remains validation
-  evidence, not a candidate published as one indivisible change.
+- The PR #949 producer review completed through rebased head `e1dc7a380` with four findings resolved across
+  its commits — B2B ownership of write contracts, active-profile publication verification, corrected phase
+  status, and real artist/venue `features/*/types` exports. That work order was spent when #949 merged and
+  is not on disk.
+- The PR #951 follow-up carries its own work order at
+  `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`. Its full pass over
+  `ef8d505fd..6474cec75` recorded three MEDIUM findings — tenant-selection serialization that left
+  `configure`/`resolve` outside the queue, `isLoading` reporting `false` while a disabled query waits for a
+  tenant, and optional `tenantId` parameters that let a stale consumer of the published package compile.
+  All three are resolved. No frozen path matches the merge gate's `security_paths` inventory, so the pass
+  carries no security marker.
+- The PR #951 work order additionally carries an incremental pass over the merged payment-resolver fix,
+  with the `Security-reviewed up to commit:` marker the merge gate requires for a Payment path. It was
+  spent when #951 merged.
+- Phase 3 producer and consumer-stage reviews are independent. The consumer stage's historical findings
+  were resolved against a superseded candidate and **no consumer work order is on disk**, so the consumer
+  stage requires a fresh full review at `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md` over its
+  current `main`-merged candidate. The combined local proof remains validation evidence, not a candidate.
+
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -181,6 +236,59 @@ tag for the exact package dependency gate.
   persisted platform adapter, validated tenant session, and tenant-aware client wiring.
 - The organization-profile route-contraction work is a Phase 3 downstream integration consumer and
   must not invent compatibility APIs while package publication gates are still open.
+- **The exact-version consumer gate now exists in the repository.** PR #964
+  (`Refactor/FrontendRegistryPackageConsumers`, merged as `6cd7fd615`) gave every carved surface its own
+  standalone `package-lock.json` — `app/web/{customer,admin}`, `app/web/b2b/{venue,artist,business}` and
+  `app/mobile/{customer,b2b}` — regenerated by `npm run lock:carve` in `app/`. `carve-fe.mjs` still
+  rewrites `@concertable/*` specifiers to `alpha`, but the lockfile now resolves that tag to one frozen
+  version — `0.1.0-alpha.0.6314` as committed by #964, refreshed to `0.1.0-alpha.0.6462` by PR #965
+  (`Chore/FrontendCarveLockRefresh`, merged as `eefd70efc`). This supersedes the earlier finding that `carve-fe.mjs` had no
+  exact-version option: **PR #950 must run `npm run lock:carve` after this producer publishes and commit
+  the regenerated lockfiles**, or its carves will silently install the stale package instead of the
+  tenant-scoped one. `app/web/b2b/{artist,venue}` and `app/mobile/b2b` additionally gain a
+  `@concertable/b2b` dependency on that branch, which only a regenerated lockfile can resolve.
+- **The merge-queue blocker is diagnosed and fixed: it was a Payment defect, not a flake and not #959.**
+  Two merge-group attempts ([34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068)
+  and [34291413140](https://github.com/Concertable/concertable/actions/runs/34291413140)) were ejected by the
+  same single UI scenario of 32, `Venue manager completes 3DS challenge on flat fee`, timing out after 30s on
+  `Then a draft concert is created`. Neither the frontend nor this branch's diff was involved.
+  **Diagnosed from the CI artifacts, not from a local reproduction.** The failure screenshot shows the venue
+  SPA sitting on `VenueAcceptCheckoutFlow` with "Acceptance confirmed", polling
+  `/concert/application/{id}` every second through `useConcertByApplicationQuery` and navigating via
+  `<Navigate>` when it appears. The earlier "SignalR-only redirect" reading was wrong: the redirect is
+  poll-driven and `useVenueNotifications` only accelerates it, so the frontend was never the problem and the
+  `Load`-to-`Commit` step change was unrelated. `payment-web` logged
+  `PaymentProviderUnavailableException` three times for `concertable.payment.capture-escrow.v1` and then the
+  command was gone; no `payment_intent.succeeded` for that intent appears anywhere in either run, so the
+  escrow was authorized and never captured.
+  **Cause:** `PaymentOperationResolver` treated a rejected transition evaluation as
+  `PaymentOperationError.ProviderUnavailable`. `FinancialOperationHandler.HandleResolutionFailureAsync`
+  throws only for that case, `AzureServiceBusReceiver.AbandonWithBackoffAsync` abandons with capped
+  exponential backoff, and Azure Service Bus dead-letters at `MaxDeliveryCount` - three deliveries under the
+  emulator. Fixed in `8f2567623` by resolving from the canonical attempt, so a concurrent observation that
+  already reached `Authorized` proceeds and anything else is rejected with its own typed error and reaches
+  the consumer as `CaptureEscrowRejectedEvent`.
+  **Ruled out along the way, each with evidence:** the frontend; the hourly `ConcertFinishedFunction`
+  (`0 0 * * * *`, settled 22 concerts at 00:00:00 in run 2, but run 1 failed at 22:58 before its 23:00
+  firing); a retained `last_payment_error` (the Playwright trace shows it null on the final
+  `requires_capture` intent); the sequential 3DS webhook ordering; the eager/webhook reconcile race; and a
+  Stripe retrieve failure (`"Stripe rejected"` appears zero times in both runs). PR #959 was the recorded
+  top suspect and was not implicated.
+  **Not fixed, recorded as a new HIGH in `api/Concertable.Payment/TECH_DEBT.md`:** nothing re-drives a
+  dead-lettered financial operation, `PaymentSessionAttemptEntity.NextReconcileAt` is written and indexed but
+  never read, and `PaymentSessionReconciliationSource.Sweep` has no implementation. A genuine provider outage
+  lasting longer than the delivery budget still strands an authorized escrow, which is a production blocker
+  in its own right and a larger change than belongs on this PR.
+- **An earlier hypothesis, now disproved, still produced a correct change.**
+  Merge-group run [34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) failed
+  one UI scenario of 32 — `Venue manager completes 3DS challenge on flat fee` timed out after 30s in
+  `Then a draft concert is created`, `waiting for navigation to "**/my/concerts/concert/**" until "Load"`.
+  `VenueManagerSteps.DraftConcertCreated` was the last step still calling `WaitForURLAsync` with
+  Playwright's default `WaitUntil = Load`; the concert page holds connections open (Stripe iframes, Google
+  Maps), so the load event need not fire inside the timeout even though the route already changed. The repo
+  already owns the fix — `WaitForSpaUrlAsync` (`WaitUntilState.Commit`), used throughout the Customer UI
+  suite — and the step now uses it. `app/b2b/shared` is imported by no surface, so this branch's own change
+  cannot reach that scenario.
 - The feed `alpha` tag is not a reproducible Phase 2 dependency gate: it advanced from the verified
   `0.1.0-alpha.0.4314` to `0.1.0-alpha.0.5913`, which does not contain Phase 2's additive active-profile
   exports. Do not alter production pins or topology to conceal this drift; preserve package publication
