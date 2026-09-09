@@ -10,7 +10,7 @@ import Config from "../lib/config";
 import "../lib/geocoding";
 import type { ReactNode } from "react";
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000 * 5,
