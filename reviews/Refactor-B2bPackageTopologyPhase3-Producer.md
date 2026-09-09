@@ -1,11 +1,12 @@
-# Code review — Refactor/B2bPackageTopologyPhase3-Producer
+﻿# Code review — Refactor/B2bPackageTopologyPhase3-Producer
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `e0309bba2c7a2628662baa46c1bf5f46af4d0cdf`  `(2026-09-09)`
+**Reviewed up to commit:** `c65180db32e9c15d89e28e759b50d3e8079534af`  `(2026-09-09)`
+**Security-reviewed up to commit:** `c65180db32e9c15d89e28e759b50d3e8079534af`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -242,3 +243,53 @@ No issues found. Ledger text only. It corrects an earlier wrong characterisation
 blocker: `e2e-ui-tests` has never executed in CI in the retained window, so the two failures here are its
 first CI executions and are deterministic rather than flaky, and the suite was last proven by a local run
 around the PR #633 merge. No code changed.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `e0309bba2c7a2628662baa46c1bf5f46af4d0cdf`
+**Candidate head:** `c65180db32e9c15d89e28e759b50d3e8079534af`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Producer`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:4219f95396fd02537d0169cf5d6bc7e86f480062440c2ae0a1949d7dc258ad41` `(11 paths)`
+**Candidate bundle:** derived in place from the frozen range
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Producer.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+**Security marker:** required - the delta matches `(^|/)Concertable\\.Payment` in `.agents/merge-gate.json`.
+
+### Findings
+
+No open issues.
+
+The delta resolves the merge-queue blocker recorded above. `PaymentOperationResolver` treated a rejected
+transition evaluation as `PaymentOperationError.ProviderUnavailable`, which threw
+`PaymentProviderUnavailableException` out of `FinancialOperationHandler`; the receiver abandons with capped
+exponential backoff and Azure Service Bus then dead-letters, leaving an authorized escrow uncaptured with no
+rejection reaching the consumer. The resolver now resolves from the canonical attempt, so a concurrent
+observation that already reached `Authorized` proceeds and anything else is rejected with its own typed
+error.
+
+Reviewed for correctness, and for security because the delta touches `Concertable.Payment`:
+
+- **Authorization is unchanged.** `ResolveCurrentAttemptAsync` still rejects a mismatched
+  `operation.PayerOwnerKey`, and `ResolveAuthorization` still requires `SessionKind == Authorization`,
+  `State == Authorized` and a non-empty `ProviderObjectId`. The change admits no state the previous code
+  would have refused; it only stops reporting a false provider outage. The capture itself remains a real
+  Stripe call that fails if the intent is not capturable, so persisted state is not the only gate.
+- **The new log leaks nothing.** `RejectedSessionTransition` carries the provider object id, provider
+  status, rejection reason and the two states - no client secret, payment method, card detail or owner
+  identity. `ClientSecret` is never passed to it, consistent with
+  `PaymentSessionServiceTests.PersistenceModel_ContainsNoSecretColumns`.
+- **`FakeStripeSessionClient.RewindObservation` is not a production path.** It is `internal` and only
+  reachable through the fake, which `ExternalServices:UseRealStripe=false` wires for dev and E2E, alongside
+  the existing `SetStatus`, `SetDeclined` and `FailOnce` knobs.
+
+Coverage added: the 3DS webhook sequence, the same sequence through the real `CaptureEscrowCommand` handler,
+a capture arriving before the consumer acts, and the stale-observation regression, which fails with the
+exact production exception without the resolver change. 30 focused integration tests and 552 Payment unit
+tests pass.
+
+Not fixed here, recorded as a new HIGH in `api/Concertable.Payment/TECH_DEBT.md`: nothing re-drives a
+dead-lettered financial operation, `NextReconcileAt` is written but never read, and
+`PaymentSessionReconciliationSource.Sweep` has no implementation, so a genuine provider outage lasting
+longer than the delivery budget still strands an authorized escrow.
