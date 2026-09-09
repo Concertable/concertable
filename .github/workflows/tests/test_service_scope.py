@@ -104,6 +104,9 @@ TIER_CASES: list[tuple[str, str, list[str], list[str], str]] = [
     # …except the one named, documented structural conflict, which drops the UI lane only.
     ("expand-merge on a runtime diff", "true", ["expand-merge"], [], "true false"),
     ("expand-merge cannot be widened by skip-e2e", "true", ["expand-merge", "skip-e2e"], ["Skip-E2E"], "true false"),
+    # These two co-occur in practice: `merge` Step 4 applies full-e2e for any positive trigger, and a
+    # published-shape change is one — so the expand merge that cannot pass UI E2E arrives carrying both.
+    ("expand-merge outranks full-e2e", "true", ["full-e2e", "expand-merge"], [], "true false"),
 ]
 
 

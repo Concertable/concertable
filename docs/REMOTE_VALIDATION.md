@@ -8,7 +8,7 @@ is true of *this* repo:
 |---|---|
 | Local worktree | required generators and invariant greps, the smallest affected project or app build, focused unit tests |
 | Draft-PR CI | `build`, `carve-*`, `unit-tests`, `integration-tests`, on the exact remote head |
-| Merge queue | `e2e-api-tests` + `e2e-ui-tests`, at the tier the `merge` skill's Step 4 selects — except that a non-inert `api/` change outside a test folder, or any E2E suite/harness change, runs both lanes whatever the skill selected — the sole exception being the `expand-merge` label for the cut-over merge PIPELINE_DEBT.md describes, which drops the UI lane only |
+| Merge queue | `e2e-api-tests` + `e2e-ui-tests`, at the tier the `merge` skill's Step 4 selects — except that a non-inert `api/` change outside a test folder, or any E2E suite/harness change, runs both lanes whatever the skill selected. `PIPELINE_DEBT.md` owns the one labelled exception |
 
 - **Never `dotnet build api/Concertable.slnx`**, every unit project, or the full integration matrix as
   routine local verification.
