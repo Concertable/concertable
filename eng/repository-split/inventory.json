@@ -2344,6 +2344,7 @@
       },
       "app/mobile/b2b": {
         "concertableDeps": [
+          "@concertable/b2b",
           "@concertable/build-config",
           "@concertable/mobile",
           "@concertable/shared"
@@ -2390,6 +2391,7 @@
       },
       "app/web/b2b/artist": {
         "concertableDeps": [
+          "@concertable/b2b",
           "@concertable/shared",
           "@concertable/web",
           "@concertable/web-b2b"
@@ -2409,6 +2411,7 @@
       },
       "app/web/b2b/shared": {
         "concertableDeps": [
+          "@concertable/b2b",
           "@concertable/shared",
           "@concertable/web"
         ],
@@ -2418,6 +2421,7 @@
       },
       "app/web/b2b/venue": {
         "concertableDeps": [
+          "@concertable/b2b",
           "@concertable/shared",
           "@concertable/web",
           "@concertable/web-b2b"
