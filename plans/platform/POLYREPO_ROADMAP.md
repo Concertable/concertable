@@ -37,7 +37,7 @@ collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
 **In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A delivered;
-extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 3 left).
+extraction unblocked — and the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phases 0–3 done, B2B topology left).
 
 **Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
 `AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
@@ -72,7 +72,7 @@ merge). This is the backend half of "builds alone from a feed." Documented in
 [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md) ("Cross-service contract distribution" /
 "Per-folder build closures").
 
-## 3. Frontend full-stack carve — 🟡 in progress
+## 3. Frontend full-stack carve — 🟠 Phases 0–3 done; B2B topology in flight
 
 Owned by [`POLYREPO_FULLSTACK_PLAN.md`](POLYREPO_FULLSTACK_PLAN.md) /
 [`POLYREPO_FULLSTACK_PROGRESS.md`](POLYREPO_FULLSTACK_PROGRESS.md). Makes `customer` and `b2b` genuine
@@ -82,8 +82,11 @@ feed — the npm analogue of the backend carve.
 - [x] ✅ **Phase 0** — scoped npm registry + PAT.
 - [x] ✅ **Phase 1** — publish the universal core `@concertable/shared` (published, restorable).
 - [x] ✅ **Phase 2** — package the four remaining tiers + cut consumers over (done on branch, PR pending).
-- [ ] 🟡 **Phase 3** `platform/polyrepo-fullstack` — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
-  import-boundary rule, and close the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals.
+- [x] ✅ **Phase 3** `platform/polyrepo-fullstack` — every surface feed-restores its shared deps as the
+  seven-surface `carve-fe` matrix, the FE import-boundary rule is the `fe-boundaries` job (PR #428,
+  `162b8412a`), and the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals are closed.
+  Phase 4 (FE version-bump propagation) and Phase 5 (produce the repos) are absorbed by §6's cut; the
+  publisher half is that plan's checkpoint 8.
 
 - [ ] **B2B package topology** `platform/b2b-package-topology` - separate the manager-web tier as
   `@concertable/web-b2b`, retain `@concertable/b2b` as the cross-platform B2B core, and migrate web

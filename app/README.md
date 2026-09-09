@@ -35,7 +35,14 @@ npm run dev:mobile:customer   # or dev:mobile:b2b
 npm run build:packages        # every shared package, in dependency order
 npm run build:customer        # or build:venue / build:artist / build:business
 npm run lint:boundaries       # dependency-cruiser over all 12
+npm run lock:carve            # regenerate every app workspace's standalone lockfile
 ```
+
+Each app workspace commits a standalone `package-lock.json` alongside its `package.json`: the lockfile it
+restores from once it stands alone, and the one the `carve-fe` CI job installs with `npm ci`. npm resolves
+only the root `package-lock.json` while the workspace lives here, so the file is inert day to day — but
+changing an app's dependencies means running `npm run lock:carve` in the same change, or `carve-fe` fails on
+the entry the lock is missing.
 
 Every app typechecks the shared trees against its own tree, so a tier leak fails a *different* app's
 build — all four web builds and both mobile builds green is the boundary gate. `lint:boundaries` catches

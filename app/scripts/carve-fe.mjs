@@ -1,15 +1,18 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-// Carve one frontend surface into a standalone tree. Runtime tiers restore from the package feed;
-// build configuration uses the exact candidate tarball during publisher preparation. A surface that
-// imports an @concertable tier it does not declare (masked in-monorepo by workspace hoisting) fails
-// here at install; a shared import absent from the feed fails at restore; a build that only resolves
-// via monorepo-root config fails standalone.
+// Carve one frontend surface into a standalone tree: every @concertable tier restores from the package
+// feed. A surface that imports a tier it does not declare (masked in-monorepo by workspace hoisting)
+// fails here at install; a shared import absent from the feed fails at restore; a build that only
+// resolves via monorepo-root config fails standalone.
 //
-//   node scripts/carve-fe.mjs <surface> [--worktree] [--prepare-only] [--keep]
+//   node scripts/carve-fe.mjs <surface> [--worktree] [--prepare-only] [--write-lock] [--keep]
+//
+// The surface's committed package-lock.json is the standalone lockfile: inert in-monorepo (npm
+// workspaces resolve only the root lock) and authoritative once the surface stands alone.
+// --write-lock regenerates it; `npm run lock:carve` regenerates all of them.
 //
 // Requires GITHUB_PACKAGES_TOKEN (a PAT with read:packages) in the environment — same credential the
 // feed restore uses everywhere else.
@@ -31,11 +34,12 @@ const argv = process.argv.slice(2);
 const surface = argv.find((a) => !a.startsWith("--"));
 const useWorktree = argv.includes("--worktree");
 const prepareOnly = argv.includes("--prepare-only");
+const writeLock = argv.includes("--write-lock");
 const keep = argv.includes("--keep");
 
 if (!surface || !SURFACES[surface]) {
   throw new Error(
-    `Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--worktree] [--prepare-only] [--keep]`,
+    `Usage: node carve-fe.mjs <${Object.keys(SURFACES).join("|")}> [--worktree] [--prepare-only] [--write-lock] [--keep]`,
   );
 }
 if (!prepareOnly && !process.env.GITHUB_PACKAGES_TOKEN) {
@@ -78,7 +82,6 @@ try {
   const tar = join(work, "surface.tar");
   const archivePaths = [`app/${surface}`];
   if (spec.kind === "web") archivePaths.push("app/scripts/vite-development-https.ts");
-  if (spec.kind === "mobile") archivePaths.push("app/build-config");
   execFileSync("git", ["archive", "--format=tar", "-o", tar, treeish, ...archivePaths], {
     cwd: repoRoot,
   });
@@ -99,21 +102,6 @@ try {
       if (name.startsWith("@concertable/")) deps[name] = "alpha";
     }
   }
-
-  if (spec.kind === "mobile") {
-    // The new producer is not on the feed until its separately gated publisher cutover. Install its
-    // exact candidate tarball, then remove the source so Metro cannot succeed through a source alias.
-    const buildConfigSource = join(carveRoot, "app", "build-config");
-    const buildConfigArtifacts = join(dir, ".build-config");
-    mkdirSync(buildConfigArtifacts);
-    const packed = JSON.parse(execFileSync(npm, [
-      ...npmPrefix, "pack", "--ignore-scripts", "--json", "--cache", cache,
-      "--pack-destination", buildConfigArtifacts,
-    ], { cwd: buildConfigSource, encoding: "utf8" }));
-    pkg.devDependencies ??= {};
-    pkg.devDependencies["@concertable/build-config"] = `file:.build-config/${packed[0].filename}`;
-    rmSync(buildConfigSource, { recursive: true, force: true });
-  }
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
   // 3. Self-contained feed config — nothing from the monorepo root leaks in (BE per-folder-config rule).
@@ -129,11 +117,21 @@ try {
     ].join("\n"),
   );
 
+  const lockPath = join(dir, "package-lock.json");
+
   if (prepareOnly) {
     console.log(`\n>>> carve-fe ${surface}: isolated tree prepared OK`);
+  } else if (writeLock) {
+    // Discard the archived lock first: npm keeps an already-locked version for a dist-tag spec rather
+    // than re-resolving it, so regenerating in place would never pick up a newer lockstep publish.
+    rmSync(lockPath, { force: true });
+    run(npm, [...npmPrefix, "install", "--package-lock-only", "--no-audit", "--no-fund"], { cwd: dir });
+    copyFileSync(lockPath, join(repoRoot, "app", ...surface.split("/"), "package-lock.json"));
+
+    console.log(`\n>>> carve-fe ${surface}: standalone lockfile written OK`);
   } else {
     // 4. Restore from the feed only — no workspace root above the temp dir to resolve @concertable/* from.
-    run(npm, [...npmPrefix, "install", "--no-audit", "--no-fund"], { cwd: dir });
+    run(npm, [...npmPrefix, "ci", "--no-audit", "--no-fund"], { cwd: dir });
 
     // 5. Build the surface standalone.
     if (spec.kind === "web") {
@@ -153,5 +151,13 @@ try {
   }
 } finally {
   if (keep) console.log(`\n(kept carve work: ${work})`);
-  else rmSync(work, { recursive: true, force: true });
+  else {
+    // An exception thrown from finally discards the carve's own result, and Windows holds npm cache
+    // files open long enough to make EPERM here routine. The work dir is disposable either way.
+    try {
+      rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (error) {
+      console.warn(`\n(could not remove carve work ${work}: ${error.message})`);
+    }
+  }
 }
