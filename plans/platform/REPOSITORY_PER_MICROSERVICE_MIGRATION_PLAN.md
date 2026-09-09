@@ -816,7 +816,9 @@ the Renovate rollout.
 - 10C (GitHub): transfer package/image permissions and publish a canonical Auth release from `auth`.
 - 10D (`system`): Renovate/manual PR updates Auth packages and image digest; run full affected E2E and record
   the qualified compatibility set.
-- 10E (`config`): promote that exact set to test and prove the Auth/login deployment smoke.
+- ~~10E (`config`): promote that exact set to test and prove the Auth/login deployment smoke.~~ **Deferred
+  with checkpoint 15** — see its deferral note. Nothing is deployed and no environment exists to promote to.
+  The same applies to the repeats at checkpoints 11-14, so no promotion carries a deployment smoke.
 - 10F (`concertable`): consume canonical Auth Contracts where still needed, stop duplicate Auth publication,
   then remove frozen Auth source.
 - Verification: Auth build/unit/integration/AppHost/migrations; every remaining service build; system Auth and
@@ -864,17 +866,39 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
 
 - Verification: full B2B backend/frontend/mobile build and unit/integration; standalone AppHost; all B2B
   migrations and simulator parity; full system API and UI E2E plus affected mobile tests.
-- **Hard stop:** the system compatibility set and deployed test configuration contain no monorepo-built service
-  image.
+- **Hard stop:** the system compatibility set contains no monorepo-built service image. ~~and deployed test
+  configuration~~ — the deployed-configuration half is deferred with checkpoint 15, since no environment is
+  promoted to; the compatibility set alone carries this gate.
 
-### 15. Prove deployment and rollback from canonical repositories (`infra` + `config`)
+### 15. Prove deployment and rollback from canonical repositories (`infra` + `config`) — DEFERRED
+
+**Deferred to first production release by Tommy's decision, 2026-09-09, and removed from the archive gate.**
+Nothing is deployed. `concertable`'s `Production` is the organisation's only *deployment* environment — the
+other two, `release` on `.github` and on `platform-frontend`, are package-publication environments — and its
+last deployment was 2026-03-29 from a `master` ref that no longer exists. No workflow in
+`.github/workflows/` references an environment, a cloud login or `terraform apply`. `infra` and `config`
+hold Terraform scaffolded months earlier that no longer describes anything running.
+
+Proving rollback protects a live system; there is none. Proving it now would mostly prove that stale
+scaffolding still applies, at the cost of the only item in this plan with an unbounded estimate. The
+deployment sub-step of every promotion — 10E and its repeats at 11-14 — is deferred on the same evidence,
+which removes five deployment smokes from the critical path.
+
+This is a scope decision, not an omission. `infra` and `config` remain in the eleven-repository topology and
+are revisited on their own terms when a production release is actually scheduled. Checkpoint 16's
+environment clause is satisfied by deleting the stale `Production` environment from `concertable` before
+archival: it is dead, so it is removed rather than migrated.
+
+The original scope follows, retained for that later work.
 
 - Provision an ephemeral test environment from canonical Terraform, promote a system-qualified configuration
   set, run all migration jobs in owner order, seed through owner jobs/simulators, run smoke plus full E2E,
   then exercise rollback to the prior configuration manifest and destroy if using ephemeral mode.
 - Verify production environment protection, OIDC, Key Vault/App Configuration access, migration logs, image
   provenance, and rollback runbook without exposing secrets.
-- **Hard stop:** Tommy reviews the deployment/rollback evidence before monorepo archival.
+- ~~**Hard stop:** Tommy reviews the deployment/rollback evidence before monorepo archival.~~ Lifted by the
+  deferral above. The archive gate is now clean clones and builds of all eleven repositories, a Renovate
+  dry-run, and full system E2E — every one of which is observably pass or fail.
 
 ### 16. Archive the monorepo and generated mirrors (`concertable` and GitHub settings)
 
@@ -885,7 +909,9 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
 - Archive `Concertable/concertable` and only the dated staging/mirror archives recorded in the final live
   inventory. Retain package/image versions and signed source bundles.
 - Verification: clean clones/builds of all eleven canonical repos; Renovate dry-run/dashboard; full system E2E;
-  test deployment smoke; GitHub audit of rulesets/environments/secrets/package ACLs.
+  GitHub audit of rulesets/environments/secrets/package ACLs. The deployment smoke is deferred with
+  checkpoint 15; deleting `concertable`'s stale `Production` environment is what satisfies the environment
+  clause above.
 - **Hard stop:** archival is the terminal checkpoint. The plan is deleted in the commit that records the
   completed, verified migration in its final owning repository.
 
