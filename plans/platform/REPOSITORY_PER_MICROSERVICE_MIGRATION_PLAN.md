@@ -866,14 +866,16 @@ B2B mobile, B2B shared workspace, module Contracts, migrations, and simulator.
 
 - Verification: full B2B backend/frontend/mobile build and unit/integration; standalone AppHost; all B2B
   migrations and simulator parity; full system API and UI E2E plus affected mobile tests.
-- **Hard stop:** the system compatibility set and deployed test configuration contain no monorepo-built service
-  image.
+- **Hard stop:** the system compatibility set contains no monorepo-built service image. ~~and deployed test
+  configuration~~ — the deployed-configuration half is deferred with checkpoint 15, since no environment is
+  promoted to; the compatibility set alone carries this gate.
 
 ### 15. Prove deployment and rollback from canonical repositories (`infra` + `config`) — DEFERRED
 
 **Deferred to first production release by Tommy's decision, 2026-09-09, and removed from the archive gate.**
-Nothing is deployed: the last deployment to the only environment in the organisation, `concertable`'s
-`Production`, was 2026-03-29 from a `master` ref that no longer exists, and no workflow in
+Nothing is deployed. `concertable`'s `Production` is the organisation's only *deployment* environment — the
+other two, `release` on `.github` and on `platform-frontend`, are package-publication environments — and its
+last deployment was 2026-03-29 from a `master` ref that no longer exists. No workflow in
 `.github/workflows/` references an environment, a cloud login or `terraform apply`. `infra` and `config`
 hold Terraform scaffolded months earlier that no longer describes anything running.
 
