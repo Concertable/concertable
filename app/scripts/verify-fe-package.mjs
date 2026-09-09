@@ -76,14 +76,19 @@ const CHECKS = {
     node: [
       'import { sourceAlias } from "@concertable/build-config/vite";',
       'import { nodeTests } from "@concertable/build-config/vitest";',
+      'import { aspNetDevelopmentHttps } from "@concertable/build-config/vite-development-https";',
       'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
       'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+      'const certificate: Buffer = aspNetDevelopmentHttps(".").cert;',
+      'void certificate;',
     ],
     nodeRuntime: [
       'import { sourceAlias } from "@concertable/build-config/vite";',
       'import { nodeTests } from "@concertable/build-config/vitest";',
+      'import { aspNetDevelopmentHttps } from "@concertable/build-config/vite-development-https";',
       'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
       'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+      'if (typeof aspNetDevelopmentHttps !== "function") throw new Error("Missing dev-certificate helper");',
     ],
     commonJsRuntime: [
       'const createDependencyCruiserConfig = require("@concertable/build-config/dependency-cruiser");',
@@ -225,6 +230,7 @@ function verifyNodeConsumer() {
       "react@19.1.0",
       "react-dom@19.1.0",
       "typescript@5.9",
+      "@types/node@24",
       "@types/react@19",
     ],
     directory,
