@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `22278f8ba4e316a8e7b5f11529b2d5da51c4996d`  `(2026-09-08)`
+**Reviewed up to commit:** `674defe1ea861584d5bef318ffc922c7414828cd`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-08 — full
@@ -118,3 +118,28 @@ compiling. Also adds the `Microsoft.EntityFrameworkCore.InMemory` reference it n
   design out.
   Fixed in the same commit: it now also asserts the seeded context's own seeder ran, and the same mutation
   fails both tests.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `ff09403ab62ff9ad905b129e99512bf1863f4ac1`
+**Candidate head:** `674defe1ea861584d5bef318ffc922c7414828cd`
+**Candidate branch:** `Refactor/seeding-collapse-and-generated-ids`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:f73a924479ccdba685ff2bd302e54de5659287f1856c71b3bdd1480b9052caaa` `(2 paths)`
+**Candidate bundle:** removed after pass completion
+**Candidate bundle identity:** `sha256:fc23ab37058813bcc5e299362cb25fcde258c499c28187fc62d9ef8a4006d8b0`
+**Work-order path:** `reviews/Refactor-seeding-collapse-and-generated-ids.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+Rename only, no behaviour change; the 11 tests pass unchanged.
+
+### Findings
+
+- [x] **SEED-4 — LOW — naming** — `api/Concertable.Shared/src/Seed/Concertable.Seed.Shared/Extensions/SeedingDbContextOptionsExtensions.cs:24`
+  `SeedersFor`, `LoggerFor` and `SeedChain`'s `Ordered` were not C# method naming. The convention is
+  verb-first (`GetX`/`CreateX`/`ResolveX`); `XFor` is a Rails/Kotlin idiom and `Ordered` puts an adjective
+  where a verb belongs. `LoggerFor` was the worst: a one-line wrapper whose non-standard name displaced
+  `ILoggerFactory.CreateLogger`, the very method it calls. Raised by Tommy on review of the open PR, not by
+  this file's earlier passes — the first pass checked these helpers for correctness and skipped their names.
+  Fixed in `674defe1e`: `ResolveSeeders`, `CreateLogger`, `OrderSeeders`.
