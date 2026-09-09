@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MAP = Path(__file__).resolve().parent / "map.yaml"
 
 MONOREPO_ONLY_OWNER_SCRIPTS = {
+    "api/initial-migrations.ps1",
     "scripts/setup-local-dev.ps1",
     "scripts/sync-owner-tooling.ps1",
     "scripts/test-owner-operations.ps1",
@@ -69,19 +70,19 @@ def main() -> int:
     archive_only = spec.get("archiveOnly") or []
     replicated = spec.get("replicated") or []
 
+    paths = tracked()
     claims: dict[str, list[str]] = defaultdict(list)
     unclaimed: list[str] = []
 
-    for path in tracked():
-        for name, t in targets.items():
-            includes = t.get("include") or []
-            excludes = t.get("exclude") or []
-            if any(matches(path, i) for i in includes) and not any(
-                matches(path, e) for e in excludes
-            ):
-                claims[path].append(name)
-
-        if claims[path]:
+    for path in paths:
+        owners = [
+            name
+            for name, t in targets.items()
+            if any(matches(path, i) for i in (t.get("include") or []))
+            and not any(matches(path, e) for e in (t.get("exclude") or []))
+        ]
+        if owners:
+            claims[path] = owners
             continue
         if any(matches(path, p) for p in dissolves + archive_only + replicated):
             continue
@@ -115,7 +116,7 @@ def main() -> int:
             print(f"  {error}")
         return 1 if semantic_errors else 0
 
-    print(f"tracked paths        : {len(tracked())}")
+    print(f"tracked paths        : {len(paths)}")
     print(f"claimed by a target  : {len(claims)}")
     print(f"unclaimed            : {len(unclaimed)}")
     print(f"claimed by >1 target : {len(duplicated)}")

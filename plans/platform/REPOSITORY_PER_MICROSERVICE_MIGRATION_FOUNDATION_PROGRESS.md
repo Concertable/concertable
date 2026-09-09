@@ -3,9 +3,11 @@
 - Plan: `plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/polyrepo-cut`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-M1-Owner-Hosting-Sync`
-- Branch: `Refactor/M1-Owner-Hosting-Sync`
-- PR: #943, M1 P2 Owner Hosting Sync, restacked on the post-platform-sync main
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Chore-ExtractionMapClosure`
+- Branch: `Chore/ExtractionMapClosure`
+- PR: extraction-map closure, the 6C prerequisite. Owner Hosting Sync landed through PR #943 at
+  `e86a73b06`; its worktree is closed. The next M1 stage is AppHost Sync in
+  `.worktrees\Refactor-M1-AppHost-Sync`, still unopened.
 - Dependency/package gates: PR #942 landed at `8899eae33` after exact merge-group run `34195643637` passed
   84 jobs with both browser suites green. Its causal package run `34198511871` computed version
   `0.1.0-alpha.0.1329`, but a prior non-main manual run had already published that version from #633's head;
@@ -27,8 +29,9 @@
 Checkpoint 6A is terminal: `.github` PRs #1 and #2 merged, all eleven reusable workflows passed from the
 public fixture, and shared policy was applied and read back. Checkpoint 6B M1 is active. Platform Expand is landed and
 its corrected package publication is complete: run `34203007892` published all 58 packages at
-`0.1.0-alpha.0.1330` and platform-sync PR #954 landed those pins at `21760e777`. Owner Hosting Sync is
-restacked on that exact main and is the active delivery stage.
+`0.1.0-alpha.0.1330` and platform-sync PR #954 landed those pins at `21760e777`. Owner Hosting Sync landed
+through PR #943 at `e86a73b06`. The active delivery stage is the extraction-map closure, which is 6C's
+path-level prerequisite; AppHost Sync and Platform Contract follow it in order.
 Existing private
 `auth`, `b2b`, `customer`, `payment`, `search`, `infra`, and `config` repositories retain their identities.
 The remaining repository boundaries are `platform-dotnet`, `platform-frontend`, and `system`; no repository
@@ -49,13 +52,14 @@ AppHost topology.
 
 ## Next Steps
 
-- Deliver Owner Hosting Sync through PR #943 from its restacked head. Its eight staged commits are preserved
-  above `21760e777` and carry one added commit that advances the Payment consumer pin to the published
-  `0.1.0-alpha.0.1330` escrow contract, because main's image rail cannot compile B2B without it.
-- Take the PR out of draft, own its CI and merge-queue gates to terminal, and follow its Auth image
-  publication to the immutable digest.
-- Require `Publish images` green on the resulting main before P3: it has failed on main since `516f4cc25`
-  for B2B.Web and B2B.Workers, so that rail is the gate the added pin commit exists to clear.
+- Land the extraction-map closure PR from `Chore/ExtractionMapClosure`, then treat two consequences it
+  records as owned work rather than notes: checkpoint 7A must create `Concertable.Build` and package the
+  three build-law files `platform-dotnet` now claims, and 7C must fold
+  `.github/scripts/package_publication_policy.py` into the org's reusable `nuget-publish.yml`, which pushes
+  with `--skip-duplicate` — the behaviour PR #953 removed here. 7B must not stop the monorepo publishing
+  while that reusable rail has no immutability or monotonicity check.
+- Require `Publish images` green on main before P3: it has failed since `516f4cc25` for B2B.Web and
+  B2B.Workers, and PR #943's added Payment pin commit exists to clear that rail.
 - Pin and qualify that Auth image on AppHost Sync, then deliver AppHost Sync and Platform Contract in order.
 
 ## Completed work
@@ -64,8 +68,13 @@ AppHost topology.
   PR #2 (`a2f574a1f4fad3df5e3ec8aa0dd552d717c95728`); fixture acceptance run 33894314188 passed.
 - Corrective commits `82bf5dbbb` and `bb59d9ba3` established that the seven active carve repositories retain
   their identities; M1 fixes the remaining topology as `platform-dotnet`, `platform-frontend`, and `system`.
-- Extraction-map preflight reports 4,793 tracked paths, 4,793 target claims, 82 unclaimed tracked paths, and
-  zero multiply-claimed paths; 6C is not ready.
+- The extraction map is closed: 4,877 tracked paths, 4,587 target claims, 0 unclaimed and 0 multiply-claimed.
+  Ten spent scratch paths were deleted rather than dispositioned, and `.gitignore` now covers `scratchpad/`
+  and the Metro PID file so they cannot return. The unclaimed count had drifted 69 to 82 to 85 because
+  `split-inventory` ran only `--owner-operations-only`, which cannot fail on an unclaimed path; the job now
+  runs the full `validate_map.py` and no longer skips, so the closure cannot regress. The earlier preflight
+  figure of "4,793 claims of 4,793 tracked" was the validator misreporting: it read a `defaultdict` for
+  every path, so its claim count was always the tracked count.
 - Platform Expand landed through PR #942 at `8899eae33`. The shared inventory and plan reconciliation
   preserved M3's landed `app/build-config` ownership and `platform-frontend` identity while retaining M1 as
   the active foundation ledger.

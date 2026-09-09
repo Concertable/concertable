@@ -391,3 +391,6 @@ FodyWeavers.xsd
 app/.env.development
 app/.env.production
 
+# Agent scratch and dev-server runtime artifacts
+scratchpad/
+app/mobile/.metro-pid
