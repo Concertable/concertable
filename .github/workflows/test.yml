@@ -38,6 +38,10 @@ jobs:
     # token can't trip it (the pr-227 bug). A PR label of the same name (skip-e2e / skip-e2e-ui) works too.
     #   Skip-E2E-UI / skip-e2e-ui -> run_e2e_ui off       (build+carve, unit+integration, api E2E still run)
     #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
+    # Both opt-outs are IGNORED for a diff that can change runtime behaviour — a non-inert api/ path outside
+    # a test folder, or any E2E suite/harness source. The skill selects the tier; it cannot select E2E off
+    # for a runtime diff. One named exception outranks that: the `expand-merge` label, for the cut-over
+    # merge that PIPELINE_DEBT.md shows cannot pass UI E2E by construction (API E2E still runs).
     # NOTE: `ci-complete` is the single required check. Jobs with no work are skipped before runner allocation;
     # `ci-complete` accepts skipped dependencies and reports the required success result.
     runs-on: ubuntu-latest
@@ -149,6 +153,19 @@ jobs:
             echo "-> service scope: $services"
           fi
           echo "services=$services" >> "$GITHUB_OUTPUT"
+          # A diff that can change runtime behaviour may NOT opt out of E2E. Two genuine defects reached main
+          # on 2026-09-09 — a missing payment state-machine edge that stranded an authorized escrow, and an
+          # invitation-acceptance deadlock — because Skip-E2E was applied per-PR to behaviour-changing diffs
+          # and the UI suite had not run for days. Runtime = a non-inert api/ path outside a test folder; an
+          # E2E suite's or harness's own sources count too, since that is the gate re-validating itself.
+          api_changed=$(printf '%s\n' "$files" | grep -vE "$INERT" | grep -E '^api/' || true)
+          api_runtime=false
+          if [ -n "$api_changed" ]; then
+            if printf '%s\n' "$api_changed" | grep -qE 'E2E'; then api_runtime=true
+            elif printf '%s\n' "$api_changed" | grep -qvE '(^|/)[Tt]ests?/'; then api_runtime=true
+            fi
+          fi
+          echo "-> api_runtime=$api_runtime (mandatory E2E when true)."
           # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
           # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
           # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
@@ -168,7 +185,17 @@ jobs:
             git log --format="%(trailers:key=$1,valueonly=true)" "$base..$head" | grep -qiE '^[[:space:]]*(true|yes|1|on)[[:space:]]*$' && return 0
             printf '%s\n' "$labels" | grep -qixF "$2"
           }
-          if printf '%s\n' "$labels" | grep -qixF full-e2e; then
+          if printf '%s\n' "$labels" | grep -qixF expand-merge; then
+            # The one sanctioned exception, owned by PIPELINE_DEBT.md: a published-package EXPAND merge flips
+            # the backend while its consumer surfaces stay on the old wire shape, so full UI E2E cannot pass
+            # by construction. Named rather than folded into the generic opt-out, so claiming it is a
+            # deliberate, greppable act. API E2E still runs and still gates the backend flip; the sync merge
+            # is where UI E2E validates the migrated surfaces.
+            run_e2e_ui=false
+            echo "-> expand-merge; UI E2E off by construction (PIPELINE_DEBT.md). API E2E still gates the backend flip."
+          elif [ "$api_runtime" = true ]; then
+            echo "-> api/ runtime or E2E-suite change; E2E is mandatory and every Skip-E2E opt-out is ignored."
+          elif printf '%s\n' "$labels" | grep -qixF full-e2e; then
             echo "-> full-e2e override; historical skip labels/trailers ignored."
           else
             if optout Skip-E2E-UI skip-e2e-ui; then
@@ -961,11 +988,13 @@ jobs:
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    # Never depend on a service-scoped matrix job here. Frontend-only changes deliberately produce empty
-    # backend matrices, and a skipped dependency fails the implicit `success()` over `needs`, taking this
-    # job down with it. ci-complete independently waits for architecture-tests and startup-tests when
-    # those tiers are in scope.
-    needs: [build, changes]
+    # local-platform-pack only. This job consumes that job's feed artifact and compiles its own project
+    # closure from it; `build` produces nothing it reads. `build` is a separate gate that ci-complete waits
+    # on, so depending on it here only parked the longest jobs in the run behind a 3m compile. Never depend
+    # on a service-scoped matrix job either: frontend-only changes deliberately produce empty backend
+    # matrices, and a skipped dependency fails the implicit `success()` over `needs`, taking this job down
+    # with it. ci-complete independently waits for architecture-tests and startup-tests when in scope.
+    needs: [local-platform-pack, changes]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration + startup. It skips only
     # when the selected E2E tier says so; ci-complete is the sole required check and aggregates the result.
@@ -974,6 +1003,20 @@ jobs:
     permissions:
       contents: read
       packages: read
+
+    strategy:
+      # One row per owning service: the two suites run concurrently instead of back to back, and each row
+      # lifts into that service's own repository at the polyrepo cut (plans/platform/SPLIT_TIME_E2E_STRATEGY.md).
+      # Each row boots its own stack and provisions its own per-run Stripe customers, so nothing is shared
+      # between them (plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 3b).
+      # fail-fast off: each row is an independent gate, and cancelling the other loses its verdict for nothing.
+      fail-fast: false
+      matrix:
+        include:
+          - service: B2B
+            project: api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj
+          - service: Customer
+            project: api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj
 
     env:
       # Required: dotnet test restores the AppHost + Payment.Client/Contracts, which pull Auth's and
@@ -986,21 +1029,14 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      - name: Skip API E2E (no runtime change)
-        if: needs.changes.outputs.run_e2e != 'true'
-        run: echo "No runtime change (non-code or package-only) -> skipping API E2E; build + carve + unit + integration gate this."
-
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.run_e2e == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -1008,13 +1044,11 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - uses: actions/download-artifact@v4
-        if: needs.changes.outputs.run_e2e == 'true'
         with:
           name: local-platform
           path: artifacts/local-platform
 
       - name: Log in to GHCR
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -1022,17 +1056,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.run_e2e == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.run_e2e == 'true'
         # The B2B Workers host is an Azure Functions (v4) app; Aspire launches it via `dotnet run`,
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
@@ -1040,27 +1071,25 @@ jobs:
           npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
-      - name: Run B2B API E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
+      - name: Run ${{ matrix.service }} API E2E tests
         shell: pwsh
-        run: ./scripts/local-platform.ps1 test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
-
-      - name: Run Customer API E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
-        shell: pwsh
-        run: ./scripts/local-platform.ps1 test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
-        if: always() && needs.changes.outputs.run_e2e == 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-api-diagnostics
+          name: e2e-api-diagnostics-${{ matrix.service }}
           path: '**/e2e-diagnostics.log'
           if-no-files-found: ignore
 
   e2e-ui-tests:
     runs-on: ubuntu-latest
-    needs: [build, e2e-api-tests, changes]
+    # See e2e-api-tests for why this takes local-platform-pack rather than build. It no longer takes
+    # e2e-api-tests either: that edge dates from when both suites shared FIXED Stripe test customers, and
+    # per-run customer provisioning (StripeCustomerResolver, 3f9d95497) replaced that two months later, so
+    # it cost 9m of serial dead time guarding nothing. Both lanes still gate the merge through ci-complete.
+    needs: [local-platform-pack, changes]
     # Merge-queue only (see e2e-api-tests): genuinely skipped on the PR, runs the real UI suite in the queue.
     # BLOCKING lane — excludes @quarantine (Category!=quarantine); the flaky scenario runs in the non-gating
     # e2e-ui-quarantine job.
@@ -1069,6 +1098,16 @@ jobs:
     permissions:
       contents: read
       packages: read
+
+    strategy:
+      # One row per owning service — see e2e-api-tests.
+      fail-fast: false
+      matrix:
+        include:
+          - service: B2B
+            project: api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj
+          - service: Customer
+            project: api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj
 
     env:
       # Required: building the UI E2E projects restores the AppHost + Payment.Client/Contracts → Auth's and Payment's feed packages (see e2e-api-tests).
@@ -1080,23 +1119,14 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      # Gated on run_e2e_ui: off for non-code and package-only changes.
-      # Aggregated by ci-complete, which tolerates a skipped need, so it no-ops green when off.
-      - name: Skip UI E2E (no runtime change)
-        if: needs.changes.outputs.run_e2e_ui != 'true'
-        run: echo "UI E2E gated off (non-code / package-only) -> build + carve gate this."
-
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.run_e2e_ui == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -1104,13 +1134,11 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - uses: actions/download-artifact@v4
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         with:
           name: local-platform
           path: artifacts/local-platform
 
       - name: Log in to GHCR
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -1118,17 +1146,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
@@ -1136,13 +1161,11 @@ jobs:
           func --version
 
       - name: Set up Node
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install web SPA dependencies
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         # The UI E2E AppHost serves the venue/artist/business/customer SPAs via `npm run dev` (Vite).
         # They live in the app/ npm workspace; node_modules is gitignored, so without this the dev
         # servers never start and every scenario fails at warm-up with ERR_CONNECTION_REFUSED.
@@ -1150,7 +1173,6 @@ jobs:
         run: npm ci
 
       - name: Build frontend package dependencies
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         # The SPAs consume the shared FE tiers from their built dist (@concertable/web, /b2b,
         # /customer), so all of them must be built before the Vite dev servers start — not just
         # @concertable/shared, or the dev server can't resolve the tier imports and every scenario
@@ -1158,35 +1180,23 @@ jobs:
         working-directory: app
         run: npm run build:web-packages
 
-      - name: Build B2B UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
+      - name: Build ${{ matrix.service }} UI E2E tests
         shell: pwsh
-        run: ./scripts/local-platform.ps1 build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
-
-      - name: Build Customer UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        shell: pwsh
-        run: ./scripts/local-platform.ps1 build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+        run: ./scripts/local-platform.ps1 build ${{ matrix.project }} --configuration Release
 
       - name: Install Playwright browsers
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: pwsh api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        run: pwsh "$(dirname '${{ matrix.project }}')/bin/Release/net10.0/playwright.ps1" install --with-deps chromium
 
-      - name: Run B2B UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
-
-      - name: Run Customer UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
+      - name: Run ${{ matrix.service }} UI E2E tests
+        run: dotnet test ${{ matrix.project }} --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
         # the trace bundle is large (~hundreds of MB), so don't upload it on green runs.
-        if: failure() && needs.changes.outputs.run_e2e_ui == 'true'
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-ui-diagnostics
+          name: e2e-ui-diagnostics-${{ matrix.service }}
           path: |
             **/e2e-diagnostics.log
             **/playwright-traces/**

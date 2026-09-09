@@ -24,9 +24,11 @@ have **opposite requirements** for those surfaces during the cut-over window:
 So the expand merge **structurally cannot pass full UI E2E**, yet the `merge` skill's Step 4
 mandates full E2E for a breaking published-shape change. The two rules conflict for this PR class.
 
-**Interim workaround.** Land the expand merge with `skip-e2e-ui` (keep full **API** E2E, which does
-pass and validates the backend flip); validate UI E2E on the *sync* merge, where the surfaces are
-migrated and consistent. Cost: a short window where `main`'s local FE surfaces are inconsistent with
+**Interim workaround.** Land the expand merge with the **`expand-merge`** label (keep full **API** E2E,
+which does pass and validates the backend flip); validate UI E2E on the *sync* merge, where the surfaces
+are migrated and consistent. The generic `skip-e2e-ui` no longer works here: the classifier ignores both
+Skip-E2E opt-outs for any `api/` runtime diff, so this class needs the named label that says which
+documented situation is being claimed. Cost: a short window where `main`'s local FE surfaces are inconsistent with
 the backend until the sync merge lands. Deployed surfaces are unaffected (they build from the
 published package, which only changes at the sync cut-over).
 
