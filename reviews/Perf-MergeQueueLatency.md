@@ -4,10 +4,10 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `in-progress`
-**Reviewed up to commit:** `cc3662a2cf39e86ff3f1197ccc2f94ed5cbf9d19`  `(2026-09-09)`
-**Security-reviewed up to commit:** `cc3662a2cf39e86ff3f1197ccc2f94ed5cbf9d19`  `(2026-09-09)`
-**Judgment:** `changes-requested`
+**Review status:** `complete`
+**Reviewed up to commit:** `2dca4706e835a5597cd2fb75106a7d99fa4597a2`  `(2026-09-09)`
+**Security-reviewed up to commit:** `2dca4706e835a5597cd2fb75106a7d99fa4597a2`  `(2026-09-09)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-09-09 — full
 
@@ -65,3 +65,22 @@ only a write-access actor can set. Job `permissions` are unchanged and least-pri
 blocks are unchanged, and both E2E lanes remain `merge_group`-gated, so no secret reaches a context it
 did not already. The step has no `shell:` key, so it runs `bash -e` without `pipefail` and the new
 `|| true` on the `api_changed` pipeline matches the existing `api_files` idiom.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `cc3662a2cf39e86ff3f1197ccc2f94ed5cbf9d19`
+**Candidate head:** `2dca4706e835a5597cd2fb75106a7d99fa4597a2`
+**Candidate branch:** `Perf/MergeQueueLatency`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:5fe1bc47c52fb87ce1f89d2726282ba0df3aa0b5721ff7109e9c0a26c07b2859` `(3 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\review-bundle-973-inc`
+**Candidate bundle identity:** `sha256:37d281450262e69d7948e146c74f7c4caad47cc5d582c68f79f2c384f7f2cbaf`
+**Work-order path:** `reviews/Perf-MergeQueueLatency.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+No findings. The delta is MQL-1..3's remediation: one added `TIER_CASES` entry, one shortened table cell,
+and this work order. `test_service_scope.py` 41/41 and `e2e-ghcr-login.test.mjs` 11/11 green at this head,
+and PR #973's own CI was green at the prior head (96 pass, 3 `skipping` — the merge-queue-only lanes).
+No workflow file changed in this delta, so the full pass's security conclusion still holds over `test.yml`'s
+unchanged content; both watermarks advance to this head.
