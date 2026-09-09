@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `d9958fd079f7161ecadee40714a3c93e727b7d79`  `(2026-09-09)`
-**Security-reviewed up to commit:** `d9958fd079f7161ecadee40714a3c93e727b7d79`  `(2026-09-09)`
+**Reviewed up to commit:** `62f3a3493e830435cf48eac6845541019451494b`  `(2026-09-09)`
+**Security-reviewed up to commit:** `62f3a3493e830435cf48eac6845541019451494b`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-09 — full
@@ -136,3 +136,27 @@ specifier changed: the declarations stay `alpha` and the pin lives only in the l
 `Payment` context, which the retained `Evaluate_AuthorizedForAutomaticPayment_IsRejected` covers. The
 accept flow performs the same membership refetch and the same `tenantSession.select`, which still filters
 a tenant absent from the caller's memberships, so no tenant becomes selectable that was not before.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `b693f15a7bb113ef41d682b680b2f3be81ebe390`
+**Candidate head:** `62f3a3493e830435cf48eac6845541019451494b`
+**Candidate branch:** `Refactor/B2bPackageTopologyPhase3-Consumers`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:be3ae868011df06267521d7c6b2dfc4945524eb49e9e7270bb9e1cc71118bf22` `(4 paths)`
+**Candidate bundle:** derived in place from the frozen range
+**Work-order path:** `reviews/Refactor-B2bPackageTopologyPhase3-Consumers.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+### Findings
+
+- [x] **4 — HIGH — a published signature was narrowed inside the consumer stage.** Finding 3's fix removed
+  `tenantType` from `AcceptInvitationPage` and `useAcceptInvitation`, both `@concertable/web-b2b` exports,
+  and updated the two SPA route call sites. The carved SPAs restore that package from the feed, where the
+  parameter is still required, so `carve-fe (web/b2b/venue)` and `carve-fe (web/b2b/artist)` failed with
+  `TS2741: Property 'tenantType' is missing`. Only a republish could have changed that shape, and this is
+  the consumer stage. This is the same publish-before-consume boundary that `carve-fe (mobile/b2b)`
+  enforced earlier on `queryClient`; the in-monorepo typecheck cannot see it because the workspace
+  resolves the local source. The exported signature and both call sites are restored, and finding 3's fix
+  is confined to the hook body.
