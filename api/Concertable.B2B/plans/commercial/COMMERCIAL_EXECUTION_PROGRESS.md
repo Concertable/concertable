@@ -7,17 +7,18 @@
 - Branch: `Docs/launch_booking-entry-direct-offers`
 - PR: not opened
 - Dependency/package gates: planning-only; external compatibility and contract requirements are not claimed delivered
-- Last reconciled: 2026-09-09; initial Deal/Template discussion recorded at Tommy's request, from clean owner HEAD 8dd7b1c2c1c1c0212634833257d440365e0000e2; branch/worktrees rechecked and GitHub search found no owning PR
+- Last reconciled: 2026-09-09; Tommy confirmed the final structural direction and D30's deliberate coupling after the independent second opinion; clean owner HEAD ebf3989b01b04389a6e8637cab8d407ee7acb28e, branch/worktrees and absence of an owning PR rechecked
 
 Artifact paths are relative to the B2B source root, currently api/Concertable.B2B within this Git worktree.
 The plan and this sole ledger travel with the qualified B2B source during extraction.
 
 ## Current state
 
-Initial Deal/Template design agreed for documentation and later refinement, not implementation-ready.
-Tommy explicitly authorised updating the existing plan and this sole ledger after the read-only second
-opinion; the original design workstream retains ownership. No application implementation, database
-migration, SDK/package change, deployment or publication is authorised by this checkpoint.
+Deal/Template structure and composition ownership are agreed; physical and remaining entry/financial
+contracts are not implementation-ready. Tommy explicitly authorised recording this final architectural
+direction in the existing plan and sole ledger; the original design workstream retains ownership. No
+application implementation, database migration, SDK/package change, deployment or publication is
+authorised by this checkpoint.
 
 The latest clarification records D23-D27: Request parameter naming, Checkout/CheckoutAsync, inherited
 repository queries with shape specifications, bounded-context child names and the four-preset parity
@@ -28,16 +29,25 @@ D28 is unresolved library/integration selection, not a decision to implement ide
 IdempotentAPI is a candidate for HTTP replay; business/payment identity and recovery remain independently
 durable. Raw Guid-header binding and commandJournal are not approved contracts.
 
-D29 now records the initial model in plan section 3: Deal is the concrete arrangement with required
+D29 records the agreed structure in plan section 3: Deal is the concrete arrangement with required
 Template and negotiated values; Template is the reusable composition, grouped as Workflows -> Steps and
 Requirements, with shared commercial declarations and typed bindings. No duplicate Deal.Configuration,
 mandatory TemplateRevision or generic TemplateOperation/OperationStep entity. A future custom builder
 creates a private Template of the same type; amount changes do not make a preset custom.
 
-Commercial declaration/value names and physical EF/DTO shapes remain open. Parameters is not the agreed
-commercial noun. D30 is the next architectural question: workflow-aware composition semantically couples
-Deal to executing modules; data-only contracts avoiding an assembly cycle do not by themselves settle
-ownership. This checkpoint preserves that concern rather than declaring the boundary correct.
+D30 is now agreed: Deal owns the strongly structured workflow-scoped Template. This intentionally
+standardises configurable behaviour and couples the data contract to supported module configuration
+points, without copying runtime state machines or requiring identical module internals. The rejected
+Payment/readiness/collection replacement merely hid workflow mappings; no separate composition owner or
+per-module-template/meta-template structure is selected. Commercial names and physical EF/DTO shapes
+remain open; Parameters is not the agreed commercial noun.
+
+Modules own supported configuration points and their enforcement. One module-authored declaration must
+feed DI registration and descriptive validation metadata; existing DI builders cannot infer semantic
+compatibility. Contract tests must cover guard placement and stable checkpoint timing, not only leaf
+versions. Distinct union catalogues do not isolate conflicting registrations of the same interface/key.
+Template-to-step selections move into data; implementation registration stays in code. Section 7 records
+the flexibility versus loading/validation cost, without claiming improved runtime throughput.
 
 The new payment capability union remains PaymentMethodStep. The separate prepared-request union/carrier
 is a proposed representation, not another settled requirement. Older null-forgiving code and remaining
@@ -46,7 +56,7 @@ also incomplete; do not delegate missing design to an implementation agent.
 
 ## Next Steps
 
-Paused: Tommy - refine the recorded initial design, starting with D30's composition ownership and dependency graph; then settle the commercial-term names, declaration/value EF/DTO mappings and supported step placement/requirements. Reconcile D28 and remaining entry/financial proposals before implementation approval. No implementation or migration may begin without separate explicit authorisation.
+Paused: Tommy - review the remaining implementation-contract details under the agreed D29/D30 architecture: commercial-term names and declaration/value EF/DTO mappings, supported step placement/requirements and their compatibility enforcement. Reconcile D28 and remaining entry/financial proposals, then explicitly authorise an implementation slice. The ownership/hierarchy choice is settled; no implementation or migration is authorised by recording it.
 
 This is not a context transfer. Further accepted product policy belongs in the existing Concertable/docs
 owners; this B2B plan owns implementation design. Do not create another plan or ledger.
@@ -58,15 +68,18 @@ owners; this B2B plan owns implementation design. Do not create another plan or 
 - f9c9264940b92715b9d52d9077df9d738702bc11: D19-D22, Dunet PaymentMethodStep, typed behaviour enums with
   version-1 default, shared direct-key factories, and the proposed support/retirement proof.
 - 8dd7b1c2c: naming/query conventions and four-preset parity recorded; replay and template persistence reopened.
-- This commit: initial required-Template/negotiated-Deal model, workflow hierarchy, custom-route and
-  acceptance/retry examples recorded; rejected persistence sketches replaced; coupling and remaining
-  mappings explicitly open. ImmutableArray snapshot guidance retained. No application source changed.
+- ebf3989b0: required-Template/negotiated-Deal model, hierarchy, custom-route and acceptance/retry examples;
+  rejected persistence sketches replaced and ImmutableArray snapshot guidance retained.
+- This commit: final structural agreement and D30 ownership recorded; consistent module configuration
+  contract, non-duplicated lifecycle ownership, descriptor authority and checkpoint-compatibility gates.
+  Configuration-scalability versus runtime-cost trade-offs recorded. No application source changed.
 
 ## Verification
 
 - This checkpoint: B2B/root plan graphs pass with zero errors/warnings; Workflow v2 validates owner,
   artifacts and the design-review pause. Local link paths, same-document anchors, fence balance,
-  D1-D30 continuity, ledger budget, retained ImmutableArray guidance and git diff --check pass.
+  D1-D30 continuity, ledger budget, retained ImmutableArray guidance, settled D30 references and
+  git diff --check pass.
   These are documentation checks, not C# compilation or runtime verification.
 - Source evidence retained from this discussion: monorepo 64b3dccec2 includes PR633 and later changes;
   PR951 concerns Payment reconciliation and the comparison from 2df4105989 changes package pins only.
@@ -82,10 +95,11 @@ owners; this B2B plan owns implementation design. Do not create another plan or 
 
 ## Reviews
 
-Scoped documentation consistency self-review completed for the initial design and its open gates. No
-independent implementation-readiness review or compiled/generated-code qualification is claimed.
-The initial design is recorded; remaining naming, mapping, coupling and entry/financial excerpts are
-explicit design gates, not implementation instructions.
+A focused independent read-only architecture second opinion assessed the coupling, alternatives and
+change-propagation risks; its accepted outcome is recorded in plan section 3/D30. Scoped documentation
+consistency self-review covers this checkpoint. No independent implementation-readiness review,
+compiled/generated-code qualification or executed workflow-contract tests are claimed. Remaining naming,
+mapping and entry/financial excerpts are design gates, not implementation instructions.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -97,8 +111,8 @@ explicit design gates, not implementation instructions.
   family factories, translation dictionaries or workflow keyed service location.
 - D22 separates history from executable support. Retain executors while reachable/recoverable work needs
   their semantics; retirement deadlines, retention and replay policy still require qualification.
-- D23-D30 in the plan own the latest decisions and open questions. Four presets and future builder output
-  use one execution model; enum per template and a permanent legacy/custom engine split are rejected.
+- D23-D30 in the plan own the latest decisions and remaining qualification. Four presets and future builder
+  output use one execution model; enum per template and a permanent legacy/custom engine split are rejected.
 - Keep both collection choices: HashSet/IReadOnlySet with reference equality for EF relationships;
   ImmutableArray of immutable values for DTO/proposal/accepted snapshots with qualified serialization.
   Neither protects database rows, and hashing must not rely on unordered collection iteration.
