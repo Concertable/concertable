@@ -8,7 +8,7 @@ is true of *this* repo:
 |---|---|
 | Local worktree | required generators and invariant greps, the smallest affected project or app build, focused unit tests |
 | Draft-PR CI | `build`, `carve-*`, `unit-tests`, `integration-tests`, on the exact remote head |
-| Merge queue | `e2e-api-tests` + `e2e-ui-tests`, at the tier the `merge` skill's Step 4 selects |
+| Merge queue | `e2e-api-tests` + `e2e-ui-tests`, at the tier the `merge` skill's Step 4 selects — except that a non-inert `api/` change outside a test folder, or any E2E suite/harness change, runs both lanes whatever the skill selected |
 
 - **Never `dotnet build api/Concertable.slnx`**, every unit project, or the full integration matrix as
   routine local verification.
@@ -20,8 +20,8 @@ is true of *this* repo:
 ## The debug loop — the order that avoids a 40-minute round trip
 
 **Every E2E fix is verified locally. CI gives you no E2E signal until the queue, by which point a failure
-has already cost the full cycle.** `e2e-api-tests` and `e2e-ui-tests` are gated on the `merge_group` event
-(`test.yml:183`, jobs at `:908` and `:1004`): they never run on a pull request and never appear in
+has already cost the full cycle.** `e2e-api-tests` and `e2e-ui-tests` (a matrix row per owning service) are
+gated on the `merge_group` event: they never run on a pull request and never appear in
 `gh pr checks`, so enumerating a PR's checks will wrongly suggest no E2E gate exists. Read the workflow, and
 after a queue failure read the run itself — `gh run list --workflow=test.yml --event=merge_group`.
 

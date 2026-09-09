@@ -17,15 +17,21 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-for (const [job, guard] of [
-  ['e2e-api-tests', "needs.changes.outputs.run_e2e == 'true'"],
-  ['e2e-ui-tests', "needs.changes.outputs.run_e2e_ui == 'true'"],
-  ['e2e-ui-quarantine', "env.RUN == 'true'"],
+// The queue lanes carry their guard on the JOB, so the job never starts when the tier is off and the
+// login step needs no `if` of its own. The quarantine lane deliberately always runs and no-ops its steps
+// (a skipped check stalls queue admission), so there the guard has to sit on the step.
+for (const [job, guard, guardedOnJob] of [
+  ['e2e-api-tests', "needs.changes.outputs.run_e2e == 'true'", true],
+  ['e2e-ui-tests', "needs.changes.outputs.run_e2e_ui == 'true'", true],
+  ['e2e-ui-quarantine', "env.RUN == 'true'", false],
 ]) {
   test(`${job} authenticates before pulling pinned service images`, () => {
     const block = jobBlock(job);
     assert.match(block, /permissions:\n      contents: read\n      packages: read/);
-    assert.match(block, new RegExp(`- name: Log in to GHCR\\n        if: ${escapeRegExp(guard)}`));
+    assert.match(block, guardedOnJob
+      ? new RegExp(`\\n    if: [^\\n]*${escapeRegExp(guard)}[^\\n]*\\n`)
+      : new RegExp(`- name: Log in to GHCR\\n        if: ${escapeRegExp(guard)}`));
+    assert.match(block, /- name: Log in to GHCR\n(        if: [^\n]*\n)?        uses: docker\/login-action@v3/);
     assert.match(block, /uses: docker\/login-action@v3/);
     assert.match(block, /registry: ghcr\.io/);
     assert.match(block, /username: \$\{\{ github\.actor \}\}/);
