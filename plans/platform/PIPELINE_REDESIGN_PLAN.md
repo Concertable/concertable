@@ -107,8 +107,8 @@ Every one of these is downstream of: *required checks are not authoritative on t
 |---|---|---|
 | `test.yml` (CI) | Classify diff → tiered build/carve/unit/integration/e2e | **Keep the engine, re-shape the gate.** Classifier logic is sound; the required-check surface and PR-vs-queue asymmetry are the problem. |
 | `auto-merge.yml` | External poller nudging stuck PRs into the queue | **Retire.** Pure compensation for unreliable admission (N1). Deletable once the gate is deterministic. |
-| `platform-sync.yml` | Publish→pin-bump PR→auto-merge | **Keep, simplify.** Inherits the queue fix; its stalls disappear. |
-| `platform-sync-alert.yml` | Issue+label when a sync PR goes red | **Keep** as a cheap path-independent backstop; re-assess post-migration. |
+| `platform-sync.yml` | Publish→pin-bump PR→auto-merge | **Superseded** — deleted by `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 2. |
+| `platform-sync-alert.yml` | Issue+label when a sync PR goes red | **Superseded** — deleted alongside it by that plan's Phase 2. |
 | `publish-packages.yml` | Pack `IsPackable` + verify-restore closure | **Keep, gate smarter.** Well-designed; reduce needless republish churn (N3). |
 | ~~`mirror.yml`~~ | ~~Subtree-split 6 services → standalone repos on every push~~ | **VOID 2026-08-27 — deleted.** The six mirror repos no longer exist; the polyrepo cut extracts with `git-filter-repo`. |
 | ~~`mirror-parity.yml`~~ | ~~Nightly drift check of the mirrors~~ | **VOID 2026-08-27 — deleted** with `mirror.yml`. |
@@ -215,8 +215,8 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
 - **`publish-packages` + verify-restore kept**; reduce needless churn (N3) by gating the *republish*
   on "did any `IsPackable` project's inputs actually change" rather than every `api/**` commit. Keep
   MinVer + `--skip-duplicate` semantics.
-- **`platform-sync` kept**; it inherits the queue simplification (single required check, native
-  auto-merge) so its own admission stalls vanish. `platform-sync-alert` stays as the backstop.
+- **`platform-sync` is superseded** by `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 2, which deletes it and
+  `platform-sync-alert` rather than inheriting the queue simplification.
 - **Mirror moved off the hot path** (N4, N7): tag/manual-triggered, `git archive`-based, not
   subtree-split-on-every-push. `mirror-parity` (nightly) already covers drift.
 
