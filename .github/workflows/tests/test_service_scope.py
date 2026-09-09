@@ -91,11 +91,20 @@ def runtime_optout_precedence() -> tuple[bool, str]:
     return ordered and "run_e2e=true" not in tier, tier.splitlines()[0].strip()
 
 
-def expand_merge_keeps_api_e2e() -> tuple[bool, str]:
-    """The one named exception may drop the UI lane only — never the API lane that proves the flip."""
-    tier = tier_block()
-    branch = tier[: tier.index('elif [ "$api_runtime" = true ]')]
-    return "run_e2e_ui=false" in branch and "run_e2e=false" not in branch, branch.splitlines()[0].strip()
+TIER_CASES: list[tuple[str, str, list[str], list[str], str]] = [
+    ("nothing selected", "false", [], [], "true true"),
+    ("skip-e2e label", "false", ["skip-e2e"], [], "false false"),
+    ("skip-e2e-ui label", "false", ["skip-e2e-ui"], [], "true false"),
+    ("Skip-E2E-UI trailer", "false", [], ["Skip-E2E-UI"], "true false"),
+    ("Skip-E2E trailer", "false", [], ["Skip-E2E"], "false false"),
+    ("full-e2e outranks the opt-outs", "false", ["full-e2e", "skip-e2e"], ["Skip-E2E"], "true true"),
+    # The whole point: a runtime diff cannot lose E2E, however it was labelled or trailered.
+    ("a runtime diff, unlabelled", "true", [], [], "true true"),
+    ("a runtime diff ignores every opt-out", "true", ["skip-e2e", "skip-e2e-ui"], ["Skip-E2E", "Skip-E2E-UI"], "true true"),
+    # …except the one named, documented structural conflict, which drops the UI lane only.
+    ("expand-merge on a runtime diff", "true", ["expand-merge"], [], "true false"),
+    ("expand-merge cannot be widened by skip-e2e", "true", ["expand-merge", "skip-e2e"], ["Skip-E2E"], "true false"),
+]
 
 
 def extract_block() -> str:
@@ -126,11 +135,31 @@ def bash() -> str:
 
 
 def run_case(block: str, files: list[str], variable: str = "services") -> str:
-    # The block narrates to stdout, so tag the value and read the tagged line.
-    script = (
+    return run_script(
         f"set -eu\nfiles={sh_quote(chr(10).join(files))}\n{block}\n"
         f'printf "SCOPE:%s\\n" "${variable}"\n'
     )
+
+
+def run_tier_case(block: str, api_runtime: str, labels: list[str], trailers: list[str]) -> str:
+    """Both gates after the tier block decides, with optout()'s trailer half stubbed per case."""
+    ui = "yes" if "Skip-E2E-UI" in trailers else "no"
+    every = "yes" if "Skip-E2E" in trailers else "no"
+    return run_script(
+        f"set -eu\napi_runtime={api_runtime}\nlabels={sh_quote(chr(10).join(labels))}\n"
+        "run_e2e=true\nrun_e2e_ui=true\n"
+        'optout() { case "$1" in\n'
+        f'    Skip-E2E-UI) [ "{ui}" = yes ] && return 0;;\n'
+        f'    Skip-E2E)    [ "{every}" = yes ] && return 0;;\n'
+        "  esac\n"
+        '  printf "%s\\n" "$labels" | grep -qixF "$2"; }\n'
+        f"{block}\n"
+        'printf "SCOPE:%s %s\\n" "$run_e2e" "$run_e2e_ui"\n'
+    )
+
+
+def run_script(script: str) -> str:
+    # The block narrates to stdout, so tag the value and read the tagged line.
     with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False, newline="\n") as fh:
         fh.write(script)
         path = fh.name
@@ -231,14 +260,20 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} api_runtime {name}: expected {expected!r}, got {actual!r}")
-    for label, (ok, first_line) in (
-        ("a runtime diff outranks every E2E opt-out", runtime_optout_precedence()),
-        ("expand-merge drops the UI lane only", expand_merge_keeps_api_e2e()),
-    ):
+    ok, first_line = runtime_optout_precedence()
+    if not ok:
+        failures += 1
+    print(f"{'ok  ' if ok else 'FAIL'} a runtime diff outranks every E2E opt-out: {first_line!r}")
+    tier = tier_block()
+    for name, api_runtime, labels, trailers, expected in TIER_CASES:
+        actual = run_tier_case(tier, api_runtime, labels, trailers)
+        ok = actual == expected
         if not ok:
             failures += 1
-        print(f"{'ok  ' if ok else 'FAIL'} {label}: {first_line!r}")
-    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + 2
+        print(f"{'ok  ' if ok else 'FAIL'} E2E tier, {name}: expected {expected!r}, got {actual!r}")
+    total = (
+        len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + len(TIER_CASES) + 1
+    )
     print(f"\n{total - failures}/{total} passed")
     package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
     publication = subprocess.run([sys.executable, package_policy], check=False)
