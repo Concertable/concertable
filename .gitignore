@@ -392,5 +392,5 @@ app/.env.development
 app/.env.production
 
 # Agent scratch and dev-server runtime artifacts
-scratchpad/
+/scratchpad/
 app/mobile/.metro-pid

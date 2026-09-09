@@ -1,8 +1,10 @@
 """Prove the extraction map claims every tracked path exactly once.
 
 A path claimed by no target would be silently lost at the cut; a path claimed by
-two targets would be duplicated into repositories that then drift. Both are
-migration-blocking defects, so this runs as a gate rather than a report.
+two targets would be duplicated into repositories that then drift; a path holding
+both a target claim and a dissolve/archive/replicate disposition has no single
+answer at all. Each is a migration-blocking defect, so this runs as a gate rather
+than a report.
 
     python eng/repository-split/validate_map.py
 """
@@ -71,8 +73,12 @@ def main() -> int:
     replicated = spec.get("replicated") or []
 
     paths = tracked()
-    claims: dict[str, list[str]] = defaultdict(list)
+    # Deliberately not a defaultdict: reading one for every path is what made this script report
+    # its own claim count as the tracked count while paths were going unclaimed.
+    claims: dict[str, list[str]] = {}
     unclaimed: list[str] = []
+    overlapping: dict[str, tuple[list[str], list[str]]] = {}
+    flat = {"dissolves": dissolves, "archiveOnly": archive_only, "replicated": replicated}
 
     for path in paths:
         owners = [
@@ -81,10 +87,15 @@ def main() -> int:
             if any(matches(path, i) for i in (t.get("include") or []))
             and not any(matches(path, e) for e in (t.get("exclude") or []))
         ]
+        sections = [
+            section for section, items in flat.items() if any(matches(path, p) for p in items)
+        ]
+        if (owners and sections) or len(sections) > 1:
+            overlapping[path] = (owners, sections)
         if owners:
             claims[path] = owners
             continue
-        if any(matches(path, p) for p in dissolves + archive_only + replicated):
+        if sections:
             continue
         unclaimed.append(path)
 
@@ -120,6 +131,7 @@ def main() -> int:
     print(f"claimed by a target  : {len(claims)}")
     print(f"unclaimed            : {len(unclaimed)}")
     print(f"claimed by >1 target : {len(duplicated)}")
+    print(f"two dispositions     : {len(overlapping)}")
     print(f"semantic errors      : {len(semantic_errors)}")
 
     if duplicated:
@@ -136,12 +148,17 @@ def main() -> int:
         for g, n in sorted(groups.items(), key=lambda kv: -kv[1]):
             print(f"  {n:5}  {g}")
 
+    if overlapping:
+        print("\nTWO DISPOSITIONS (the map states exactly one per path):")
+        for path, (owners, sections) in sorted(overlapping.items()):
+            print(f"  {path}  ->  {', '.join(owners + sections)}")
+
     if semantic_errors:
         print("\nSEMANTIC MAP ERRORS:")
         for error in semantic_errors:
             print(f"  {error}")
 
-    return 1 if (unclaimed or duplicated or semantic_errors) else 0
+    return 1 if (unclaimed or duplicated or overlapping or semantic_errors) else 0
 
 
 if __name__ == "__main__":

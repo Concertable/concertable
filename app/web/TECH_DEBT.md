@@ -4,6 +4,19 @@
 
 ## MED
 
+### `.env.development` holds a live Google Maps key, against the convention its sibling states
+
+`app/web/.env.development` sets a real `VITE_GOOGLE_MAPS_API_KEY`. `app/web/.env.production` beside
+it blanks both publishable keys and states the convention — "injected by CI at build, blank in git on
+purpose" — and the dev file never adopted it. This repository is public, so the key is exposed today,
+and it is billable, which a Stripe *publishable* key in the same file is not.
+
+It also spreads: this file is web-tier configuration every product surface loads through its vite
+`envDir`, so every repository that inherits the tier inherits the key.
+
+**Resolves when:** the key is rotated and either CI-injected and blank in git like the production one,
+or demonstrably restricted to localhost referrers so it is not a usable credential.
+
 ### Venue Deny button never renders — gated on a wire key the server does not send
 
 `app/web/b2b/venue/src/features/concerts/components/ApplicationCard.tsx:60` gates Deny on
