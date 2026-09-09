@@ -33,7 +33,8 @@
 **Shipped — verified, don't rebuild:** in-monolith decomposition (god-`ConcertEntity` split, `Shared.*`
 collapsed to Kernel+Contracts, User TPH dismantled, Auth identity-only) · first cross-process extraction
 (Customer on its own host + DB) · the **backend carve** (feed `PackageReference`s, per-folder CPM,
-`EnforceServiceBoundary`, `carve-*` CI, `platform-sync`) · the extraction mechanism, proven end to end on
+`EnforceServiceBoundary`, `carve-*` CI, `platform-sync` — the last superseded by §7) · the extraction
+mechanism, proven end to end on
 Payment with `git-filter-repo` (802 commits, whole `src/` runtime compiled clean off the feed).
 
 **In flight:** the **cut** (§6) — checkpoints 1–2, the final Hosting RT3, checkpoint 4, and checkpoint 6A delivered;
@@ -68,7 +69,8 @@ Owned by [`MICROSERVICE_STEPS_PLAN.md`](MICROSERVICE_STEPS_PLAN.md) (+
 Cross-service deps go through published `Concertable.*` packages, not project references: feed
 `PackageReference`s, per-folder Central Package Management, the `EnforceServiceBoundary` guard, `carve-*`
 CI jobs, and `platform-sync` (MinVer bump + `<ConcertableDotNetPlatformVersion>` sync PR on every `api/**`
-merge). This is the backend half of "builds alone from a feed." Documented in
+merge). This is the backend half of "builds alone from a feed." The lockstep pin and `platform-sync`
+it shipped are superseded by §7. Documented in
 [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md) ("Cross-service contract distribution" /
 "Per-folder build closures").
 
@@ -229,6 +231,27 @@ The open architecture decisions (D-A / D-B in [`POLYREPO_FULLSTACK_PLAN.md`](POL
 
 This gate governs how much to invest in §5, and whether §4c's plan-locality moves should also anticipate a
 `services/<x>/` layout. **Resolve at the root architecture level, not inside a feature PR.**
+
+---
+
+## 7. Published surface & release trains — 🔴 not started
+
+The cut specifies independent per-producer trains, distinct consumer properties and Renovate
+producer-pull, and it states the platform admission rule. Neither is finished: two trains exist
+(`ConcertableDotNetPlatformVersion`, `ConcertablePaymentVersion`) while the rest of the 58 `IsPackable`
+projects ride one MinVer height, and no package has ever been tested against the admission rule. Both
+are cheaper to finish inside one repo than to retrofit across nine.
+
+- [ ] 🔴 **Platform release trains** `platform/release-trains` — retire the per-merge pin-bump tax (455
+  bump commits / 238 sync merges of 6572 on `main`), build main's images from the commit's own source
+  rather than the stale pin, and finish the per-producer train split the cut assumes. Owned by
+  [`PLATFORM_RELEASE_TRAINS_PLAN.md`](PLATFORM_RELEASE_TRAINS_PLAN.md) /
+  [`PLATFORM_RELEASE_TRAINS_PROGRESS.md`](PLATFORM_RELEASE_TRAINS_PROGRESS.md).
+- [ ] 🔴 **Published surface admission** `platform/surface-admission` — apply the admission rule to all 58
+  packages and produce a binding per-package verdict (platform / service-owned / vendor / promote), then
+  execute it. Supplies train membership to `platform/release-trains`. Owned by
+  [`PUBLISHED_SURFACE_ADMISSION_PLAN.md`](PUBLISHED_SURFACE_ADMISSION_PLAN.md) /
+  [`PUBLISHED_SURFACE_ADMISSION_PROGRESS.md`](PUBLISHED_SURFACE_ADMISSION_PROGRESS.md).
 
 ---
 
