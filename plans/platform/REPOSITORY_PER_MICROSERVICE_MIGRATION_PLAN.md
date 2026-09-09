@@ -127,7 +127,8 @@ shared runtime. The target keeps that distinction.
 Current packable ownership is:
 
 - Auth: `Concertable.Auth.Contracts`.
-- B2B: Artist, Concert, Tenant, User, and Venue Contracts plus `Concertable.B2B.Seed.Contracts`.
+- B2B: Admin, Application, Artist, Booking, Concert, Deal, Tenant, User, and Venue Contracts plus
+  `Concertable.B2B.Seed.Contracts`, `Concertable.B2B.Hosting`, and `Concertable.B2B.TestKit`.
 - Customer: `Concertable.Customer.Review.Contracts`, `Concertable.Customer.Ticket.Contracts`, and
   `Concertable.Customer.Hosting`.
 - Payment: `Concertable.Payment.Contracts` and `Concertable.Payment.Client`.
@@ -182,8 +183,8 @@ There are 24 EF model snapshots:
 | Search | 1 |
 | Platform Messaging | 2 (Inbox and Outbox) |
 
-`api/initial-migrations.ps1` currently re-scaffolds all 24 contexts in one command. It preserves unchanged
-migration IDs to avoid source/package migration collisions. Several runtime programs still call
+`api/initial-migrations.ps1` delegates all 24 contexts to owner-local commands. Those commands preserve
+unchanged migration IDs to avoid source/package migration collisions. Several runtime programs still call
 `MigrateAsync`; the deployment design already requires deploy-time migration bundles/jobs instead.
 
 Seed ownership is mostly aligned already:
@@ -578,7 +579,7 @@ before its dependencies are green.
 | M1 | monorepo hosting boundary: deliver an additive generic platform API, sync the Auth/B2B/Customer hosting packages, sync standalone and aggregate System AppHosts, then contract the legacy product-aware platform API | no unresolved overlapping AppHost PR; each published package layer must advance before its consumer sync | package-clean builds; standalone B2B/Customer and umbrella composition tests; resolved Expo/Auth tunnel URLs; final package-only closure |
 | M2 | monorepo owner-local operations: split `api/initial-migrations.ps1` and `scripts/setup-local-dev.ps1` into five service migration owners plus platform-owned Messaging, service-local bootstrap, and container-only System bootstrap | current AuthDb migration state on main | empty-database migration proof and each standalone bootstrap dry run |
 | M3 | monorepo frontend boundary: split product workspace declarations out of `app/.dependency-cruiser.cjs`; package generic build configuration and keep product packages in B2B/Customer | none | boundary lint plus all web/mobile typecheck/build gates |
-| M4 | monorepo closure repair: replace Auth.Contracts-to-Messaging source coupling with its published package seam and fix B2B/Customer standalone Payment HTTPS discovery | M1 package/API shape; package baseline from G0 before publication | inventory has no blocking runtime edge; Auth/B2B/Customer clean carve builds and standalone composition tests |
+| M4 | monorepo closure repair: replace Auth.Contracts-to-Messaging source coupling with its published package seam and make B2B/Customer standalone Payment discovery protocol-correct | M1 package/API shape; package baseline from G0 before publication | inventory has no blocking runtime edge; Auth/B2B/Customer clean carve builds; standalone composition tests and a live Payment client/server handshake pass |
 | C1 | retained `infra` and `config`: preserve both histories, implement the ownership table above, and remove duplicated Terraform resource/state ownership | G0 Azure state result | fmt/validate; zero create/destroy migration plan if state exists; config schema/promotion dry run |
 | F0 | freeze one exact post-M1-M4/C1 monorepo SHA; regenerate map/inventory and produce signed bundle, per-target filter commands, commit/path maps, object counts, secret scans, and sampled blame | M1-M4 merged; relevant open PRs resolved | 0 unclaimed/duplicates/blocking edges and reviewed history audit |
 | R1 | import `platform-dotnet` and `platform-frontend` in parallel and prove independent publishers | G0, F0, explicit repository-creation authorization | clean clones, non-conflicting versions, registry-only consumer fixtures |

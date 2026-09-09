@@ -14,6 +14,7 @@ const webSurfaces = [
   "web/b2b/artist",
   "web/b2b/business",
 ];
+const mobileSurfaces = ["mobile/b2b", "mobile/customer"];
 
 for (const surface of webSurfaces) {
   test(`${surface} carve resolves its shared Vite HTTPS helper`, () => {
@@ -44,11 +45,11 @@ for (const surface of webSurfaces) {
   });
 }
 
-for (const surface of ["mobile/b2b", "mobile/customer"]) {
-  test(`${surface} carve consumes the candidate build configuration as a package`, () => {
+for (const surface of mobileSurfaces) {
+  test(`${surface} carve consumes every shared tier from the feed`, () => {
     const result = spawnSync(
       process.execPath,
-      ["scripts/carve-fe.mjs", surface, "--worktree", "--prepare-only", "--keep"],
+      ["scripts/carve-fe.mjs", surface, "--prepare-only", "--keep"],
       { cwd: appRoot, encoding: "utf8" },
     );
     const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
@@ -63,9 +64,11 @@ for (const surface of ["mobile/b2b", "mobile/customer"]) {
     try {
       const surfaceDirectory = join(work, "repo", "app", ...surface.split("/"));
       const manifest = JSON.parse(readFileSync(join(surfaceDirectory, "package.json"), "utf8"));
-      const dependency = manifest.devDependencies["@concertable/build-config"];
-      assert.match(dependency, /^file:\.build-config\/.+\.tgz$/);
-      assert.equal(existsSync(join(surfaceDirectory, dependency.slice("file:".length))), true);
+      const specifiers = { ...manifest.dependencies, ...manifest.devDependencies };
+      for (const [name, specifier] of Object.entries(specifiers)) {
+        if (name.startsWith("@concertable/")) assert.equal(specifier, "alpha", name);
+      }
+      assert.equal(specifiers["@concertable/build-config"], "alpha");
       assert.match(readFileSync(join(surfaceDirectory, "metro.config.js"), "utf8"),
         /@concertable\/build-config\/metro/);
       assert.equal(existsSync(join(work, "repo", "app", "build-config")), false);
@@ -127,4 +130,34 @@ test("a moving tag or range cannot masquerade as an exact package version", () =
       /must be an exact npm version/,
     );
   }
+});
+
+// Publication is lockstep across all seven tiers, so a lock sitting on an older version means its
+// surface was skipped by `npm run lock:carve`.
+test("every carved surface pins one lockstep tier version from the feed", () => {
+  const pinned = new Map();
+
+  for (const surface of [...webSurfaces, ...mobileSurfaces]) {
+    const lockPath = join(appRoot, ...surface.split("/"), "package-lock.json");
+    assert.equal(existsSync(lockPath), true, `${surface} has no standalone lockfile`);
+    const lock = JSON.parse(readFileSync(lockPath, "utf8"));
+
+    const declared = lock.packages[""];
+    for (const field of ["dependencies", "devDependencies"]) {
+      for (const [name, specifier] of Object.entries(declared[field] ?? {})) {
+        if (name.startsWith("@concertable/")) assert.equal(specifier, "alpha", `${surface} ${name}`);
+      }
+    }
+
+    for (const [entryPath, entry] of Object.entries(lock.packages)) {
+      const name = entryPath.replace(/^.*node_modules\//, "");
+      if (!name.startsWith("@concertable/")) continue;
+      assert.match(entry.resolved, /^https:\/\/npm\.pkg\.github\.com\//, `${surface} ${name}`);
+      pinned.set(`${surface} ${name}`, entry.version);
+    }
+  }
+
+  assert.ok(pinned.size > 0);
+  assert.equal(new Set(pinned.values()).size, 1,
+    `tiers are not on one lockstep version: ${JSON.stringify([...pinned], null, 2)}`);
 });
