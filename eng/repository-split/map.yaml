@@ -1,10 +1,12 @@
 # Source-to-target extraction map for the repository-per-microservice migration.
 #
 # Consumed by the git-filter-repo extraction runs. Every tracked path in the
-# monorepo must be claimed by exactly one target's `include`, be listed in
-# `dissolves`, or appear in `unclaimed` review output — silence is never
-# ownership. `eng/repository-split/inventory.py` proves project- and
-# workspace-level ownership is total; this file states it at path level.
+# monorepo must be claimed by exactly one target's `include` or carry exactly one
+# of the dispositions below — `dissolves`, `archiveOnly`, `replicated` — because
+# silence is never ownership. `eng/repository-split/validate_map.py` is the gate
+# and runs in CI on every change, so a path with no disposition fails there
+# instead of being lost at the cut. `eng/repository-split/inventory.py` proves
+# project- and workspace-level ownership is total; this file states it at path level.
 #
 # Path renames strip the monorepo's `api/Concertable.<Service>/` prefix, which
 # already leaves the `src/` + `tests/` layout the target repository contract
@@ -61,6 +63,7 @@ targets:
       - app/web/customer
       - app/mobile/customer
       - app/customer/shared
+      - app/customer/workspaces.cjs
     exclude:
       - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests
       - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile
@@ -70,6 +73,10 @@ targets:
       app/web/customer/: "app/web/"
       app/mobile/customer/: "app/mobile/"
       app/customer/shared/: "app/shared/"
+      app/customer/workspaces.cjs: "app/workspaces.cjs"
+    notes:
+      - M3 split the product workspace declarations apart; this one becomes Customer's own
+        `app/workspaces.cjs`, which its `.dependency-cruiser.cjs` requires.
 
   b2b:
     repo: Concertable/b2b
@@ -79,6 +86,7 @@ targets:
       - app/web/admin
       - app/mobile/b2b
       - app/b2b/shared
+      - app/b2b/workspaces.cjs
     exclude:
       - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests
       - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui
@@ -88,9 +96,13 @@ targets:
       app/web/admin/: "app/web/admin/"
       app/mobile/b2b/: "app/mobile/"
       app/b2b/shared/: "app/shared/"
+      app/b2b/workspaces.cjs: "app/workspaces.cjs"
     notes:
       - The admin console is B2B-exclusive; customer and payment have no admin surface.
       - Cut last: widest contract and seed fan-out.
+      - M3 split the product workspace declarations apart; this one becomes B2B's own
+        `app/workspaces.cjs` and carries the cross-platform forbidden rule the monorepo
+        aggregator borrowed from it.
 
   platform-dotnet:
     repo: Concertable/platform-dotnet
@@ -101,16 +113,30 @@ targets:
       - api/Concertable.ServiceDefaults
       - api/Concertable.AppHost.Shared
       - api/Concertable.Frontend.Hosting
+      # Repo-wide .NET build law. Every service's own Directory.Build.props/.targets reaches up to
+      # these with Condition="Exists(...)", so at the cut the guard silently no-ops rather than
+      # failing. `Concertable.Build` is the successor: one owner, and the rule arrives in every repo
+      # as a PackageReference instead of eight copies that drift.
+      - api/BannedSymbols.txt
+      - api/BannedSymbols.UnitTests.txt
+      - api/TestConventions.targets
     exclude:
       # Cross-service test infrastructure belongs with the suites it serves.
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
     rename:
       api/Concertable.Shared/tools/OwnerOperations.psm1: "tools/OwnerOperations.psm1"
+      # Build law keeps its "one file at the build root, imported once" shape; `src/` is for source.
+      api/BannedSymbols.txt: "BannedSymbols.txt"
+      api/BannedSymbols.UnitTests.txt: "BannedSymbols.UnitTests.txt"
+      api/TestConventions.targets: "TestConventions.targets"
       api/: "src/"
     notes:
       - Owns Messaging Inbox/Outbox migrations.
       - AppHost.Shared owns only product-neutral resource and topology primitives;
         Auth owns SPA registration behavior and B2B/Customer own their surface rosters.
+      - "Checkpoint 7A must create `Concertable.Build` and package the three build-law files it
+        inherits: no such project exists yet, and until one does, an extracted service enforces
+        neither the test-tier gate nor either banned-symbol list."
 
   platform-frontend:
     repo: Concertable/platform-frontend
@@ -119,11 +145,31 @@ targets:
       - app/shared
       - app/web/shared
       - app/mobile/shared
+      # Generic frontend build and publication mechanisms. Each reads a table its consumer owns
+      # (`workspaces.cjs`, a package name) rather than hard-coding the monorepo's roster.
+      - app/scripts/check-fe-boundaries.mjs
+      - app/scripts/check-fe-boundaries.test.mjs
+      - app/scripts/verify-fe-package.mjs
+      - app/scripts/patch-nativewind.js
+      - app/scripts/vite-development-https.ts
     rename:
       app/build-config/: "packages/build-config/"
       app/shared/: "packages/shared/"
       app/web/shared/: "packages/web/"
       app/mobile/shared/: "packages/mobile/"
+      app/scripts/: "packages/build-config/scripts/"
+    notes:
+      - "`verify-fe-package.mjs` survives the org's reusable `npm-publish.yml` rather than being
+        replaced by it: that workflow only installs a packed tarball, while this proves Metro and
+        NativeWind resolve a built `dist`, which is the gate `app/mobile` states as its boundary."
+      - "`patch-nativewind.js` outlives the monorepo because the collision it shims is workspace
+        hoisting, and B2B and Customer each keep web and mobile in one workspace."
+      - "8A must give `check-fe-boundaries.mjs` an explicit path to the consumer's `workspaces.cjs`.
+        It reaches it as `../workspaces.cjs` today, which resolves inside this package once the
+        script ships from `build-config` rather than from the tree it lints."
+      - "All five SPA vite configs import `vite-development-https` by relative source path and must
+        import it from `@concertable/build-config` instead; `carve-fe.mjs` already archives that one
+        file with a carved web surface, which is what identifies it as platform rather than product."
 
   system:
     repo: Concertable/system
@@ -164,21 +210,94 @@ targets:
     repo: Concertable/.github
     include:
       - .github/workflows
+      # The topology table gives this repository the hardened composite actions.
+      - .github/actions
+      # The publication gate itself, not a monorepo job: its test already lands here with
+      # .github/workflows/tests.
+      - .github/scripts/package_publication_policy.py
     notes:
       - Only the reusable portions; monorepo-specific jobs are excluded by hand
         during checkpoint 6A rather than by path.
+      - "Checkpoint 7C must fold `package_publication_policy.py` into the live reusable
+        `nuget-publish.yml`, which pushes with `--skip-duplicate` — the exact behaviour PR #953
+        removed after a pre-published version left stale binaries on the feed and a floating
+        restore still passed. Whichever lands first, the monorepo must not stop publishing at 7B
+        while the reusable rail has no immutability or monotonicity check."
 
 # Paths with no successor repository. Each target repo authors its own at the cut.
 dissolves:
   - app/package.json
   - app/package-lock.json
   - api/Concertable.slnx
-  - scripts/setup-local-dev.ps1
-  - scripts/sync-owner-tooling.ps1
-  - scripts/test-owner-operations.ps1
+  - README.md
+  - app/README.md
   - AGENTS.md
   - CLAUDE.md
   - ARCHITECTURE.md
+
+  # Monorepo compatibility entrypoints: each fans out over sibling owner trees that no single
+  # target repository contains. The owner-local scripts they call are claimed by their owners, and
+  # `validate_map.py` asserts every one of these four dissolves and is claimed by no target.
+  - scripts/setup-local-dev.ps1
+  - scripts/sync-owner-tooling.ps1
+  - scripts/test-owner-operations.ps1
+  - api/initial-migrations.ps1
+
+  # The `api/` node itself. Directory.Build.targets is a five-line import shim for a node with no
+  # successor, and PlatformSourcePackages.targets states its own disposition: "A carve must NOT copy
+  # this file. Its absence is the cut-over to feed packages."
+  - api/Directory.Build.targets
+  - api/PlatformSourcePackages.targets
+
+  # Cross-product frontend rosters. Each enumerates both products' surfaces and their shared tiers
+  # in one tree, and each gate they state ("all five web builds", "both mobile builds") spans
+  # products no single repository owns. The standards themselves ship from the `react` plugin, so a
+  # target repo re-authors only its own inventory.
+  - app/AGENTS.md
+  - app/CLAUDE.md
+  - app/web/AGENTS.md
+  - app/web/CLAUDE.md
+  - app/mobile/AGENTS.md
+  - app/mobile/CLAUDE.md
+  # Requires both product declarations; it exists only to fuse them.
+  - app/workspaces.cjs
+  # Names api/Concertable.slnx, which dissolves.
+  - .vscode/settings.json
+
+  # Pre-cut frontend migration tooling. The carve proves a surface can stand alone before the cut;
+  # afterwards the repository is that proof. Lockstep FE versioning is replaced by Changesets at
+  # 8A, and the phase-3 consumer validator is a one-off for the monorepo's package topology.
+  - app/scripts/carve-fe.mjs
+  - app/scripts/carve-fe.test.mjs
+  - app/scripts/version-fe-packages.mjs
+  - app/scripts/validate-b2b-phase3-consumers.mjs
+
+  # Retired with platform-sync.yml, whose bellwether stops tracking the platform train once
+  # platform-dotnet publishes and whose job Renovate takes over. Checkpoint 7 step 3 names these
+  # four for deletion alongside it.
+  - .github/scripts/bump-platform-version.sh
+  - .github/scripts/bump-platform-version.test.mjs
+  - .github/scripts/platform-sync-pr-action.mjs
+  - .github/scripts/platform-sync-pr-action.test.mjs
+  # Asserts the queue-lane wiring of the monorepo's own test.yml; E2E tiering becomes system's.
+  - .github/scripts/e2e-ghcr-login.test.mjs
+
+  # Plugin-owned hooks. `concertable@agent-standards` delivers these at runtime and
+  # test_repo_hook_wiring.py forbids registering any of them repo-locally, so these carried copies
+  # are already 10-200 lines behind upstream. Replicating measured drift into every target is what
+  # the suite exists to prevent; only the provisioning bootstrap is replicated.
+  - .agents/hooks/docs_reachability.py
+  - .agents/hooks/hook_runtime.py
+  - .agents/hooks/merge_review_gate.py
+  - .agents/hooks/plan_graph.py
+  - .agents/hooks/plan_handoff_stop.py
+  - .agents/hooks/plan_handoff_stop_launcher.py
+  - .agents/hooks/session_floor.py
+  - .agents/hooks/skill_router.py
+  # Superseded by the plugin: both describe `.agents/skills/`, which no longer exists, and the
+  # stub script's destination `.claude/skills/` does not either.
+  - .agents/README.md
+  - .agents/sync-claude-skill-stubs.ps1
 
 # Paths deliberately retained by the archived monorepo only.
 archiveOnly:
@@ -188,9 +307,68 @@ archiveOnly:
   - Report.pdf
   - PIPELINE_DEBT.md
 
+  # Debt registers for nodes that span services, following PIPELINE_DEBT.md. Every service already
+  # keeps its own TECH_DEBT.md, so these have no successor file — but their live entries do, and
+  # each must be redistributed to the owning repository's register before the archive.
+  - TECH_DEBT.md
+  - api/TECH_DEBT.md
+  - .github/TECH_DEBT.md
+  - app/web/TECH_DEBT.md
+
+  # The extraction record itself: the archive is the authoritative map from pre-filter SHAs, so the
+  # map, inventory and their gates stay with it. carve-e2e.ps1 inside this directory is system's;
+  # target claims are evaluated before this list, so it still lands there.
+  - eng/repository-split
+
 # Paths replicated into every target (each repo needs its own copy).
 replicated:
   - .editorconfig
   - .gitattributes
   - .gitignore
   - .dockerignore
+  # Public-repository legal notice; canonical repositories preserve that visibility.
+  - COPYRIGHT.md
+
+  # The repo-local agent bootstrap. The plugin delivers every skill and hook, but a plugin only runs
+  # where someone installed it, so each repository has to carry the one hook that proves the plugin
+  # resolved, the portable runner it launches through, and the wiring that fires it.
+  - .agents/hooks/standards_provisioning.py
+  - .agents/hooks/run-repo-hook.sh
+  - .claude/settings.json
+  # Mechanism upstream, table local: the plugin's router and merge gate read a path-to-standard map
+  # and a security-path inventory that only the owning repository can state.
+  - .agents/skill-routes.json
+  - .agents/merge-gate.json
+  # Provenance for whatever a repository vendors; test_vendored_hooks.py requires it to exist and to
+  # claim no hooks.
+  - .agents/hooks/vendored.json
+  # Each repository asserts its own tables and its own wiring; the mechanisms are proven upstream
+  # over fixtures. test_skill_router.py must resolve the router from the provisioned plugin, since
+  # the copy beside it dissolves.
+  - .agents/hooks/tests/test_repo_hook_wiring.py
+  - .agents/hooks/tests/test_vendored_hooks.py
+  - .agents/hooks/tests/test_skill_router.py
+  # Layer 1 of the plugin's `review` skill, which the plugin deliberately does not ship.
+  - .claude/agents/code-reviewer.md
+
+  # A `dotnet test --settings` path cannot arrive as a package.
+  - api/Concertable.runsettings
+
+  # Per-repository frontend workspace configuration. .dependency-cruiser.cjs is a six-line binding
+  # of the generic config platform-frontend owns to the consumer's own workspaces.cjs.
+  - app/.dependency-cruiser.cjs
+  - app/.gitignore
+  - app/.npmrc
+  - app/.prettierrc
+  - app/mobile/.gitignore
+  # Brand assets both products' app.json files reach through `../assets/`. Each target must repoint
+  # that relative path after its own app/mobile rename.
+  - app/mobile/assets/adaptive-icon.png
+  - app/mobile/assets/favicon.png
+  - app/mobile/assets/icon.png
+  - app/mobile/assets/splash-icon.png
+  # The web-tier env every SPA loads through its vite `envDir`, holding non-secret service URLs and
+  # publishable keys. Each target keeps only the URLs its own surfaces read and repoints `envDir`
+  # after its app/web rename.
+  - app/web/.env.development
+  - app/web/.env.production
