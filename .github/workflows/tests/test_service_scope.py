@@ -52,6 +52,41 @@ CASES: list[tuple[str, list[str], str]] = [
 ]
 
 
+RUNTIME_CASES: list[tuple[str, list[str], str]] = [
+    ("service runtime source", ["api/Concertable.B2B/src/Modules/Deal/D.cs"], "true"),
+    ("module unit tests live under src", ["api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/T.cs"], "false"),
+    ("service test tier", ["api/Concertable.Payment/tests/Concertable.Payment.UnitTests/T.cs"], "false"),
+    # The E2E suites and their shared harness are the gate itself; a change to one re-validates it.
+    ("an E2E suite", ["api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Features/Login.feature"], "true"),
+    ("the shared E2E harness", ["api/Concertable.Shared/tests/Concertable.Testing.E2E/StripeCustomerResolver.cs"], "true"),
+    ("api markdown is inert", ["api/ARCHITECTURE.md"], "false"),
+    ("frontend only", ["app/web/customer/src/App.tsx"], "false"),
+    ("the workflow itself", [".github/workflows/test.yml"], "false"),
+    ("a runtime file alongside a test file", ["api/Concertable.B2B/tests/X/T.cs", "api/Concertable.B2B/src/S.cs"], "true"),
+]
+
+
+def extract_runtime_block() -> str:
+    """The api_runtime rule: which diffs may not opt out of E2E."""
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    steps = spec["jobs"]["changes"]["steps"]
+    run = next(s for s in steps if s.get("id") == "detect")["run"]
+    inert = next(l for l in run.splitlines() if l.strip().startswith("INERT="))
+    start = run.index("api_changed=$(")
+    end = run.index('echo "-> api_runtime=')
+    return inert + "\n" + run[start:end]
+
+
+def runtime_optout_precedence() -> tuple[bool, str]:
+    """A runtime diff must be tested BEFORE the opt-outs, and must never turn a gate back on."""
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    steps = spec["jobs"]["changes"]["steps"]
+    run = next(s for s in steps if s.get("id") == "detect")["run"]
+    tier = run[run.index('if [ "$api_runtime" = true ]; then') : run.index("# E2E is the MERGE QUEUE's gate only")]
+    ordered = tier.index("$api_runtime") < tier.index("full-e2e") < tier.index("optout Skip-E2E")
+    return ordered and "run_e2e=true" not in tier, tier.splitlines()[0].strip()
+
+
 def extract_block() -> str:
     spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     steps = spec["jobs"]["changes"]["steps"]
@@ -79,11 +114,11 @@ def bash() -> str:
     return "bash"
 
 
-def run_case(block: str, files: list[str]) -> str:
+def run_case(block: str, files: list[str], variable: str = "services") -> str:
     # The block narrates to stdout, so tag the value and read the tagged line.
     script = (
         f"set -eu\nfiles={sh_quote(chr(10).join(files))}\n{block}\n"
-        'printf "SCOPE:%s\\n" "$services"\n'
+        f'printf "SCOPE:%s\\n" "${variable}"\n'
     )
     with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False, newline="\n") as fh:
         fh.write(script)
@@ -177,7 +212,19 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} {name} independent of empty matrices: {sorted(blocked_by)!r}")
-    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS)
+    runtime_block = extract_runtime_block()
+    for name, files, expected in RUNTIME_CASES:
+        actual = run_case(runtime_block, files, "api_runtime")
+        ok = actual == expected
+        if not ok:
+            failures += 1
+        status = "ok  " if ok else "FAIL"
+        print(f"{status} api_runtime {name}: expected {expected!r}, got {actual!r}")
+    ok, first_line = runtime_optout_precedence()
+    if not ok:
+        failures += 1
+    print(f"{'ok  ' if ok else 'FAIL'} a runtime diff outranks every E2E opt-out: {first_line!r}")
+    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + 1
     print(f"\n{total - failures}/{total} passed")
     package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
     publication = subprocess.run([sys.executable, package_policy], check=False)
