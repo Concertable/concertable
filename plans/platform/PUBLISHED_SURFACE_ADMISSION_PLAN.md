@@ -5,19 +5,17 @@ Next steps live in
 
 ## Objective
 
-Run the platform admission rule over the real 55-package inventory and produce a binding per-package
+Run the platform admission rule over the real 58-package inventory and produce a binding per-package
 verdict, then execute it — before the cut turns every one of those packages into a cross-repo
 negotiation.
 
-`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md` states the rule: a package belongs in a platform repo
-only when it is domain-neutral, has at least two legitimate product consumers, and can version without
-importing a service concept. The rule is written; it has never been applied to the inventory. Every
-package is admitted today by default, because the monorepo publishes whatever carries
-`<IsPackable>true</IsPackable>`.
+`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md` owns the rule, under its "Platform admission rule"
+heading. It is written; it has never been applied to the inventory. Every package is admitted today by
+default, because the monorepo publishes whatever carries `<IsPackable>true</IsPackable>`.
 
 ## Why this is the load-bearing decision, not the bump mechanism
 
-Of 55 published packages, roughly 13 are `*.Contracts`. The other 42 are a shared framework: `Kernel`,
+Of 58 published packages, 16 are `*.Contracts`. The other 42 are a shared framework: `Kernel`,
 `DataAccess` (2), `Messaging` (5), `ServiceDefaults`, `Grpc`, `Shared.Api`, seven `Shared.*` SaaS
 adapters split across Application and Infrastructure (12), five `Testing.*`, three `*.TestKit`, three
 `Seed.*`, five `*.Hosting`, `AppHost.Shared`.
@@ -28,11 +26,13 @@ independently because they all move when `Kernel` moves. The bump frequency is t
 library whose consumers must upgrade on every producer merge is a monolith module with a version number
 on it.
 
-The current inventory already exceeds the plan's own stated policy in at least one place:
+The current inventory already strains the plan's own stated policy:
 `api/Concertable.B2B/Directory.Packages.props` consumes `Concertable.Auth.Hosting`,
-`Concertable.Payment.Hosting` and `Concertable.Payment.TestKit`. Whether that is legitimate
-composition-time and test-only use under the `*.Hosting` / `*.TestKit` policy, or a coupling the
-boundary check should reject, is unsettled and is settled here.
+`Concertable.Payment.Hosting` and `Concertable.Payment.TestKit`, and
+`api/Concertable.Shared/Directory.Packages.props` pins `Concertable.Payment.Hosting` to the platform
+train rather than the Payment one — the split-pin drift `api/TECH_DEBT.md` records. Whether sibling
+`*.Hosting` / `*.TestKit` consumption is legitimate composition-time and test-only use, or a coupling
+the boundary check should reject, is unsettled and is settled here.
 
 ## Phases
 
@@ -50,7 +50,7 @@ One row per `IsPackable` project, each with a written reason, assigning:
 The rule decides admission. A second, explicit cost test decides `vendor`: when the cross-repo
 coordination cost of a package exceeds the cost of duplicating it, it is vendored. Duplication inside
 one deployment unit is not the same defect as duplication across one, and the seven `Shared.*` SaaS
-adapters are the obvious candidates — a thin wrapper over an external API is usually cheaper copied
+adapter families are the obvious candidates — a thin wrapper over an external API is usually cheaper copied
 than negotiated across nine repos.
 
 Three questions the table must answer explicitly rather than by omission:
@@ -67,7 +67,8 @@ preset for producer-train grouping. It must therefore name, per package, its ver
 property, and its post-cut owning repository — not a verdict alone.
 
 **Verification gate** — every `IsPackable` project appears exactly once with a verdict and a reason; the
-generated row count equals `grep -rl '<IsPackable>true</IsPackable>' api --include='*.csproj' | wc -l`;
+row count equals `grep -rl '<IsPackable>true</IsPackable>' api --include='*.csproj' | wc -l` at the
+reviewed head;
 `python .agents/hooks/plan_graph.py --root <absolute-worktree>` green.
 
 ### Phase 2 onward — execute the verdicts

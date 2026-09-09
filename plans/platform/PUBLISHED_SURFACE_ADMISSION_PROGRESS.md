@@ -8,13 +8,14 @@
 - PR: none yet
 - Dependency/package gates: none for Phase 1. Phase 1's table is a hard input to
   `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 3.
-- Last reconciled: 2026-09-09 against `origin/main` `081e149a2e0a4544e1c781adc5e322a6ee0e4f85`.
+- Last reconciled: 2026-09-09 against `origin/main` `081e149a2e0a4544e1c781adc5e322a6ee0e4f85`, merged
+  into this branch.
 
 ## Current state
 
 Authored, not started. No verdicts assigned.
 
-Inventory at the reconciled SHA: 55 `IsPackable` projects. Enumerate with
+Inventory at the reconciled SHA: 58 `IsPackable` projects, 16 of them `*.Contracts`. Enumerate with
 `grep -rl '<IsPackable>true</IsPackable>' api --include='*.csproj' | xargs -n1 basename | sed 's/\.csproj$//' | sort`
 rather than trusting any copy of the list, which will rot.
 
@@ -34,11 +35,13 @@ None recorded — nothing implemented to review.
 
 - The admission rule already exists in `REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md` and must be cited
   from there, never restated here.
-- Roughly 13 of the 55 packages are `*.Contracts`; the remaining 42 are framework, adapters, test
+- 16 of the 58 packages are `*.Contracts`; the remaining 42 are framework, adapters, test
   infrastructure and hosting. The framework half is what makes services move in lockstep.
 - `api/Concertable.B2B/Directory.Packages.props` consumes `Concertable.Auth.Hosting`,
   `Concertable.Payment.Hosting` and `Concertable.Payment.TestKit`. Treat this as an open question for
   Phase 1, not as an established violation — the `*.Hosting` composition-time policy may permit it.
+  The related split-pin drift (`Concertable.Shared` pinning `Payment.Hosting` to the platform train) is
+  recorded in `api/TECH_DEBT.md`; do not re-derive it here.
 - Vendoring is a legitimate verdict, not a fallback. Do not let a DRY argument silently remove it from
   the option set for the `Shared.*` adapters.
 
