@@ -214,7 +214,25 @@ not substitute the moving `alpha` tag for the exact package dependency gate.
   the regenerated lockfiles**, or its carves will silently install the stale package instead of the
   tenant-scoped one. `app/web/b2b/{artist,venue}` and `app/mobile/b2b` additionally gain a
   `@concertable/b2b` dependency on that branch, which only a regenerated lockfile can resolve.
-- **PR #951's first merge-group attempt was ejected by a latent E2E wait bug, not by its own change.**
+- **PR #951 is blocked by a pre-existing flake in a suite it does not touch.** Two merge-group attempts
+  ([34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) and
+  [34291413140](https://github.com/Concertable/concertable/actions/runs/34291413140)) were ejected by the
+  same single UI scenario of 32, `Venue manager completes 3DS challenge on flat fee`, timing out after 30s
+  on `Then a draft concert is created`. The first attempt carried no `api/` change at all, and no app
+  surface imports `@concertable/b2b`, so this branch's diff cannot reach that scenario. `main`'s own
+  merge-group runs at 22:03 and 22:40 passed the same suite, interleaved with these failures.
+  **Mechanism:** the redirect is a SignalR `ConcertDraftCreated` push
+  (`app/web/b2b/venue/src/features/notifications/hooks/useVenueNotifications.ts`), emitted only after
+  Stripe's `payment_intent.succeeded` webhook is forwarded by stripe-cli and processed into a draft
+  concert. A non-3DS card confirms the intent synchronously, so that chain starts at once — which is why
+  the sibling `pays the flat fee with a new card` scenario passes the identical step. A 3DS card finalises
+  the intent only after the challenge, and that extra hop can push webhook -> event -> concert -> SignalR
+  -> navigate past the fixed 30s wait. Changing the wait from `Load` to `Commit` did not help, which
+  confirms the navigation genuinely never happens rather than merely not settling. The durable fix is a
+  decision outside this PR: either the venue SPA navigates on the confirmed PaymentIntent instead of
+  waiting for a webhook-driven push, or the scenario waits deterministically on webhook delivery.
+  Inflating the timeout is not a fix and must not be used.
+- **An earlier hypothesis, now disproved, still produced a correct change.**
   Merge-group run [34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) failed
   one UI scenario of 32 — `Venue manager completes 3DS challenge on flat fee` timed out after 30s in
   `Then a draft concert is created`, `waiting for navigation to "**/my/concerts/concert/**" until "Load"`.
