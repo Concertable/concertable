@@ -334,6 +334,18 @@ A renamed section/key silently stops binding, with no compile error and no singl
 referenced by all three packages) instead of per-package literals — so neither section name lives as a
 duplicated literal.
 
+### Resource-server JWT `Audience` is a scope-name literal, not the Auth-owned constant
+
+`Concertable.Auth.Contracts.ApiScopeIds` now owns the API scope names, and Auth's own `Config.cs` plus the
+E2E `TestTokenMinter` bind them. The three resource servers still type the same string inline as their bearer
+`Audience` — `Concertable.B2B.Web/Extensions/ServiceCollectionExtensions.cs` (`ApiScopeIds.B2BApi`),
+`Concertable.Customer.Web/CustomerWebHostExtensions.cs` (`ApiScopeIds.CustomerApi`),
+`Concertable.Search.Web/HostExtensions.cs` (`ApiScopeIds.SearchApi`) — so a scope rename in the published
+contract leaves each resource server compiling but rejecting every token.
+
+**Resolves when:** each of the three hosts references `Concertable.Auth.Contracts` and sets `Audience` from
+the matching `ApiScopeIds` constant.
+
 ### Timestamps are `DateTime` (UTC-by-naming-convention), not `DateTimeOffset`
 
 Every timestamp across the backend is stored as `DateTime` with a `…Utc` suffix — sourced from

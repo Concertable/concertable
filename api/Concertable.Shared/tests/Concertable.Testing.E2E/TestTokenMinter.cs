@@ -1,3 +1,4 @@
+using Concertable.Auth.Contracts;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
@@ -5,6 +6,9 @@ namespace Concertable.Testing.E2E;
 
 public sealed class TestTokenMinter : IDisposable
 {
+    private static readonly string testScopes =
+        string.Join(' ', ApiScopeIds.B2BApi, ApiScopeIds.CustomerApi, ApiScopeIds.SearchApi);
+
     private readonly HttpClient httpClient;
     private readonly string authBaseUrl;
 
@@ -42,10 +46,10 @@ public sealed class TestTokenMinter : IDisposable
         httpClient.PostAsync($"{authBaseUrl}/connect/token",
             new FormUrlEncodedContent([
                 new("grant_type", "password"),
-                new("client_id", "concertable-test"),
+                new("client_id", ClientIds.Test),
                 new("username", email),
                 new("password", password),
-                new("scope", "concertable.b2b.api concertable.customer.api concertable.search.api"),
+                new("scope", testScopes),
             ]));
 
     public void Dispose() => httpClient.Dispose();

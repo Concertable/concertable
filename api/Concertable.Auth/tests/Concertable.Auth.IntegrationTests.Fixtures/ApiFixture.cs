@@ -118,7 +118,7 @@ public sealed class ApiFixture : IAsyncLifetime
         await using var scope = factory.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-        var credential = CredentialEntity.Create(email, hasher.Hash(password), "customer-web");
+        var credential = CredentialEntity.Create(email, hasher.Hash(password), ClientIds.CustomerWeb);
         credential.ClearDomainEvents();
         if (verified)
             credential.VerifyEmail();
