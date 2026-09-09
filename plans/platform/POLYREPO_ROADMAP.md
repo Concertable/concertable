@@ -67,7 +67,8 @@ Owned by [`MICROSERVICE_STEPS_PLAN.md`](MICROSERVICE_STEPS_PLAN.md) (+
 Cross-service deps go through published `Concertable.*` packages, not project references: feed
 `PackageReference`s, per-folder Central Package Management, the `EnforceServiceBoundary` guard, `carve-*`
 CI jobs, and `platform-sync` (MinVer bump + `<ConcertablePlatformVersion>` sync PR on every `api/**`
-merge). This is the backend half of "builds alone from a feed." Documented in
+merge). This is the backend half of "builds alone from a feed." The lockstep pin and `platform-sync`
+it shipped are superseded by §7. Documented in
 [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md) ("Cross-service contract distribution" /
 "Per-folder build closures").
 
@@ -209,6 +210,28 @@ The open architecture decisions (D-A / D-B in [`POLYREPO_FULLSTACK_PLAN.md`](POL
 
 This gate governs how much to invest in §5, and whether §4c's plan-locality moves should also anticipate a
 `services/<x>/` layout. **Resolve at the root architecture level, not inside a feature PR.**
+
+---
+
+## 7. Published surface & release trains — 🔴 not started
+
+The cut specifies independent per-producer trains, distinct consumer properties and Renovate
+producer-pull, and it states the platform admission rule. Neither exists yet: all 55 `IsPackable`
+projects share one MinVer height and one `<ConcertablePlatformVersion>` pin, and no package has ever
+been tested against the admission rule. Both are cheaper to build inside one repo than to retrofit
+across nine.
+
+- [ ] 🔴 **Platform release trains** `platform/release-trains` — retire the per-merge pin-bump tax (423
+  bump commits / 221 sync merges of 5704 on `main`), build main's images from the commit's own source
+  rather than the stale pin, and split the lockstep version into the per-producer trains the cut
+  assumes. Owned by
+  [`PLATFORM_RELEASE_TRAINS_PLAN.md`](PLATFORM_RELEASE_TRAINS_PLAN.md) /
+  [`PLATFORM_RELEASE_TRAINS_PROGRESS.md`](PLATFORM_RELEASE_TRAINS_PROGRESS.md).
+- [ ] 🔴 **Published surface admission** `platform/surface-admission` — apply the admission rule to all 55
+  packages and produce a binding per-package verdict (platform / service-owned / vendor / promote), then
+  execute it. Supplies train membership to `platform/release-trains`. Owned by
+  [`PUBLISHED_SURFACE_ADMISSION_PLAN.md`](PUBLISHED_SURFACE_ADMISSION_PLAN.md) /
+  [`PUBLISHED_SURFACE_ADMISSION_PROGRESS.md`](PUBLISHED_SURFACE_ADMISSION_PROGRESS.md).
 
 ---
 
