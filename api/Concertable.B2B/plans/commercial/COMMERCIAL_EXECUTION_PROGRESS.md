@@ -23,16 +23,20 @@ commitment-start methods, entity/request/read shapes, separate invitation API/se
 contracts and atomic Booking convergence. It does not declare the whole programme implementation-ready;
 B6/B7 financial-operation definitions still need equally concrete review before enabling those capabilities.
 
-The latest agreed clarification adopts Dunet for union authoring and explicit payment names (D19):
-PaymentMethod/PaymentAuthorisation cases, IPaymentMethodSetupStep/IPaymentAuthorisationStep and their
-corresponding implementation/input names. AcceptStep remains the future union name if acceptance earns
-distinct callable contracts. The existing reference resolver is still removed after migration, not
-converted into an executable union. No runtime code, package pin or SDK changed.
+The latest agreed corrections are recorded in D19-D21: Dunet-authored PaymentMethodStep with
+PaymentMethod/PaymentAuthorisation cases, typed `BehaviourKey<TBehaviour>` enum selection and an omitted
+version default of 1, and shared generic strategy/union factories only. Save/Verify share
+IPaymentMethodSetupStep; amount authorisation uses IPaymentAuthorisationStep. This real preparation union
+does not convert today's uniform reference resolver into a union. AcceptStep remains a future name only
+if acceptance earns distinct callable contracts. No runtime code, package pin or SDK changed.
 
-Section 4 now specifies the recommended BehaviourKey value, exact module-local version registration and
-dependency-gated retirement lifecycle (D20). Compatible releases keep the key; incompatible semantics may
-need concurrent leaves in one capability case. History/readers are retained independently of executor code.
-The V2 example is explanatory, not an instruction to add another payment requirement or implementation now.
+Sections 4/16 now use the composite key directly, replacing the rejected per-family factory and
+persisted-key-to-runtime-enum adapter. Shared builders gain explicit supported-key coverage while retaining
+existing enum-consumer, overlap and lifetime checks. Omission always means 1, never latest; storage pins the
+effective version before issuance/hashing. Initial leaves need no V1 namespace or repeated version argument.
+Incompatible future semantics may require concurrent leaves; no speculative V2 implementation is approved.
+D22 records the accepted support direction and proposed retirement proof: outstanding work, not historical
+rows alone, determines executor retention. Specific deadlines, retained-data and replay policies remain open.
 
 Tommy requested B2B ownership. The prior direct-offers plan and ledger are replaced, not retained as
 parallel instructions. The old launch item now routes to this B2B owner. Historical text remains in Git.
@@ -42,7 +46,7 @@ draft remains with its separate owner; this plan owns only B2B scope and the req
 
 ## Next Steps
 
-Paused: Tommy - review section 4's version selection/retirement recommendation (D20) and sections 3/16 with D17-D18; D19 records the agreed Dunet/payment naming choice. Before overall approval, reconcile remaining collaborator/entity names and older null-forgiving snippets, resolve admitted-slice policies and complete B6/B7's operation contracts. Application implementation or migration requires separate explicit authorisation.
+Paused: Tommy - review the reconciled sections 4/16 against agreed D19-D21, then the remaining D17-D18 entry contracts and D22 support-policy details. Before overall approval, reconcile remaining collaborator/entity names and older null-forgiving snippets, resolve admitted-slice policies and complete B6/B7's operation contracts. Application implementation or migration requires separate explicit authorisation.
 
 On feedback, update this plan and the existing product-decision owners in Concertable/docs as appropriate.
 Do not infer approval of every recommendation from permission to write/read the draft.
@@ -67,6 +71,10 @@ Do not infer approval of every recommendation from permission to write/read the 
   recovery, post-flush ETags and one Booking creation path. Added acceptance/counter/commitment race proofs.
 - Aligned all sketched sum-type declarations with Dunet, retained explicit interface-valued case construction
   and added exact semantics selection/retirement requirements to B4/B5 and the entry verification matrix.
+- Replaced bespoke family factories/string-key translation with shared direct-key factories, typed enums
+  and the stable version-1 default; reconciled configuration, registration, workflow, decision and slice
+  examples plus the dispatch diagram. Distinguished the new payment-preparation union from the old reference
+  strategy, and initial unversioned class names from genuinely incompatible future V1/V2 leaves.
 
 ## Verification
 
@@ -75,13 +83,13 @@ Do not infer approval of every recommendation from permission to write/read the 
   B2B main remains older than PR633. Docs main
   includes PR11; organiser research 5ac4048 is local/unpublished evidence, not approved product policy.
 - This commit: B2B and root plan graphs pass with zero errors/warnings. Workflow v2 validates the B2B
-  artifact owner, worktree/branch and design-review pause. No superseded commitment case, interface,
-  implementation, input or reference-value names remain in the commercial plan tree; historical source
+  artifact owner, worktree/branch and design-review pause. Superseded runtime union/factory names and
+  string-key/translation-enum examples are absent from the commercial plan tree; historical source
   ICommitmentReferenceStep references are deliberately retained.
 - This commit: local Markdown links/anchors, three SVG XML documents, union declaration consistency and
   C# excerpt delimiters validate. These checks are not compilation or generated-code qualification.
-  Scoped diff whitespace passes. Only the existing plan and ledger changed; diagrams are unchanged
-  from their prior rendered/visual checks.
+  Scoped diff whitespace passes. Only the existing plan, ledger and dispatch diagram labels changed.
+  Diagram geometry is unchanged; this checkpoint's XML/text checks are not a new rendered visual review.
 - The prior broad B2B docs-reachability check found four baseline errors at 85ed6353:
   missing CLAUDE siblings in the two Dashboard test directories; missing AGENTS in E2EAdmin integration
   and KeyedStrategies unit test directories. These are not introduced by the plan; the owning test-guidance
@@ -91,10 +99,11 @@ Do not infer approval of every recommendation from permission to write/read the 
 ## Reviews
 
 The clarification received a scoped consistency self-review against the actual reference strategy,
-enum-constrained keyed builder, existing Dunet contract and first-party Dunet documentation. Version
-coexistence, unknown-outcome recovery and executor removal are specified design proofs, not implemented
-or executed tests. No independent implementation-readiness review, application test or C# compilation
-is claimed. This remains a design draft for Tommy.
+enum-constrained shared builders, existing factory algorithm and Dunet contract. The prior checkpoint
+qualified the Dunet authoring guidance against first-party documentation. Composite-key/default-version
+execution, coexistence, recovery and executor removal remain specified design proofs, not implemented
+or executed application tests. No independent implementation-readiness review or C# compilation is claimed.
+This remains a design draft for Tommy.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -105,14 +114,16 @@ is claimed. This remains a design draft for Tommy.
   IApplyStep and ICommitmentReferenceStep, not IAcceptStep. The target stores commitment references and
   removes the redundant acceptance resolver after conversion; starting a commitment is the real union
   example. A reference alone is not proof of payment readiness.
-- Dunet authoring and explicit payment names are agreed; native unions remain a future qualified
+- Dunet authoring and explicit PaymentMethodStep naming are agreed; native unions remain a future qualified
   representation/toolchain change, not an SDK upgrade authorised now. Distinct implementations sharing
   one contract do not require separate union cases. Keep the separate proposed acceptance record;
   questions about its purpose did not withdraw that design choice.
-- BehaviourKey and its retirement policy remain recommendations (D20). The enum-constrained builder
-  stays; a new module-local single-source registration binding maps persisted keys to supported execution
-  keys. No automatic latest-version fallback, enum per template, or indefinite executable retention merely
-  because historical agreements exist. Unresolved reachable old work can genuinely require continued support.
+- D20-D21 agree typed enum behaviour keys, the optional version default of 1 and shared generic factories.
+  The old per-family adapter is superseded. Extend the shared builder/catalogue for direct composite keys
+  with explicit supported sets, preserving existing guarantees rather than widening constraints blindly.
+  A different closed generic dependency is not a separately implemented factory. No workflow keyed service
+  location, automatic latest fallback or enum per template. D22 keeps historical reading separate from
+  executable support; unresolved reachable old work can genuinely require continued maintenance.
 - Configuration contains the actual selected commercial design; a template supplies reusable defaults.
   Version meanings, template provenance, issued proposals and accepted snapshots are separate concerns.
 - Stored compatibility needs structural/semantic and live checks as well as typed code. Section 16's
