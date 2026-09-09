@@ -67,7 +67,7 @@ Owned by [`MICROSERVICE_STEPS_PLAN.md`](MICROSERVICE_STEPS_PLAN.md) (+
 
 Cross-service deps go through published `Concertable.*` packages, not project references: feed
 `PackageReference`s, per-folder Central Package Management, the `EnforceServiceBoundary` guard, `carve-*`
-CI jobs, and `platform-sync` (MinVer bump + `<ConcertablePlatformVersion>` sync PR on every `api/**`
+CI jobs, and `platform-sync` (MinVer bump + `<ConcertableDotNetPlatformVersion>` sync PR on every `api/**`
 merge). This is the backend half of "builds alone from a feed." Documented in
 [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md) ("Cross-service contract distribution" /
 "Per-folder build closures").
