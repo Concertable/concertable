@@ -98,6 +98,7 @@ public static class CustomerWebHostExtensions
                     reg.SubscribeTo<CustomerReviewSubmittedEvent>();
                     reg.Publishes<TicketPurchasedEvent>();
                     reg.SubscribeTo<TicketPurchasedEvent>();
+                    reg.Publishes<PaymentMethodOwnerRegisteredEvent>();
                     reg.HandleCommand<SendTicketEmailCommand>();
                     reg.SubscribeTo<ConcertChangedEvent>();
                     reg.SubscribeTo<ConcertPostedEvent>();
@@ -140,6 +141,7 @@ public static class CustomerWebHostExtensions
                 {
                     opts.MapInboundClaims = false;
                     opts.Authority = builder.Configuration["Auth:Authority"] ?? builder.Configuration["services__auth__https__0"];
+                    opts.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
                     opts.Audience = "concertable.customer.api";
                     opts.TokenValidationParameters = new TokenValidationParameters
                     {

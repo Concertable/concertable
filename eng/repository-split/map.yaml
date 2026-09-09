@@ -41,7 +41,7 @@ targets:
     rename:
       api/Concertable.Payment/: ""
     notes:
-      - Payment owns its TestKit, E2E hosts, and Stripe adapter; fleet owns the cross-service helpers.
+      - Payment owns its TestKit, E2E hosts, and Stripe adapter; system owns the cross-service helpers.
 
   search:
     repo: Concertable/search
@@ -52,7 +52,7 @@ targets:
     rename:
       api/Concertable.Search/: ""
     notes:
-      - Needs a Customer seed simulator before its standalone host can converge.
+      - Rebuilds rating projections from B2B-owned events replayed by the B2B simulator; no Customer simulator dependency.
 
   customer:
     repo: Concertable/customer
@@ -105,25 +105,28 @@ targets:
       # Cross-service test infrastructure belongs with the suites it serves.
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
     rename:
+      api/Concertable.Shared/tools/OwnerOperations.psm1: "tools/OwnerOperations.psm1"
       api/: "src/"
     notes:
       - Owns Messaging Inbox/Outbox migrations.
-      - AppHost.Shared still mixes generic primitives with Auth-specific
-        composition; the Auth-specific half re-homes to auth before extraction.
+      - AppHost.Shared owns only product-neutral resource and topology primitives;
+        Auth owns SPA registration behavior and B2B/Customer own their surface rosters.
 
-  platform-web:
-    repo: Concertable/platform-web
+  platform-frontend:
+    repo: Concertable/platform-frontend
     include:
+      - app/build-config
       - app/shared
       - app/web/shared
       - app/mobile/shared
     rename:
+      app/build-config/: "packages/build-config/"
       app/shared/: "packages/shared/"
       app/web/shared/: "packages/web/"
       app/mobile/shared/: "packages/mobile/"
 
-  fleet:
-    repo: Concertable/fleet
+  system:
+    repo: Concertable/system
     include:
       - api/Concertable.AppHost
       - api/tests
@@ -138,8 +141,13 @@ targets:
       - api/Concertable.Search/tests/E2ETests
       - eng/repository-split/carve-e2e.ps1
       - scripts
+    exclude:
+      # Monorepo compatibility entrypoints dissolve at cut; they require sibling owner trees.
+      - scripts/setup-local-dev.ps1
+      - scripts/sync-owner-tooling.ps1
+      - scripts/test-owner-operations.ps1
     rename:
-      api/Concertable.AppHost/: "apphost/"
+      api/Concertable.AppHost/: "src/Concertable.AppHost/"
       api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
       api/Concertable.B2B/tests/E2ETests/: "tests/b2b/"
       api/Concertable.Customer/tests/E2ETests/: "tests/customer/"
@@ -147,9 +155,10 @@ targets:
       api/Concertable.Search/tests/E2ETests/: "tests/search/"
       api/tests/: "tests/shared/"
     notes:
-      - "Composes and ships the fleet: umbrella AppHost, cross-service E2E, fleet manifest, IaC, deployment and rollback."
-      - "Renamed from `system`, which read as core infrastructure and misdescribed it."
+      - "Composes and ships the system: umbrella AppHost, cross-service E2E, system manifest, IaC, deployment and rollback."
+      - "System names the repository responsibility, not a .NET namespace; code artifacts avoid the framework System root."
       - "E2E must lose service-implementation references (checkpoint 4) before this extraction can build standalone."
+      - "Only scripts/system and System/E2E support commands survive; monorepo owner routing and copy-parity commands dissolve."
 
   org-github:
     repo: Concertable/.github
@@ -164,6 +173,9 @@ dissolves:
   - app/package.json
   - app/package-lock.json
   - api/Concertable.slnx
+  - scripts/setup-local-dev.ps1
+  - scripts/sync-owner-tooling.ps1
+  - scripts/test-owner-operations.ps1
   - AGENTS.md
   - CLAUDE.md
   - ARCHITECTURE.md

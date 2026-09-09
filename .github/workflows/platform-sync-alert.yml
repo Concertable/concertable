@@ -1,12 +1,20 @@
 name: Platform sync alert
 
-# A platform-sync PR (chore/platform-sync-*) is auto-merge and expected to land green on its own. A RED
-# one means a published contract changed shape and a consumer no longer compiles against the new pin --
-# it silently strands EVERY service on a broken platform version until someone migrates the consumer.
-# Merges don't always go through the /merge skill (GitHub UI, admin merge, a teammate), so the only
-# path-independent guard is here: when the Test workflow concludes on a chore/platform-sync-* branch,
-# open (red) or close (green) a single tracking Issue and label the PR -- so a broken sync SCREAMS
-# (Issue = email to watchers) instead of rotting unnoticed until it bites an unrelated build.
+# A platform-sync PR (chore/platform-sync-*) is auto-merge and expected to land green on its own. When
+# CI on one fails, this workflow flags it -- an Issue (email to watchers) plus a PR label -- so it can't
+# rot unnoticed until it bites an unrelated build. Merges don't always go through the /merge skill
+# (GitHub UI, admin merge, a teammate), so this path-independent guard keys off the CI run's conclusion.
+#
+# Two tiers, because "CI failed" is not one thing:
+#   * COMPILE-FLOOR failure (build / carve-* / local-platform-pack / container-images) -> a published
+#     contract changed shape and a consumer no longer compiles against the new pin. This strands EVERY
+#     service on a broken platform version until someone migrates the consumer. Label 'platform-sync-broken',
+#     open the red tracking Issue.
+#   * Anything else (a flaky integration test, an infra blip) -> build + carve are green, so the pin is
+#     NOT stranding anyone. Label 'platform-sync-ci-flaky', open the amber Issue that says "re-run CI".
+#     No false "every service is stranded" alarm.
+# A green run on any sync branch closes BOTH Issues and strips BOTH labels from the PR (open or merged),
+# so a resolved sync never keeps wearing a scary badge.
 #
 # Why workflow_run and not pull_request: this must run with the repo token from the DEFAULT branch so it
 # can write Issues/labels, and it keys off the CI run's own conclusion. It only ever acts on
@@ -24,7 +32,10 @@ permissions:
 
 env:
   BRANCH: ${{ github.event.workflow_run.head_branch }}
-  LABEL: platform-sync-broken
+  LABEL_BROKEN: platform-sync-broken
+  LABEL_FLAKY: platform-sync-ci-flaky
+  TITLE_BROKEN: "🔴 platform-sync is RED"
+  TITLE_FLAKY: "🟡 platform-sync CI failed (not a contract break)"
 
 jobs:
   red:
@@ -35,12 +46,12 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RUN_URL: ${{ github.event.workflow_run.html_url }}
+      RUN_ID: ${{ github.event.workflow_run.id }}
     steps:
-      - name: Open or refresh the tracking issue and flag the PR
+      - name: Classify the failure and flag the PR
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          title="🔴 platform-sync is RED"
           pr="$(gh pr list --repo "$repo" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
 
           # A superseded/merged sync branch can still report a late CI failure -- its PR is gone, so there
@@ -50,15 +61,29 @@ jobs:
             exit 0
           fi
 
-          # Idempotent label; flag the PR so it's obvious in the PR list too.
-          gh label create "$LABEL" --repo "$repo" --color B60205 \
-            --description "platform-sync PR is failing CI" 2>/dev/null || true
-          gh pr edit "$pr" --repo "$repo" --add-label "$LABEL" || true
+          # Which jobs actually failed? The compile floor (build + carve-* + the pack/image jobs) failing
+          # is the only thing that means "consumer won't compile against the new pin". A test-only failure
+          # leaves the pin perfectly usable -- it's a flake to re-run, not a stranding break.
+          failed="$(gh api --paginate "repos/$repo/actions/runs/$RUN_ID/jobs" \
+            --jq '.jobs[] | select(.conclusion == "failure") | .name')"
+          echo "Failed jobs:"; printf '  %s\n' "${failed:-<none reported>}"
 
-          body="$(cat <<EOF
-          The automated platform-sync PR on \`$BRANCH\` failed CI (#$pr).
+          # Empty (odd) -> fail safe to the loud path rather than swallow a real break.
+          if [ -z "$failed" ] || printf '%s\n' "$failed" \
+              | grep -qE '^(build|carve-[a-z]+|local-platform-pack|container-images)( |$)'; then
+            tier=broken
+          else
+            tier=flaky
+          fi
+          echo "Tier: $tier"
 
-          A red platform-sync PR means a **published contract changed shape** and a consumer no longer
+          if [ "$tier" = broken ]; then
+            label="$LABEL_BROKEN"; title="$TITLE_BROKEN"; color=B60205
+            desc="platform-sync PR: a consumer no longer compiles against the new pin"
+            body="$(cat <<EOF
+          The automated platform-sync PR on \`$BRANCH\` failed CI **on the compile floor** (#$pr).
+
+          A compile-floor failure means a **published contract changed shape** and a consumer no longer
           compiles against the new pin. Auto-merge is holding it, but **every service is stranded on a
           broken platform version until it's fixed**.
 
@@ -70,16 +95,34 @@ jobs:
           Failing run: $RUN_URL
           EOF
           )"
+          else
+            label="$LABEL_FLAKY"; title="$TITLE_FLAKY"; color=D4A017
+            desc="platform-sync PR: CI failed below the compile floor (likely flake)"
+            body="$(cat <<EOF
+          The automated platform-sync PR on \`$BRANCH\` failed CI (#$pr), but **build + carve are green** —
+          the new pin compiles for every service, so **nothing is stranded**. The failure is below the
+          compile floor (a flaky integration test or an infra blip).
 
-          # ONE singleton tracking issue (fixed title), not one-per-branch: a red sync is almost always
+          **Fix:** re-run the failed jobs on the CI run below. It should land itself once green. Only treat
+          this as a real break if a re-run fails on \`build\` or a \`carve-*\` job.
+
+          Failing run: $RUN_URL
+          EOF
+          )"
+          fi
+
+          gh label create "$label" --repo "$repo" --color "$color" --description "$desc" 2>/dev/null || true
+          gh pr edit "$pr" --repo "$repo" --add-label "$label" || true
+
+          # ONE singleton Issue per tier (fixed title), not one-per-branch: a red sync is almost always
           # SUPERSEDED (PR closed, new version branch opened) rather than fixed in place, so a per-branch
           # issue keyed to the dead branch never sees a matching green run and orphans forever. Refresh it.
           num="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
-            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | .number' | head -1)"
+            --jq ".[] | select(.title == \"$title\") | .number" | head -1)"
           if [ -n "$num" ]; then
-            gh issue comment "$num" --repo "$repo" --body "Still red — current offender \`$BRANCH\` (#$pr): $RUN_URL"
+            gh issue comment "$num" --repo "$repo" --body "Still failing — current offender \`$BRANCH\` (#$pr): $RUN_URL"
           else
-            gh issue create --repo "$repo" --title "$title" --body "$body" --label "$LABEL" 2>/dev/null \
+            gh issue create --repo "$repo" --title "$title" --body "$body" --label "$label" 2>/dev/null \
               || gh issue create --repo "$repo" --title "$title" --body "$body"
           fi
 
@@ -91,18 +134,29 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Close the tracking issue once any sync is green again
+      - name: Clear the tracking issues and PR labels once a sync is green again
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
+
           # A green sync run proves consumers compile against the current pin -> the platform is healthy.
-          # Clear every open tracking issue (there should be at most one), whatever branch it named.
+          # Close every open tracking issue (both tiers), whatever branch it named.
           nums="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
-            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | .number')"
+            --jq ".[] | select(.title == \"$TITLE_BROKEN\" or .title == \"$TITLE_FLAKY\") | .number")"
           if [ -z "$nums" ]; then
             echo "No open tracking issue — nothing to close."
-            exit 0
+          else
+            for num in $nums; do
+              gh issue close "$num" --repo "$repo" --comment "platform-sync is green again ✅ ($BRANCH) — closing."
+            done
           fi
-          for num in $nums; do
-            gh issue close "$num" --repo "$repo" --comment "platform-sync is green again ✅ ($BRANCH) — closing."
-          done
+
+          # Strip both labels from this sync's PR whether it's still open or already merged, so a resolved
+          # sync never keeps a stale scary badge in the PR list (green often fires after the merge).
+          pr="$(gh pr list --repo "$repo" --state all --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -n "$pr" ]; then
+            for l in "$LABEL_BROKEN" "$LABEL_FLAKY"; do
+              gh pr edit "$pr" --repo "$repo" --remove-label "$l" 2>/dev/null || true
+            done
+            echo "Cleared labels from #$pr."
+          fi

@@ -12,6 +12,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@concertable/b2b": "*",
     "@concertable/shared": "*",
     "@concertable/mobile": "*",
     "@expo-google-fonts/geist": "^0.4.2",
@@ -59,6 +60,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@concertable/build-config": "*",
     "@types/react": "~19.1.0",
     "qrcode-terminal": "^0.12.0",
     "typescript": "~5.9.2"

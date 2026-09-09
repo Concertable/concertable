@@ -2,7 +2,9 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Concertable.Customer.TestKit;
-using Concertable.Fleet.E2E;
+using Concertable.E2E;
+using Concertable.Payment.E2ETests.Helpers;
+using Concertable.Payment.Hosting;
 using Concertable.Payment.TestKit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +22,7 @@ public sealed class AppFixture : IAsyncLifetime
     private HttpClient customerAdminClient = null!;
     private HttpClient paymentAdminClient = null!;
     private CustomerTestClient customerTestClient = null!;
+    private PaymentIntentService stripePaymentIntents = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
     private readonly IConfiguration configuration;
@@ -30,8 +33,6 @@ public sealed class AppFixture : IAsyncLifetime
     private readonly string paymentWebUrl;
     private readonly string authUrl;
     private readonly string customerSpaUrl;
-
-    public const string TestPaymentMethodId = "pm_card_visa";
 
     public HttpClient CustomerClient { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
@@ -74,15 +75,16 @@ public sealed class AppFixture : IAsyncLifetime
         logger.InitializingE2ETestFixture();
 
         healthWaiter = new HealthWaiter(loggerFactory.CreateLogger<HealthWaiter>());
-        var projectProvider = FleetProjectProviders.Source();
-        var builder = await projectProvider.CreateBuilderAsync(FleetSurface.Customer);
+        var composition = Compositions.Source();
+        var builder = await composition.CreateBuilderAsync(Surface.Customer);
         var stripeSecretKey = builder.Configuration["Stripe:SecretKey"]
             ?? throw new InvalidOperationException("Stripe:SecretKey is not configured for the Customer E2E fixture.");
         var stripeClient = new StripeClient(stripeSecretKey);
+        stripePaymentIntents = new PaymentIntentService(stripeClient);
         StripeCustomerResolver = await Concertable.Testing.E2E.StripeCustomerResolver.CreateAsync(stripeClient);
-        var fleetRun = FleetRun.Create(FleetProfile.Customer(customerWebUrl, searchWebUrl, authUrl, paymentWebUrl));
+        var run = Run.Create(Profile.Customer(customerWebUrl, searchWebUrl, authUrl, paymentWebUrl));
 
-        builder.AddE2EStack(fleetRun, projectProvider, StripeCustomerResolver);
+        builder.AddE2EStack(run, composition, StripeCustomerResolver);
 
         app = await builder.BuildAsync();
         resourceLogger = new AspireResourceLogger(
@@ -101,13 +103,41 @@ public sealed class AppFixture : IAsyncLifetime
         paymentAdminClient = new HttpClient { BaseAddress = new Uri(paymentWebUrl) };
         customerTestClient = new CustomerTestClient(
             customerAdminClient,
-            fleetRun.AdminKey);
+            run.AdminKey);
         var paymentTestClient = new PaymentTestClient(
             paymentAdminClient,
-            fleetRun.AdminKey);
+            run.AdminKey);
         DbFixture = new DbFixture(customerTestClient, paymentTestClient);
         await DbFixture.ResetAsync();
         SeedState = await customerTestClient.GetSeedStateAsync();
+
+        var payoutAccounts = new PayoutAccountDb(
+            await app.GetConnectionStringAsync(PaymentConstants.Database)
+                ?? throw new InvalidOperationException("Payment connection string is missing."));
+        var buyerId = SeedState.Customer1.Id;
+        var payeeId = SeedState.UpcomingFlatFeeConcert.PayeeOwnerId;
+        try
+        {
+            await Polling.UntilAsync(
+                async () => (
+                    Chargeable: await payoutAccounts.GetChargeableOwnerIdsAsync(),
+                    Payable: await payoutAccounts.GetPayableOwnerIdsAsync()),
+                provisioned =>
+                    provisioned.Chargeable.Contains(buyerId)
+                    && provisioned.Payable.Contains(payeeId),
+                timeout: TimeSpan.FromMinutes(3));
+        }
+        catch (TimeoutException)
+        {
+            var chargeable = await payoutAccounts.GetChargeableOwnerIdsAsync();
+            var payable = await payoutAccounts.GetPayableOwnerIdsAsync();
+            throw new InvalidOperationException(
+                $"Payment never provisioned the owners this suite transacts as. "
+                + $"Buyer {buyerId} chargeable: {chargeable.Contains(buyerId)}. "
+                + $"Payee {payeeId} payable: {payable.Contains(payeeId)}. "
+                + $"Chargeable owners: [{string.Join(", ", chargeable)}]. "
+                + $"Payable owners: [{string.Join(", ", payable)}].");
+        }
 
         logger.E2ETestFixtureReady();
     }
@@ -129,6 +159,17 @@ public sealed class AppFixture : IAsyncLifetime
 
     public Task WaitForTokenMintingAsync(string email, string password) =>
         tokenMinter.WaitUntilMintableAsync(email, password, Polling);
+
+    public Task ConfirmPaymentAsync(string clientSecret)
+    {
+        var separatorIndex = clientSecret.IndexOf("_secret_", StringComparison.Ordinal);
+        if (separatorIndex <= 0)
+            throw new ArgumentException("The payment client secret is invalid.", nameof(clientSecret));
+
+        return stripePaymentIntents.ConfirmAsync(
+            clientSecret[..separatorIndex],
+            new PaymentIntentConfirmOptions { PaymentMethod = "pm_card_visa" });
+    }
 
     public async Task DisposeAsync()
     {

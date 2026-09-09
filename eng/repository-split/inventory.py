@@ -38,14 +38,15 @@ AREA_TARGETS = {
     "Concertable.ServiceDefaults": "platform-dotnet",
     "Concertable.AppHost.Shared": "platform-dotnet",
     "Concertable.Frontend.Hosting": "platform-dotnet",
-    "Concertable.AppHost": "fleet",
-    "tests": "fleet",
+    "Concertable.AppHost": "system",
+    "tests": "system",
 }
 
 FRONTEND_TARGETS = {
-    "app/shared": "platform-web",
-    "app/web/shared": "platform-web",
-    "app/mobile/shared": "platform-web",
+    "app/build-config": "platform-frontend",
+    "app/shared": "platform-frontend",
+    "app/web/shared": "platform-frontend",
+    "app/mobile/shared": "platform-frontend",
     "app/web/b2b": "b2b",
     "app/b2b/shared": "b2b",
     "app/mobile/b2b": "b2b",
@@ -78,9 +79,16 @@ def area_of(rel_path: str) -> str | None:
     return parts[1]
 
 
-TEST_KINDS = {"unit-test", "integration-test", "architecture-test", "fixture", "composition-test"}
+TEST_KINDS = {
+    "unit-test",
+    "integration-test",
+    "architecture-test",
+    "startup-test",
+    "fixture",
+    "composition-test",
+}
 SERVICE_OWNED_E2E_SUFFIXES = (".E2ETests.Server", ".E2ETests.Web", ".E2ETests.Workers", ".E2ETests.Stripe")
-SOURCE_MODE_E2E_PROVIDER = "api/tests/Concertable.Fleet.E2E.Source/Concertable.Fleet.E2E.Source.csproj"
+SOURCE_MODE_E2E_COMPOSITION = "api/tests/Concertable.E2E.Source/Concertable.E2E.Source.csproj"
 
 
 def is_e2e_name(name: str) -> bool:
@@ -101,6 +109,8 @@ def classify(rel_path: str) -> str:
         return "unit-test"
     if name.endswith(".ArchitectureTests"):
         return "architecture-test"
+    if name.endswith(".StartupTests"):
+        return "startup-test"
     if name.endswith(".CompositionTests"):
         return "composition-test"
     if name.endswith(".AppHost"):
@@ -115,7 +125,7 @@ def target_of(rel_path: str, area: str | None) -> str | None:
     if is_e2e_name(name):
         if name.endswith(SERVICE_OWNED_E2E_SUFFIXES):
             return AREA_TARGETS.get(area) if area else None
-        return "fleet"
+        return "system"
     return AREA_TARGETS.get(area) if area else None
 
 
@@ -176,7 +186,7 @@ def build_dotnet(files: list[str]) -> dict:
     cross_target = [e for e in project_edges if e["fromTarget"] != e["toTarget"]]
 
     # Composition-time (*.Hosting) and test-tree edges are resolved by their own
-    # checkpoints (Hosting packages; moving full-stack E2E to `fleet`). A cross-target
+    # checkpoints (Hosting packages; moving full-system E2E to `system`). A cross-target
     # edge from a production runtime project is the hard blocker: that deployable
     # closure would not compile once the repos are separate.
     def is_runtime_closure(rel: str) -> bool:
@@ -192,20 +202,20 @@ def build_dotnet(files: list[str]) -> dict:
         cross_target_by_kind[e["fromKind"]] += 1
 
     source_mode_e2e = sorted(
-        (e for e in cross_target if e["from"] == SOURCE_MODE_E2E_PROVIDER),
+        (e for e in cross_target if e["from"] == SOURCE_MODE_E2E_COMPOSITION),
         key=lambda e: (e["from"], e["to"]),
     )
     blocking_e2e = sorted(
         (
             e
             for e in cross_target
-            if e["fromKind"] == "e2e" and e["from"] != SOURCE_MODE_E2E_PROVIDER
+            if e["fromKind"] == "e2e" and e["from"] != SOURCE_MODE_E2E_COMPOSITION
         ),
         key=lambda e: (e["from"], e["to"]),
     )
 
     # EnforceServiceBoundary exempts the test tier, so this is the only check that sees such an edge.
-    # A *.Hosting target waits on the packable-Hosting stage and E2E on the E2E-to-fleet stage, so
+    # A *.Hosting target waits on the packable-Hosting stage and E2E on the E2E-to-system stage, so
     # neither counts yet.
     blocking_test = sorted(
         (
@@ -333,6 +343,16 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
+        blocking_runtime = inventory["dotnet"]["blockingRuntimeEdges"]
+        if blocking_runtime:
+            print(
+                "RUNTIME CROSS-REPOSITORY ProjectReference(s) — consume the dependency as a "
+                "published PackageReference:",
+                file=sys.stderr,
+            )
+            for e in blocking_runtime:
+                print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
+            return 1
         regressed = inventory["dotnet"]["blockingTestEdges"]
         if regressed:
             print(
@@ -346,7 +366,7 @@ def main() -> int:
         blocking_e2e = inventory["dotnet"]["blockingE2EEdges"]
         if blocking_e2e:
             print(
-                "E2E CROSS-REPOSITORY ProjectReference(s) OUTSIDE THE SOURCE-MODE PROVIDER:",
+                "E2E CROSS-REPOSITORY ProjectReference(s) OUTSIDE THE SOURCE-MODE COMPOSITION:",
                 file=sys.stderr,
             )
             for e in blocking_e2e:
@@ -361,7 +381,7 @@ def main() -> int:
             for e in forbidden_tooling:
                 print(f"  {e['from']} -> {e['to']}", file=sys.stderr)
             return 1
-        print("inventory.json is current; no test-tier cross-repository ProjectReference")
+        print("inventory.json is current; no blocking runtime or test-tier cross-repository ProjectReference")
         return 0
 
     OUTPUT.write_text(current, encoding="utf-8")

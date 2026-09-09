@@ -1,15 +1,17 @@
-"""Prove the CI service-scope classifier only ever narrows CI safely.
+"""Prove service scoping and queue E2E dependencies only ever narrow CI safely.
 
 The classifier decides which services a diff can affect, so an unrelated service's
 suites and standalone carve never gate a PR. Getting it wrong is silent: a suite
-that should have run simply does not. The block under test is extracted from
-test.yml itself rather than restated here, so the test cannot drift from the gate.
+that should have run simply does not. The classifier block and dependency graph
+are read from test.yml itself rather than restated here, so the test cannot drift
+from the gate.
 
     python .github/workflows/tests/test_service_scope.py
 """
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -24,8 +26,10 @@ ALL = "ALL"
 MATRIX_GUARDS = {
     "unit-tests": "unit_projects",
     "architecture-tests": "architecture_projects",
+    "startup-tests": "startup_projects",
     "integration-tests": "integration_projects",
 }
+QUEUE_E2E_JOBS = ("e2e-api-tests", "e2e-ui-tests")
 
 CASES: list[tuple[str, list[str], str]] = [
     ("payment only", ["api/Concertable.Payment/src/X/Y.cs"], "Payment"),
@@ -48,12 +52,73 @@ CASES: list[tuple[str, list[str], str]] = [
 ]
 
 
+RUNTIME_CASES: list[tuple[str, list[str], str]] = [
+    ("service runtime source", ["api/Concertable.B2B/src/Modules/Deal/D.cs"], "true"),
+    ("module unit tests live under src", ["api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/T.cs"], "false"),
+    ("service test tier", ["api/Concertable.Payment/tests/Concertable.Payment.UnitTests/T.cs"], "false"),
+    # The E2E suites and their shared harness are the gate itself; a change to one re-validates it.
+    ("an E2E suite", ["api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Features/Login.feature"], "true"),
+    ("the shared E2E harness", ["api/Concertable.Shared/tests/Concertable.Testing.E2E/StripeCustomerResolver.cs"], "true"),
+    ("api markdown is inert", ["api/ARCHITECTURE.md"], "false"),
+    ("frontend only", ["app/web/customer/src/App.tsx"], "false"),
+    ("the workflow itself", [".github/workflows/test.yml"], "false"),
+    ("a runtime file alongside a test file", ["api/Concertable.B2B/tests/X/T.cs", "api/Concertable.B2B/src/S.cs"], "true"),
+]
+
+
+def extract_runtime_block() -> str:
+    """The api_runtime rule: which diffs may not opt out of E2E."""
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    steps = spec["jobs"]["changes"]["steps"]
+    run = next(s for s in steps if s.get("id") == "detect")["run"]
+    inert = next(l for l in run.splitlines() if l.strip().startswith("INERT="))
+    start = run.index("api_changed=$(")
+    end = run.index('echo "-> api_runtime=')
+    return inert + "\n" + run[start:end]
+
+
+def tier_block() -> str:
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    steps = spec["jobs"]["changes"]["steps"]
+    run = next(s for s in steps if s.get("id") == "detect")["run"]
+    return run[run.index("if printf '%s\\n' \"$labels\" | grep -qixF expand-merge") : run.index("# E2E is the MERGE QUEUE's gate only")]
+
+
+def runtime_optout_precedence() -> tuple[bool, str]:
+    """A runtime diff must be tested BEFORE the opt-outs, and must never turn a gate back on."""
+    tier = tier_block()
+    ordered = tier.index("$api_runtime") < tier.index("full-e2e") < tier.index("optout Skip-E2E")
+    return ordered and "run_e2e=true" not in tier, tier.splitlines()[0].strip()
+
+
+TIER_CASES: list[tuple[str, str, list[str], list[str], str]] = [
+    ("nothing selected", "false", [], [], "true true"),
+    ("skip-e2e label", "false", ["skip-e2e"], [], "false false"),
+    ("skip-e2e-ui label", "false", ["skip-e2e-ui"], [], "true false"),
+    ("Skip-E2E-UI trailer", "false", [], ["Skip-E2E-UI"], "true false"),
+    ("Skip-E2E trailer", "false", [], ["Skip-E2E"], "false false"),
+    ("full-e2e outranks the opt-outs", "false", ["full-e2e", "skip-e2e"], ["Skip-E2E"], "true true"),
+    # The whole point: a runtime diff cannot lose E2E, however it was labelled or trailered.
+    ("a runtime diff, unlabelled", "true", [], [], "true true"),
+    ("a runtime diff ignores every opt-out", "true", ["skip-e2e", "skip-e2e-ui"], ["Skip-E2E", "Skip-E2E-UI"], "true true"),
+    # …except the one named, documented structural conflict, which drops the UI lane only.
+    ("expand-merge on a runtime diff", "true", ["expand-merge"], [], "true false"),
+    ("expand-merge cannot be widened by skip-e2e", "true", ["expand-merge", "skip-e2e"], ["Skip-E2E"], "true false"),
+    # These two co-occur in practice: `merge` Step 4 applies full-e2e for any positive trigger, and a
+    # published-shape change is one — so the expand merge that cannot pass UI E2E arrives carrying both.
+    ("expand-merge outranks full-e2e", "true", ["full-e2e", "expand-merge"], [], "true false"),
+]
+
+
 def extract_block() -> str:
     spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     steps = spec["jobs"]["changes"]["steps"]
     detect = next(s for s in steps if s.get("id") == "detect")
     run = detect["run"]
-    start = run.index("# SERVICE SCOPE:")
+    # Include the api_files derivation immediately before the policy comment. Starting at the
+    # comment leaves api_files inherited from the caller's environment, so the test can silently
+    # classify every backend change as frontend-only instead of exercising the workflow logic.
+    start = run.index("api_files=$(", run.index("# SERVICE SCOPE:") - 200)
     end = run.index('echo "services=$services"')
     block = run[start:end]
     if "SERVICE_DIRS" not in block:
@@ -64,23 +129,49 @@ def extract_block() -> str:
 def bash() -> str:
     # On Windows a bare `bash` can resolve to a WSL stub that cannot exec; prefer Git Bash,
     # which is the shell this repository's other hooks already assume.
-    for candidate in (r"C:\Program Files\Git\usr\bin\bash.exe", r"C:\Program Files\Git\bin\bash.exe"):
+    # Git's public bin/bash wrapper initializes PATH with grep/sed/sort; invoking usr/bin/bash
+    # directly inherits only the Windows process PATH and silently leaves those tools unavailable.
+    for candidate in (r"C:\Program Files\Git\bin\bash.exe", r"C:\Program Files\Git\usr\bin\bash.exe"):
         if Path(candidate).exists():
             return candidate
     return "bash"
 
 
-def run_case(block: str, files: list[str]) -> str:
-    # The block narrates to stdout, so tag the value and read the tagged line.
-    script = (
+def run_case(block: str, files: list[str], variable: str = "services") -> str:
+    return run_script(
         f"set -eu\nfiles={sh_quote(chr(10).join(files))}\n{block}\n"
-        'printf "SCOPE:%s\\n" "$services"\n'
+        f'printf "SCOPE:%s\\n" "${variable}"\n'
     )
+
+
+def run_tier_case(block: str, api_runtime: str, labels: list[str], trailers: list[str]) -> str:
+    """Both gates after the tier block decides, with optout()'s trailer half stubbed per case."""
+    ui = "yes" if "Skip-E2E-UI" in trailers else "no"
+    every = "yes" if "Skip-E2E" in trailers else "no"
+    return run_script(
+        f"set -eu\napi_runtime={api_runtime}\nlabels={sh_quote(chr(10).join(labels))}\n"
+        "run_e2e=true\nrun_e2e_ui=true\n"
+        'optout() { case "$1" in\n'
+        f'    Skip-E2E-UI) [ "{ui}" = yes ] && return 0;;\n'
+        f'    Skip-E2E)    [ "{every}" = yes ] && return 0;;\n'
+        "  esac\n"
+        '  printf "%s\\n" "$labels" | grep -qixF "$2"; }\n'
+        f"{block}\n"
+        'printf "SCOPE:%s %s\\n" "$run_e2e" "$run_e2e_ui"\n'
+    )
+
+
+def run_script(script: str) -> str:
+    # The block narrates to stdout, so tag the value and read the tagged line.
     with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False, newline="\n") as fh:
         fh.write(script)
         path = fh.name
     try:
-        proc = subprocess.run([bash(), path], capture_output=True, text=True)
+        environment = os.environ.copy()
+        # Git Bash rewrites slash-bearing regex arguments as Windows paths unless conversion is
+        # disabled. CI runs on Linux, but the policy test must exercise the same regexes locally.
+        environment["MSYS2_ARG_CONV_EXCL"] = "*"
+        proc = subprocess.run([bash(), path], capture_output=True, text=True, env=environment)
         if proc.returncode != 0:
             raise SystemExit(f"FAIL: classifier errored: {proc.stderr.strip()}")
         line = next(
@@ -107,6 +198,43 @@ def matrix_guard_cases() -> list[tuple[str, bool, str]]:
     return cases
 
 
+def dependency_closure(spec: dict, job: str) -> set[str]:
+    closure: set[str] = set()
+    pending = [job]
+    while pending:
+        current = pending.pop()
+        needs = spec["jobs"][current].get("needs", [])
+        if isinstance(needs, str):
+            needs = [needs]
+        for dependency in needs:
+            if dependency not in closure:
+                closure.add(dependency)
+                pending.append(dependency)
+    return closure
+
+
+def empty_matrix_guarded_jobs(spec: dict) -> set[str]:
+    # Derived from the workflow, not from MATRIX_GUARDS: a job guarded this way that nobody added to
+    # that table would otherwise be free to skip queue E2E again. It cannot come back empty while the
+    # matrix-guard cases above pass, because those assert this exact idiom on each named job.
+    return {
+        job
+        for job, body in spec["jobs"].items()
+        if "!= '[]'" in str(body.get("if", ""))
+    }
+
+
+def queue_e2e_dependency_cases() -> list[tuple[str, bool, set[str]]]:
+    """Queue E2E must survive the empty matrices produced by frontend-only diffs."""
+    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    guarded = empty_matrix_guarded_jobs(spec)
+    cases = []
+    for job in QUEUE_E2E_JOBS:
+        blocked_by = dependency_closure(spec, job).intersection(guarded)
+        cases.append((job, not blocked_by, blocked_by))
+    return cases
+
+
 def main() -> int:
     block = extract_block()
     failures = 0
@@ -122,8 +250,38 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} {name} empty-matrix guard: {condition!r}")
-    total = len(CASES) + len(MATRIX_GUARDS)
+    for name, ok, blocked_by in queue_e2e_dependency_cases():
+        if not ok:
+            failures += 1
+        status = "ok  " if ok else "FAIL"
+        print(f"{status} {name} independent of empty matrices: {sorted(blocked_by)!r}")
+    runtime_block = extract_runtime_block()
+    for name, files, expected in RUNTIME_CASES:
+        actual = run_case(runtime_block, files, "api_runtime")
+        ok = actual == expected
+        if not ok:
+            failures += 1
+        status = "ok  " if ok else "FAIL"
+        print(f"{status} api_runtime {name}: expected {expected!r}, got {actual!r}")
+    ok, first_line = runtime_optout_precedence()
+    if not ok:
+        failures += 1
+    print(f"{'ok  ' if ok else 'FAIL'} a runtime diff outranks every E2E opt-out: {first_line!r}")
+    tier = tier_block()
+    for name, api_runtime, labels, trailers, expected in TIER_CASES:
+        actual = run_tier_case(tier, api_runtime, labels, trailers)
+        ok = actual == expected
+        if not ok:
+            failures += 1
+        print(f"{'ok  ' if ok else 'FAIL'} E2E tier, {name}: expected {expected!r}, got {actual!r}")
+    total = (
+        len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + len(TIER_CASES) + 1
+    )
     print(f"\n{total - failures}/{total} passed")
+    package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
+    publication = subprocess.run([sys.executable, package_policy], check=False)
+    if publication.returncode != 0:
+        failures += 1
     return 1 if failures else 0
 
 

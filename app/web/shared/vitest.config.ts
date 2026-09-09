@@ -1,12 +1,4 @@
-import path from "path";
+import { nodeTests } from "@concertable/build-config/vitest";
 import { defineConfig } from "vitest/config";
 
-export default defineConfig({
-  resolve: {
-    alias: [{ find: "@", replacement: path.resolve(__dirname, "./src") }],
-  },
-  test: {
-    environment: "node",
-    include: ["src/**/*.test.ts"],
-  },
-});
+export default defineConfig(nodeTests(__dirname));
