@@ -35,6 +35,12 @@ The registry switch exists only as a carve-time transform: every workspace still
 The safe half has landed: a committed standalone `package-lock.json` per surface, restored with
 `npm ci` in the carve, and retirement of the `@concertable/build-config` local-pack special case.
 
+**Checkpoint 8A, delivered.** `Concertable/platform-frontend` now holds the four platform tiers as
+`packages/{build-config,shared,web,mobile}`, extracted with the pinned filter-repo 2.47.0 from a throwaway
+bare clone. CI is a thin pinned caller of the organization's reusable `node-ci.yml` plus the caller-owned
+`ci-complete` job; publication is Changesets on per-package SemVer lines. The four IDs' first
+non-prerelease versions publish from there, leaving the monorepo's `alpha` train untouched.
+
 **Terminal Phase-3 facts still worth carrying.** Only `@concertable/{web,b2b}` carry web class strings, so
 `app/web/shared/src/index.css` scans tier dists through two `@source` globs (`../dist/**/*.js`,
 `../../b2b/dist/**/*.js`) alongside the sibling-`src` globs — each set is inert in the layout it does not
@@ -228,6 +234,81 @@ publisher is `platform-frontend`, for all four platform IDs.
 - No open finding is evidenced. Delivery of the two fixed findings remains gated on the new review-fix PR.
 
 ## Decisions, discoveries, blockers, and deviations
+
+- **`map.yaml` was not closed, and `app/scripts` was the frontend half of the gap.**
+  `validate_map.py` on `081e149a2` reported `unclaimed 85`, not 0 — `claimed by >1 target` was already 0.
+  Nine of the 85 were `app/scripts/*`, claimed by no target at all: root `scripts` belongs to `system`, and
+  nothing had ever claimed the `app/` tree's scripts. 8A claims the five that are genuinely platform
+  (`check-fe-boundaries.mjs` and its test, `patch-nativewind`, `verify-fe-package.mjs`,
+  `vite-development-https`) and leaves `carve-fe.mjs`, `carve-fe.test.mjs`, `version-fe-packages.mjs` and
+  `validate-b2b-phase3-consumers.mjs` behind as monorepo carve/publication gates. Unclaimed is now 80; the
+  remaining 80 are other checkpoints' and are **not** evidence the map is closed.
+
+- **Paths handed to filter-repo are generated from `map.yaml`, never retyped beside it.**
+  `eng/repository-split/emit_paths.py` emits a target's paths file. It writes `include` as filter lines and
+  `rename` as `==>` directives *both*, because filter-repo explicitly does not treat a rename as a path
+  filter ("do not rely on a rename argument to select paths"). Verified after the run: 307 commits from
+  6569, top-level tree `packages` only, and no path outside `packages/` in any commit of any branch.
+
+- **Moving a script into a package re-homes every path it derived from its own location — that is one
+  defect class, not one defect.** `check-fe-boundaries.mjs` reached the consumer's declaration as
+  `../workspaces.cjs`, and `patch-nativewind.js` derived the workspace root as `__dirname/..`; from
+  `packages/build-config/scripts/` both resolve inside the package. Both now take the tree they act on
+  explicitly (`--root`, `--workspaces`, `--tailwind`, defaulting to the working directory) and ship as
+  package binaries, so a consumer never reaches into the package directory. `patch-nativewind.js` also had
+  to become `.cjs`: it is `require`-based and `@concertable/build-config` is `"type": "module"`, so the
+  move alone would have made it an ES module. `verify-fe-package.mjs` needed nothing — it already took its
+  target as an argument.
+
+- **The boundary checker's own test had to stop testing the repository it lives in.** The extracted test
+  asserted against real monorepo paths (`web/customer/src`, `b2b/shared/src`) that do not exist in
+  `platform-frontend`. It now builds a throwaway two-workspace fixture and drives the checker through
+  `--root`, which is only expressible because of the fix above. The monorepo keeps its own tree-shaped copy
+  — including the `cross-platform-b2b-has-no-platform-dependencies` case, which comes from
+  `app/b2b/workspaces.cjs`'s `forbidden` and is a product concern — until 8B removes the source.
+
+- **Switching the five SPA vite configs is inherently a two-step, and the carve gate is what makes it
+  one.** In-monorepo the configs resolve `@concertable/build-config` to the `app/build-config` *workspace*,
+  so the export has to exist there before any config can import it; a carved surface resolves it from the
+  feed at its committed lock, so the export also has to be *published* before a carved build can see it.
+  Step 1 (this PR) adds `./vite-development-https` to `app/build-config` and asserts it in
+  `verify-fe-package.mjs`'s build-config checks, which republishes the ID with the export on merge. Step 2
+  switches the five configs, deletes `app/scripts/vite-development-https.ts`, drops the
+  `archivePaths.push` line and the relative-import assertion in `carve-fe.mjs`/`carve-fe.test.mjs`, and
+  refreshes the seven surface locks onto the publish step 1 produced. Landing them as one PR would be green
+  in-monorepo and red on `carve-fe`.
+
+- **The initial published version is `0.1.0`, the version the manifests already declare.** Every
+  monorepo publication of these four IDs is a `0.1.0-alpha.0.<commit-height>` prerelease on the `alpha`
+  tag (max `0.1.0-alpha.0.6546`); no bare `0.1.0` exists for any of them. So `0.1.0` collides with nothing,
+  keeps git and the registry in agreement the way Changesets expects, and takes the default `latest` tag,
+  which cannot move `alpha` out from under a carve. No changeset is consumed for the move itself — the
+  four `CHANGELOG.md` files are seeded with the `0.1.0` entry and Changesets takes over from the next
+  change.
+
+- **Intra-`@concertable` ranges had to stop being `"*"`.** `"*"` links a sibling workspace but publishes a
+  range that only resolves through whatever `latest` happens to be, and Changesets cannot bump a range that
+  every version already satisfies. `packages/{web,mobile}` now declare `^0.1.0`, which links the sibling
+  just as well and is what Changesets rewrites on each release.
+
+- **Publication is a repository-owned Changesets workflow, not the organization's `npm-publish.yml`.**
+  That reusable workflow packs and publishes exactly one package from a `working-directory` and runs
+  `npm ci` against a lockfile *in that directory*; an npm-workspaces Changesets repository has one root
+  lockfile and releases whichever tiers changed, topologically. `node-ci.yml` is consumed unchanged for CI,
+  pinned to a full commit SHA, with the caller owning `pull_request`/`merge_group` and the `ci-complete`
+  aggregation name the shared ruleset matches on. `verify-fe-package` survives into the release workflow
+  for the reason the org workflow cannot cover: it proves Metro and NativeWind resolve a built `dist`.
+
+- **The repository is `platform-frontend`, and the plan text is stale in two places.** Checkpoint 8's
+  bullets still say `platform-web-next` with an 8C rename, and `map.yaml` carried target `platform-web`
+  until `081e149a2` renamed it. GitHub has `Concertable/platform-frontend` (public, empty, created
+  2026-09-09T19:53:30Z) and main's `map.yaml` agrees; the `*-next` staging and its rename step are not
+  being reintroduced.
+
+- **Nothing in `carve-fe.mjs` was retired, because the `build-config` special case was already gone.**
+  The premise ended at `f2f5d01b0`; `git grep` over `081e149a2`'s `carve-fe.mjs` finds no `build-config`,
+  no `file:` and no `npm pack`. The one build-config-shaped thing left in the carve is
+  `archivePaths.push("app/scripts/vite-development-https.ts")`, which step 2 above removes.
 
 - **A lock refresh is never purely a tier bump — it also lands whatever transitive patch versions floated.**
   Regenerating onto `0.1.0-alpha.0.6462` moved exactly one non-`@concertable` entry in all seven locks:
