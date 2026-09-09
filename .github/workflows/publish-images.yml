@@ -61,7 +61,7 @@ jobs:
 
     env:
       # Every deployable consumes the shared platform from the feed at its pinned
-      # ConcertablePlatformVersion, so the publish restore needs the same credential the carve jobs use.
+      # ConcertableDotNetPlatformVersion, so the publish restore needs the same credential the carve jobs use.
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:

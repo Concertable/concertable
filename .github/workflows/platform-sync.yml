@@ -3,7 +3,7 @@ name: Platform sync
 # Automates the cross-service publish->consume loop (see plans/PLATFORM_PACKAGE_SYNC.md).
 #
 # When 'Publish packages' ships new Concertable.* packages to the feed on main, this opens ONE PR
-# bumping every service's <ConcertablePlatformVersion> pin to the just-published version, and turns on
+# bumping every service's <ConcertableDotNetPlatformVersion> pin to the just-published version, and turns on
 # GitHub auto-merge for THAT PR only (scoped to this bot PR — not a repo-wide setting):
 #   - NON-breaking platform change -> the bump PR is green -> the merge queue lands it, no review.
 #   - BREAKING platform change     -> the bump PR is red at exactly the consumers that must migrate.
@@ -112,12 +112,12 @@ jobs:
           git config user.name  "concertable-platform-sync[bot]"
           git config user.email "platform-sync@users.noreply.github.com"
           git switch -C "$branch"
-          git commit -am "chore(platform): sync ConcertablePlatformVersion to ${VERSION}"
+          git commit -am "chore(platform): sync ConcertableDotNetPlatformVersion to ${VERSION}"
           git push --force-with-lease origin "$branch"
 
           body=$(cat <<EOF
           Automated by \`platform-sync.yml\` after \`Publish packages\` shipped \`${VERSION}\` to the feed.
-          Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
+          Bumps every service's \`<ConcertableDotNetPlatformVersion>\` to \`${VERSION}\`.
 
           A pin bump is a **package-only** change, so \`test.yml\` gates it on build + unit + integration and
           **no-ops E2E**. Auto-merge is on — the merge queue lands it the moment those are green (its E2E gate
