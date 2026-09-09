@@ -14,6 +14,11 @@
     "./metro": "./metro.cjs",
     "./typescript": "./tsconfig.json",
     "./vite": "./vite.mjs",
+    "./vite-development-https": {
+      "types": "./vite-development-https.d.mts",
+      "import": "./vite-development-https.mjs",
+      "default": "./vite-development-https.mjs"
+    },
     "./vitest": "./vitest.mjs",
     "./package.json": "./package.json"
   },
@@ -25,5 +30,8 @@
   "publishConfig": {
     "access": "restricted",
     "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "@types/node": "^24.12.0"
   }
 }
