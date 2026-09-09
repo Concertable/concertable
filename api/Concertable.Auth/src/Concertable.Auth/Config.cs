@@ -10,11 +10,11 @@ public static class Config
 {
     public static IReadOnlyList<ApiScope> ApiScopes =>
     [
-        new ApiScope("concertable.b2b.api",      "Concertable B2B API"),
-        new ApiScope("concertable.customer.api",  "Concertable Customer API"),
-        new ApiScope("concertable.search.api",    "Concertable Search API"),
-        new ApiScope("payment:write",             "Payment write access"),
-        new ApiScope("user:claims",               "User claims access"),
+        new ApiScope(ApiScopeIds.B2BApi,       "Concertable B2B API"),
+        new ApiScope(ApiScopeIds.CustomerApi,  "Concertable Customer API"),
+        new ApiScope(ApiScopeIds.SearchApi,    "Concertable Search API"),
+        new ApiScope(ApiScopeIds.PaymentWrite, "Payment write access"),
+        new ApiScope(ApiScopeIds.UserClaims,   "User claims access"),
     ];
 
     public static IReadOnlyList<ApiResource> ApiResources =>
@@ -22,23 +22,23 @@ public static class Config
         /* B2B is identity-only: `email` comes from the local Auth credential, and authority is the
            request-scoped active tenant (X-Tenant-Id → membership), never a token claim. No `role`, no
            `owner` — one claim can't model a multi-tenant user. `owner` stays Customer-only. */
-        new ApiResource("concertable.b2b.api", "Concertable B2B API")
+        new ApiResource(ApiScopeIds.B2BApi, "Concertable B2B API")
         {
-            Scopes = { "concertable.b2b.api" },
+            Scopes = { ApiScopeIds.B2BApi },
             UserClaims = { "email" }
         },
-        new ApiResource("concertable.customer.api", "Concertable Customer API")
+        new ApiResource(ApiScopeIds.CustomerApi, "Concertable Customer API")
         {
-            Scopes = { "concertable.customer.api", "user:claims" },
+            Scopes = { ApiScopeIds.CustomerApi, ApiScopeIds.UserClaims },
             UserClaims = { "role", "owner" }
         },
-        new ApiResource("concertable.search.api", "Concertable Search API")
+        new ApiResource(ApiScopeIds.SearchApi, "Concertable Search API")
         {
-            Scopes = { "concertable.search.api" }
+            Scopes = { ApiScopeIds.SearchApi }
         },
         new ApiResource("concertable.payment.api", "Concertable Payment API")
         {
-            Scopes = { "payment:write" }
+            Scopes = { ApiScopeIds.PaymentWrite }
         },
     ];
 
@@ -76,8 +76,8 @@ public static class Config
             PostLogoutRedirectUris = { scheme },
 
             AllowedScopes = clientId == ClientIds.CustomerMobile
-                ? new HashSet<string> { "openid", "profile", "concertable.customer.api" }
-                : new HashSet<string> { "openid", "profile", "concertable.b2b.api" },
+                ? new HashSet<string> { "openid", "profile", ApiScopeIds.CustomerApi }
+                : new HashSet<string> { "openid", "profile", ApiScopeIds.B2BApi },
 
             AllowOfflineAccess = true,
             AccessTokenLifetime = 900,
@@ -90,10 +90,10 @@ public static class Config
 
     public static Client TestClient => new Client
     {
-        ClientId = "concertable-test",
+        ClientId = ClientIds.Test,
         AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
         RequireClientSecret = false,
-        AllowedScopes = { "openid", "concertable.b2b.api", "concertable.customer.api", "concertable.search.api" },
+        AllowedScopes = { "openid", ApiScopeIds.B2BApi, ApiScopeIds.CustomerApi, ApiScopeIds.SearchApi },
     };
 
     public static IReadOnlyList<Client> WebClients(SpaClientSettings spa)
@@ -137,8 +137,8 @@ public static class Config
         AllowedCorsOrigins = settings.AllowedCorsOrigins,
 
         AllowedScopes = clientId == ClientIds.CustomerWeb
-            ? new HashSet<string> { "openid", "profile", "roles", "concertable.customer.api", "concertable.search.api" }
-            : new HashSet<string> { "openid", "profile", "concertable.b2b.api" },
+            ? new HashSet<string> { "openid", "profile", "roles", ApiScopeIds.CustomerApi, ApiScopeIds.SearchApi }
+            : new HashSet<string> { "openid", "profile", ApiScopeIds.B2BApi },
 
         AllowOfflineAccess = true,
         AccessTokenLifetime = 900,
