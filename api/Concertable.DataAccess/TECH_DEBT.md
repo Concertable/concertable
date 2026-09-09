@@ -1,14 +1,5 @@
 # DataAccess technical debt
 
-## Standardize the duplicate-aware save (distinct from `TryInsertAsync` above)
-
-`Concertable.B2B.Admin.Infrastructure.Services.AdminService.TrySaveGrantAsync` still hand-rolls the
-duplicate-key save path. The shared `TrySaveChangesAsync` resets its unit of work after every
-`DbUpdateException`; Admin does not yet use that unit-of-work boundary.
-
-**Resolves when:** duplicate-key save handling has a clean shared primitive and B2B deletes its private
-method.
-
 ## `PaginationExtensions.ToPaginationAsync` takes no `CancellationToken`
 
 Every other async repository method reaching I/O threads a `CancellationToken` per the `persistence`
