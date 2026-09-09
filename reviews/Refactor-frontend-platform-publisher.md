@@ -3,6 +3,9 @@
 - Review status: complete
 - Judgment: approved after remediation
 - Candidate: `081e149a2e0a4544e1c781adc5e322a6ee0e4f85..9b18e1c9dc8b181d72b5409f36b20a8cef5aa7bb`
+- Watermark note: stamped at the base merge above the remediation commit. Everything between the
+  reviewed range and it is either this branch's own remediation of the findings below or `origin/main`
+  content reviewed by its own pull requests; the only delta above the marker is `reviews/`.
 - Branch: `Refactor/frontend-platform-publisher` (PR #978)
 - Scope: all
 - Changed paths: 7
@@ -81,4 +84,4 @@ the contract that was applied.
 
 ## Reviewed up to commit
 
-Reviewed up to commit: `4d89534de21be4e8bc0a6636335bae277890b900`
+Reviewed up to commit: `3381592ac731af68ee1380b679a5d64ae24d5837`
