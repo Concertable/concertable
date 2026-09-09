@@ -1,4 +1,4 @@
-# B2B package topology cutover progress
+﻿# B2B package topology cutover progress
 
 - Plan: `plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
@@ -214,36 +214,38 @@ not substitute the moving `alpha` tag for the exact package dependency gate.
   the regenerated lockfiles**, or its carves will silently install the stale package instead of the
   tenant-scoped one. `app/web/b2b/{artist,venue}` and `app/mobile/b2b` additionally gain a
   `@concertable/b2b` dependency on that branch, which only a regenerated lockfile can resolve.
-- **PR #951 is blocked by a deterministic regression in a suite it does not touch — not a flake.** Two merge-group attempts
-  ([34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) and
-  [34291413140](https://github.com/Concertable/concertable/actions/runs/34291413140)) were ejected by the
-  same single UI scenario of 32, `Venue manager completes 3DS challenge on flat fee`, timing out after 30s
-  on `Then a draft concert is created`. The first attempt carried no `api/` change at all, and no app
-  surface imports `@concertable/b2b`, so this branch's diff cannot reach that scenario. `main`'s own
-  merge-group runs at 22:03 and 22:40 did not contradict this — they *skipped* the UI suite.
-  **CI has never executed `e2e-ui-tests` in the retained window:** every run across `merge_group`,
-  `pull_request`, `push` and `workflow_dispatch` shows it `skipped`, `cancelled`, or absent, including all
-  five of PR #633's merge-group attempts. These two runs are the first CI executions of that suite, and
-  both failed the same scenario. The suite *was* run locally around the #633 merge and passed there, so
-  the failure is either a regression landed since or something specific to the CI environment.
-  **Top suspect: PR #959 (`RepoSplit-M4-Closure-Repair`)**, which landed `Fix Payment h2c service
-  discovery`, `Fix Payment container discovery scheme` and `Repoint every pinned Payment discovery key at
-  the E2E host` — CI-host wiring that a local run would not exercise — touching
-  `Concertable.Payment.Hosting/{PaymentConstants,AppHostExtensions}.cs`,
-  `Concertable.Payment.Web/HostExtensions.cs`,
-  `Concertable.Payment.Client/Extensions/ServiceCollectionExtensions.cs` and
-  `Concertable.Shared/tests/Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs`.
-  **Mechanism:** the redirect is a SignalR `ConcertDraftCreated` push
-  (`app/web/b2b/venue/src/features/notifications/hooks/useVenueNotifications.ts`), emitted only after
-  Stripe's `payment_intent.succeeded` webhook is forwarded by stripe-cli and processed into a draft
-  concert. A non-3DS card confirms the intent synchronously, so that chain starts at once — which is why
-  the sibling `pays the flat fee with a new card` scenario passes the identical step. A 3DS card finalises
-  the intent only after the challenge, and that extra hop can push webhook -> event -> concert -> SignalR
-  -> navigate past the fixed 30s wait. Changing the wait from `Load` to `Commit` did not help, which
-  confirms the navigation genuinely never happens rather than merely not settling. The durable fix is a
-  decision outside this PR: either the venue SPA navigates on the confirmed PaymentIntent instead of
-  waiting for a webhook-driven push, or the scenario waits deterministically on webhook delivery.
-  Inflating the timeout is not a fix and must not be used.
+- **The merge-queue blocker is diagnosed and fixed: it was a Payment defect, not a flake and not #959.**
+  Two merge-group attempts ([34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068)
+  and [34291413140](https://github.com/Concertable/concertable/actions/runs/34291413140)) were ejected by the
+  same single UI scenario of 32, `Venue manager completes 3DS challenge on flat fee`, timing out after 30s on
+  `Then a draft concert is created`. Neither the frontend nor this branch's diff was involved.
+  **Diagnosed from the CI artifacts, not from a local reproduction.** The failure screenshot shows the venue
+  SPA sitting on `VenueAcceptCheckoutFlow` with "Acceptance confirmed", polling
+  `/concert/application/{id}` every second through `useConcertByApplicationQuery` and navigating via
+  `<Navigate>` when it appears. The earlier "SignalR-only redirect" reading was wrong: the redirect is
+  poll-driven and `useVenueNotifications` only accelerates it, so the frontend was never the problem and the
+  `Load`-to-`Commit` step change was unrelated. `payment-web` logged
+  `PaymentProviderUnavailableException` three times for `concertable.payment.capture-escrow.v1` and then the
+  command was gone; no `payment_intent.succeeded` for that intent appears anywhere in either run, so the
+  escrow was authorized and never captured.
+  **Cause:** `PaymentOperationResolver` treated a rejected transition evaluation as
+  `PaymentOperationError.ProviderUnavailable`. `FinancialOperationHandler.HandleResolutionFailureAsync`
+  throws only for that case, `AzureServiceBusReceiver.AbandonWithBackoffAsync` abandons with capped
+  exponential backoff, and Azure Service Bus dead-letters at `MaxDeliveryCount` - three deliveries under the
+  emulator. Fixed in `8f2567623` by resolving from the canonical attempt, so a concurrent observation that
+  already reached `Authorized` proceeds and anything else is rejected with its own typed error and reaches
+  the consumer as `CaptureEscrowRejectedEvent`.
+  **Ruled out along the way, each with evidence:** the frontend; the hourly `ConcertFinishedFunction`
+  (`0 0 * * * *`, settled 22 concerts at 00:00:00 in run 2, but run 1 failed at 22:58 before its 23:00
+  firing); a retained `last_payment_error` (the Playwright trace shows it null on the final
+  `requires_capture` intent); the sequential 3DS webhook ordering; the eager/webhook reconcile race; and a
+  Stripe retrieve failure (`"Stripe rejected"` appears zero times in both runs). PR #959 was the recorded
+  top suspect and was not implicated.
+  **Not fixed, recorded as a new HIGH in `api/Concertable.Payment/TECH_DEBT.md`:** nothing re-drives a
+  dead-lettered financial operation, `PaymentSessionAttemptEntity.NextReconcileAt` is written and indexed but
+  never read, and `PaymentSessionReconciliationSource.Sweep` has no implementation. A genuine provider outage
+  lasting longer than the delivery budget still strands an authorized escrow, which is a production blocker
+  in its own right and a larger change than belongs on this PR.
 - **An earlier hypothesis, now disproved, still produced a correct change.**
   Merge-group run [34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) failed
   one UI scenario of 32 — `Venue manager completes 3DS challenge on flat fee` timed out after 30s in
