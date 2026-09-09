@@ -5,8 +5,8 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `2dca4706e835a5597cd2fb75106a7d99fa4597a2`  `(2026-09-09)`
-**Security-reviewed up to commit:** `2dca4706e835a5597cd2fb75106a7d99fa4597a2`  `(2026-09-09)`
+**Reviewed up to commit:** `b52df292909c0a52f3b2bc0d2ea4900fb00b02a0`  `(2026-09-09)`
+**Security-reviewed up to commit:** `b52df292909c0a52f3b2bc0d2ea4900fb00b02a0`  `(2026-09-09)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-09 — full
@@ -84,3 +84,23 @@ and this work order. `test_service_scope.py` 41/41 and `e2e-ghcr-login.test.mjs`
 and PR #973's own CI was green at the prior head (96 pass, 3 `skipping` — the merge-queue-only lanes).
 No workflow file changed in this delta, so the full pass's security conclusion still holds over `test.yml`'s
 unchanged content; both watermarks advance to this head.
+
+## Review pass — 2026-09-09 — incremental
+
+**Candidate base:** `2dca4706e835a5597cd2fb75106a7d99fa4597a2`
+**Candidate head:** `b52df292909c0a52f3b2bc0d2ea4900fb00b02a0`
+**Candidate branch:** `Perf/MergeQueueLatency`
+**Candidate scope:** `all`
+**Candidate path-set:** `sha256:21389bba5b238048d67bd0fc66a12902f1ba20c44887ba905537fc7a7ba086b8` `(9 paths)`
+**Candidate bundle:** `C:\Users\TOMMYS~1\AppData\Local\Temp\claude\review-bundle-973-inc2`
+**Candidate bundle identity:** `sha256:768b45c3c9004c78a0967baa1cbe4766fcebd39bb1717a382e06b8a614a5d9d7`
+**Work-order path:** `reviews/Perf-MergeQueueLatency.md`
+**Work-order mode:** `append`
+**Pass judgment:** `approved`
+
+No findings. `merge` Step 2 requires a branch behind base to merge base in, and a platform-sync bump (#972)
+had landed, so this delta is that merge plus the previous pass's work-order update. It resolved no conflicts
+and the whole code change is one line repeated across eight `Directory.Packages.props` files:
+`ConcertableDotNetPlatformVersion` 0.1.0-alpha.0.1351 to 0.1.0-alpha.0.1353, already reviewed on `main`.
+No workflow, script or test file changed, so the full pass's security conclusion is untouched and both
+watermarks advance to this head. Exact-head PR CI is the build proof this pin change owes.
