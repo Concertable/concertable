@@ -77,14 +77,25 @@ def extract_runtime_block() -> str:
     return inert + "\n" + run[start:end]
 
 
-def runtime_optout_precedence() -> tuple[bool, str]:
-    """A runtime diff must be tested BEFORE the opt-outs, and must never turn a gate back on."""
+def tier_block() -> str:
     spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     steps = spec["jobs"]["changes"]["steps"]
     run = next(s for s in steps if s.get("id") == "detect")["run"]
-    tier = run[run.index('if [ "$api_runtime" = true ]; then') : run.index("# E2E is the MERGE QUEUE's gate only")]
+    return run[run.index("if printf '%s\\n' \"$labels\" | grep -qixF expand-merge") : run.index("# E2E is the MERGE QUEUE's gate only")]
+
+
+def runtime_optout_precedence() -> tuple[bool, str]:
+    """A runtime diff must be tested BEFORE the opt-outs, and must never turn a gate back on."""
+    tier = tier_block()
     ordered = tier.index("$api_runtime") < tier.index("full-e2e") < tier.index("optout Skip-E2E")
     return ordered and "run_e2e=true" not in tier, tier.splitlines()[0].strip()
+
+
+def expand_merge_keeps_api_e2e() -> tuple[bool, str]:
+    """The one named exception may drop the UI lane only — never the API lane that proves the flip."""
+    tier = tier_block()
+    branch = tier[: tier.index('elif [ "$api_runtime" = true ]')]
+    return "run_e2e_ui=false" in branch and "run_e2e=false" not in branch, branch.splitlines()[0].strip()
 
 
 def extract_block() -> str:
@@ -220,11 +231,14 @@ def main() -> int:
             failures += 1
         status = "ok  " if ok else "FAIL"
         print(f"{status} api_runtime {name}: expected {expected!r}, got {actual!r}")
-    ok, first_line = runtime_optout_precedence()
-    if not ok:
-        failures += 1
-    print(f"{'ok  ' if ok else 'FAIL'} a runtime diff outranks every E2E opt-out: {first_line!r}")
-    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + 1
+    for label, (ok, first_line) in (
+        ("a runtime diff outranks every E2E opt-out", runtime_optout_precedence()),
+        ("expand-merge drops the UI lane only", expand_merge_keeps_api_e2e()),
+    ):
+        if not ok:
+            failures += 1
+        print(f"{'ok  ' if ok else 'FAIL'} {label}: {first_line!r}")
+    total = len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + 2
     print(f"\n{total - failures}/{total} passed")
     package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
     publication = subprocess.run([sys.executable, package_policy], check=False)
