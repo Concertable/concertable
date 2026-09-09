@@ -214,13 +214,25 @@ not substitute the moving `alpha` tag for the exact package dependency gate.
   the regenerated lockfiles**, or its carves will silently install the stale package instead of the
   tenant-scoped one. `app/web/b2b/{artist,venue}` and `app/mobile/b2b` additionally gain a
   `@concertable/b2b` dependency on that branch, which only a regenerated lockfile can resolve.
-- **PR #951 is blocked by a pre-existing flake in a suite it does not touch.** Two merge-group attempts
+- **PR #951 is blocked by a deterministic regression in a suite it does not touch — not a flake.** Two merge-group attempts
   ([34286556068](https://github.com/Concertable/concertable/actions/runs/34286556068) and
   [34291413140](https://github.com/Concertable/concertable/actions/runs/34291413140)) were ejected by the
   same single UI scenario of 32, `Venue manager completes 3DS challenge on flat fee`, timing out after 30s
   on `Then a draft concert is created`. The first attempt carried no `api/` change at all, and no app
   surface imports `@concertable/b2b`, so this branch's diff cannot reach that scenario. `main`'s own
-  merge-group runs at 22:03 and 22:40 passed the same suite, interleaved with these failures.
+  merge-group runs at 22:03 and 22:40 did not contradict this — they *skipped* the UI suite.
+  **CI has never executed `e2e-ui-tests` in the retained window:** every run across `merge_group`,
+  `pull_request`, `push` and `workflow_dispatch` shows it `skipped`, `cancelled`, or absent, including all
+  five of PR #633's merge-group attempts. These two runs are the first CI executions of that suite, and
+  both failed the same scenario. The suite *was* run locally around the #633 merge and passed there, so
+  the failure is either a regression landed since or something specific to the CI environment.
+  **Top suspect: PR #959 (`RepoSplit-M4-Closure-Repair`)**, which landed `Fix Payment h2c service
+  discovery`, `Fix Payment container discovery scheme` and `Repoint every pinned Payment discovery key at
+  the E2E host` — CI-host wiring that a local run would not exercise — touching
+  `Concertable.Payment.Hosting/{PaymentConstants,AppHostExtensions}.cs`,
+  `Concertable.Payment.Web/HostExtensions.cs`,
+  `Concertable.Payment.Client/Extensions/ServiceCollectionExtensions.cs` and
+  `Concertable.Shared/tests/Concertable.Testing.E2E/DistributedApplicationBuilderExtensions.cs`.
   **Mechanism:** the redirect is a SignalR `ConcertDraftCreated` push
   (`app/web/b2b/venue/src/features/notifications/hooks/useVenueNotifications.ts`), emitted only after
   Stripe's `payment_intent.succeeded` webhook is forwarded by stripe-cli and processed into a draft
