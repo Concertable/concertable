@@ -316,9 +316,13 @@ archiveOnly:
   - app/web/TECH_DEBT.md
 
   # The extraction record itself: the archive is the authoritative map from pre-filter SHAs, so the
-  # map, inventory and their gates stay with it. carve-e2e.ps1 inside this directory is system's;
-  # target claims are evaluated before this list, so it still lands there.
-  - eng/repository-split
+  # map, inventory and their gates stay with it. Listed file by file rather than by directory,
+  # because carve-e2e.ps1 beside them is system's and a path may hold only one disposition — and
+  # because a fifth artifact here is a decision (archive record, or system's) rather than a default.
+  - eng/repository-split/inventory.json
+  - eng/repository-split/inventory.py
+  - eng/repository-split/map.yaml
+  - eng/repository-split/validate_map.py
 
 # Paths replicated into every target (each repo needs its own copy).
 replicated:
