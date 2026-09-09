@@ -266,9 +266,9 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   for a one-time human nudge, never an automated poke). No retry machinery is added: a real failure is
   surfaced to debug, the glitch is surfaced to nudge, and the two are told apart by inspecting `merge_group`
   run results (not just PR state — seed #4: ejected-after-failure looks identical to never-admitted).
-- 🔶 **Phase 3b** — merge-queue wall clock. The serial E2E chain is unbraided and both E2E lanes are
-  per-service matrices; an `api/` runtime diff can no longer opt out of E2E. Measured result pending its
-  first queue run.
+- ✅ **Phase 3b** — merge-queue wall clock (PR #973, merged `3095cb655`). The serial E2E chain is
+  unbraided, both E2E lanes are per-service matrices, and an `api/` runtime diff can no longer opt out of
+  E2E. **Measured: 35m55s → 17m37s.**
 - ⬜ **Phases 3c–5** — outstanding (below).
 
 Each phase is independently shippable, ends green, and is reversible. **A gate is never removed before
@@ -401,9 +401,14 @@ Projected critical path: `changes → local-platform-pack (2m45) → e2e-ui-test
 ≈ **18m30 against today's ≈36m**. `build`, the carves, unit/integration/startup, `e2e-api-tests` and the
 Customer UI row all finish inside that window.
 
-- **Gate:** one merge-queue run of an `api/`-touching PR is green with the same suite results as before,
-  and its wall clock is measured and recorded here. `ci-complete` stays the single required check and
-  still `needs:` every lane.
+- **Gate: met.** Run `34387954665` (PR #973's own queue entry, labelled `full-e2e` so both suites ran in
+  full rather than waiting for an unrelated `api/` diff to prove the restructure): 18:16:03Z→18:33:40Z =
+  **17m37s green**, against the 35m55s baseline — a 51% cut. Every edge behaved as designed:
+  `local-platform-pack` 3m01, then `build` (3m04), `container-images`, and all four E2E rows starting
+  together at 18:19:21-22 — `e2e-api-tests` B2B 6m07 / Customer 5m03, `e2e-ui-tests` Customer 8m47,
+  B2B 14m11. `ci-complete` remained the single required check over every lane.
+- **What this hands Phase 3c:** the B2B UI row at 14m11 is now the entire critical path — 3m01 of pack
+  plus that row is 17m12 of the 17m37 — so sharding it is the only remaining lever of size.
 - **Reversible:** restore the two `needs:` entries and collapse the matrices; nothing outside `test.yml`
   and its policy test changes.
 
