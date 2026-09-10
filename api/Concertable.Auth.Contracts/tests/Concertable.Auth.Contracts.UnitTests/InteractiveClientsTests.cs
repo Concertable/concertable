@@ -45,11 +45,12 @@ public sealed class InteractiveClientsTests
     }
 
     [Theory]
+    [InlineData(null)]
     [InlineData("")]
     [InlineData("nope")]
     [InlineData("Customer-Web")]
     [InlineData("customer_web")]
-    public void Find_AnUnknownWireId_ReturnsNull(string clientId)
+    public void Find_AnAbsentOrUnknownWireId_ReturnsNull(string? clientId)
     {
         Assert.Null(InteractiveClients.Find(clientId));
     }

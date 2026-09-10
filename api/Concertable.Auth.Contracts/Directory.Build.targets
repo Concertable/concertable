@@ -5,4 +5,9 @@
   <Import Project="$(MSBuildThisFileDirectory)../TestConventions.targets"
           Condition="Exists('$(MSBuildThisFileDirectory)../TestConventions.targets')" />
 
+  <!-- Same source-swap the sibling carve roots import: keeps the tests/ project building against in-repo
+       platform source rather than a stale published NuGet if it ever takes a platform PackageReference. -->
+  <Import Project="$(MSBuildThisFileDirectory)../PlatformSourcePackages.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)../PlatformSourcePackages.targets')" />
+
 </Project>

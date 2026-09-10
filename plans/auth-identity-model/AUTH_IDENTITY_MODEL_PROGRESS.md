@@ -71,7 +71,15 @@ closed (`worktrees.ps1 retire`).
      `AuthResourceInfo` collapsed into `AuthResource` extension methods (`Audience()` / `AcceptedScopes()` /
      `IncludedClaims()`), so no struct carries `ImmutableArray` members.
   2. Redundant `using Concertable.Auth.Contracts;` in the three test files (namespace is nested). **Fixed.**
-- Re-review of the fix commit owed before merge (`incremental-review`).
+- `review` re-run at head `3bc6f5b3a` (2026-09-10) — default-struct trap confirmed fixed. Two more, both
+  addressed:
+  1. `Directory.Build.targets` imported only `TestConventions.targets`, not `PlatformSourcePackages.targets`
+     that every sibling carve root carries — a later platform `PackageReference` on the test project would
+     miss the source swap. **Fixed:** added the import.
+  2. `InteractiveClients.Find` threw `ArgumentNullException` on a null `clientId`, contradicting its "returns
+     null rather than throwing" doc — a null `CredentialRegisteredEvent.ClientId` would fault the handler.
+     **Fixed:** `Find(string?)` guards null; test covers it.
+- Head `<next>` after the fix commit — re-review owed before merge (`incremental-review`).
 
 ## Decisions, discoveries, blockers, and deviations
 
