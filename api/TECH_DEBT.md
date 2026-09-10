@@ -219,20 +219,6 @@ receiver-owned members grouped in `XExtensions` and related mapping receivers gr
 Every touched container migrates completely; new extension members use `extension()` from the start
 (see the `csharp-style` skill). Signature-bound generator/framework declarations are excluded.
 
-### Test class names still restate the project that already names them
-
-`csharp-naming` says a qualifier exists only to contrast with a sibling, so a class inside
-`Concertable.<Service>.ArchitectureTests` carries neither the service nor the tier in its own name. The
-startup-tier split fixed most of this — `ResourceGraphTests`, `WebHostTests`, `WorkerHostTests` — but three
-classes still restate half their project: `PaymentContractReferenceTests` and
-`PaymentPublishedPackageReferenceTests` repeat the service, and B2B's `ReunionArchitectureTests` repeats the
-tier. The correct shape is already beside them in `ControllerBoundaryTests`, `ModuleBoundaryTests` and
-`TenantWriteGuardTests`.
-
-**Resolves when:** those three name only the subject they assert — the service prefix and the `Architecture`
-tier word dropped — and no class in an `*.ArchitectureTests` or `*.StartupTests` project repeats its
-project's service or tier.
-
 ### Extension-container names do not consistently identify their receiver
 
 Backend extension containers use mixed naming: receiver-aligned names such as

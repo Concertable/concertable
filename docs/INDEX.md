@@ -157,7 +157,7 @@ diagnostic or test name, not an argument.
 | Deal-strategy coverage and no service location | `DealStrategyBuilder` / `DealUnionBuilder<TUnion>` composition validation plus `DealStrategyArchitectureTests` | Yes |
 | Every executable .NET host has strict provider validation and real startup coverage or a reviewed exclusion | `ExecutableHostInventory` in the `architecture-tests` CI matrix; the host graphs it demands in the `startup-tests` one | Yes |
 | Every host boots on the configuration its own AppHost app model supplies it | `AppModelStartupContractTests` + the `startup-tests` CI matrix, which runs on every PR and is a `needs:` of `integration-tests` | Yes |
-| No legacy Result carriers; no Dunet in shared production | `ReunionArchitectureTests`, `TypedResultArchitectureTests` | Yes |
+| No legacy Result carriers; no Dunet in shared production | `ReunionTests`, `TypedResultArchitectureTests` | Yes |
 | One read-context contract, one generic read repository | `RepositoryArchitectureTests` | Yes |
 | Service boundaries hold when carved | `EnforceServiceBoundary` + the `carve-*` CI jobs | Yes |
 | Docker is really healthy before E2E | `scripts/docker-health.ps1` (vendored — edit it upstream, not here), gated by `scripts/e2e.ps1` | Gate |
