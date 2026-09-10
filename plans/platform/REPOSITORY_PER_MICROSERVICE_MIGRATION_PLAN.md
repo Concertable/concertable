@@ -1008,11 +1008,12 @@ dependency closure into 178 MB, and is how to run any of these builds while disk
 #### What the `b2b` rehearsal added
 
 Run 2026-09-10 from `7c40ddb00b`, and green: 1961 commits, 1972 files, **109 projects restoring
-against the live feed and building Release with 0 errors** and 1516 warnings, all of them Meziantou
-style rules. b2b is the only target with no repository-only commits, so there is no boundary and no
+against the live feed and building Release with 0 errors** and 1516 warnings, of which 1514 classify as
+Meziantou analyzer style rules (`MA0004` alone is 1017) and none as `MSB3277`, the class `auth` saw 246
+of. b2b is the only target with no repository-only commits, so there is no boundary and no
 `git am` stage — it is a pure re-extraction, which is why it could run while `search` is still
-blocked on 9B. It is also the widest contract and the only carve with a frontend and an admin
-surface, so most of what it adds is about scale and about renames that are not prefix strips.
+blocked on 9B. It is also the widest contract, the second carve with a frontend and the only one with
+an admin surface, so most of what it adds is about scale and about renames that are not prefix strips.
 
 - **The stale Payment pin is a rule, not a `customer` quirk.** b2b's `Directory.Packages.props` pins
   `ConcertablePaymentVersion` to `0.1.0-alpha.0.1330` as well, forty releases behind its own
@@ -1062,7 +1063,7 @@ surface, so most of what it adds is about scale and about renames that are not p
   while disk is the constraint.
 - **b2b's CI cannot be a copy of `customer`'s, and it is still the only target with none.** Zero
   workflows, zero runs. Four of `customer`'s steps do not transfer: b2b has 33 EF migration sets
-  across ten module `Infrastructure` projects but **no migrations host project**, applying them
+  across eleven module `Infrastructure` projects but **no migrations host project**, applying them
   in-process through `Concertable.B2B.Web`'s `DevDbInitializer` rather than from a
   `customer-migrations`-style executable, so both the migrations image candidate and
   `verify-migration-job.ps1` have no subject and stage 14's "all B2B migrations" gate has to be met
@@ -1076,9 +1077,9 @@ surface, so most of what it adds is about scale and about renames that are not p
 - **The tier gate silently disappears at every cut, and b2b is where it costs most.**
   `TestConventions.targets`, both `BannedSymbols` files and `PlatformSourcePackages.targets` are all
   reached through `Condition="Exists(…)"`, so their absence no-ops rather than fails. Already
-  dispositioned to `platform-dotnet` as `Concertable.Build`, but b2b carries **29 test projects**
-  against `auth`'s 2, so it is the target where an unguarded tier declaration would go unnoticed
-  longest. Nothing violates the gate today.
+  dispositioned to `platform-dotnet` as `Concertable.Build`, but b2b carries **29 tier-declaring test
+  projects** against `auth`'s three, so it is the target where an unguarded tier declaration would go
+  unnoticed longest. Nothing violates the gate today.
 
 On disk, `customer`'s `-m:1 -p:DebugType=none -p:OutDir=<shared>/` remedy holds at b2b's scale: 109
 projects collapse to **245 MB** of shared output against the **3.4 GB-plus** the default per-project
@@ -1164,10 +1165,10 @@ mechanical rather than exploratory:
 | `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
 | `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
 | `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
-| `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none; green build needs disk |
+| `b2b` | **reconciled to a green Release build**; 1972 files, 0 collisions, 0 broken references of 426 | apply the 13 recorded fixes and the Payment pin bump; write CI from scratch — it has none; push |
 
-Detail for `customer` and `b2b` is in `~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and
-`10A_b2b_FINDINGS.md`, pending consolidation here.
+Both rehearsals are consolidated into the sections above; the per-run reproduction detail stays in
+`~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and `10A_b2b_FINDINGS.md`.
 
 ### 10. Promote Auth
 
