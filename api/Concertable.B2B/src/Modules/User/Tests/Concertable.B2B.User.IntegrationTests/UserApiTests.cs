@@ -1,8 +1,6 @@
 using System.Net;
-using Concertable.B2B.IntegrationTests.Fixtures;
 using Concertable.B2B.User.Application.Requests;
 using Concertable.B2B.User.Contracts;
-using Concertable.B2B.User.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -42,8 +40,8 @@ public sealed class UserApiTests : IAsyncLifetime
     [Fact]
     public async Task UpdateLocation_ShouldReturnTyped401WithoutWritingLocation_WhenUserProjectionIsMissing()
     {
-        var missingUser = UserEntity.FromRegistration(Guid.NewGuid(), "missing@test.com");
-        var client = fixture.CreateClient(missingUser);
+        var missingUserId = Guid.NewGuid();
+        var client = fixture.CreateClient(missingUserId, "missing@test.com");
 
         var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(51.5, -0.1));
 
@@ -56,9 +54,7 @@ public sealed class UserApiTests : IAsyncLifetime
         Assert.True(problem.Extensions.TryGetValue("code", out var code));
         Assert.Equal("user.location_unauthenticated", code?.ToString());
 
-        using var scope = fixture.Services.CreateScope();
-        var userModule = scope.ServiceProvider.GetRequiredService<IUserModule>();
-        Assert.False((await userModule.GetByIdAsync(missingUser.Id)).TryGetValue(out _));
+        Assert.False(await fixture.UserExistsAsync(missingUserId));
     }
 
     [Fact]
@@ -124,6 +120,33 @@ public sealed class UserApiTests : IAsyncLifetime
         var user = await response.Content.ReadAsync<UserDto>();
         Assert.NotNull(user);
         Assert.False(user.IsAdmin);
+    }
+
+    #endregion
+
+    #region GetIdByEmailAsync
+
+    [Fact]
+    public async Task GetIdByEmailAsync_ReturnsId_WhenEmailDiffersOnlyByCase()
+    {
+        using var scope = fixture.Services.CreateScope();
+        var userModule = scope.ServiceProvider.GetRequiredService<IUserModule>();
+
+        var result = await userModule.GetIdByEmailAsync(fixture.SeedState.VenueManager1.Email.ToUpperInvariant());
+
+        Assert.True(result.TryGetValue(out var id));
+        Assert.Equal(fixture.SeedState.VenueManager1.Id, id);
+    }
+
+    [Fact]
+    public async Task GetIdByEmailAsync_ReturnsNone_WhenNoUserHasThatEmail()
+    {
+        using var scope = fixture.Services.CreateScope();
+        var userModule = scope.ServiceProvider.GetRequiredService<IUserModule>();
+
+        var result = await userModule.GetIdByEmailAsync("nobody-with-this-email@test.com");
+
+        Assert.False(result.TryGetValue(out _));
     }
 
     #endregion

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { theme } from "../../lib/theme";
 
 interface Props {
-  rating?: number | null;
+  rating?: number;
   size?: number;
   className?: string;
 }

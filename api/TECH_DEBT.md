@@ -1,10 +1,107 @@
 # Concertable — backend cross-cutting technical debt
 
-Debt spanning multiple services or host `Program.cs` files. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`; debt spanning `api/` and `app/`, or in root-level `.github/workflows/**`/config, belongs in the root [`TECH_DEBT.md`](../TECH_DEBT.md). When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Debt spanning multiple services or host `Program.cs` files. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`; debt spanning `api/` and `app/`, or in root-level `.github/workflows/**`/config, belongs in the root [`TECH_DEBT.md`](../TECH_DEBT.md).
 
 ---
 
 ## MED
+
+### An untenanted context has no base, so 14 contexts hand-roll `OnModelCreating`
+
+`multitenancy` gives every stance a base that owns `OnModelCreating` — default schema, then the module's
+configuration provider, then filters — and forbids a concrete context from declaring one. Three of the four
+stances have that base (`TenantScopedDbContext`, `ReadDbContext`, `PrivilegedDbContext`). A context with **no**
+tenancy has none, so it derives from `DbContextBase` and repeats the same two lines — B2B's `Admin`, `Deal`,
+`Tenant` and `User`, all seven Customer module contexts, and the single contexts of Payment, Search and Auth
+(the last two without the schema line):
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+    modelBuilder.HasDefaultSchema(Schema.Name);
+    provider.Configure(modelBuilder);
+}
+```
+
+`PrivilegedDbContext` already *is* that shape — unfiltered, writable, provider and schema composed by the
+base — but its name states a moderation stance these four modules do not have, so reusing it as-is would
+misname them.
+
+**Resolves when:** those 14 contexts compose provider and schema through a base rather than their own
+`OnModelCreating`, and the only `OnModelCreating` declarations left in `api/` are the bases' and
+`OutboxDbContext`/`InboxDbContext`, which configure a real model rather than composing a provider.
+
+---
+
+### Redundant `this.` qualification survives outside the PR #633 file set
+
+`STYLE.md` now states that `this.` exists only to disambiguate a member a parameter or local shadows,
+and PR #633 stripped it from the 602 `.cs` files that PR touches. The rest of `api/` still carries
+**977 redundant `this.` qualifications across 85 files** — concentrated in Customer module services,
+`Concertable.Shared` test libraries, Payment infrastructure, and the B2B files this PR does not open.
+The rule is not expressible in `.editorconfig`: `dotnet_style_qualification_for_field` is
+all-or-nothing and its `true` setting is the opposite of the convention.
+
+The sweep was scoped deliberately rather than run repo-wide: four other worktrees are live on shared
+files, and the mechanical pass needs member-scope shadow analysis (a naive strip produces
+`competingChange = competingChange;` wherever a non-constructor setter takes a same-named parameter).
+
+**Resolves when:** the remaining 977 sites are stripped with shadowed members left qualified, the
+solution builds, and no `X = X;` self-assignment exists anywhere in `api/`.
+
+---
+
+### Injected collaborator variables drop their shape noun across the backend
+
+`NAMING.md` requires an injected parameter and its field to keep the collaborator's shape noun
+(`ISettlementService settlementService`), dropping only the domain prefix the containing type already
+supplies (`repository` inside `SettlementService`). PR #633 corrected the ~50 sites its own refactor
+introduced. **562 sites across `api/` still deviate**, two conventions dominating:
+
+| Pattern | Sites | Should read |
+|---|---|---|
+| `XDbContext context` | 132 | `xDbContext`, or `dbContext` where the owner supplies `X` |
+| `XApiFixture fixture` | 98 | `xApiFixture`, or `apiFixture` inside `XApiTests` |
+
+The remaining ~330 are one-offs — pluralised domain nouns for a service (`IBookingService bookings`),
+dropped qualifiers (`IArtistReadModelRepository artistRepository`), and abbreviations
+(`IUnitOfWorkBehavior uowBehavior`). Both dominant patterns are repo-wide conventions that predate the
+module carve, so correcting only a subset fragments them.
+
+**Resolves when:** every injected field and constructor parameter in `api/` names its collaborator type
+in lower camel case with the shape noun intact, and the two dominant patterns are converted in one
+sweep each rather than per-PR.
+
+---
+### Production assemblies own dev/test seeding across the backend
+
+Dev/test seeder implementations and seed-only helpers currently live in production assemblies across
+the backend:
+
+- B2B has sixteen `IDevSeeder` / `ITestSeeder` implementations in module `*.Infrastructure` projects;
+  Concert Infrastructure also owns `SeededApplicationSigner`, `SeededContractFactory`, and
+  `SeededSelfBillingAgreementGranter`. The module Infrastructure projects depend on
+  `Concertable.B2B.Seed.Infrastructure`.
+- Customer has nine dev/test seeder implementations in module `*.Infrastructure` projects, whose
+  production project graph depends on `Concertable.Customer.Seed.Infrastructure`.
+- Payment and Search each keep a test seeder in their production Infrastructure assembly:
+  `PaymentTestSeeder` and `SearchProjectionTestSeeder`. Search Infrastructure also depends on
+  `Concertable.Search.Seed.Infrastructure`.
+- Auth keeps `AuthDevSeeder` in the production Auth assembly, and the published Shared Blob
+  Infrastructure package keeps `BlobDevSeeder` beside its production implementation.
+
+Moving an individual helper only hides one symptom while its caller, registration, and seed-project
+dependency remain in the production closure. The correction is a backend-wide composition change that
+keeps production write capabilities in their owning modules while moving seed orchestration,
+implementations, helpers, and registration into seed/test-owned assemblies.
+
+**Resolves when:** production assemblies contain no `IDevSeeder` / `ITestSeeder` implementations,
+seed-only helpers, or seeder registration methods; production projects do not reference service seed
+projects or `Concertable.Seed.*`; and AppHost, development, integration, and E2E composition roots add
+the appropriate seed-owned assemblies without changing the production write paths each seeder exercises.
+
+---
 
 ### Controller route-token casing is implemented only in the B2B host
 
@@ -39,7 +136,7 @@ public `*.Contracts` DTO. For example, Customer Concert's `IConcertReadRepositor
 the module contract `ConcertDto`, so its persistence adapter materializes a cross-module contract
 directly, while neighbouring repositories return `ConcertDetails`, entities, or persisted read models.
 
-The repository-output and DTO rules in `api/agents/CODE_CONVENTIONS.md` now define the intended naming,
+The repository-output and DTO rules in the `csharp-naming` skill now define the intended naming,
 ownership, and mapping boundary. Existing repositories predate that standard, however, so `Dto`,
 `Details`, `Projection`, `ReadModel`, and `Entity` still communicate different things in different areas,
 and dependency direction, tracking expectations, and public-contract coupling remain inconsistent.
@@ -120,11 +217,39 @@ so this is modernization/consistency debt, not a behavioural gap. The env-vocabu
 **Resolves when:** ordinary `this`-parameter extension methods migrate to `extension()` blocks, with
 receiver-owned members grouped in `XExtensions` and related mapping receivers grouped in `XMappers`.
 Every touched container migrates completely; new extension members use `extension()` from the start
-(see `agents/CODE_CONVENTIONS.md`). Signature-bound generator/framework declarations are excluded.
+(see the `csharp-style` skill). Signature-bound generator/framework declarations are excluded.
+
+### Test class names still restate the project that already names them
+
+`csharp-naming` says a qualifier exists only to contrast with a sibling, so a class inside
+`Concertable.<Service>.ArchitectureTests` carries neither the service nor the tier in its own name. The
+startup-tier split fixed most of this — `ResourceGraphTests`, `WebHostTests`, `WorkerHostTests` — but three
+classes still restate half their project: `PaymentContractReferenceTests` and
+`PaymentPublishedPackageReferenceTests` repeat the service, and B2B's `ReunionArchitectureTests` repeats the
+tier. The correct shape is already beside them in `ControllerBoundaryTests`, `ModuleBoundaryTests` and
+`TenantWriteGuardTests`.
+
+**Resolves when:** those three name only the subject they assert — the service prefix and the `Architecture`
+tier word dropped — and no class in an `*.ArchitectureTests` or `*.StartupTests` project repeats its
+project's service or tier.
+
+### Extension-container names do not consistently identify their receiver
+
+Backend extension containers use mixed naming: receiver-aligned names such as
+`DistributedApplicationBuilderExtensions` and `ServiceCollectionExtensions` coexist with concern-aligned
+names such as `AppHostExtensions`, `HostExtensions`, and `E2EAdminExtensions`, even when those types extend
+the same framework builders or service collection. A reader therefore cannot reliably infer the extended
+type from the container or filename, and equivalent extensions are harder to discover together.
+
+**Resolves when:** inventory every backend extension container, rename receiver-owned containers and files
+to `<Receiver>Extensions` (using the shortest unambiguous receiver name), keep mapping families in
+`<Target>Mappers`, and add a practical architecture or source check for new public/internal extension
+containers whose name does not match their receiver. Concern names remain on the methods that describe the
+operation being added; declaration-contract exceptions remain excluded.
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`csharp-style` skill) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
@@ -134,15 +259,21 @@ Every touched container migrates completely; new extension members use `extensio
 
 ### Auth builds against a pinned shared-platform package while the rest of the solution builds from source
 
-`api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertablePlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
+`api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertableDotNetPlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
 
+### Per-project `obj`/`bin` output risks Windows `MAX_PATH` as module nesting deepens
+
+A project's `obj`/`bin` folders sit inside its own source directory and repeat the full project name a second time beneath it, so a nested module's build output can exceed Windows' 260-character path limit — e.g. `Concertable.B2B.Dashboard.Opportunity.Application/obj/Debug/net10.0/Concertable.B2B.Dashboard.Opportunity.Application.dll` is 272 characters. On a Windows machine without NTFS long-path support enabled, this intermittently fails MSBuild's `Copy` task with `MSB3030: could not copy ... because it was not found` even though the file compiled and exists — the referencing project simply can't see it. Enabling `LongPathsEnabled` in the registry is an immediate per-machine mitigation, but it is not enforced anywhere, so a fresh clone or a locked-down machine hits this again. First surfaced building `Concertable.B2B.Dashboard.Opportunity.Api` on `Refactor/launch_deal-lifecycle-modules-phase2`.
+
+**Resolves when:** each service adopts the .NET SDK's `UseArtifactsOutput`, centralizing `obj`/`bin` to one short `artifacts/` tree at the service root instead of inside every project folder — landed per-service at the point that service is extracted into its own repo during the repo-split migration, rather than as a big-bang change across the still-shared monorepo.
+
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
-When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the hold: Payment exposes no cancel anywhere (`ManagerPayment` has `FindHeldIntent` but no cancel RPC, and there is no internal hold-cancel — `IStripeHoldClient` has only `FindHeldIntent`/`Capture`), so the funds stay ring-fenced until Stripe auto-expires the intent (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
+When a venue runs FlatFee accept-checkout (an `Authorization` payment session ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the authorization: `IPaymentSessionOperationsClient` offers `CreateAsync`, `RetryAsync` and `GetStatusAsync` but no cancel, so the funds stay ring-fenced until the provider auto-expires the authorization (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
 
-**Resolves when:** `ManagerPayment` gains a `CancelHeldIntent(payer_id, application_id)` RPC (+ `IManagerPaymentClient.CancelHeldIntentAsync` and fake/mock impls, published as `Payment.Client`), and B2B best-effort releases the hold on FlatFee withdraw/reject/cancel.
+**Resolves when:** `IPaymentSessionOperationsClient` gains a cancel taking the operation's `PaymentOperationReference` (with fake/mock impls, published as `Payment.Client`), and B2B best-effort cancels the authorization on FlatFee withdraw/reject/cancel.
 
 ---
 
@@ -151,6 +282,31 @@ When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the 
 `Directory.Build.targets`' `UseLocalCore` swaps only the churny *core* (`Kernel`, `Messaging.*`) from package to source; cross-**service** adapter packages (`Payment.Client`/`Contracts`, `*.Tenant.Contracts`, etc.) have no equivalent swap. So mid-way through a *breaking* cross-service contract change, the full `Concertable.slnx` won't build green locally — production consumers bind the old package while the integration-test fixtures `ProjectReference` the new source. You can still build/test per-service (`Payment.slnx` green; red confined to the 4 consumer fixtures + `TicketApiTests`), so it's a comfort gap, not a blocker. Deliberately deferred (was Phase 2 of the now-deleted `plans/PLATFORM_PACKAGE_SYNC.md`): the core friction — hands-off, green pin propagation — is already solved by the `platform-sync` workflow; this only removes local red while iterating, and adds a local-vs-CI divergence (the reason the swap is inner-loop-only, never committed/CI).
 
 **Resolves when:** a real breaking migration makes the local red painful enough to justify extending the `UseLocalCore` swap to cross-service adapter packages (local/inner-loop only — CI + the carve gates always build against packages).
+
+### PR CI proves the platform builds from source, never that services build against their pinned packages
+
+Every service consumes the shared platform as `PackageReference` pinned to `$(ConcertablePlatformVersion)`,
+but CI's unit, architecture, integration and E2E jobs all run through `scripts/local-platform.ps1`, which
+packs the platform from HEAD source into a local feed and tests against that. So a green PR proves the
+services build against **this commit's** shared source, and proves nothing about the versions they are
+actually pinned to. The published closure is only exercised by the `verify-restore` job in
+`publish-packages.yml`, which runs post-merge on `main` — after the point where a break is cheap to fix.
+
+The source build is the right inner loop and should stay: without it a cross-cutting shared fix would need a
+publish-then-bump across two PRs, and the whole point of the local-platform pack is that such a change can
+land atomically. The gap is that nothing checks the other side of the boundary before merge.
+
+The drift this permits is not hypothetical. `api/Concertable.B2B/Directory.Packages.props` carries a split
+pin — `ConcertablePaymentVersion 0.1.0-alpha.0.1322` against `ConcertablePlatformVersion 0.1.0-alpha.0.1329`
+— and `api/Concertable.Shared/Directory.Packages.props:63` pins `Concertable.Payment.Hosting` to the platform
+version rather than the Payment one. Both are live today and neither is caught by a green PR, because no CI
+job ever restores what those pins name. See also the stale sibling entry above describing the pre-cut-over
+version of this problem, which should be reconciled or deleted when this is addressed.
+
+**Resolves when:** one CI job restores and builds each service against the versions its own
+`Directory.Packages.props` pins — the published closure, not the source pack — and fails the PR when a pinned
+version cannot satisfy the service's source. Automating the pin bump so it cannot lag a shared-source change
+would subsume it.
 
 ### CI feed restore assumes a same-repo `GITHUB_TOKEN` — fork / Dependabot PRs can't read the org feed
 
@@ -238,7 +394,7 @@ Do the pair in one sweep so the store vocabulary doesn't land half-applied.
 not a module concept — and every Api module that grows an action link will copy it a third time.
 
 The OSA report-content plan justified the second copy on the grounds that hoisting it would create the
-cross-module coupling `MODULAR_MONOLITH_RULES.md` forbids. **That reasoning was wrong:** those rules
+cross-module coupling the `module-structure` skill forbids. **That reasoning was wrong:** those rules
 forbid one module reaching into another module's types, and explicitly cover shared libraries as a
 legitimate home for cross-cutting layer concerns. `Concertable.Shared.Api` is exactly that home — the
 Api-layer shared library both modules already consume — and the frontend has had a single shared
@@ -246,7 +402,7 @@ Api-layer shared library both modules already consume — and the frontend has h
 asymmetric with the wire contract it mirrors.
 
 It could not be fixed in the PR that introduced the second copy, because `Concertable.Shared.Api` is
-consumed as a **published package pinned to `ConcertablePlatformVersion`** — a type added to its source
+consumed as a **published package pinned to `ConcertableDotNetPlatformVersion`** — a type added to its source
 is invisible to consumers until it is published and `platform-sync` bumps the pin. So it is a
 publish-first cut-over, not an edit.
 
@@ -260,11 +416,53 @@ once the pin carries it. Any new Api module uses the shared one rather than mint
 partitioned limiters live in each process's memory. Under horizontal scale every replica counts
 independently, so a policy nominally set to N/min actually permits up to N×(replica count)/min — the
 per-user/per-IP ceiling loosens in proportion to the fleet. This is acceptable at launch (single-instance
-per service) and is the deliberate scope cut in `plans/launch/RATE_LIMITING_PLAN.md`: an in-process
-limiter delivers the abuse floor now without standing up shared infrastructure.
+per service) and is a deliberate launch scope cut: an in-process limiter delivers the abuse floor now
+without standing up shared infrastructure.
 
 **Resolves when:** the limiter is backed by a shared store (e.g. Redis) so counts are fleet-global, or a
 gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the app keeps the
 identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
 relied-upon control.
+
+### Many read endpoints are anonymous-by-omission across B2B and Payment
+
+Auditing the three endpoints named by the rate-limiting sweep (now fixed — Payment `GET /api/Transaction`
+carries `[Authorize]`; the B2B blob upload/delete endpoints were dead code and were removed; `GET
+api/blob/download` is deliberately `[AllowAnonymous]` because it serves the public marketplace images every
+surface renders) surfaced that the problem is far wider. Roughly thirty controller actions in B2B and Payment
+carry neither a class- nor method-level `AuthorizeAttribute` (`[Authorize]`, `[HasPermission]`, `[Admin]`) nor
+an explicit `[AllowAnonymous]`, so they are reachable unauthenticated. Some are legitimately public
+(artist/venue/concert details, reviews), but several expose private business or financial data and almost
+certainly should not be — e.g. `GET api/application/{id}/contract(/pdf)`, `GET api/concert/{id}/invoice(/pdf)`,
+`GET api/application/{id}/financial-operation`, the `.../ownership` checks, and `GET api/deal/{id}`.
+Public-vs-private is a per-endpoint call.
+
+The mutating side is now guarded: `ControllerBoundaryTests.Mutating_endpoints_declare_authorization_explicitly`
+fails the build if any POST/PUT/PATCH/DELETE action in B2B is neither authorized nor explicitly
+`[AllowAnonymous]`. That guard is B2B-only — it scans `Concertable.B2B.*` assemblies — so Payment and the
+other services have no equivalent, and no read-side guard exists anywhere (a read guard needs each public
+read tagged `[AllowAnonymous]` first).
+
+**Resolves when:** every anonymous-by-omission read is classified — private reads gain the correct
+`[Authorize]`/`[HasPermission]` (scoped to the caller's own tenant/resource), genuinely public reads gain an
+explicit `[AllowAnonymous]` — with tests proving an anonymous request is rejected on the private ones; then a
+read-side guard *and* the mutating guard both cover every service (via one shared reflection helper in
+`Concertable.Testing.Architecture`, mirroring the consolidated assembly-reference guard, rather than a
+per-service copy), so no endpoint in any service is reachable anonymously by omission again.
+
+### Public images and private PDFs share one blob container behind an anonymous read endpoint
+
+`BlobStorageService` uses a single container (`BlobStorage:ContainerName`, `"images"`) with no per-type
+separation, and B2B's `GET api/blob/download` reads from it `[AllowAnonymous]` to serve the public marketplace
+images. But `PdfBlobCache` writes private contract/invoice/self-billing PDFs (`contracts/…`, `invoices/…`) into
+that same container. This is not exploitable today — PDF blob names embed a 122-bit `Guid`, the `download/{blobName}`
+route is a single non-catch-all segment and ASP.NET Core rejects encoded `/`, so a namespaced private blob
+cannot be addressed, and `Download` now also rejects any `blobName` containing a path separator. But the
+separation rests on name-secrecy plus routing shape, not on isolation: a route change to catch-all, an
+encoded-slash config change, or a leaked PDF name (they are persisted and served by the authenticated PDF
+endpoints) would each re-open it.
+
+**Resolves when:** public images and private documents live in separate containers (or non-overlapping,
+access-differentiated prefixes), so an anonymous read endpoint is scoped to the public store by construction and
+can never resolve to a private document regardless of route shape or name exposure.
 

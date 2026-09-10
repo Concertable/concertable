@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { resolveTenant } from "../memberships";
 import { permissionsForRole } from "../permissions";
 import { useTenantStore } from "../store/useTenantStore";
@@ -6,14 +7,22 @@ import type { Membership, TenantType } from "../types";
 
 export function useTenant(
   memberships: ReadonlyArray<Membership>,
-  tenantType: TenantType,
+  tenantType?: TenantType,
 ) {
   const activeTenantId = useTenantStore((state) => state.activeTenantId);
+  const isSelectionPending = useTenantStore(
+    (state) => state.isSelectionPending,
+  );
   const resolution = resolveTenant(memberships, tenantType, activeTenantId);
+
+  useEffect(() => {
+    if (memberships.length > 0) void tenantSession.resolve(tenantType);
+  }, [memberships, tenantType]);
 
   return {
     ...resolution,
     permissions: permissionsForRole(resolution.activeMembership?.role),
+    isSelectionPending,
     selectTenant: tenantSession.select,
   };
 }

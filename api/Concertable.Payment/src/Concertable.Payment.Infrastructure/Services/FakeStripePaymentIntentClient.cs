@@ -1,5 +1,7 @@
 using Concertable.Payment.Application.DTOs;
+using Concertable.Payment.Application.Errors;
 using Concertable.Payment.Application.Requests;
+using Concertable.Payment.Infrastructure;
 using Stripe;
 
 namespace Concertable.Payment.Infrastructure.Services;
@@ -13,17 +15,23 @@ internal sealed class FakeStripePaymentIntentClient : IStripePaymentIntentClient
         this.webhookQueue = webhookQueue;
     }
 
-    public Task<Result<PaymentOutcome, PaymentError>> ChargeAsync(
+    public async Task<Result<ProviderPaymentOutcome, ChargeError>> ChargeAsync(
         StripeChargeOptions options,
         CancellationToken ct = default) =>
-        CompleteAsync(options.Amount, options.Metadata, ct);
+        (await CompleteAsync(options.Amount, options.Metadata, ct))
+            .MapError(ChargeError (error) => new ChargeError.PaymentFailure(error));
 
-    public Task<Result<PaymentOutcome, PaymentError>> HoldAsync(
+    public Task<Result<ProviderPaymentOutcome, PaymentError>> HoldAsync(
         StripeHoldOptions options,
         CancellationToken ct = default) =>
         CompleteAsync(options.Amount, options.Metadata, ct);
 
-    private async Task<Result<PaymentOutcome, PaymentError>> CompleteAsync(
+    public Task<Result<ProviderPaymentOutcome, PaymentError>> GetAsync(
+        string paymentIntentId,
+        CancellationToken ct = default) =>
+        Task.FromResult(Result<ProviderPaymentOutcome, PaymentError>.Success(new(paymentIntentId)));
+
+    private async Task<Result<ProviderPaymentOutcome, PaymentError>> CompleteAsync(
         Money amount,
         Dictionary<string, string> metadata,
         CancellationToken ct)
@@ -38,17 +46,13 @@ internal sealed class FakeStripePaymentIntentClient : IStripePaymentIntentClient
                 Object = new PaymentIntent
                 {
                     Id = transactionId,
-                    Status = "succeeded",
+                    Status = StripePaymentIntentStatuses.Succeeded,
                     AmountReceived = amount.ToMinorUnits(),
                     Metadata = metadata
                 }
             }
         });
 
-        return Result<PaymentOutcome, PaymentError>.Success(new PaymentOutcome
-        {
-            RequiresAction = false,
-            TransactionId = transactionId
-        });
+        return Result<ProviderPaymentOutcome, PaymentError>.Success(new(transactionId));
     }
 }

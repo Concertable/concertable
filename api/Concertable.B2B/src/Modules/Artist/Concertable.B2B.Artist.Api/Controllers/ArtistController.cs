@@ -2,13 +2,16 @@ using Concertable.B2B.Artist.Api.Mappers;
 using Concertable.B2B.Artist.Api.Responses;
 using Concertable.B2B.Tenant.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Concertable.B2B.Artist.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route($"api/{RouteSegment}")]
 internal sealed class ArtistController : ControllerBase
 {
+    internal const string RouteSegment = "artist";
+
     private readonly IArtistService artistService;
 
     public ArtistController(IArtistService artistService)
@@ -16,6 +19,7 @@ internal sealed class ArtistController : ControllerBase
         this.artistService = artistService;
     }
 
+    [EnableRateLimiting(RateLimitPolicies.PublicRead)]
     [HttpGet("{artistId:int}")]
     public async Task<ActionResult<DetailsResponse>> GetDetailsById(
         int artistId,
@@ -27,14 +31,15 @@ internal sealed class ArtistController : ControllerBase
 
     [RequiredTenantType(TenantType.Artist)]
     [HasPermission(SharedPermissions.OperationsView)]
-    [HttpGet("/api/organization/[controller]")]
+    [HttpGet($"/api/organization/{RouteSegment}")]
     public async Task<ActionResult<DetailsResponse>> GetDetails(CancellationToken ct) =>
         (await artistService.GetDetailsAsync(ct))
             .ToOkOrNoContent(artist => artist.ToDetailsResponse());
 
     [RequiredTenantType(TenantType.Artist)]
     [HasPermission(SharedPermissions.ProfileEdit)]
-    [HttpPost("/api/organization/[controller]")]
+    [EnableRateLimiting(RateLimitPolicies.ProfileImage)]
+    [HttpPost($"/api/organization/{RouteSegment}")]
     public async Task<ActionResult<DetailsResponse>> Create(
         [FromForm] CreateArtistRequest request,
         CancellationToken ct) =>
@@ -45,7 +50,8 @@ internal sealed class ArtistController : ControllerBase
 
     [RequiredTenantType(TenantType.Artist)]
     [HasPermission(SharedPermissions.ProfileEdit)]
-    [HttpPut("/api/organization/[controller]")]
+    [EnableRateLimiting(RateLimitPolicies.ProfileImage)]
+    [HttpPut($"/api/organization/{RouteSegment}")]
     public async Task<ActionResult<DetailsResponse>> Update(
         [FromForm] UpdateArtistRequest request,
         CancellationToken ct) =>

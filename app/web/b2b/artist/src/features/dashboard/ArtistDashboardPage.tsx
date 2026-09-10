@@ -1,6 +1,7 @@
 import { TaxDetailsBanner } from "@concertable/web-b2b/features/organizations";
+import { VerificationBanner } from "@concertable/web-b2b/features/verification";
 import { SelfBillingAgreementBanner } from "@concertable/web-b2b/features/selfBilling";
-import { PersonaSwitcher, SectionGrid } from "@concertable/web/features/dashboard";
+import { SectionGrid } from "@concertable/web/features/dashboard";
 import { ArtistActivityWidget } from "./ArtistActivityWidget";
 import { ArtistApplicationsPipelineWidget } from "./ArtistApplicationsPipelineWidget";
 import { ArtistInboxWidget } from "./ArtistInboxWidget";
@@ -24,6 +25,8 @@ export function ArtistDashboardPage() {
       </SectionGrid>
 
       <ArtistStripeBanner />
+
+      <VerificationBanner />
 
       <TaxDetailsBanner />
 
@@ -60,8 +63,6 @@ export function ArtistDashboardPage() {
           <ArtistActivityWidget />
         </div>
       </SectionGrid>
-
-      <PersonaSwitcher />
     </div>
   );
 }

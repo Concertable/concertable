@@ -1,6 +1,8 @@
+﻿using Concertable.B2B.KeyedStrategies;
 using Concertable.B2B.DataAccess.Infrastructure;
 using Concertable.Auth.Contracts.Events;
 using Concertable.B2B.Tenant.Contracts;
+using Concertable.B2B.Tenant.Contracts.Events;
 using Concertable.B2B.Tenant.Application;
 using Concertable.B2B.Tenant.Application.Tax;
 using Concertable.B2B.Tenant.Application.Interfaces;
@@ -13,12 +15,16 @@ using Concertable.B2B.Tenant.Infrastructure.Data;
 using Concertable.B2B.Tenant.Infrastructure.Data.Seeders;
 using Concertable.B2B.Tenant.Infrastructure.Events;
 using Concertable.B2B.Tenant.Infrastructure.Repositories;
+using Concertable.B2B.Tenant.Application.Strategies;
 using Concertable.B2B.Tenant.Infrastructure.Services;
+using Concertable.B2B.Tenant.Infrastructure.Services.Resolvers;
+using Concertable.B2B.Tenant.Infrastructure.Services.Strategies;
 using Concertable.Messaging.Contracts;
 using Concertable.Seed.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Concertable.DataAccess.Infrastructure.Data;
 using Concertable.Kernel.Identity;
 
@@ -46,11 +52,21 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVatPolicy, VatPolicy>();
 
         services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<IMembershipRepository, MembershipRepository>();
+        services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IMembershipService, MembershipService>();
         services.AddScoped<IInvitationService, InvitationService>();
+        services.AddScoped<ITenantActivityRepository, TenantActivityRepository>();
+        services.AddScoped<ITenantActivityService, TenantActivityService>();
+        services.AddScoped<IVerificationRepository, VerificationRepository>();
+        services.AddScoped<IVerificationService, VerificationService>();
+        services.AddScoped<IVerificationNotifier, VerificationNotifier>();
         services.AddScoped<ITenantModule, TenantModule>();
 
+        services.AddTenantStrategies();
+
+        services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddScoped<ITenantResolver>(sp => sp.GetRequiredService<TenantContext>());
@@ -69,12 +85,41 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         services.AddScoped<IIntegrationEventHandler<CredentialRegisteredEvent>, TenantProvisioningHandler>();
+        services.AddScoped<IIntegrationEventHandler<TenantActivityRecordedEvent>, TenantActivityRecordedHandler>();
         services.AddScoped<IDomainEventHandler<TenantCreatedDomainEvent>, TenantCreatedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<TenantInvitationCreatedDomainEvent>, TenantInvitationCreatedDomainEventHandler>();
 
         // includeInternalTypes: the Tenant validators are internal — without it they're never registered and the VAT-format rule silently doesn't run (mirrors Concert).
         services.AddValidatorsFromAssemblyContaining<UpdateTenantRequestValidator>(includeInternalTypes: true);
 
+        return services;
+    }
+
+    internal static IServiceCollection AddTenantStrategies(this IServiceCollection services)
+    {
+        services.AddScoped<ITenantContactResolver, TenantContactResolver>();
+
+        return services.AddTenantStrategies(strategies =>
+        {
+            strategies.For(TenantType.Venue)
+                .AddScoped<ITenantContactResolver, VenueTenantContactResolver>();
+            strategies.For(TenantType.Artist)
+                .AddScoped<ITenantContactResolver, ArtistTenantContactResolver>();
+
+            strategies.RequireAll<ITenantContactResolver>();
+        });
+    }
+
+    internal static IServiceCollection AddTenantStrategies(
+        this IServiceCollection services,
+        Action<KeyedStrategyBuilder<TenantType>> configure)
+    {
+        var builder = new KeyedStrategyBuilder<TenantType>(services);
+        configure(builder);
+        builder.Build();
+
+        services.TryAddScoped<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp);
+        services.TryAddScoped(typeof(ITenantStrategyFactory<>), typeof(TenantStrategyFactory<>));
         return services;
     }
 

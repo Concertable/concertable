@@ -1,27 +1,46 @@
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/merge-review-gate.py\"",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "Stop": [
+    "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/plan_handoff_stop_launcher.py\"",
+            "command": "repo_root=\"$CLAUDE_PROJECT_DIR\"; if command -v cygpath >/dev/null 2>&1; then repo_root=\"$(cygpath -u \"$repo_root\")\"; fi; exec bash \"$repo_root/.agents/hooks/run-repo-hook.sh\" standards_provisioning.py",
+            "shell": "bash",
             "timeout": 15
           }
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "concertable@agent-standards": true,
+    "dotnet@agent-standards": true,
+    "react@agent-standards": true,
+    "dotnet-standards@dotagents": true,
+    "react-standards@react-agents": true
+  },
+  "extraKnownMarketplaces": {
+    "agent-standards": {
+      "source": {
+        "source": "github",
+        "repo": "Concertable/agent-standards"
+      },
+      "autoUpdate": true
+    },
+    "dotagents": {
+      "source": {
+        "source": "github",
+        "repo": "tomjseery/dotagents"
+      },
+      "autoUpdate": true
+    },
+    "react-agents": {
+      "source": {
+        "source": "github",
+        "repo": "tomjseery/react-agents"
+      },
+      "autoUpdate": true
+    }
   }
 }

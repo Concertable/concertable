@@ -1,6 +1,7 @@
 import { TaxDetailsBanner } from "@concertable/web-b2b/features/organizations";
+import { VerificationBanner } from "@concertable/web-b2b/features/verification";
 import { SelfBillingAgreementBanner } from "@concertable/web-b2b/features/selfBilling";
-import { PersonaSwitcher, SectionGrid } from "@concertable/web/features/dashboard";
+import { SectionGrid } from "@concertable/web/features/dashboard";
 import { VenueActivityWidget } from "./VenueActivityWidget";
 import { VenueApplicationsWidget } from "./VenueApplicationsWidget";
 import { VenueInboxWidget } from "./VenueInboxWidget";
@@ -25,6 +26,8 @@ export function VenueDashboardPage() {
       </SectionGrid>
 
       <VenueStripeBanner />
+
+      <VerificationBanner />
 
       <TaxDetailsBanner />
 
@@ -68,8 +71,6 @@ export function VenueDashboardPage() {
           <VenueSettlementsWidget />
         </div>
       </SectionGrid>
-
-      <PersonaSwitcher />
     </div>
   );
 }

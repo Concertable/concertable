@@ -22,7 +22,7 @@
        _ValidateServiceBoundary check in Directory.Build.targets. Off for AppHost (composition) and
        Tests/E2E-harness projects, which reference cross-folder projects by design, and for
        UseLocalCore=true builds, whose in-repo core refs escape on purpose. Rule + rationale:
-       api/ARCHITECTURE.md ("Per-folder build closures"). -->
+       the `packages` skill. -->
   <PropertyGroup>
     <ConcertableServiceRoot>$(MSBuildThisFileDirectory)</ConcertableServiceRoot>
     <EnforceServiceBoundary Condition="'$(EnforceServiceBoundary)' == ''">true</EnforceServiceBoundary>
@@ -45,6 +45,11 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
+  </PropertyGroup>
+
+  <!-- Registry lives here, not in publish-images.yml: a carve takes only the service folder. -->
+  <PropertyGroup>
+    <ContainerRegistry Condition="'$(ContainerRegistry)' == ''">ghcr.io</ContainerRegistry>
   </PropertyGroup>
 
   <!-- Banned-API list for Microsoft.CodeAnalysis.BannedApiAnalyzers (shared across services). -->

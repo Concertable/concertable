@@ -1,24 +1,21 @@
-import type { Artist } from "@concertable/shared/features/artists";
-import type { Genre, ImageFile } from "@concertable/shared/types";
+import type { z } from "zod";
+import type { Artist } from "@concertable/shared/features/artists/types";
+import type {
+  createArtistRequestSchema,
+  updateArtistRequestSchema,
+} from "./schemas/artistRequestSchemas";
 
-export type { Artist } from "@concertable/shared/features/artists";
+export type { Artist } from "@concertable/shared/features/artists/types";
 
-export interface CreateArtistRequest {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
-  genres: Genre[];
-  banner: ImageFile;
-  avatar: ImageFile;
-}
+export type CreateArtistRequest = z.infer<typeof createArtistRequestSchema>;
+export type UpdateArtistRequest = z.infer<typeof updateArtistRequestSchema>;
 
-export interface UpdateArtistRequest {
-  name: string;
-  about: string;
-  latitude: number;
-  longitude: number;
-  genres: Genre[];
-  banner?: ImageFile;
-  avatar?: ImageFile;
+export function toUpdateArtistRequest(artist: Artist): UpdateArtistRequest {
+  return {
+    name: artist.name,
+    about: artist.about,
+    latitude: artist.latitude,
+    longitude: artist.longitude,
+    genres: artist.genres,
+  };
 }

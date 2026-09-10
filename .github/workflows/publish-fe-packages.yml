@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - 'app/build-config/**'
       - 'app/shared/**'
       - 'app/web/shared/**'
       - 'app/mobile/shared/**'
@@ -53,20 +54,21 @@ jobs:
         id: version
         run: |
           version=$(node app/scripts/version-fe-packages.mjs --write \
-            app/shared app/web/shared app/mobile/shared app/customer/shared app/b2b/shared app/web/b2b/shared)
+            app/build-config app/shared app/web/shared app/mobile/shared app/customer/shared app/b2b/shared app/web/b2b/shared)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      # Dependency order: shared -> web/mobile/customer -> b2b -> web-b2b. Each tier's prepack build leaves its
-      # dist in place, so a later tier that imports an earlier one resolves it. Verify runs against the
-      # packed tarball (pulling already-published deps from the feed), then publish idempotently.
+      # Dependency order: build-config -> shared -> web/mobile/customer -> b2b -> web-b2b. Each tier's prepack
+      # build leaves its dist in place, so a later tier that imports an earlier one resolves it. Verify runs
+      # against the packed tarball (pulling already-published deps from the feed), then publish idempotently.
       - name: Pack, verify, and publish tiers
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/fe-packages"
-          names=(@concertable/shared @concertable/web @concertable/mobile @concertable/customer @concertable/b2b @concertable/web-b2b)
+          names=(@concertable/build-config @concertable/shared @concertable/web @concertable/mobile @concertable/customer @concertable/b2b @concertable/web-b2b)
           declare -A flags=(
+            [@concertable/build-config]=""
             [@concertable/shared]="--metro"
             [@concertable/web]=""
             [@concertable/mobile]="--metro-only"
@@ -94,6 +96,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
+          node app/scripts/verify-fe-package.mjs "@concertable/build-config@$VERSION" @concertable/build-config
           node app/scripts/verify-fe-package.mjs "@concertable/shared@$VERSION" @concertable/shared --metro
           node app/scripts/verify-fe-package.mjs "@concertable/web@$VERSION" @concertable/web
           node app/scripts/verify-fe-package.mjs "@concertable/mobile@$VERSION" @concertable/mobile --metro-only

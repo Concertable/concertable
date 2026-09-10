@@ -15,9 +15,9 @@ namespace Concertable.B2B.Venue.IntegrationTests;
 
 public sealed class VenueApiTests : IAsyncLifetime
 {
-    private readonly ApiFixture fixture;
+    private readonly VenueApiFixture fixture;
 
-    public VenueApiTests(ApiFixture fixture, ITestOutputHelper output)
+    public VenueApiTests(VenueApiFixture fixture, ITestOutputHelper output)
     {
         this.fixture = fixture;
         fixture.AttachOutput(output);
@@ -171,7 +171,6 @@ public sealed class VenueApiTests : IAsyncLifetime
         Assert.Equal("Test County", venue.County);
         Assert.Equal("Test Town", venue.Town);
         Assert.Equal("venuemanager35@test.com", venue.Email);
-        Assert.False(venue.Approved);
         Assert.EndsWith(".jpg", venue.BannerUrl);
         Assert.True(Guid.TryParse(Path.GetFileNameWithoutExtension(venue.BannerUrl), out _));
         Assert.Equal($"/api/venue/{venue.Id}", response.Headers.Location?.OriginalString);
@@ -358,67 +357,6 @@ public sealed class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/venue-dashboard/kpis");
 
         await response.ShouldBe(HttpStatusCode.NoContent);
-    }
-
-    #endregion
-
-    #region Approve
-
-    [Fact]
-    public async Task Approve_ShouldReturn401_WhenUnauthenticated()
-    {
-        // Arrange
-        var client = fixture.CreateClient();
-
-        // Act
-        var response = await client.PatchAsync($"/api/venue/{fixture.SeedState.Venue.Id}/approve", null);
-
-        // Assert
-        await response.ShouldBe(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task Approve_ShouldReturn403_WhenNotAdmin()
-    {
-        // Arrange
-        var client = fixture.CreateClient(fixture.SeedState.VenueManager1);
-
-        // Act
-        var response = await client.PatchAsync($"/api/venue/{fixture.SeedState.Venue.Id}/approve", null);
-
-        // Assert
-        await response.ShouldBe(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task Approve_ShouldReturn404_WhenVenueDoesNotExist()
-    {
-        // Arrange
-        var client = fixture.CreateClient(fixture.SeedState.Admin);
-
-        // Act
-        var response = await client.PatchAsync("/api/venue/99999/approve", null);
-
-        // Assert
-        await response.ShouldBe(HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Approve_ShouldReturn204_AndApproveVenue()
-    {
-        // Arrange
-        var adminClient = fixture.CreateClient(fixture.SeedState.Admin);
-        var client = fixture.CreateClient();
-
-        // Act
-        var response = await adminClient.PatchAsync($"/api/venue/{fixture.SeedState.Venue.Id}/approve", null);
-
-        // Assert
-        await response.ShouldBe(HttpStatusCode.NoContent);
-        var venueResponse = await client.GetAsync($"/api/venue/{fixture.SeedState.Venue.Id}");
-        await venueResponse.ShouldBe(HttpStatusCode.OK);
-        var venue = await venueResponse.Content.ReadAsync<DetailsResponse>();
-        Assert.True(venue!.Approved);
     }
 
     #endregion

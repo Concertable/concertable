@@ -1,13 +1,10 @@
-// Mirrors the backend Concertable.B2B.Tenant.Contracts TenantHeaders.TenantId.
-export const TENANT_HEADER = "X-Tenant-Id";
+import type { TenantRole } from "@concertable/b2b/features/tenant/types";
 
-// Mirrors the backend TenantRole enum. TenantRole derives from this, so the runtime list and the
-// type can't drift.
-export const TENANT_ROLES = [
-  "Owner",
-  "Manager",
-  "Finance",
-  "Staff",
-  "Door",
-  "Sound",
-] as const;
+export const TENANT_ROLE_LABELS: Readonly<Record<TenantRole, string>> = {
+  owner: "Owner",
+  manager: "Manager",
+  finance: "Finance",
+  staff: "Staff",
+  door: "Door",
+  sound: "Sound",
+};

@@ -1,7 +1,7 @@
 # Mobile Apps
 
-Inherits [`../AGENTS.md`](../AGENTS.md) — which anchors the frontend code conventions and patterns
-(`app/agents/`) that every tier below obeys. This file covers only the mobile sharing tier and the
+Inherits [`../AGENTS.md`](../AGENTS.md) — which names the frontend standards skills every tier below
+obeys. This file covers only the mobile sharing tier and the
 build gate; don't restate the conventions here.
 
 Two products, two tiers of sharing:

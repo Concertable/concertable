@@ -10,3 +10,23 @@ before any test runs). Pinned to 4.12.1, the newest version confirmed to actuall
 
 Un-pin (back to floating `@4`, or bump the pin) once a newer published version is confirmed to
 download successfully from the CDN.
+
+## Unit and integration tests fan out to one runner job per test project
+
+`workflows/test.yml` builds its matrices from a `find` over the test projects
+(`unit_projects`, `integration_projects`), so each `*.UnitTests.csproj` and
+`*.IntegrationTests.csproj` gets its own job. A heavy run is 36 unit jobs and 27
+integration jobs, and every one of them repeats the same checkout, `setup-dotnet`,
+NuGet restore and build-artifact download before running a single project.
+
+Measured on run 34163047609: unit-tests 64 billed minutes against 44 minutes of real
+work, integration-tests 77 against 64, whole run ~185 billed against ~140 real. The gap
+is duplicated setup plus Actions rounding every job up to a whole minute 63 times.
+
+This costs nothing today because Actions is free on public repositories. It becomes the
+blocker on going private: ~73,500 billable minutes a month against the 3,000 a paid plan
+includes, roughly £330/month at current volume.
+
+Chunk both matrices — groups of projects per job rather than one project per job — and run
+`dotnet test` over each group. Same projects, same coverage, roughly halves a heavy run.
+Resolve when the matrices emit groups and a heavy run bills near its real duration.

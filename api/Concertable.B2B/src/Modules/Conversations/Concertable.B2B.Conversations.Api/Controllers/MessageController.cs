@@ -1,10 +1,12 @@
 using Concertable.Contracts;
 using Concertable.B2B.Conversations.Api.Mappers;
 using Concertable.B2B.Conversations.Api.Responses;
+using Concertable.B2B.Conversations.Application.DTOs;
 using Concertable.B2B.Conversations.Application.Interfaces;
 using Concertable.B2B.Conversations.Application.Requests;
 using Concertable.B2B.Tenant.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Reunion.AspNetCore.Mvc;
 
 namespace Concertable.B2B.Conversations.Api.Controllers;
@@ -31,6 +33,10 @@ internal sealed class MessageController : ControllerBase
     public async Task<ActionResult<int>> GetUnreadCountForUser() =>
         Ok(await messageService.GetUnreadCountForUserAsync());
 
+    [HttpGet("previews")]
+    public async Task<ActionResult<IReadOnlyList<MessagePreviewDto>>> GetRecentPreviews() =>
+        Ok(await messageService.GetRecentPreviewsAsync());
+
     [HttpPost("mark-read")]
     public async Task<ActionResult<int>> MarkInboxRead()
     {
@@ -38,6 +44,7 @@ internal sealed class MessageController : ControllerBase
         return Ok(await messageService.GetUnreadCountForUserAsync());
     }
 
+    [EnableRateLimiting(RateLimitPolicies.Messaging)]
     [HttpPost("{id}/report")]
     public async Task<ActionResult> Report(int id, [FromBody] ReportMessageRequest request) =>
         (await contentReportService.SubmitAsync(id, request)).ToNoContentOrProblem();

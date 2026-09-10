@@ -3,6 +3,7 @@ using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Concertable.Auth.Hosting;
 using Concertable.B2B.Hosting;
+using Concertable.E2E;
 using Concertable.Search.E2ETests.Helpers;
 using Microsoft.Extensions.Configuration;
 
@@ -10,83 +11,101 @@ namespace Concertable.B2B.E2ETests;
 
 internal static class DistributedApplicationBuilderExtensions
 {
-    public static IDistributedApplicationTestingBuilder AddE2EStack(
-        this IDistributedApplicationTestingBuilder builder,
-        string apiBaseUrl,
-        string searchApiBaseUrl,
-        string authBaseUrl,
-        string paymentBaseUrl,
-        StripeCustomerResolver stripeCustomers)
+    extension(IDistributedApplicationTestingBuilder builder)
     {
-        builder.PinAuthService(authBaseUrl);
-        builder.PinAuthApi(apiBaseUrl);
-        builder.PinWeb(apiBaseUrl, authBaseUrl, paymentBaseUrl);
-        builder.PinWorkers(authBaseUrl, paymentBaseUrl);
-        builder.AddSearchService(searchApiBaseUrl, authBaseUrl);
-        builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl, stripeCustomers);
-        builder.PinPaymentWorkers(stripeCustomers);
-        builder.AddEphemeralSql();
-        builder.PinStripeCli(paymentBaseUrl);
-        return builder;
+        public IDistributedApplicationTestingBuilder AddE2EStack(
+            Run run,
+            IComposition composition,
+            StripeCustomerResolver stripeCustomers)
+        {
+            var endpoints = run.Profile.Endpoints;
+            var auth = builder.PinAuthService(composition.Auth, endpoints.Auth, Run.AuthEnvironmentVariables());
+            PinAuthApi(auth, endpoints.ServiceApi);
+            builder.PinWeb(run, composition);
+            builder.PinWorkers(endpoints.Auth, endpoints.PaymentApi);
+            builder.AddSearchService(
+                composition.SearchWeb,
+                composition.SearchWorkers,
+                endpoints.SearchApi,
+                endpoints.Auth);
+            builder.PinPaymentWeb(
+                composition.PaymentWeb,
+                endpoints.PaymentApi,
+                endpoints.Auth,
+                run.AdminKey,
+                stripeCustomers);
+            builder.PinPaymentWorkers(composition.PaymentWorkers, stripeCustomers);
+            builder.AddEphemeralSql();
+            builder.PinStripeCli(endpoints.PaymentApi);
+            Concertable.Testing.E2E.DistributedApplicationBuilderExtensions.RetargetSubstitutedWaits(builder);
+            return builder;
+        }
+
     }
 
-    private static void PinAuthApi(
-        this IDistributedApplicationTestingBuilder builder,
-        string apiBaseUrl)
-    {
-        var auth = builder.Resources
-            .OfType<ProjectResource>()
-            .Single(r => r.Name == AuthConstants.Resource);
-
+    private static void PinAuthApi(IResource auth, string apiBaseUrl) =>
         auth.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
             context.EnvironmentVariables["Services__B2BApiUrl"] = apiBaseUrl;
         }));
+
+    extension(IDistributedApplicationTestingBuilder builder)
+    {
+
+        private void PinWorkers(
+            string authBaseUrl,
+            string paymentBaseUrl)
+        {
+            var workers = builder.Resources
+                .OfType<ProjectResource>()
+                .Single(r => r.Name == B2BConstants.WorkersResource);
+
+            workers.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+            {
+                context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+                Concertable.Testing.E2E.DistributedApplicationBuilderExtensions
+                    .PinPaymentDiscovery(context, paymentBaseUrl);
+                context.EnvironmentVariables["ServiceAuth__ClientSecret"] = Run.B2BServiceAuthSecret;
+            }));
+        }
+
+        private void PinWeb(
+            Run run,
+            IComposition composition)
+        {
+            var b2bWeb = builder.Resources
+                .OfType<ProjectResource>()
+                .Single(r => r.Name == B2BConstants.WebResource);
+
+            ReplaceProjectMetadata(b2bWeb, composition.B2BWeb);
+
+            var googleApiKey = builder.Configuration["GoogleApiKey"];
+            var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+
+            b2bWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+            {
+                context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
+                context.EnvironmentVariables["ASPNETCORE_URLS"] = run.Profile.Endpoints.ServiceApi;
+                context.EnvironmentVariables["Auth__Authority"] = run.Profile.Endpoints.Auth;
+                Concertable.Testing.E2E.DistributedApplicationBuilderExtensions
+                    .PinPaymentDiscovery(context, run.Profile.Endpoints.PaymentApi);
+                context.EnvironmentVariables["ServiceAuth__ClientSecret"] = Run.B2BServiceAuthSecret;
+                context.EnvironmentVariables["E2E__AdminKey"] = run.AdminKey;
+                context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
+                context.EnvironmentVariables["ExternalServices__UseRealEmail"] = "false";
+                if (!string.IsNullOrEmpty(googleApiKey))
+                    context.EnvironmentVariables["GoogleApiKey"] = googleApiKey;
+                if (!string.IsNullOrEmpty(stripeSecretKey))
+                    context.EnvironmentVariables["Stripe__SecretKey"] = stripeSecretKey;
+            }));
+        }
+
     }
 
-    private static void PinWorkers(
-        this IDistributedApplicationTestingBuilder builder,
-        string authBaseUrl,
-        string paymentBaseUrl)
+    private static void ReplaceProjectMetadata(ProjectResource resource, IProjectMetadata host)
     {
-        var workers = builder.Resources
-            .OfType<ProjectResource>()
-            .Single(r => r.Name == B2BConstants.WorkersResource);
-
-        workers.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
-        {
-            context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
-            context.EnvironmentVariables["services__payment-web__https__0"] = paymentBaseUrl;
-            context.EnvironmentVariables["ServiceAuth__ClientSecret"] = Concertable.Testing.E2E.DistributedApplicationBuilderExtensions.B2BServiceAuthSecret;
-        }));
-    }
-
-    private static void PinWeb(
-        this IDistributedApplicationTestingBuilder builder,
-        string apiBaseUrl,
-        string authBaseUrl,
-        string paymentBaseUrl)
-    {
-        var b2bWeb = builder.Resources
-            .OfType<ProjectResource>()
-            .Single(r => r.Name == B2BConstants.WebResource);
-
-        var googleApiKey = builder.Configuration["GoogleApiKey"];
-        var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
-
-        b2bWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
-        {
-            context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
-            context.EnvironmentVariables["ASPNETCORE_URLS"] = apiBaseUrl;
-            context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
-            context.EnvironmentVariables["services__payment-web__https__0"] = paymentBaseUrl;
-            context.EnvironmentVariables["ServiceAuth__ClientSecret"] = Concertable.Testing.E2E.DistributedApplicationBuilderExtensions.B2BServiceAuthSecret;
-            context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
-            context.EnvironmentVariables["ExternalServices__UseRealEmail"] = "false";
-            if (!string.IsNullOrEmpty(googleApiKey))
-                context.EnvironmentVariables["GoogleApiKey"] = googleApiKey;
-            if (!string.IsNullOrEmpty(stripeSecretKey))
-                context.EnvironmentVariables["Stripe__SecretKey"] = stripeSecretKey;
-        }));
+        foreach (var metadata in resource.Annotations.OfType<IProjectMetadata>().ToList())
+            resource.Annotations.Remove(metadata);
+        resource.Annotations.Add(host);
     }
 }

@@ -2,10 +2,13 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ConcertablePlatformVersion>0.1.0-alpha.0.1070</ConcertablePlatformVersion>
+    <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVersion Include="Concertable.Testing" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Testing.Architecture" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Testing.Integration" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Aspire.Hosting.Azure.ServiceBus" Version="13.3.2" />
     <PackageVersion Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageVersion Include="Duende.IdentityServer" Version="7.4.7" />
@@ -15,6 +18,8 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="11.0.1" />
     <PackageVersion Include="Reunion" Version="0.1.0-alpha.3" />
@@ -26,28 +31,32 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
-  <!-- Shared platform from the org feed, pinned lockstep via ConcertablePlatformVersion above.
+  <!-- Shared platform from the org feed, pinned lockstep via ConcertableDotNetPlatformVersion above.
        Bump only to a version already published to the feed, else restore fails NU1101. -->
   <ItemGroup>
-    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Kernel" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Seed.Shared" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Seed.Identity" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.DataAccess.Application" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.DataAccess.Infrastructure" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Messaging.AzureServiceBus" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Messaging.Infrastructure" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.ServiceDefaults" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Shared.Blob.Infrastructure" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Shared.Email.Infrastructure" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Shared.Geocoding.Infrastructure" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Shared.Imaging.Infrastructure" Version="$(ConcertablePlatformVersion)" />
-    <PackageVersion Include="Concertable.Shared.Pdf.Infrastructure" Version="$(ConcertablePlatformVersion)" />
+    <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Kernel" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Seed.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Seed.Identity" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.DataAccess.Application" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.DataAccess.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Messaging.AzureServiceBus" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Messaging.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.ServiceDefaults" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Shared.Blob.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Shared.Email.Application" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Shared.Email.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Shared.Geocoding.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Shared.Imaging.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Shared.Pdf.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <GlobalPackageReference Include="Meziantou.Analyzer" Version="3.0.98" />
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
+    <GlobalPackageReference Include="MinVer" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

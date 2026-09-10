@@ -8,7 +8,9 @@ interface DetailsFormContextValue {
   setAvatar: (file: ImageFile) => void;
 }
 
-const DetailsFormContext = createContext<DetailsFormContextValue | null>(null);
+const DetailsFormContext = createContext<DetailsFormContextValue | undefined>(
+  undefined,
+);
 
 export function DetailsFormProvider({
   children,

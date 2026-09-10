@@ -1,7 +1,7 @@
 # Concertable.Customer — Architecture
 
-> Cross-service plan and design rationale: [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../docs/MICROSERVICES_ARCHITECTURE.md)
-> Internal module rules: [`api/agents/CONVENTIONS.md`](../agents/CONVENTIONS.md)
+> Cross-service design rationale and decision history: the `microservices-architecture` skill
+> Internal module rules: the `dotnet-standards:module-structure` and `dotnet:module-structure` skills
 > Outstanding gaps: [`TECH_DEBT.md`](./TECH_DEBT.md)
 
 ---
@@ -40,7 +40,7 @@ All modules live under `Modules/`. Each follows the `Concertable.Customer.<Modul
 
 ### Replica modules (event-synced from B2B; no canonical writes)
 
-These hold Customer's own model of upstream B2B concepts. In Customer's isolated context they *are* the entity — there is no other representation — so they're named `*Entity`, not `*ReadModel` (that suffix is reserved for a denormalized projection sitting beside an authoritative write model in the same system, which is B2B's case, not Customer's). The distinguishing invariant is **how they're populated**: each row is written only by an `XChangedEvent` handler. They have **no canonical write path** and must never be seeded or mutated directly — drive the upstream event instead (see `api/agents/SEEDING_CONVENTIONS.md`).
+These hold Customer's own model of upstream B2B concepts. In Customer's isolated context they *are* the entity — there is no other representation — so they're named `*Entity`, not `*ReadModel` (that suffix is reserved for a denormalized projection sitting beside an authoritative write model in the same system, which is B2B's case, not Customer's). The distinguishing invariant is **how they're populated**: each row is written only by an `XChangedEvent` handler. They have **no canonical write path** and must never be seeded or mutated directly — drive the upstream event instead (see the `seeding` skill).
 
 | Module | Replica entities | Event handlers |
 |---|---|---|
@@ -77,12 +77,13 @@ Transport: Azure Service Bus (`concertable-customer` service name). Wired in `Co
 | `ArtistChangedEvent` | B2B | `ArtistProjectionHandler` |
 | `ArtistRatingUpdatedEvent` | B2B | `ArtistRatingProjectionHandler` |
 | `CredentialRegisteredEvent` | Auth | `UserCreationHandler` — creates `UserEntity` |
-| `PaymentSucceededEvent` | Payment | `TicketPaymentProcessor` |
-| `PaymentFailedEvent` | Payment | `TicketPaymentFailedProcessor` |
+| `PaymentSucceededEvent` | Payment | `TicketPaymentProcessor` — guard and decode the whole Customer-minted `PaymentOperationReference`, then mint tickets |
+| `PaymentFailedEvent` | Payment | `TicketPaymentFailedProcessor` — guard and decode the whole Customer-minted `PaymentOperationReference`, then notify the buyer |
 | `CustomerReviewSubmittedEvent` | Self | Flips `TicketEntity.HasReview = true` |
 | `TicketPurchasedEvent` | Self | `TicketPurchasedHandler` (Concert) — decrements `ConcertEntity.AvailableTickets` |
 
-All consumed events use `InboxMessageEntity` deduplication keyed by `(MessageId, ConsumerName)`.
+Every accepted event is deduplicated through `InboxMessageEntity` keyed by `(MessageId, ConsumerName)`.
+Payment outcomes carrying a foreign or malformed reference are skipped before inbox processing.
 
 ---
 
@@ -90,7 +91,7 @@ All consumed events use `InboxMessageEntity` deduplication keyed by `(MessageId,
 
 | Target | Client | Usage |
 |---|---|---|
-| `Concertable.Payment` | `Concertable.Payment.Client` | Create payment intent on ticket purchase; refund ops |
+| `Concertable.Payment` | `Concertable.Payment.Client` | Create on-session ticket-purchase operations addressed by a whole `PaymentOperationReference`; refund ops |
 | `Concertable.Auth` | JWT Bearer middleware | Token validation; `client_credentials` for service-to-service tokens |
 
 No sync calls to B2B. Browse/detail reads go to `Concertable.Search` from the SPA directly — Customer.Api is not a proxy for Search.
@@ -107,7 +108,7 @@ No sync calls to B2B. Browse/detail reads go to `Concertable.Search` from the SP
 
 ## Internal architecture
 
-Customer is a modular monolith inside the service. Rules in `api/agents/CONVENTIONS.md` apply:
+Customer is a modular monolith inside the service. The `dotnet-standards:module-structure` and `dotnet:module-structure` skills apply:
 
 - Cross-module calls: `IXModule` facade only (in `<Module>.Contracts`). Modules with no cross-module consumer carry no Contracts project: Preference (latent — TECH_DEBT), and Venue/Artist (the Concert module owns its own venue/artist read-model slices in the `[concert]` schema rather than fanning out to them at read time)
 - Per-module DbContext, owns its own tables

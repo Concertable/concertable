@@ -7,9 +7,25 @@ namespace Concertable.Search.Hosting;
 
 public static class AppHostExtensions
 {
+    public static IResourceBuilder<ServiceContainerResource> AddSearchWeb(
+        this IDistributedApplicationBuilder builder,
+        string image,
+        string digest,
+        IResourceBuilder<IResourceWithServiceDiscovery> auth,
+        IResourceBuilder<SqlServerDatabaseResource> searchDb)
+    {
+        return builder.AddContainerImage(SearchConstants.WebResource, image, digest)
+                      .WithHttpEndpoint(targetPort: SearchConstants.ContainerPort, name: "https")
+                      .WithReference(auth)
+                      .WaitFor(auth)
+                      .WithReference(searchDb)
+                      .WaitFor(searchDb)
+                      .WithEnvironment("Auth__Authority", auth.GetEndpoint("https"));
+    }
+
     public static IResourceBuilder<ProjectResource> AddSearchWeb<TProject>(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> auth,
+        IResourceBuilder<IResourceWithServiceDiscovery> auth,
         IResourceBuilder<SqlServerDatabaseResource> searchDb)
         where TProject : IProjectMetadata, new()
     {
@@ -28,6 +44,21 @@ public static class AppHostExtensions
         where TProject : IProjectMetadata, new()
     {
         return builder.AddProject<TProject>(SearchConstants.WorkersResource)
+                      .WithReference(searchDb)
+                      .WaitFor(searchDb)
+                      .WithReference(asb)
+                      .WaitFor(asb)
+                      .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, SearchConstants.ServiceName);
+    }
+
+    public static IResourceBuilder<ServiceContainerResource> AddSearchWorkers(
+        this IDistributedApplicationBuilder builder,
+        string image,
+        string digest,
+        IResourceBuilder<SqlServerDatabaseResource> searchDb,
+        IResourceBuilder<AzureServiceBusResource> asb)
+    {
+        return builder.AddContainerImage(SearchConstants.WorkersResource, image, digest)
                       .WithReference(searchDb)
                       .WaitFor(searchDb)
                       .WithReference(asb)

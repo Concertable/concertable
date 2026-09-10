@@ -1,3 +1,4 @@
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,28 +14,29 @@ internal sealed class TransactionEntityConfiguration : IEntityTypeConfiguration<
         builder.HasIndex(t => t.PaymentIntentId).IsUnique();
         builder.HasIndex(t => t.PayerId);
         builder.HasIndex(t => t.PayeeId);
+        builder.Property(t => t.OperationType).HasMaxLength(PaymentOperationReference.MaxOperationTypeLength);
+        builder.Property(t => t.ClientReference).HasMaxLength(PaymentOperationReference.MaxClientReferenceLength);
+        builder.HasIndex(t => new { t.OperationType, t.ClientReference });
     }
 }
 
-internal sealed class TicketTransactionEntityConfiguration : IEntityTypeConfiguration<TicketTransactionEntity>
+internal sealed class PaymentTransactionEntityConfiguration : IEntityTypeConfiguration<PaymentTransactionEntity>
 {
-    public void Configure(EntityTypeBuilder<TicketTransactionEntity> builder)
-    {
-        builder.Property(t => t.ConcertId).HasColumnName("ContextId");
-    }
+    public void Configure(EntityTypeBuilder<PaymentTransactionEntity> builder) { }
 }
 
 internal sealed class SettlementTransactionEntityConfiguration : IEntityTypeConfiguration<SettlementTransactionEntity>
 {
     public void Configure(EntityTypeBuilder<SettlementTransactionEntity> builder)
     {
-        builder.Property(t => t.BookingId).HasColumnName("ContextId");
         builder.Property(t => t.Currency).HasConversion<string>().HasMaxLength(3);
         builder.Property(t => t.CommissionVatRate)
             .HasConversion(rate => rate.Value, value => Percentage.From(value))
             .HasColumnName("CommissionVatRatePercentage")
             .HasPrecision(7, 4);
         builder.HasIndex(t => t.CommissionBindingId).IsUnique().HasFilter("[CommissionBindingId] IS NOT NULL");
+        builder.Property(t => t.OperationFingerprint).HasMaxLength(64).IsFixedLength();
+        builder.HasIndex(t => t.OperationId).IsUnique().HasFilter("[OperationId] IS NOT NULL");
         builder.HasOne(t => t.CommissionBinding)
             .WithMany()
             .HasForeignKey(t => t.CommissionBindingId)
@@ -44,8 +46,5 @@ internal sealed class SettlementTransactionEntityConfiguration : IEntityTypeConf
 
 internal sealed class VerifyTransactionEntityConfiguration : IEntityTypeConfiguration<VerifyTransactionEntity>
 {
-    public void Configure(EntityTypeBuilder<VerifyTransactionEntity> builder)
-    {
-        builder.Property(t => t.ApplicationId).HasColumnName("ContextId");
-    }
+    public void Configure(EntityTypeBuilder<VerifyTransactionEntity> builder) { }
 }

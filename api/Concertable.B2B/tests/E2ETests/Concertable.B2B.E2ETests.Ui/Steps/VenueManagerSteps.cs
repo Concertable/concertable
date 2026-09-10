@@ -47,7 +47,7 @@ public sealed class VenueManagerSteps
 
     private async Task AcceptWithSavedCardAsync(bool verify)
     {
-        await browser.UsePersonaAsync(LoginPersona.VenueManager);
+        await browser.UseUserAsync(SeededUser.VenueManager);
 
         var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.VenueSpaUrl);
         await applicationsPage.GotoAsync(state.OpportunityId);
@@ -107,7 +107,7 @@ public sealed class VenueManagerSteps
     [When(@"the venue manager accepts the application")]
     public async Task AcceptsApplication()
     {
-        await browser.UsePersonaAsync(LoginPersona.VenueManager);
+        await browser.UseUserAsync(SeededUser.VenueManager);
 
         var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.VenueSpaUrl);
         await applicationsPage.GotoAsync(state.OpportunityId);
@@ -191,7 +191,7 @@ public sealed class VenueManagerSteps
     [When(@"a draft concert is created")]
     [Then(@"a draft concert is created")]
     public Task DraftConcertCreated() =>
-        browser.Page.WaitForURLAsync("**/my/concerts/concert/**", new() { Timeout = 60_000 });
+        browser.Page.WaitForSpaUrlAsync("**/my/concerts/concert/**");
 
     [When(@"the venue manager downloads the booking contract")]
     [Then(@"the venue manager downloads the booking contract")]
@@ -211,14 +211,37 @@ public sealed class VenueManagerSteps
         new MyConcertPage(browser.Page).CancelBookingAsync();
 
     [Then(@"the booking is cancelled and the payment refunded")]
-    public Task BookingCancelledAndRefunded() =>
-        new MyConcertPage(browser.Page).WaitUntilCancelledAsync();
+    public async Task BookingCancelledAndRefunded()
+    {
+        await new MyConcertPage(browser.Page).WaitUntilCancelledAsync();
+
+        var bookingId = await fixture.App.DbFixture.Booking.GetIdByApplicationIdAsync(state.ApplicationId);
+        var refundId = await fixture.App.Polling.UntilAsync(
+            () => fixture.App.DbFixture.Payment.GetEscrowRefundIdAsync(bookingId),
+            id => id is not null,
+            timeout: TimeSpan.FromSeconds(30));
+
+        var refund = await fixture.App.Stripe.GetRefundAsync(
+            refundId ?? throw new InvalidOperationException("Payment did not expose the booking refund."));
+        Assert.Equal("succeeded", refund.Status);
+
+        // This action cancels the concert and refunds its escrow. The confirmed booking is immutable;
+        // its state machine intentionally cannot begin cancellation from Confirmed.
+        await fixture.App.Polling.UntilAsync(
+            () => fixture.App.DbFixture.Concert.GetStateByApplicationIdAsync(state.ApplicationId),
+            concertState => concertState == ConcertState.Cancelled,
+            timeout: TimeSpan.FromSeconds(30));
+        await fixture.App.Polling.UntilAsync(
+            () => fixture.App.DbFixture.Payment.GetActiveOutboxCountAsync(),
+            count => count == 0,
+            timeout: TimeSpan.FromSeconds(30));
+    }
 
     [Given(@"an ended door split concert with (\d+) tickets sold through Concertable")]
     public Task AnEndedDoorSplitConcertWithConcertableSales(int ticketsSold)
     {
-        var concert = fixture.App.SeedState.PastDoorSplitBooking.Concert!;
-        Assert.Equal(ticketsSold, concert.TicketsSold); // ties the scenario's figure to the seed
+        var concert = fixture.App.SeedState.PastDoorSplitBooking.Concert;
+        Assert.Equal(ticketsSold, concert.TicketsSold);
         state.ConcertId = concert.Id;
         return Task.CompletedTask;
     }
@@ -226,7 +249,7 @@ public sealed class VenueManagerSteps
     [When(@"the venue manager enters £(\d+) of external door takings")]
     public async Task EntersExternalDoorTakings(decimal externalTake)
     {
-        await browser.UsePersonaAsync(LoginPersona.VenueManager);
+        await browser.UseUserAsync(SeededUser.VenueManager);
         myConcertPage = new MyConcertPage(browser.Page, fixture.App.VenueSpaUrl);
         await myConcertPage.GotoAsync(state.ConcertId!.Value);
         await myConcertPage.EnterDoorTakingsAsync(externalTake);

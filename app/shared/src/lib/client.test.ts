@@ -1,8 +1,9 @@
 import { createServer, type Server } from "node:http";
+import qs from "qs";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createApiClient } from "./apiClient";
 import { ApiError, isApiError } from "./apiError";
-import { configureClient } from "./client";
+import { attachAuth, configureClient } from "./client";
 
 let server: Server;
 let baseURL: string;
@@ -20,6 +21,12 @@ beforeAll(async () => {
     if (request.url === "/unauthorized") {
       response.statusCode = 401;
       response.end(JSON.stringify({ title: "Unauthorized" }));
+      return;
+    }
+
+    if (request.url === "/search?genres=jazz,rock") {
+      response.statusCode = 200;
+      response.end(JSON.stringify({}));
       return;
     }
 
@@ -42,7 +49,8 @@ afterAll(async () => {
 
 function createConfiguredClient(onUnauthorized = vi.fn()) {
   const client = createApiClient();
-  configureClient(client, baseURL).withAuth(() => null, onUnauthorized);
+  configureClient(client, baseURL);
+  attachAuth(client, () => null, onUnauthorized);
   return { client, onUnauthorized };
 }
 
@@ -71,6 +79,22 @@ describe("configureClient", () => {
 
     expect(response.status).toBe(404);
     expect(response.data).toBeNull();
+  });
+
+  it("preserves caller-provided Axios configuration", async () => {
+    const client = createApiClient({
+      baseURL,
+      paramsSerializer: (params) =>
+        qs.stringify(params, {
+          arrayFormat: "comma",
+          encode: false,
+          skipNulls: true,
+        }),
+    });
+
+    await expect(client.get("/search", { params: { genres: ["jazz", "rock"] } })).resolves.toMatchObject({
+      status: 200,
+    });
   });
 
   it("maps unexpected responses to ApiError", async () => {

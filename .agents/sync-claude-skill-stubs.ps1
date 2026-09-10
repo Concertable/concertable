@@ -37,7 +37,15 @@ foreach ($name in $names) {
     $dir  = Join-Path $stubRoot $name
     $file = Join-Path $dir 'SKILL.md'
     $body = Stub-Body $name
-    $current = if (Test-Path $file) { [System.IO.File]::ReadAllText($file) -replace "`r`n", "`n" } else { $null }
+    # Compare on bytes for the BOM: a BOM before `---` makes Claude Code read name/description as
+    # empty, so the skill cannot be routed on - and ReadAllText strips it, so a text compare says
+    # "unchanged" and the stub stays broken for ever.
+    $current = $null
+    if (Test-Path $file) {
+        $bytes = [System.IO.File]::ReadAllBytes($file)
+        $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+        if (-not $hasBom) { $current = [System.IO.File]::ReadAllText($file) -replace "`r`n", "`n" }
+    }
     if ($current -ne $body) {
         New-Item -ItemType Directory -Force -Path $dir | Out-Null
         [System.IO.File]::WriteAllText($file, ($body -replace "`n", "`r`n"), $utf8NoBom)

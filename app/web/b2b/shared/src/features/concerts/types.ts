@@ -4,18 +4,18 @@ import type { Concert } from "@concertable/shared/features/concerts/types";
 import type { Deal } from "@b2b/features/deals";
 
 export type ApplicationStatus =
-  | "Pending"
-  | "Rejected"
-  | "Withdrawn"
-  | "Accepted"
-  | "Cancelled"
-  | "AwaitingPayment"
-  | "Confirmed"
-  | "Complete"
-  | "Settled";
+  | "pending"
+  | "rejected"
+  | "withdrawn"
+  | "accepted"
+  | "cancelled"
+  | "awaitingPayment"
+  | "confirmed"
+  | "complete"
+  | "settled";
 
 export interface OpportunityActions {
-  checkout?: ActionLink | null;
+  checkout?: ActionLink;
 }
 
 export interface OpportunityDraft {
@@ -31,27 +31,49 @@ export interface Opportunity extends OpportunityDraft {
   actions: OpportunityActions;
 }
 
-export interface ApplicationActions {
-  accept: ActionLink;
-  checkout?: ActionLink | null;
-  withdraw?: ActionLink | null;
-  reject?: ActionLink | null;
-  cancel?: ActionLink | null;
-  contract?: ActionLink | null;
+export interface OpportunityRequest extends OpportunityDraft {
+  id?: number;
 }
+
+export const Opportunity = {
+  toRequest(opportunity: Opportunity | OpportunityDraft): OpportunityRequest {
+    return {
+      id: "id" in opportunity ? opportunity.id : undefined,
+      startDate: opportunity.startDate,
+      endDate: opportunity.endDate,
+      genres: opportunity.genres,
+      deal: opportunity.deal,
+    };
+  },
+};
+
+export type ApplicationActionName =
+  | "accept"
+  | "checkout"
+  | "decline"
+  | "cancel"
+  | "withdraw"
+  | "contract";
+
+export type ApplicationActionsOf<TName extends ApplicationActionName> = {
+  [K in TName]?: ActionLink;
+};
+
+export type ApplicationActions = ApplicationActionsOf<ApplicationActionName> & {
+  /** @deprecated the wire field is `decline`; drops once consumers cut over. */
+  reject?: ActionLink;
+};
 
 export interface ConcertActions {
-  cancel?: ActionLink | null;
-  contract?: ActionLink | null;
-  declareDoorRevenue?: ActionLink | null;
-  invoice?: ActionLink | null;
+  cancel?: ActionLink;
+  contract?: ActionLink;
+  declareDoorRevenue?: ActionLink;
+  invoice?: ActionLink;
 }
 
-// The party-scoped owner read (GET /organization/concert/{id}): the public concert plus the venue-private
-// figures and party-only action links the anonymous marketplace read omits.
 export interface MyConcert extends Concert {
   ticketsSold: number;
-  doorRevenue: number | null;
+  doorRevenue?: number;
   actions: ConcertActions;
 }
 

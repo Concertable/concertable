@@ -44,9 +44,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistReadDbContext>(sp => sp.GetRequiredService<ArtistReadDbContext>());
 
         services.AddScoped<IArtistService, ArtistService>();
-        services.AddScoped<IArtistDashboardService, ArtistDashboardService>();
         services.AddScoped<IArtistReviewService, ArtistReviewService>();
         services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
         services.AddScoped<IArtistReadRepository, ArtistReadRepository>();
         services.AddScoped<IArtistModule, ArtistModule>();
         services.AddScoped<IOutboxUnitOfWorkBehavior, OutboxUnitOfWorkBehavior>();

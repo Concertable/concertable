@@ -2,8 +2,10 @@ using System.Reflection;
 using Concertable.DataAccess.Application;
 using Concertable.DataAccess.Infrastructure;
 using Concertable.DataAccess.Infrastructure.Data;
+using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Kernel;
 using Concertable.Messaging.Domain;
+using Concertable.Testing.Unit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -11,6 +13,14 @@ namespace Concertable.DataAccess.UnitTests;
 
 public sealed class RepositoryTests
 {
+    private readonly InMemoryDatabaseRoot root;
+    private readonly string databaseName;
+
+    public RepositoryTests()
+    {
+        (this.root, this.databaseName) = InMemoryDatabaseFactory.Create();
+    }
+
     [Fact]
     public void Repository_ContextField_UsesCombinedCapabilityOnly()
     {
@@ -46,25 +56,122 @@ public sealed class RepositoryTests
     [Fact]
     public async Task WriteRepository_AddThenSave_PersistsThroughWriteCapability()
     {
-        var root = new InMemoryDatabaseRoot();
-        var databaseName = Guid.NewGuid().ToString();
-        await using var context = CreateContext(databaseName, root);
+        await using var context = this.CreateContext();
         var repository = new TestWriteRepository(context);
         var entity = new TestEntity { Name = "Persisted" };
 
         Assert.Same(entity, await repository.AddAsync(entity));
         await repository.SaveChangesAsync();
 
-        await using var verificationContext = CreateReadContext(databaseName, root);
+        await using var verificationContext = this.CreateReadContext();
         Assert.Equal("Persisted", (await verificationContext.Entities.SingleAsync()).Name);
+    }
+
+    [Fact]
+    public async Task WriteRepository_TryInsertAsync_NoConflict_PersistsAndReturnsTrue()
+    {
+        await using var context = this.CreateContext();
+        var repository = new TestWriteRepository(context);
+        var entity = new TestEntity { Name = "Persisted" };
+
+        var inserted = await repository.TryInsertAsync(entity);
+
+        Assert.True(inserted);
+        await using var verificationContext = this.CreateReadContext();
+        Assert.Equal("Persisted", (await verificationContext.Entities.SingleAsync()).Name);
+    }
+
+    [Fact]
+    public async Task UnitOfWork_TrySaveChangesAsync_Success_PersistsAndReturnsTrue()
+    {
+        await using var context = this.CreateContext();
+        await context.AddAsync(new TestEntity { Name = "Persisted" });
+        IUnitOfWork<TestDbContext> unitOfWork = new UnitOfWork<TestDbContext>(context);
+
+        var saved = await unitOfWork.TrySaveChangesAsync(static _ => false);
+
+        Assert.True(saved);
+        Assert.Equal("Persisted", (await context.Entities.SingleAsync()).Name);
+    }
+
+    [Fact]
+    public async Task UnitOfWork_TrySaveChangesAsync_ConcurrencyFailure_ClearsChangeTracker()
+    {
+        await using (var seed = this.CreateContext())
+        {
+            await seed.AddRangeAsync(
+                new TestEntity { Name = "Original" },
+                new TestEntity { Name = "Unrelated" });
+            await seed.SaveChangesAsync();
+        }
+        await using var winnerContext = this.CreateContext();
+        await using var loserContext = this.CreateContext();
+        var winner = await winnerContext.Entities.SingleAsync(entity => entity.Name == "Original");
+        var loser = await loserContext.Entities.SingleAsync(entity => entity.Name == "Original");
+        _ = await loserContext.Entities.SingleAsync(entity => entity.Name == "Unrelated");
+        winner.Name = "Winner";
+        loser.Name = "Loser";
+        await winnerContext.SaveChangesAsync();
+        IUnitOfWork<TestDbContext> unitOfWork = new UnitOfWork<TestDbContext>(loserContext);
+
+        var saved = await unitOfWork.TrySaveChangesAsync(
+            static exception => exception is DbUpdateConcurrencyException);
+
+        Assert.False(saved);
+        Assert.Empty(loserContext.ChangeTracker.Entries());
+    }
+
+    [Fact]
+    public async Task UnitOfWork_TrySaveChangesAsync_UpdateFailure_ClearsChangeTracker()
+    {
+        var options = new DbContextOptionsBuilder<FailingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var context = new FailingDbContext(options);
+        await context.AddAsync(new TestEntity { Name = "Failed" });
+        IUnitOfWork<FailingDbContext> unitOfWork = new UnitOfWork<FailingDbContext>(context);
+
+        var saved = await unitOfWork.TrySaveChangesAsync(static _ => true);
+
+        Assert.False(saved);
+        Assert.Empty(context.ChangeTracker.Entries());
+    }
+
+    [Fact]
+    public async Task UnitOfWork_TrySaveChangesAsync_UnexpectedUpdateFailure_PropagatesAndPreservesChangeTracker()
+    {
+        var options = new DbContextOptionsBuilder<FailingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var context = new FailingDbContext(options);
+        await context.AddAsync(new TestEntity { Name = "Failed" });
+        IUnitOfWork<FailingDbContext> unitOfWork = new UnitOfWork<FailingDbContext>(context);
+
+        await Assert.ThrowsAsync<DbUpdateException>(
+            () => unitOfWork.TrySaveChangesAsync(static _ => false));
+
+        Assert.NotEmpty(context.ChangeTracker.Entries());
+    }
+
+    [Fact]
+    public async Task UnitOfWork_SaveChangesAsync_UpdateFailure_PreservesChangeTracker()
+    {
+        var options = new DbContextOptionsBuilder<FailingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var context = new FailingDbContext(options);
+        await context.AddAsync(new TestEntity { Name = "Failed" });
+        IUnitOfWork<FailingDbContext> unitOfWork = new UnitOfWork<FailingDbContext>(context);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => unitOfWork.SaveChangesAsync());
+
+        Assert.NotEmpty(context.ChangeTracker.Entries());
     }
 
     [Fact]
     public async Task Repository_ReadThenSave_PreservesOneTrackedUnitOfWork()
     {
-        var root = new InMemoryDatabaseRoot();
-        var databaseName = Guid.NewGuid().ToString();
-        await using var context = CreateContext(databaseName, root);
+        await using var context = this.CreateContext();
         var repository = new TestCapabilityRepository(context);
         var entity = new TestEntity { Name = "Original" };
         await repository.InsertAsync(entity);
@@ -74,21 +181,19 @@ public sealed class RepositoryTests
         await repository.SaveChangesAsync();
 
         Assert.Same(entity, loaded);
-        await using var verificationContext = CreateContext(databaseName, root, QueryTrackingBehavior.NoTracking);
+        await using var verificationContext = this.CreateContext(QueryTrackingBehavior.NoTracking);
         Assert.Equal("Updated", (await verificationContext.Entities.SingleAsync()).Name);
     }
 
     [Fact]
     public async Task ReadRepository_DedicatedNoTrackingContext_IsolatedFromTrackedChanges()
     {
-        var root = new InMemoryDatabaseRoot();
-        var databaseName = Guid.NewGuid().ToString();
-        await using var trackedContext = CreateContext(databaseName, root);
+        await using var trackedContext = this.CreateContext();
         var trackedRepository = new TestCapabilityRepository(trackedContext);
         var entity = new TestEntity { Name = "Persisted" };
         await trackedRepository.InsertAsync(entity);
         entity.Name = "Unsaved";
-        await using var readContext = CreateReadContext(databaseName, root);
+        await using var readContext = this.CreateReadContext();
         var readRepository = new TestReadRepository(readContext);
 
         var isolated = await readRepository.GetByIdAsync(entity.Id);
@@ -101,8 +206,7 @@ public sealed class RepositoryTests
     [Fact]
     public async Task ReadDbContext_SaveOverloads_RejectWrites()
     {
-        var root = new InMemoryDatabaseRoot();
-        using var context = CreateReadContext(Guid.NewGuid().ToString(), root);
+        using var context = this.CreateReadContext();
 
         Assert.Throws<InvalidOperationException>(() => context.SaveChanges());
         Assert.Throws<InvalidOperationException>(() => context.SaveChanges(acceptAllChangesOnSuccess: false));
@@ -114,8 +218,7 @@ public sealed class RepositoryTests
     [Fact]
     public void ReadDbContext_Model_ExcludesMessagingEntities()
     {
-        var root = new InMemoryDatabaseRoot();
-        using var context = CreateReadContext(Guid.NewGuid().ToString(), root);
+        using var context = this.CreateReadContext();
 
         Assert.Null(context.Model.FindEntityType(typeof(InboxMessageEntity)));
         Assert.Null(context.Model.FindEntityType(typeof(OutboxMessageEntity)));
@@ -160,25 +263,12 @@ public sealed class RepositoryTests
         Assert.Contains(typeof(IWriteDbContext), interfaces);
     }
 
-    private static TestDbContext CreateContext(
-        string databaseName,
-        InMemoryDatabaseRoot root,
-        QueryTrackingBehavior trackingBehavior = QueryTrackingBehavior.TrackAll)
-    {
-        var options = new DbContextOptionsBuilder<TestDbContext>()
-            .UseInMemoryDatabase(databaseName, root)
-            .UseQueryTrackingBehavior(trackingBehavior)
-            .Options;
-        return new TestDbContext(options);
-    }
+    private TestDbContext CreateContext(QueryTrackingBehavior trackingBehavior = QueryTrackingBehavior.TrackAll) =>
+        this.root.CreateContext<TestDbContext>(this.databaseName, options => new TestDbContext(options), trackingBehavior);
 
-    private static TestReadDbContext CreateReadContext(string databaseName, InMemoryDatabaseRoot root)
-    {
-        var options = new DbContextOptionsBuilder<TestReadDbContext>()
-            .UseInMemoryDatabase(databaseName, root)
-            .Options;
-        return new TestReadDbContext(options, new TestConfigurationProvider());
-    }
+    private TestReadDbContext CreateReadContext() =>
+        this.root.CreateContext<TestReadDbContext>(
+            this.databaseName, options => new TestReadDbContext(options, new TestConfigurationProvider()));
 
     private sealed class TestCapabilityRepository : Repository<TestEntity, int>
     {
@@ -201,6 +291,20 @@ public sealed class RepositoryTests
     private sealed class TestDbContext(DbContextOptions<TestDbContext> options) : DbContextBase(options)
     {
         public DbSet<TestEntity> Entities => Set<TestEntity>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<TestEntity>().Property(entity => entity.Name).IsConcurrencyToken();
+        }
+    }
+
+    private sealed class FailingDbContext(DbContextOptions<FailingDbContext> options) : DbContextBase(options)
+    {
+        public DbSet<TestEntity> Entities => Set<TestEntity>();
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+            throw new DbUpdateException();
     }
 
     private sealed class TestReadDbContext(

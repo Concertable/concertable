@@ -10,7 +10,7 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
     private EscrowEntity() { }
 
     private EscrowEntity(
-        int bookingId,
+        PaymentOperationReference reference,
         Guid fromOwnerId,
         Guid toOwnerId,
         Currency currency,
@@ -22,6 +22,7 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
         string chargeId,
         Guid? commissionBindingId)
     {
+        reference = reference.EnsureValid();
         if (payeeGrossMinor < 0)
             throw new DomainException("Payee gross cannot be negative.");
         if (commissionGrossMinor < 0)
@@ -30,7 +31,8 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
             checked(commissionNetMinor + commissionVatMinor) != commissionGrossMinor)
             throw new DomainException("Commission net and VAT must reconcile to commission gross.");
 
-        BookingId = bookingId;
+        OperationType = reference.OperationType;
+        ClientReference = reference.ClientReference;
         FromOwnerId = fromOwnerId;
         ToOwnerId = toOwnerId;
         Currency = currency;
@@ -46,7 +48,8 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
     }
 
     public int Id { get; private set; }
-    public int BookingId { get; private set; }
+    public string OperationType { get; private set; } = null!;
+    public string ClientReference { get; private set; } = null!;
     public Guid FromOwnerId { get; private set; }
     public Guid ToOwnerId { get; private set; }
     public Guid? CommissionBindingId { get; private set; }
@@ -62,6 +65,9 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
     public string ChargeId { get; private set; } = null!;
     public string? TransferId { get; private set; }
     public DateTime? ReleasedAt { get; private set; }
+    public Guid? ReleaseOperationId { get; private set; }
+    public int? ReleaseOperationFingerprintVersion { get; private set; }
+    public string? ReleaseOperationFingerprint { get; private set; }
 
     /// <summary>
     /// Running total of cumulative gross reserved across non-failed refunds. Maintained by the
@@ -71,20 +77,20 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
     /// </summary>
     public long RefundedGrossMinor { get; private set; }
     public IReadOnlyCollection<PaymentRefundEntity> Refunds => refunds;
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
     public string CreatedBy { get; set; } = null!;
-    public DateTime? LastModifiedAt { get; set; }
+    public DateTimeOffset? LastModifiedAt { get; set; }
     public string? LastModifiedBy { get; set; }
 
     public static EscrowEntity Create(
-        int bookingId,
+        PaymentOperationReference reference,
         Guid fromOwnerId,
         Guid toOwnerId,
         Money gross,
         Money platformFee,
         string chargeId) =>
         new(
-            bookingId,
+            reference,
             fromOwnerId,
             toOwnerId,
             gross.Currency,
@@ -97,14 +103,14 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
             null);
 
     internal static EscrowEntity CreateBound(
-        int bookingId,
+        PaymentOperationReference reference,
         Guid fromOwnerId,
         Guid toOwnerId,
         Guid commissionBindingId,
         CommissionCalculation calculation,
         string chargeId) =>
         new(
-            bookingId,
+            reference,
             fromOwnerId,
             toOwnerId,
             calculation.Currency,
@@ -142,6 +148,27 @@ internal sealed class EscrowEntity : IIdEntity, IAuditable
         TransferId = transferId;
         ReleasedAt = now;
         Status = EscrowStatus.Released;
+        return UnitResult.Success<EscrowTransitionError>();
+    }
+
+    public UnitResult<EscrowTransitionError> BeginRelease(
+        Guid operationId,
+        SettlementOperationFingerprint fingerprint)
+    {
+        if (ReleaseOperationId is not null)
+        {
+            return ReleaseOperationId == operationId
+                && ReleaseOperationFingerprintVersion == fingerprint.Version
+                && string.Equals(ReleaseOperationFingerprint, fingerprint.Value, StringComparison.Ordinal)
+                    ? UnitResult.Success<EscrowTransitionError>()
+                    : UnitResult.Failure<EscrowTransitionError>(new EscrowTransitionError.OperationConflict());
+        }
+        if (Status != EscrowStatus.Held)
+            return UnitResult.Failure<EscrowTransitionError>(new EscrowTransitionError.NotHeld(Status));
+
+        ReleaseOperationId = operationId;
+        ReleaseOperationFingerprintVersion = fingerprint.Version;
+        ReleaseOperationFingerprint = fingerprint.Value;
         return UnitResult.Success<EscrowTransitionError>();
     }
 

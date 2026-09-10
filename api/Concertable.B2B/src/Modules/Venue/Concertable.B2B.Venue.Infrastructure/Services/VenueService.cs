@@ -15,7 +15,6 @@ internal sealed class VenueService : IVenueService
 {
     private readonly IVenueRepository repository;
     private readonly IVenueReadRepository readRepository;
-    private readonly IVenueAdminRepository adminRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
     private readonly ITenantContext tenantContext;
@@ -25,7 +24,6 @@ internal sealed class VenueService : IVenueService
     public VenueService(
         IVenueRepository repository,
         IVenueReadRepository readRepository,
-        IVenueAdminRepository adminRepository,
         IImageService imageService,
         ICurrentUser currentUser,
         ITenantContext tenantContext,
@@ -34,7 +32,6 @@ internal sealed class VenueService : IVenueService
     {
         this.repository = repository;
         this.readRepository = readRepository;
-        this.adminRepository = adminRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
         this.tenantContext = tenantContext;
@@ -138,21 +135,38 @@ internal sealed class VenueService : IVenueService
         tenantContext.TenantId is { } tenantId
         && await repository.GetTenantIdByIdAsync(venueId, ct) == tenantId;
 
-    public async Task<UnitResult<ApproveVenueError>> ApproveAsync(
-        int id,
-        CancellationToken ct = default)
-    {
-        var venue = await adminRepository.GetByIdAsync(id, ct);
-        if (venue is null)
-            return new ApproveVenueError.VenueNotFound(id);
-
-        venue.Approve();
-        await adminRepository.SaveChangesAsync(ct);
-        return new Success();
-    }
-
     public async Task<Option<VenueSummary>> GetSummaryAsync(
         int id,
         CancellationToken ct = default) =>
         await readRepository.GetSummaryAsync(id, ct);
+
+    public async Task<Option<int>> GetCurrentIdAsync(CancellationToken ct = default)
+    {
+        if (tenantContext.TenantId is not { } tenantId)
+            return Option.None<int>();
+
+        var venue = await repository.GetByTenantIdAsync(tenantId, ct);
+        return venue is null ? Option.None<int>() : Option.Some(venue.Id);
+    }
+
+    public async Task<Option<VenueProfile>> GetProfileAsync(
+        int id,
+        CancellationToken ct = default) =>
+        (await readRepository.GetProfileAsync(id, ct)).ToOption();
+
+    public Task<IReadOnlyList<VenueProfile>> GetProfilesAsync(
+        IReadOnlyCollection<int> ids,
+        CancellationToken ct = default) =>
+        readRepository.GetProfilesAsync(ids, ct);
+
+    public async Task<Option<VenueProfile>> GetCurrentProfileAsync(CancellationToken ct = default) =>
+        tenantContext.TenantId is { } tenantId
+            ? (await readRepository.GetProfileByTenantIdAsync(tenantId, ct)).ToOption()
+            : Option.None<VenueProfile>();
+
+    public async Task<Option<TenantContact>> GetContactByTenantIdAsync(
+        Guid tenantId,
+        CancellationToken ct = default) =>
+        (await readRepository.GetContactByTenantIdAsync(tenantId, ct)).ToOption();
+
 }

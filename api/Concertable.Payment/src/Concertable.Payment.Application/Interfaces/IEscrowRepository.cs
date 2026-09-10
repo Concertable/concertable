@@ -1,15 +1,24 @@
 using Concertable.DataAccess.Application;
+using Concertable.Payment.Domain;
 
 namespace Concertable.Payment.Application.Interfaces;
 
 internal interface IEscrowRepository : IRepository<EscrowEntity>
 {
     Task<EscrowEntity?> GetWithRefundsByIdAsync(int id, CancellationToken ct = default);
-    Task<EscrowEntity?> GetByBookingIdAsync(int bookingId, CancellationToken ct = default);
+    Task<EscrowEntity?> GetByReferenceAsync(
+        PaymentOperationReference reference,
+        CancellationToken ct = default);
     Task<EscrowEntity?> GetByChargeIdAsync(string chargeId, CancellationToken ct = default);
     Task<EscrowEntity?> GetByCommissionBindingIdAsync(
         Guid commissionBindingId,
         CancellationToken ct = default);
+    Task<(EscrowEntity? Escrow, bool Conflict)> ReserveReleaseAsync(
+        int escrowId,
+        Guid operationId,
+        SettlementOperationFingerprint fingerprint,
+        CancellationToken ct = default);
+    Task<EscrowEntity?> ReloadByIdAsync(int escrowId, CancellationToken ct = default);
 
     /// <summary>
     /// Atomically reserves <paramref name="grossMinor"/> against the escrow's cumulative gross-refund

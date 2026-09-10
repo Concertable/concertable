@@ -1,7 +1,7 @@
 import { useCheckoutFlow as useCheckoutFlowBase } from "@concertable/shared/features/concerts";
 import { notificationConnection } from "@/lib/signalr";
 
-export type { CheckoutFlowState } from "@concertable/shared/features/concerts";
+export type { CheckoutFlowState } from "@concertable/shared/features/concerts/hooks/useCheckoutFlow";
 
 interface Options {
   event: string;

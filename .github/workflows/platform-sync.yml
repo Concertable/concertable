@@ -3,7 +3,7 @@ name: Platform sync
 # Automates the cross-service publish->consume loop (see plans/PLATFORM_PACKAGE_SYNC.md).
 #
 # When 'Publish packages' ships new Concertable.* packages to the feed on main, this opens ONE PR
-# bumping every service's <ConcertablePlatformVersion> pin to the just-published version, and turns on
+# bumping every service's <ConcertableDotNetPlatformVersion> pin to the just-published version, and turns on
 # GitHub auto-merge for THAT PR only (scoped to this bot PR — not a repo-wide setting):
 #   - NON-breaking platform change -> the bump PR is green -> the merge queue lands it, no review.
 #   - BREAKING platform change     -> the bump PR is red at exactly the consumers that must migrate.
@@ -51,6 +51,10 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
           token: ${{ secrets.PLATFORM_SYNC_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Cascade guard — skip if this publish came from a pin-bump merge
         id: guard
@@ -108,12 +112,12 @@ jobs:
           git config user.name  "concertable-platform-sync[bot]"
           git config user.email "platform-sync@users.noreply.github.com"
           git switch -C "$branch"
-          git commit -am "chore(platform): sync ConcertablePlatformVersion to ${VERSION}"
+          git commit -am "chore(platform): sync ConcertableDotNetPlatformVersion to ${VERSION}"
           git push --force-with-lease origin "$branch"
 
           body=$(cat <<EOF
           Automated by \`platform-sync.yml\` after \`Publish packages\` shipped \`${VERSION}\` to the feed.
-          Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
+          Bumps every service's \`<ConcertableDotNetPlatformVersion>\` to \`${VERSION}\`.
 
           A pin bump is a **package-only** change, so \`test.yml\` gates it on build + unit + integration and
           **no-ops E2E**. Auto-merge is on — the merge queue lands it the moment those are green (its E2E gate
@@ -135,13 +139,22 @@ jobs:
         run: |
           set -euo pipefail
           keep="chore/platform-sync-${VERSION}"
-          # This PR pins the latest feed version, so every OTHER open platform-sync PR is by definition an older,
-          # now-superseded bump. Close it and delete its branch so stale, conflicting sync PRs can never accumulate
-          # (delete_branch_on_merge only cleans up branches that MERGE — a superseded one never does).
+          # Every other open sync PR is an older, now-superseded bump - close it so stale/conflicting ones
+          # never accumulate. Preserve only a CLEAN PR whose auto-merge request is actually armed: that is
+          # the validated in-flight state which must be allowed to reach the merge queue. CLEAN alone only
+          # means mergeable and can also describe a stranded PR whose auto-merge request failed. The older
+          # PR's own merge won't re-trigger a sync (the cascade guard above), so nothing is lost by letting
+          # a genuinely in-flight one land instead.
           gh pr list --state open --json number,headRefName \
             --jq '.[] | select(.headRefName | startswith("chore/platform-sync-")) | select(.headRefName != "'"$keep"'") | .number' \
           | while read -r n; do
               [ -n "$n" ] || continue
+              action="$(gh pr view "$n" --json mergeStateStatus,autoMergeRequest \
+                | node .github/scripts/platform-sync-pr-action.mjs)"
+              if [ "$action" = "keep" ]; then
+                echo "PR #$n is clean with auto-merge armed — leaving it to land."
+                continue
+              fi
               echo "Closing superseded sync PR #$n"
               gh pr close "$n" --delete-branch \
                 --comment "Superseded by the sync to \`${VERSION}\`. Only one platform-sync PR is ever live."

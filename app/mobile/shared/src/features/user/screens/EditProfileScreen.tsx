@@ -1,6 +1,6 @@
 import { Linking, View } from "react-native";
 import { CheckCircle, XCircle } from "lucide-react-native";
-import { useAuthStore } from "@concertable/shared/features/auth";
+import { useCurrentUser } from "../../../auth/useCurrentUser";
 import { Screen } from "@/components/ui/Screen";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { theme } from "../../../lib/theme";
 import Config from "../../../lib/config";
 
 export function EditProfileScreen() {
-  const user = useAuthStore((s) => s.user);
+  const user = useCurrentUser();
 
   if (!user) return null;
 

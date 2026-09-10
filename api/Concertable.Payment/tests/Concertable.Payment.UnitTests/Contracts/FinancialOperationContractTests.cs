@@ -23,16 +23,4 @@ public sealed class FinancialOperationContractTests
     [MemberData(nameof(MessageTypes))]
     public void MessageType_ReturnsPublishedContract(Type type, string expected) =>
         Assert.Equal(expected, MessageTypeAttribute.Resolve(type));
-
-    [Fact]
-    public void ContractsAssembly_DoesNotReferenceConsumerRuntime()
-    {
-        var references = typeof(CaptureEscrowCommand).Assembly
-            .GetReferencedAssemblies()
-            .Select(reference => reference.Name)
-            .ToArray();
-
-        Assert.DoesNotContain(references, name => name?.StartsWith("Concertable.B2B", StringComparison.Ordinal) == true);
-        Assert.DoesNotContain(references, name => name?.StartsWith("Concertable.Customer", StringComparison.Ordinal) == true);
-    }
 }
