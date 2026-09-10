@@ -918,6 +918,8 @@ Three mechanics the `auth` run could not reveal, because `auth` is one of only t
   patch 7 goes from unappliable to a real three-way merge that resolves two of its three files.
 - **Pass two leaves the solution file dangling.** It deletes the excluded projects and does not touch
   the `.slnx` that still lists them, so every two-pass target needs its solution reconciled by hand.
+  Read that as reasoning rather than observation: the `customer` run below found pass two had not in
+  fact been deleting anything on Windows, so neither rehearsal saw the deletion it describes.
 
 Two divergences that are about the map rather than the tooling:
 
@@ -998,7 +1000,10 @@ The subset rule held twice more — `CustomerArchitectureTests` and `CustomerApp
 are both strict subsets of the extraction's `StartupTests` split, and the second additionally calls
 `CustomerAppHost.CreateBuilder`, a class the monorepo renamed to `AppHost`, so it would apply cleanly
 and then fail to compile. Both were deleted. With that, all 64 projects restore against the live feed
-and build Release with zero errors.
+and build Release with zero errors — obtained, unlike the `auth` and `payment` rehearsals, with
+`-m:1 -p:DebugType=none -p:OutDir=<shared>/`, because the default per-project output layout needs
+about 1.9 GB and the machine had less. A shared output directory collapses 64 copies of the
+dependency closure into 178 MB, and is how to run any of these builds while disk is scarce.
 
 ### Producer parity gates every promotion
 
