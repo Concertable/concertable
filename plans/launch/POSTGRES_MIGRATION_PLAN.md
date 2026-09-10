@@ -78,6 +78,11 @@ stays green. Publish and platform-sync before Phase 5.
 Consumption contract: an extension applied to a `Point` property that configures the column for the
 active provider. Entity and query code stays on NetTopologySuite and does not change.
 
+Delivery sequence: the extension is an additive public API in the published
+`Concertable.DataAccess.Infrastructure` package, while service projects bind the published package rather
+than its source. Land and publish the package expansion first, consume the generated platform sync, then
+land the eight call-site changes and regenerated service migrations.
+
 Gate: existing spatial queries and their integration coverage stay green on SQL Server.
 
 ### Phase 3 — seed and fixture SQL neutrality
