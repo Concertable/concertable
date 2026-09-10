@@ -3,44 +3,39 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: not created
-- Branch: not created
-- PR: not opened
+- Worktree: not created for the next phase; the Phase 1 worktree is retired
+- Branch: not created for the next phase
+- PR: Phase 1 [#985](https://github.com/Concertable/concertable/pull/985) merged; generated
+  platform sync [#988](https://github.com/Concertable/concertable/pull/988) merged
 - Dependency/package gates: Phase 1 changes the published `Concertable.Messaging` and
   `Concertable.DataAccess.Infrastructure` packages and must publish plus platform-sync before any
   service cut-over consumes it. No other phase has a package gate.
-- Last reconciled: `2026-09-05` against `origin/main`
+- Last reconciled: `2026-09-10` against `a8205ffc5` (`origin/main`)
 
 ## Current state
 
-Design approved by Tommy on 2026-09-05. No implementation has started.
-
-The provider-specific surface has been measured against `main` rather than estimated, and is recorded in
-the plan's §3 table. The decisive constraint is that **there is no production data**: the migration
-happens before launch, so this is a provider swap with no dual-write window, no ETL, and no
-compatibility layer.
-
-Phases 1-4 are provider-neutral refactors that ship on SQL Server and are implementable today. Phases
-5-9 flip one service at a time, which is possible because each service owns its own database,
-connection string, and Aspire resource.
+Phase 1 is delivered. The five shared messaging mappings use provider-neutral length configuration, the
+re-scaffolded SQL Server schema is equivalent, exact-head CI and the merge queue are green, and package
+version `0.1.0-alpha.0.1366` is published and consumed through the merged platform-sync PR.
 
 ## Next Steps
 
-Create a fresh worktree from current `origin/main` and implement Phase 1:
+Create a fresh worktree from current `origin/main` and implement Phase 2:
 
-1. In `Concertable.Messaging` outbox and inbox entity configurations and in `DataAccess`
-   `DbContextBase`, replace `HasColumnType("nvarchar(450)")` with `HasMaxLength(450)` and
-   `HasColumnType("nvarchar(max)")` with an unbounded string property.
-2. Re-scaffold initial migrations from `api/` via `./initial-migrations.ps1` and diff the generated SQL
-   Server schema against the previous one — it must be identical. A schema difference means the mapping
-   is not equivalent and must be corrected before proceeding.
-3. Run the affected service integration suites on SQL Server; all must stay green.
-4. Publish the two packages and land the generated platform sync before starting any service cut-over.
+1. Replace the eight explicit `HasColumnType("geography")` mappings with the plan's single shared spatial
+   configuration extension while keeping entity and query code on NetTopologySuite.
+2. Re-scaffold every initial migration and prove the generated SQL Server schemas remain equivalent.
+3. Run the focused local checks, then use exact-head PR CI for the complete affected SQL Server integration
+   matrix and spatial-query coverage.
 
-Do not begin a service cut-over in this worktree.
+Do not begin a service cut-over during Phase 2.
 
 ## Completed work
 
+- Phase 1 replaced the five explicit SQL Server string types with provider-neutral EF configuration,
+  re-scaffolded the two Messaging initial migrations without changing their SQL Server schema, landed in
+  [#985](https://github.com/Concertable/concertable/pull/985), published `0.1.0-alpha.0.1366`, and completed
+  consumer synchronization through [#988](https://github.com/Concertable/concertable/pull/988).
 - Inventoried the provider-specific surface against `main`: 8 `SET IDENTITY_INSERT`, 2
   `sys.check_constraints` queries, 8 `geography` columns, 5 `nvarchar` column types, the
   `IsRowVersion()` concurrency token with 5 implementers, and 50 migration files.
@@ -52,18 +47,20 @@ Do not begin a service cut-over in this worktree.
 
 ## Verification
 
-- Migration file counts per service from `find api -path "*/Migrations/*.cs" -not -name "*ModelSnapshot.cs"`:
-  Auth 4, B2B 24, Customer 14, Messaging 4, Payment 2, Search 2 — 50 total.
-- `HasColumnType` inventory confirms 8 `geography` and 5 `nvarchar` sites outside migrations.
-- SQL-Server-specific syntax in raw SQL is limited to `SET IDENTITY_INSERT` (8) and
-  `sys.check_constraints` (2); no `MERGE`, `NOLOCK`, `GETUTCDATE`, `NEWSEQUENTIALID`, or query hints
-  were found.
-- `IConcurrencyVersioned` and `ConcurrencyVersionExtensions` are both under
-  `api/Concertable.B2B/src/Concertable.B2B.DataAccess/`, confirming the token is B2B-scoped.
+- `./initial-migrations.ps1`: all owner contexts scaffolded successfully; every non-Messaging context was
+  byte-identical, and normalized `CreateTable` comparisons prove both regenerated Messaging schemas equivalent.
+- `Concertable.Messaging.UnitTests`: 45 passed.
+- `Concertable.DataAccess.UnitTests`: 31 passed.
+- `Concertable.DataAccess.IntegrationTests`: 19 passed on SQLite; the exact-head SQL Server service
+  integration matrix passed in PR CI run `34421517660` (93 jobs).
+- Merge-group run `34451099204` passed and landed Phase 1 as `45e41f648`.
+- Publish run `34452515712` published and restored the complete 58-package closure at
+  `0.1.0-alpha.0.1366`; generated sync PR #988 and its cascade-guarded follow-on publication both passed.
 
 ## Reviews
 
-- None recorded; no implementation commit exists yet.
+- Canonical review approved with no findings through Phase 1 head `4eb4be854`; its spent work order was
+  removed after PR #985 merged.
 
 ## Decisions, discoveries, blockers, and deviations
 
