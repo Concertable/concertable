@@ -750,6 +750,11 @@ private extraction proof.
   reusable `nuget-publish` workflow with `CONCERTABLE_PACKAGES_TOKEN` instead of `GITHUB_TOKEN`. The package
   links stay on the monorepo; the section on package ownership below says why. Any unrelated historical
   mirror is excluded from this publisher cutover.
+  **Done 2026-09-10.** `Concertable.Build 0.2.0-alpha.0.3` published from `platform-dotnet` at
+  19:32:30Z and was verified on the feed, not merely in a green log. The token had been set to an empty
+  string twice before; a length probe in the workflow is what finally distinguished empty from
+  wrong-scoped. `platform-frontend`'s `Release` is green on the same change. What remains for this
+  checkpoint's hard stop is proving the monorepo no longer publishes the same package IDs.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
@@ -977,6 +982,46 @@ access" panel for a NuGet or npm package; that is a GHCR container feature only.
 `eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
 is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
 which the local inner loop and the carve gates still depend on.
+
+### Parallelisation — what actually serialises, and what only looks like it
+
+Added 2026-09-10 because the delivery target is days, not weeks, and the checkpoint numbering reads as
+a queue when most of it is not one. **Default to running the five promotions concurrently.** Sequential
+execution here is the exception that must be justified, not the norm.
+
+**Checkpoint 9's hard stop gates the first service *source cut*, not the preparation for one.** Read
+the sub-steps rather than the checkpoint number:
+
+- **Unblocked now, for all five services at once** — the extraction-and-reconciliation half of every
+  `10A`, and the whole of every `10B`. `10B` is entirely target-repository work (CI, standalone
+  AppHost, migrations, Hosting/TestKit, rules, main branch) and touches neither `system` nor the
+  monorepo's source. Five people or five sessions can do five services' worth of this simultaneously,
+  today, with `system` still red.
+- **Genuinely gated on `system` being green** — `10C` onward. `10C` publishes a canonical release that
+  consumers immediately take, `10D` is `system` consuming it, and `10F` removes the frozen source.
+  Publishing a canonical release into a composition that is not green is what the hard stop exists to
+  prevent.
+- **Hold the freeze.** `10A` also says "freeze source"; that half is best left until its `10C` is
+  imminent, so a defect found meanwhile can still be fixed in the monorepo.
+- **The Auth → Payment → Search → Customer → B2B order binds only from `10C`.** Preparation is
+  order-independent; the ordering exists for contract and seed fan-out at cut-over.
+
+So the critical path is `9B` → the five `10C`-onward sequences → `16`. Everything before each `10C` is
+parallel work that should already be in flight.
+
+**Measured readiness, 2026-09-10** — four of five have a rehearsed reconciliation, so these are
+mechanical rather than exploratory:
+
+| Target | State | Left before its `10C` |
+|---|---|---|
+| `auth` | reconciled to a green Release build | apply the 8 recorded path fixes; push to the target |
+| `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
+| `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
+| `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
+| `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none; green build needs disk |
+
+Detail for `customer` and `b2b` is in `~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and
+`10A_b2b_FINDINGS.md`, pending consolidation here.
 
 ### 10. Promote Auth
 
