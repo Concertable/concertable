@@ -26,6 +26,18 @@ Nothing catches it today because the E2E harness sets the key by hand in three p
 (`Concertable.B2B.E2ETests/DistributedApplicationBuilderExtensions.cs:66,89` and the Customer sibling at
 `:68`), so the only path that exercises these hosts supplies what the app model does not.
 
+**Correction, 2026-09-10 — the scheme explanation above is wrong for this Aspire version, and the
+symptom is still real.** Discovery keys are built from an endpoint's **name**, not its scheme:
+`Concertable.Frontend.Hosting/FrontendResourcesExtensions.cs` reads
+`services__{resourceName}__{endpointName}__0`. `payment-web` declares an endpoint named `https`, so that
+key should be produced and the collapse described above cannot be the mechanism. The failure itself is
+confirmed — `Concertable/system` boots the fleet container-only and `b2b-web` exits with
+`Payment service address (services:payment-web:https:0) is not configured` — so what remains unknown is
+why. Establish that before acting on either option below; both were reasoned from the wrong premise.
+
+The duplicate declaration is separately gone: the two endpoints shared one container port, which Docker
+refuses to bind twice, so `payment-web` never started at all.
+
 Do **not** "fix" this by switching the first declaration to `WithHttpsEndpoint`: the pinned image serves
 plaintext on 8080 (same constraint as the Auth image, see `2aba5fc2c`), so that would make the key appear and
 every gRPC call over it fail at runtime — the endpoint-name-versus-scheme lie that caused RT3's Auth TLS
