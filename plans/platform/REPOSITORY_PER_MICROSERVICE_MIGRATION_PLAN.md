@@ -746,8 +746,10 @@ private extraction proof.
   version, and prove clean restore.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
-- 7C (GitHub): apply the `platform-dotnet` repository policy, then update package links and Actions access.
-  Any unrelated historical mirror is excluded from this publisher cutover.
+- 7C (GitHub): apply the `platform-dotnet` repository policy, then authenticate its publisher and the org
+  reusable `nuget-publish` workflow with `CONCERTABLE_PACKAGES_TOKEN` instead of `GITHUB_TOKEN`. The package
+  links stay on the monorepo; the section on package ownership below says why. Any unrelated historical
+  mirror is excluded from this publisher cutover.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
@@ -788,7 +790,8 @@ the Renovate rollout.
   initial package versions. Web and mobile remain package tiers rather than repository boundaries.
 - 8B (`concertable`): switch every product workspace to registry packages, generate stable per-repo-ready
   lockfiles, and remove monorepo publication for those IDs.
-- 8C (GitHub): apply the `platform-frontend` repository policy and update package links.
+- 8C (GitHub): apply the `platform-frontend` repository policy and authenticate `release.yml`'s publishing
+  steps with `CONCERTABLE_PACKAGES_TOKEN`, leaving the changesets version PR on the repository token.
 - Verification: clean npm installs, package tests, all four SPA builds, both mobile builds/tests.
 - **Hard stop:** product builds succeed with the platform source directories absent.
 
@@ -860,7 +863,7 @@ Rehearsed 2026-09-10 in a throwaway clone and carried to a green build, so 10A's
 rather than estimated. `git filter-repo 2.47.0` against the emitted `auth.paths` reduced 6635 commits
 to 815 in about a minute and produced the map's layout exactly. `git format-patch 9c20128..main` in
 the target yielded 13 non-merge patches from its 18 commits, and `git am --3way` matched the
-repository-root Contracts tree to the map's `src/` one on its own, so the rename cost nothing.
+repository-root Contracts tree to the map's `src/` one on its own, so no duplicate tree appeared.
 
 Two results generalise to every target:
 
@@ -870,11 +873,11 @@ Two results generalise to every target:
   onto the pre-`WithSpaClients` Hosting, the pre-`extension()` member syntax, and the retired
   `ConcertablePlatformVersion` property name. Its only durable residue is repository infrastructure
   (`.gitignore`, the standalone package closure, `AGENTS.md`), which the class above re-applies
-  anyway. The remaining 12 patches then applied with two conflicts, both the same property rename in
+  anyway. The remaining 12 patches then applied with a single conflict, the retired property name in
   `Directory.Packages.props`.
 - **Where the map moves a project, every replayed reference to its old location breaks, and they are
-  all mechanical.** Contracts is the whole conflict class for `auth`: nine references across four
-  files — the `.slnx`, two `ProjectReference` paths, five `Dockerfile` `COPY` lines and one path in
+  all mechanical.** Contracts is the whole conflict class for `auth`: eight references across four
+  files — the `.slnx`, two `ProjectReference` paths, four `Dockerfile` `COPY` lines and one path in
   `verify-auth-packages.ps1`. Either fix those at reconciliation or change the map's rename to keep
   Contracts at the root; keeping the map is preferred, because Contracts is source and every other
   target puts source under `src/`.
