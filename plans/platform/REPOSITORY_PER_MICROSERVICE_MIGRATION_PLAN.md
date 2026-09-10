@@ -943,6 +943,55 @@ pair and the C# 14 `extension()` block form that the monorepo's copy of that fil
 `search`'s 10A is a real two-way merge against a seam that is currently moving, and it is cheaper after
 9B than during it. `auth` and `payment` have no such dependency.
 
+#### What `payment`'s promotion landed
+
+Run 2026-09-10 against monorepo `origin/main` `7c40ddb00`. `payment` is reconciled and pushed, and
+its `10B` is landed with it; only the `main` repoint is outstanding.
+
+**The extraction needs no pristine clone, and disk was never the constraint.** Fetch
+`refs/remotes/origin/main` alone into an empty **bare** repository (46 MB), filter that, then clone
+the filtered result into a working tree (7 MB) — about 50 MB at peak, against the ~1.6 GB a pristine
+clone plus one per-target copy costs. A bare repository has no `git ls-files`, so `emit_paths.py`'s
+tracked-path check reads `git ls-tree -r --name-only main` instead. This removes "green build needs
+disk" from the readiness table below.
+
+**Every extracted repository silently loses the banned-API list and the test-tier gate.** Each
+service's `Directory.Build.props` reaches `BannedSymbols.txt`, and its `.targets` imports
+`TestConventions.targets`, through `$(MSBuildThisFileDirectory)../` — `api/` in the monorepo, the
+parent of the checkout in a target. Both are `Exists()`-guarded, so nothing fails: `RS0030` and
+`ValidateTestConventions` simply stop existing. `.editorconfig` is `replicated` and had reached no
+target, and its absence is measurable — `payment`'s standalone Release build emitted 822 analyzer
+warnings, and 0 once it was replicated, because the repository was building without
+`dotnet_analyzer_diagnostic.severity = none` and the explicit error set beneath it. Fix at each
+target by adding the files at the repository root and a second repo-root-relative include beside each
+existing `../` one, which keeps one `Directory.Build` pair working in both layouts and leaves a
+re-extraction nothing to conflict with.
+
+**The org's `container-publish.yml` cannot publish a service that has no Dockerfile.** It drives
+`docker/build-push-action` against `inputs.dockerfile`. `auth` and `search` carry Dockerfiles;
+`payment` deliberately does not — its deployables opt in with `<ContainerRepository>` and publish
+through the .NET SDK's container support, which is how the monorepo's own `publish-images.yml` builds
+them. Until the reusable takes an SDK-container mode, a service on that route owns its image workflow
+and gets none of the reusable's scan, SBOM, signature or provenance. `nuget-publish.yml` has no such
+problem, and `payment` calls it SHA-pinned with `publish` false on every trigger but an explicit
+dispatch.
+
+**Accepting the `ArchitectureTests` deletion drops composition coverage unless CI gains
+`StartupTests`.** The deleted class *is* `StartupTests` upstream, and no target's CI runs
+`StartupTests`, so a reconciliation that is correct file by file still leaves the AppHost graph
+ungated until the workflow is extended. Expect this at `auth`, `search` and `customer` too.
+
+**`payment`'s AppHost restores standalone**, so the `CompositionValidationExclusion` its own
+promotion commit added — cross-repository Auth, B2B and AppHost.Shared source references — is stale,
+and `carve-payment`'s comment saying the same is stale with it. It takes `Concertable.AppHost.Shared`
+and `Concertable.Auth.Hosting` as `PackageReference`s, `inventory.json` records no cross-target source
+edge from `payment`, and `StartupTests` runs its production graph and strict validation green against
+the feed.
+
+**`E2ETests.Server` is load-bearing.** `Concertable.Payment.E2EAdmin.IntegrationTests`
+`ProjectReference`s it, so the standalone-solution commit that drops it does not compile — an
+independent confirmation of the recorded `.slnx` resolution that does not rely on reading the map.
+
 ### Producer parity gates every promotion
 
 Surveyed 2026-09-10. A target repository's published surface must not lose members the monorepo's
@@ -1015,10 +1064,10 @@ mechanical rather than exploratory:
 | Target | State | Left before its `10C` |
 |---|---|---|
 | `auth` | reconciled to a green Release build | apply the 8 recorded path fixes; push to the target |
-| `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
+| `payment` | **`10A` and `10B` landed** on `Chore/payment-10a-reconciliation` | repoint `main`; publication needs the repository public and a `CONCERTABLE_PACKAGES_TOKEN` it does not yet hold |
 | `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
-| `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
-| `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none; green build needs disk |
+| `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx` |
+| `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none |
 
 Detail for `customer` and `b2b` is in `~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and
 `10A_b2b_FINDINGS.md`, pending consolidation here.
