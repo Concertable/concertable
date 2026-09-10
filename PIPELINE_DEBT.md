@@ -6,6 +6,25 @@ proper fix. Delete an entry when its proper fix lands.
 
 ---
 
+## API Markdown changes trigger package publication
+
+**Found:** 2026-09-10 while delivering the configurable-Deal architecture/plan update.
+
+**Problem.** `.github/workflows/publish-packages.yml` triggers on every `api/**` path, including
+`ARCHITECTURE.md`, and proceeds through pack, publish and generated consumer synchronization. The test
+workflow treats Markdown as inert, so a docs-only PR can pass its intended lightweight checks but still
+start an unrelated package release on merge.
+
+**Interim boundary.** Keep affected docs PRs unmerged unless their delivery explicitly owns the
+publication/sync chain. Do not change CI selection or use a skip marker as part of a documentation task.
+
+**Resolution condition.** The publication owner excludes purely inert documentation changes while
+retaining publication for executable/package/policy changes and mixed diffs. Focused classifier/trigger
+coverage proves API Markdown alone does not publish, code plus Markdown does, and publication-policy
+repairs still execute. A docs-only merge must produce no package version or generated version-sync PR.
+
+---
+
 ## Breaking published-package (wire-format) change can't pass the merge-queue full UI E2E
 
 **First hit:** PR #595 (camel-case JSON enums, backend + `@concertable/shared`/`@concertable/b2b`

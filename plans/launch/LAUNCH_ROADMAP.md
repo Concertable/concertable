@@ -4,7 +4,7 @@
 >
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md).
 
 ---
 
@@ -37,7 +37,7 @@ table-stakes items were resolved in the same pass.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
 - [ ] 🟠 **Percentage commission + B2B pricing transparency** `launch/platform-commission` — Payment Phases 1 and 1b are merged, published and synced. Phase 1: immutable percentage revisions, Payment-issued bindings, binding-aware money RPCs, durable transaction/refund/tax/ledger facts. Phase 1b (landed 2026-08-07 via PR #392, which absorbed and superseded PR #296): caller-supplied commission and total removed from every post-binding action — bound calculation and money-movement requests reserve `expected_commission_minor`/`expected_payer_total_minor`, and `ConfirmReviewedGross` is the sole reviewed-amount boundary; the breaking package published and platform sync migrated B2B/Customer consumers. **Phase 2 is now the active work**: the four B2B keyed gross strategies, the frozen final-gross snapshot for deferred deals, routing all four payment journeys through the binding-aware Payment methods, and payer/artist disclosure in the manager SPAs. The temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
 - [x] ✅ **Browser-storage audit + consent correction** `launch/browser-storage-consent` — shipped (`Feature/launch_browser-storage-consent`, #482): evidence-led audit (static sweep + anonymous runtime capture) of the four SPAs' device storage, every item classified necessary/functional/optional in a drift-guarded `app/web/shared/src/lib/storageManifest.ts` and the engineering inventory `app/web/shared/BROWSER_STORAGE.md`. Removed the dead `sidebar_state` cookie; made the two boot-time third parties load on use only (lazy Stripe `getStripe()`; Google Maps via a scoped `MapsProvider` on find/detail routes, no longer at app boot); added `consentGate.ts` so the retained analytics/marketing banner's toggles actually gate loading (the integration point for roadmapped GA4/pixels). Banner retained by decision — analytics/marketing is roadmapped and UK PECR mandates the banner once such tech loads. Legal-gated tail only: solicitor policy-copy wire into the `/cookies` page (separate item, line 198) and whether Maps needs a `functional` consent category.
-- [ ] 🔴 **Stripe webhook coverage — disputes, account status, money-movement failures** `launch/stripe-webhook-coverage` — surfaced by the 2026-08-16 sweep. Payment handles exactly four events (`payment_intent.succeeded|payment_failed`, `setup_intent.succeeded|setup_failed`); [../payments/PROVIDER_CONTRACT_BASELINE_PLAN.md](../payments/PROVIDER_CONTRACT_BASELINE_PLAN.md) confirms "only succeeded/failed subsets are handled today" and puts full webhook handling **outside its own scope**, so nothing owns this. Unhandled: **`charge.dispute.created`** — chargebacks are invisible, and `EscrowStatus.Disputed` is an enum value nothing ever sets; **`account.updated`** — a connected account losing its payouts capability is never detected, so settlement keeps routing money at a restricted account; **`payout.failed`/`transfer.failed`** — silent money failures. Hard gate: this is real money on the differentiating settlement path. Sequence after the Payment provider-contract baseline so normalized states and transition legality land first.
+- [ ] 🔴 **Stripe webhook coverage — disputes, account status, money-movement failures** `launch/stripe-webhook-coverage` — surfaced by the 2026-08-16 sweep. Payment handles exactly four events (`payment_intent.succeeded|payment_failed`, `setup_intent.succeeded|setup_failed`); the now-retired provider-contract baseline plan recorded that limited coverage and excluded full webhook handling. This item owns the remaining coverage. Unhandled: **`charge.dispute.created`** — chargebacks are invisible, and `EscrowStatus.Disputed` is an enum value nothing ever sets; **`account.updated`** — a connected account losing its payouts capability is never detected, so settlement keeps routing money at a restricted account; **`payout.failed`/`transfer.failed`** — silent money failures. Hard gate: this is real money on the differentiating settlement path. Sequence after the Payment provider-contract baseline so normalized states and transition legality land first.
 - [x] ✅ **Tenant verification — venue and artist legitimacy** `launch/tenant-verification` — shipped across six phases. Replaces the decorative `VenueEntity.Approved` bool with a real `TenantVerificationEntity` state machine (Pending/Approved/Rejected, append-only evidence) owned by the Tenant module, so it covers artists too. Phase 1 (#772): the domain + migration. Phase 2 (#784): tenant-facing submit API — evidence upload (licence / proof of address / company registration) via `IBlobStorageService` on its own `verification-evidence/` prefix, content-type + magic-byte + size validation. Phase 3 (#792): `ITenantModule.IsVerifiedAsync` (fail-closed), **enforced** at `OpportunityService.CreateAsync`/`CreateMultipleAsync` (unverified venue can't publish → `opportunity.venue_not_verified`) and `FinishExecutor.FinishAsync` (unverified party → `SettlementOutcome.DeferredPendingVerification`, self-heals on the hourly sweep). Phase 4 (#799): `[Admin]` pending-queue / approve / reject-with-reason on `VerificationController`, `IVenueModule`/`IArtistModule.GetContactByTenantIdAsync` for the enriched queue, `IVerificationNotifier` email on decision. Phase 5 (#825 publish + #824): admin `features/verification` SPA + the tenant-facing `VerificationBanner` + `VerificationForm` in `app/web/b2b/shared`, `/settings/verification` routes. Phase 6 (#824): removed `VenueEntity.Approved`, the `[Admin]` approve/`pending-approval` endpoints, `ApproveVenueError`, `PendingVenue`, the dead `VenuePrivileged*` chain, and `app/web/admin/features/venues/`.
 - [x] ✅ **Admin console + production admin provisioning** `launch/admin-console` — shipped across four phases. Phase 1 (#624): invitation-or-bootstrap admin provisioning, granted post-login (`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync` off `GET /api/auth/me`, not the raw unverified registration event) so a self-serve "become an admin" path never opens. Phase 2 (#648): new top-level `app/web/admin` SPA, its own Duende client, admin invite/revoke UI. Phase 3 (#722): moderation UI wired to the existing `ModerationController`. Phase 4 (#737): venue-approval UI — new `[Admin]`-gated `GET /api/venue/pending-approval` plus the pending-venues list/approve UI, closing the loop `VenueEntity.Approved` needed. The already-shipped OSA moderation and venue-approval backends are reachable in production for the first time. Unblocked the tenant-verification gate below — **which then replaced Phase 4's venue-approval surface entirely** (`tenant-verification` Phase 6, #824): `VenueEntity.Approved`, `GET /api/venue/pending-approval`, `PATCH /api/venue/{id}/approve` and `app/web/admin/features/venues/` are gone, superseded by `features/verification`.
 - [ ] 🔴 **GDPR subject rights — erasure + data export** `launch/gdpr-subject-rights` — surfaced by the 2026-08-16 sweep. No account deletion, data export or anonymisation anywhere in `api/` or `app/`; the roadmap tracks the ICO *fee* but no DSAR capability. Not a `DELETE` endpoint: settled invoices, self-billing agreements and ledger entries are HMRC-retained for six years, so this needs a designed retain-vs-erase split (anonymise the identity, keep the financial record), an export format, and a documented response SLA.
@@ -123,9 +123,11 @@ Company registration, ICO, T&Cs, insurance, accounting, HMRC platform-operator r
 
 ### Swim-lane B — Architecture
 **Owner:** you (or contractor dev)
-**Detail:** [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md)
+**Detail:** the tenancy/membership work is shipped; its completed implementation plan has been retired.
 
-The tenancy refactor — the load-bearing structural change that everything else attaches to, sequenced as the phases in the timeline below. The tenant-scoping foundation (Tenant module with a Guid PK, request-scoped tenant filtering, the compliance value object) has shipped; the outstanding work — multi-user membership, roles, and the authorization sweep — is tracked in [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md).
+Tenant scoping, multi-user membership, roles and the authorization sweep have shipped, as recorded in
+the shipped Swim-lane B summary above. Future Deal eligibility builds on that foundation; it does not
+reopen the completed tenancy refactor or require replacing tenant infrastructure.
 
 ### Swim-lane C — Compliance UI/UX + workflow polish
 **Owner:** you (or contractor dev)
@@ -249,7 +251,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Stripe production account approved + webhooks live
 
 ### Architecture
-- [ ] Tenancy refactor merged and integration-tested (tenant-scoping done; membership + auth sweep per USER_MODEL_PLAN.md still outstanding)
+- [x] Tenancy refactor, membership and authorization sweep shipped (Swim-lane B complete)
 - [ ] All Stripe Connect Express payouts flowing through TenantId
 - [ ] ComplianceContext snapshot populated on every Booking created post-launch
 - [ ] Auth checks routed through tenant membership (not legacy TPH FK)
@@ -344,12 +346,11 @@ it are operational choices that are not urgent yet.
 ## 10. Reference
 
 - [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) — full legal/business setup checklist
-- [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
 - [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
 - [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
 - [../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md) — deal + workflow architecture
-- [CONVENTIONS.md](../../api/agents/MODULE_STRUCTURE.md) — module boundary rules
+- [Guidance index](../../docs/INDEX.md) — module/service boundary skill owners
 
 ## Decisions locked
 
@@ -366,5 +367,5 @@ The settled calls that constrain the work above. Full rationale + dated history 
 - **Monetization principle:** the fee always rides the settlement transaction routed through our
   Stripe Connect — never invoice-only (else there's no transaction to take a cut from). §9
 - **Backend domain type is `Tenant`** (Guid PK, request-scoped filtering, compliance value object);
-  **"Organization" is the user-facing UI/API label only.** Multi-user membership/roles/auth-sweep
-  are the outstanding Swim-lane B work — see [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md).
+  **"Organization" is the user-facing UI/API label only.** Multi-user membership, roles and the
+  authorization sweep are shipped. Future tenant Deal eligibility is separate business authorization.
