@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `48210df775728e0d13259d923afd645f6cdc2493`  _(2026-09-10)_
+**Reviewed up to commit:** `8d23aea16` _(merge of `origin/main`)_  _(2026-09-10)_
 
 > Range reviewed: `6d0fd42dc..55424f06f` (2 commits, 6 files, +67 −8).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -59,3 +59,20 @@ so it is a pre-existing local-environment limitation rather than a regression he
 No findings. Records the corrected discovery-key premise against the entry that carries it, keeps that
 entry open because its symptom is confirmed, and marks both of its proposed remedies as reasoned from
 the wrong mechanism. Documentation only; no runtime path changed.
+
+## Incremental review — 2026-09-10 (merge to updated base)
+
+> Range reviewed: `48210df77..8d23aea16` (1 merge commit, 2 files).
+
+No findings. Carries the branch onto `aa6492485`, which had advanced through `#989` and the
+`0.1.0-alpha.0.1370` platform sync. Both conflicts are the same two lines in `B2B` and `Customer`
+`Directory.Packages.props`: the base's `1366 -> 1370` bump is taken, and this branch's single tracking
+`ConcertablePaymentVersion` replaces the base's two-line literal pin. Nothing else in the merge touches
+this branch's files.
+
+The earlier claim that CI passes
+`Concertable.Customer.StartupTests.ResourceGraphTests.ProductionGraphAndStrictValidation_AreValid` was
+recorded before any CI run on this branch existed. Run `34486226594` on `0f96513dc` failed that test on
+the `AssertImageEndpoint(..., "http", ...)` call, which `55424f06f` then deleted; no run ever fired for
+`55424f06f..dadc14d04`, so the fix has never been exercised remotely. This merge push is the first head
+that carries both halves, and its run is the gate.
