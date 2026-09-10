@@ -1005,6 +1005,90 @@ and build Release with zero errors — obtained, unlike the `auth` and `payment`
 about 1.9 GB and the machine had less. A shared output directory collapses 64 copies of the
 dependency closure into 178 MB, and is how to run any of these builds while disk is scarce.
 
+#### What the `b2b` rehearsal added
+
+Run 2026-09-10 from `7c40ddb00b`, and green: 1961 commits, 1972 files, **109 projects restoring
+against the live feed and building Release with 0 errors** and 1516 warnings, all of them Meziantou
+style rules. b2b is the only target with no repository-only commits, so there is no boundary and no
+`git am` stage — it is a pure re-extraction, which is why it could run while `search` is still
+blocked on 9B. It is also the widest contract and the only carve with a frontend and an admin
+surface, so most of what it adds is about scale and about renames that are not prefix strips.
+
+- **The stale Payment pin is a rule, not a `customer` quirk.** b2b's `Directory.Packages.props` pins
+  `ConcertablePaymentVersion` to `0.1.0-alpha.0.1330` as well, forty releases behind its own
+  `ConcertableDotNetPlatformVersion`, feeding four packages; `1330` predates `PaymentConstants.HttpPort`,
+  `GrpcPort` and `AllowInsecureHttpClientEnvironmentVariable`, all three of which b2b's AppHost and
+  `StartupTests` use. Same symptom, same fix, second target — treat the `Directory.Packages.props`
+  audit as mandatory at every remaining 10A rather than as a `customer` anecdote. Two mechanics
+  worth having in hand: the second and third members are **masked** behind the AppHost, because
+  `StartupTests` project-references it and never compiles until the first is fixed, so expect a
+  cascade rather than one error; and a package cannot be tested for a `const string` by grepping its
+  DLL for the value, which .NET stores as UTF-16 in the `Constant` table — grep the member name,
+  which is UTF-8 in `#Strings`.
+- **An identity rename in the map is load-bearing, and b2b is the first target to prove it.** b2b is
+  the first carve whose renames are not all prefix strips: `app/web/b2b/ → app/web/` promotes the
+  three B2B SPAs up a level while `app/web/admin/ → app/web/admin/` deliberately holds admin still.
+  The consequence is that *within one target* half the SPAs need every relative depth reduced by one
+  and half are already correct — `admin`'s `envDir: '../'` and `'../../scripts/…'` import must not be
+  touched, while `artist`, `venue` and `business` need both. Any rename table mixing a promotion with
+  an identity entry has this shape; check the two halves separately rather than applying one fix
+  everywhere.
+- **The `.slnx` gap runs a third way, so reconcile it in both directions and against pass two.**
+  `auth` had stale paths, `customer` had five projects missing, b2b has twelve entries that do not
+  resolve — ten cross-service and platform projects that are `PackageReference`s once standalone,
+  plus the two suites pass two deletes. Removing the last one empties a `<Folder>`, which has to go
+  too or the solution keeps an empty node. Against that, **`ProjectReference` needed zero edits**: all
+  426 entries across the 109 projects resolve untouched, because a prefix-strip rename preserves
+  every intra-subtree relative path. `auth` paid 8 fixes only because the map moved `Contracts` *into*
+  `src/` while its siblings stayed put. The rule: a pure prefix strip costs nothing in project
+  references; a rename that changes relative depth between two kept projects costs one edit per
+  reference crossing it.
+- **A carve ships no `.gitignore` unless the target subtree happened to contain one**, and b2b's does
+  not — the monorepo's lives at the monorepo root. `auth` reached the same gap by a different route
+  (skipping its catch-up patch). Add it to the "repository infrastructure to re-apply" class
+  explicitly; without it `git status` is unusable and `bin/`/`obj/` are trivially committable.
+- **The frontend has a repeatable shape now, and it needs one replicated file, not a package.**
+  b2b's seven workspace manifests carry 20 `@concertable/*` specifiers, all `"*"`, which resolve only
+  inside a workspace that contains the package; the map dissolves `app/package.json`, so the carve
+  ships no workspace root. `customer`'s answer transfers: a dependency-free root `package.json`, a
+  root `.npmrc` binding `@concertable` to `npm.pkg.github.com`, feed packages moved to the `alpha`
+  dist-tag and in-repo ones to `file:` paths — for b2b, 14 and 6 respectively. What `customer` also
+  shows, and what a reading of the map would get wrong, is that `app/scripts/vite-development-https.ts`
+  is **replicated into the target as a single file** rather than resolved through
+  `@concertable/build-config`; the same goes for `app/web/.env.*` and the four `app/mobile/assets`
+  PNGs, whose `app.json` references then need repointing from `../assets/` to `./assets/`. With that,
+  `npm install --package-lock-only` resolves the whole graph — 1397 packages, all seven workspaces
+  linked, nothing unresolved. Proving resolution this way costs no `node_modules`, which matters
+  while disk is the constraint.
+- **b2b's CI cannot be a copy of `customer`'s, and it is still the only target with none.** Zero
+  workflows, zero runs. Four of `customer`'s steps do not transfer: b2b has 33 EF migration sets
+  across ten module `Infrastructure` projects but **no migrations host project**, applying them
+  in-process through `Concertable.B2B.Web`'s `DevDbInitializer` rather than from a
+  `customer-migrations`-style executable, so both the migrations image candidate and
+  `verify-migration-job.ps1` have no subject and stage 14's "all B2B migrations" gate has to be met
+  some other way; its
+  three publishable images are `b2b-web`, `b2b-workers` and `b2b-seeding-simulator`, the last named
+  unlike `customer`'s `customer-seed-simulator`, so a copied smoke step misses; the frontend job must
+  fan out to four SPAs behind two in-repo library workspaces that build first; and `-m:1` on
+  `dotnet test` is mandatory rather than tuning, at **14 Testcontainers-owning integration projects**
+  against `customer`'s seven. None of the five `.ps1` scripts `customer`'s workflow calls exists in
+  the carve, and authoring them is the bulk of the work rather than the YAML.
+- **The tier gate silently disappears at every cut, and b2b is where it costs most.**
+  `TestConventions.targets`, both `BannedSymbols` files and `PlatformSourcePackages.targets` are all
+  reached through `Condition="Exists(…)"`, so their absence no-ops rather than fails. Already
+  dispositioned to `platform-dotnet` as `Concertable.Build`, but b2b carries **29 test projects**
+  against `auth`'s 2, so it is the target where an unguarded tier declaration would go unnoticed
+  longest. Nothing violates the gate today.
+
+On disk, `customer`'s `-m:1 -p:DebugType=none -p:OutDir=<shared>/` remedy holds at b2b's scale: 109
+projects collapse to **245 MB** of shared output against the **3.4 GB-plus** the default per-project
+layout consumed before exhausting the disk twice without finishing.
+
+Nothing was pushed. `Concertable/b2b`'s `main` still holds the superseded half-migrated layout
+(`src/src/**`, the frontend at monorepo paths) that this run re-extracts wholesale, which remains the
+right call. The thirteen post-extraction edits plus the pin fix are reproducible from
+`~/.claude/plans/Concertable/b2b-10a-reconciliation-fixups.patch`.
+
 ### Producer parity gates every promotion
 
 Surveyed 2026-09-10. A target repository's published surface must not lose members the monorepo's
