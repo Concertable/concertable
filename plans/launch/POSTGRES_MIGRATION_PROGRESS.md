@@ -3,30 +3,29 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: not created for the next phase; the Phase 1 worktree is retired
-- Branch: not created for the next phase
-- PR: Phase 1 [#985](https://github.com/Concertable/concertable/pull/985) merged; generated
-  platform sync [#988](https://github.com/Concertable/concertable/pull/988) merged
-- Dependency/package gates: Phase 1 changes the published `Concertable.Messaging` and
-  `Concertable.DataAccess.Infrastructure` packages and must publish plus platform-sync before any
-  service cut-over consumes it. No other phase has a package gate.
-- Last reconciled: `2026-09-10` against `a8205ffc5` (`origin/main`)
+- Worktree: `.worktrees/Refactor-launch_postgres-migration`
+- Branch: `Refactor/launch_postgres-migration`
+- PR: Phase 2 producer PR not opened; Phase 1 [#985](https://github.com/Concertable/concertable/pull/985)
+  and generated platform sync [#988](https://github.com/Concertable/concertable/pull/988) are merged
+- Dependency/package gates: Phase 2 adds a public API to `Concertable.DataAccess.Infrastructure`; publish
+  and platform-sync must complete before the prepared service consumers can enter exact-head CI.
+- Last reconciled: `2026-09-10` against `754f62e57` (`origin/main` at worktree creation)
 
 ## Current state
 
-Phase 1 is delivered. The five shared messaging mappings use provider-neutral length configuration, the
-re-scaffolded SQL Server schema is equivalent, exact-head CI and the merge queue are green, and package
-version `0.1.0-alpha.0.1366` is published and consumed through the merged platform-sync PR.
+Phase 1 is delivered. Phase 2 is implemented and locally verified as a publish-first cut-over: the shared
+DataAccess package owns `HasGeographyColumn`, all eight B2B, Customer, and Search mappings consume it, and
+all initial migrations have been re-scaffolded. The package expansion must publish before the prepared
+consumer commit can run exact-head PR CI against the real feed version.
 
 ## Next Steps
 
-Create a fresh worktree from current `origin/main` and implement Phase 2:
-
-1. Replace the eight explicit `HasColumnType("geography")` mappings with the plan's single shared spatial
-   configuration extension while keeping entity and query code on NetTopologySuite.
-2. Re-scaffold every initial migration and prove the generated SQL Server schemas remain equivalent.
-3. Run the focused local checks, then use exact-head PR CI for the complete affected SQL Server integration
-   matrix and spatial-query coverage.
+1. Commit, review, push, and run exact-head CI for the producer-only
+   `Concertable.DataAccess.Infrastructure` package expansion.
+2. After that PR publishes and the generated platform sync lands, rebase the prepared consumer commit onto
+   current `main` and replace its temporary local-package proof with the published version.
+3. Push the consumer PR and run exact-head CI for the complete affected SQL Server integration matrix and
+   spatial-query coverage. Mark Phase 2 complete only when that consumer PR is delivered.
 
 Do not begin a service cut-over during Phase 2.
 
@@ -44,6 +43,12 @@ Do not begin a service cut-over during Phase 2.
 - Selected Search as the pilot service: three spatial read models, two migrations, no write surface.
 - Recorded the decision to phase per service rather than as one flag day, on the evidence that each
   service owns its own database.
+- Prepared the Phase 2 spatial seam: one `HasGeographyColumn` extension in
+  `Concertable.DataAccess.Infrastructure` and eight migrated B2B, Customer, and Search mappings, with entity
+  and query code unchanged on NetTopologySuite.
+- Re-scaffolded all 24 initial-migration contexts. Messaging Outbox, Messaging Inbox, and Auth persisted
+  grants were byte-identical and retained their IDs; the other 21 retained identical migration operations
+  under new IDs while incorporating the already-published Phase 1 Inbox max-length snapshot metadata.
 
 ## Verification
 
@@ -56,6 +61,13 @@ Do not begin a service cut-over during Phase 2.
 - Merge-group run `34451099204` passed and landed Phase 1 as `45e41f648`.
 - Publish run `34452515712` published and restored the complete 58-package closure at
   `0.1.0-alpha.0.1366`; generated sync PR #988 and its cascade-guarded follow-on publication both passed.
+- Local package `0.1.0-local.1789064146595`: full solution build completed with 0 errors; four unrelated
+  existing Auth/E2E warnings remained.
+- Normalized comparison of all 21 regenerated migration bodies: 0 SQL Server operation differences;
+  designers and snapshots differ only by the Phase 1 Inbox `HasMaxLength(450)` metadata.
+- `Concertable.DataAccess.UnitTests`: 31 passed; `Concertable.Search.UnitTests`: 14 passed, including the
+  geometry specification coverage.
+- Exact-local-package architecture suites: B2B 22 passed, Customer 1 passed, Search 7 passed.
 
 ## Reviews
 
@@ -77,6 +89,12 @@ Do not begin a service cut-over during Phase 2.
   `plans/launch/LIFECYCLE_SEAL_ENFORCEMENT_PLAN.md` Phase 4.
 - Migration cost compounds with schema churn: 50 migration files and 8 spatial columns today, growing
   with every feature. This is the argument for starting prep now rather than at the launch deadline.
+- NetTopologySuite remains the canonical CLR geometry model for both SQL Server spatial support and
+  Npgsql/PostGIS; the provider changes its EF integration and database implementation, not entity/query
+  geometry types.
+- Phase 2 requires a publish-first package expansion even though the API addition is compatible: the eight
+  changed consumers cannot compile against their currently pinned package because production projects do
+  not source-swap `Concertable.DataAccess.Infrastructure`.
 
 ## Downstream handoffs
 
