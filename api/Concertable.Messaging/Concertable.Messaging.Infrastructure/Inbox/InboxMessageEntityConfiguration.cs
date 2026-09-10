@@ -12,7 +12,7 @@ internal sealed class InboxMessageEntityConfiguration : IEntityTypeConfiguration
         builder.HasKey(m => new { m.MessageId, m.ConsumerName });
         builder.Property(m => m.MessageId).ValueGeneratedNever();
         builder.Property(m => m.ConsumerName).IsRequired().HasMaxLength(256);
-        builder.Property(m => m.MessageType).IsRequired().HasColumnType("nvarchar(450)");
+        builder.Property(m => m.MessageType).IsRequired().HasMaxLength(450);
         builder.Property(m => m.ReceivedAt).IsRequired();
     }
 }
