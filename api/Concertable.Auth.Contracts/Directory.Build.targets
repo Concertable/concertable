@@ -1,0 +1,8 @@
+<Project>
+
+  <!-- Shared test-tier gate for this package's tests/ project. Exists()-guarded so a carve that leaves
+       api/TestConventions.targets behind degrades to the standalone shape rather than failing. -->
+  <Import Project="$(MSBuildThisFileDirectory)../TestConventions.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)../TestConventions.targets')" />
+
+</Project>

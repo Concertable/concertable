@@ -1,5 +1,7 @@
 namespace Concertable.Auth.Contracts;
 
+/// <summary>Superseded by <see cref="InteractiveClient"/> / <see cref="InteractiveClients"/>. Removed once every consumer has migrated.</summary>
+[Obsolete("Use InteractiveClient / InteractiveClients.")]
 public static class ClientIds
 {
     public const string Admin = "admin";
