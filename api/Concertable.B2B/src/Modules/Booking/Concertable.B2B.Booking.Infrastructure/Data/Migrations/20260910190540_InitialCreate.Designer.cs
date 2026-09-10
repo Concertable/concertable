@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Concertable.B2B.Booking.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    [Migration("20260905121615_InitialCreate")]
+    [Migration("20260910190540_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -270,6 +270,7 @@ namespace Concertable.B2B.Booking.Infrastructure.Data.Migrations
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")
