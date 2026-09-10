@@ -5,12 +5,13 @@
 - Roadmap item: `auth-identity-model/typed-identity-contract`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-AuthIdentityModel`
 - Branch: `Refactor/AuthIdentityModel`
-- PR: not yet opened (Phase 1 producer)
+- PR: #986 (draft) — Phase 1 producer. https://github.com/Concertable/concertable/pull/986
 - Dependency/package gates: `Concertable.Auth.Contracts` must publish and `platform-sync` bump the pins
   before Phase 2 consumers can reference the typed model. `[Obsolete]` is warn-only (no
   `TreatWarningsAsErrors` in the repo), so the post-publish sync PR goes green unaided — Phase 2 is driven,
   not gate-forced.
-- Last reconciled: `2026-09-10` against `origin/main` `f1185d6f1`
+- Last reconciled: `2026-09-10` against `origin/main` `ea985630f` (merged in; platform pin now
+  `0.1.0-alpha.0.1364`)
 
 ## Current state
 
@@ -37,12 +38,15 @@ flags cross-repo test edges. Final: co-located inside the package's own `tests/`
 
 ## Next Steps
 
-1. Commit Phase 1 (model + obsolete + test project + plan) on `Refactor/AuthIdentityModel`.
-2. Push, open the **draft** producer PR (`open-pr`). It stays draft until reviewed + exact-head CI green;
-   merging it publishes `Concertable.Auth.Contracts`.
-3. Record a review in `## Reviews` before writing "merge" as a next step.
-4. Phase 2 starts from a fresh worktree off the post-publish `origin/main` — see the plan's Phase 2 table.
-   Retire the stale `Chore-TechDebt-20260909-234925` worktree (superseded PR #981, closed).
+1. Review PR #986 (`review` skill) and record the outcome under `## Reviews`. Then mark it ready once
+   review + exact-head CI are green. Merging it publishes `Concertable.Auth.Contracts`.
+2. After the publish + the generated `platform-sync` PR merges (pin moves past `0.1.0-alpha.0.1364`),
+   start Phase 2 from a fresh worktree off that `origin/main`. Close this PR's worktree first
+   (`worktrees.ps1 close -PullRequest 986 -PlanManaged`), then create the Phase 2 one and resume this
+   ledger. Phase 2 scope + consumption table: `AUTH_IDENTITY_MODEL_PLAN.md`.
+
+Housekeeping (any time): retire the stale `Chore-TechDebt-20260909-234925` worktree — its PR #981 is
+closed (`worktrees.ps1 retire`).
 
 ## Completed work
 
