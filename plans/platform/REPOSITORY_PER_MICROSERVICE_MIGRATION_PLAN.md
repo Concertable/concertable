@@ -918,6 +918,8 @@ Three mechanics the `auth` run could not reveal, because `auth` is one of only t
   patch 7 goes from unappliable to a real three-way merge that resolves two of its three files.
 - **Pass two leaves the solution file dangling.** It deletes the excluded projects and does not touch
   the `.slnx` that still lists them, so every two-pass target needs its solution reconciled by hand.
+  Read that as reasoning rather than observation: the `customer` run below found pass two had not in
+  fact been deleting anything on Windows, so neither rehearsal saw the deletion it describes.
 
 Two divergences that are about the map rather than the tooling:
 
@@ -942,6 +944,66 @@ patches build on that same seam. It is not a take-one-side conflict either: `sea
 pair and the C# 14 `extension()` block form that the monorepo's copy of that file still lacks. So
 `search`'s 10A is a real two-way merge against a seam that is currently moving, and it is cheaper after
 9B than during it. `auth` and `payment` have no such dependency.
+
+#### What the `customer` rehearsal added
+
+Run 2026-09-10 against the same recipe and carried to a green Release build. `customer` has **no 9B
+dependency** — no patch in `b22c5ba..main` touches `src/Concertable.Customer.AppHost/**` or
+`src/Concertable.Customer.Hosting/**`, so the extraction keeps the monorepo's current AppHost intact
+and the one moving seam, `CustomerWebHostExtensions.cs`, auto-merged. 24 non-merge patches from 28
+commits, six conflicts.
+
+Three findings that change how every remaining 10A is run:
+
+- **Pass two has been a silent no-op on Windows, so `payment` and `search` were reconciled with their
+  excluded suites still present.** `polyrepo-cut.sh` writes the excludes with `pathlib.write_text`,
+  which translates to CRLF on Windows, and reads them with a bare `while read`, which drops a final
+  line that has no newline. The last exclude is therefore never passed and the rest reach
+  `--path` with a trailing carriage return that matches nothing. `git filter-repo` exits 0, and the
+  script prints a `pass2:` line whose commit and file counts are identical to `pass1:` — the only
+  evidence that anything went wrong. Strip the `\r` and use `while IFS= read -r p || [ -n "$p" ]`;
+  `customer` then goes 696 files to 635 and keeps exactly the two E2E projects the map gives it.
+  **Re-check `payment` and `search` before either is pushed.**
+- **A carve deliberately does not copy `api/PlatformSourcePackages.targets`, and its absence is what
+  first exercises a target's package pins.** That file swaps an AppHost or test project's platform
+  `PackageReference` for the in-repo project, so inside the monorepo those projects never resolve
+  those packages from the feed. Standalone they do, for the first time, and `customer`'s AppHost
+  fails `CS0117` on `PaymentConstants.AllowInsecureHttpClientEnvironmentVariable` because
+  `ConcertablePaymentVersion` is pinned at `0.1.0-alpha.0.1330`, forty releases behind. The fix is to
+  move it onto the same `0.1.0-alpha.0.1370` train as `ConcertableDotNetPlatformVersion` — not to the
+  newest `1371`, whose `Concertable.Payment.Hosting` requires `Concertable.AppHost.Shared >= 1371`
+  and `NU1605`s against the platform pin. The trains move together. **Audit every target's
+  `Directory.Packages.props` at its 10A: a stale pin is invisible in the monorepo.**
+- **The `.slnx` gap runs the opposite way here — nothing stale, five projects missing.** The target's
+  own solution never listed the map-excluded suites, so pass two leaves nothing dangling; instead the
+  replayed solution lists 59 of the 64 projects on disk, omitting `AppHost`, `StartupTests`,
+  `E2EAdmin.IntegrationTests`, `E2ETests.Server` and `E2ETests.Web`. Because CI is
+  `dotnet restore/build/test/pack Concertable.Customer.slnx`, the solution file is the entire build
+  and test surface, so **`Concertable/customer` has never compiled its own AppHost** — which is why
+  the stale Payment pin above went unnoticed there. Reconcile the solution against `git ls-files
+  '*.csproj'` in both directions, not just for dangling entries.
+
+Two conflict classes the file-set forecast cannot predict, both needing a union rather than a side:
+
+- **Same type name, disjoint members.** `CustomerTestClient` is an add/add conflict: the extraction's
+  is an E2E admin client (`X-Concertable-E2E-Key`, `ResetAsync`, `GetSeedStateAsync`), the target's a
+  black-box public-API client (`PurchaseTicketAsync`, `GetUpcomingTicketsAsync`). Neither is a subset,
+  and both supporting type sets land as clean adds, so the resolution is one field, two constructors
+  and all four methods.
+- **The same sequence arriving twice.** `97aec2b` factors the module migrations into
+  `MigrateCustomerDatabaseAsync` for its new `Concertable.Customer.Migrations` executable, while the
+  extraction has already inlined the identical sequence into `UseCustomerWebHost`. Taking either side
+  alone loses the other's host shape; keeping both leaves two copies to drift. Call the new extension
+  from the collapsed host.
+
+The subset rule held twice more — `CustomerArchitectureTests` and `CustomerAppHostArchitectureTests`
+are both strict subsets of the extraction's `StartupTests` split, and the second additionally calls
+`CustomerAppHost.CreateBuilder`, a class the monorepo renamed to `AppHost`, so it would apply cleanly
+and then fail to compile. Both were deleted. With that, all 64 projects restore against the live feed
+and build Release with zero errors — obtained, unlike the `auth` and `payment` rehearsals, with
+`-m:1 -p:DebugType=none -p:OutDir=<shared>/`, because the default per-project output layout needs
+about 1.9 GB and the machine had less. A shared output directory collapses 64 copies of the
+dependency closure into 178 MB, and is how to run any of these builds while disk is scarce.
 
 ### Producer parity gates every promotion
 
