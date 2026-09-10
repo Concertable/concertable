@@ -13,7 +13,7 @@
 **Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · temporary Payment-owned £10 platform fee on all four settlement types · append-only balanced Payment ledger · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
 
 **Decisions locked (see §9 / decision log):**
-- [x] Revenue model — **resolved for launch 2026-07-30: one Payment-owned percentage of the final B2B-calculated deal gross.** The payer pays gross plus commission and the payee receives gross. B2B owns four deal-gross strategies; Payment owns one deal-agnostic commission calculation. The shipped £10 fee is temporary and must be removed before launch. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md) and the decision log.
+- [x] Revenue model — **resolved for launch 2026-07-30: one Payment-owned percentage of the final B2B-calculated deal gross.** The payer pays gross plus commission and the payee receives gross. B2B owns the four launch gross formulas; Payment owns one deal-agnostic commission calculation. The later configurable-Deal evaluator must preserve those formulas, not permanently require four strategy classes. The shipped £10 fee is temporary and must be removed before launch. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md) and the decision log.
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
 **Code sweep 2026-08-16 — eight previously untracked gaps.** A verification pass over the admin,
@@ -50,22 +50,18 @@ table-stakes items were resolved in the same pass.
 **Architecture refactors — ready, not launch gates:**
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
-- [ ] 🟡 **Deal representation and common-interface dispatch** `launch/deal-closed-sum-model` — immediate architecture owner before lifecycle PR #633 resumes. First land the B2B-local generator/analyzer and Deal-owned mapper/updater net10 foundation from current `main`; then PR #633 consumes it for Application terms and heterogeneous operation factories. One reusable generator template emits invariant common-interface factories and dedicated union factories while each runtime factory remains module-owned. Heterogeneous operations use Dunet implementation unions on net10 and native implementation unions on C# 15; consumers match operation kind and multiple Deals may share one implementation. The later .NET 11 cut-over closes the published Deal hierarchy without changing consumer factory APIs. Plan: [DEAL_CLOSED_SUM_MODEL_PLAN.md](DEAL_CLOSED_SUM_MODEL_PLAN.md).
-- [ ] 🔴 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16; PR #633 carries the whole decomposition and is merging through the merge queue, consuming the now-terminal Deal generator/mapper/updater foundation (#678/#694) and Kernel state machine (#719/#730) directly. Split the current
-  Concert umbrella into honest Opportunity, Application, Booking/Contract, and Concert ownership;
-  each lifecycle aggregate owns independent state, transitions, and contextual operations. Its current
-  keyed selectors are provisional delivery seams owned for replacement by the Deal dispatch plan:
-  honest same-interface mapper/updater/terms families use generated invariant factories, while
-  heterogeneous lifecycle operations use dedicated typed factories plus implementation-union matches;
-  multiple Deals may share one operation implementation; identical behavior is direct and
-  static variation is data. The fixed
-  stage order never varies by `DealType`; no umbrella process entity, shared
-  workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
-  allowed. The remaining decomposition lands as one complete PR; its implementation phases are draft-
-  branch checkpoints, not separately mergeable slices. Split only if a real published-package or
-  deployment dependency appears. The follow-on .NET 11 slice owns native unions for closed internal
-  values and module-local heterogeneous operation choices; typed factories own DI construction and no
-  union performs service resolution or restores the global workflow. See
+- [ ] 🟡 **Deal representation and common-interface dispatch** `launch/deal-closed-sum-model` — the .NET 10 DTO/keyed-factory foundation landed in PR #678; its generator prototype is research, not shipped infrastructure. The separate public dispatch-library/.NET 11 investigation remains future work. Its closure target is the finite rule/capability vocabulary and genuine heterogeneous method headers, not a permanent four-case whole-Deal hierarchy. Preserve surviving module-owned APIs, not strategies removed by the Deal layering cleanup. Plan: [DEAL_CLOSED_SUM_MODEL_PLAN.md](DEAL_CLOSED_SUM_MODEL_PLAN.md).
+- [ ] 🟡 **Versioned configurable Deal model** `launch/deal-configuration` — selected 2026-09-10: relational ownership, revisions and capability selections plus a strongly validated `jsonb` term graph and complete accepted Contract snapshot. The four launch arrangements become platform-supplied presets of one finite C# rule/capability language; no permanent four-built-ins-plus-Composite split. Typed-language work does not wait for .NET 11; persistence delivery follows the B2B Postgres cut-over. The representation refactor is not an additional MVP gate; tenant authoring, tenant-specific entitlements and a visual builder are separate future scope, with no Finbuckle dependency. Plan: [DEAL_CONFIGURATION_PLAN.md](DEAL_CONFIGURATION_PLAN.md).
+- [ ] 🟡 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — source
+  PR #633 is merged; the live lifecycle owner retains terminal delivery/API reconciliation. Do not
+  restart that source PR or the delivered Deal foundation (#678/#694). Opportunity, Application,
+  Booking/Contract and Concert have separate ownership; each lifecycle aggregate owns its state,
+  transitions and operations. Preserve genuine same-interface families and use operation-owned unions
+  only for genuinely different method headers; do not recreate obsolete interfaces from old examples.
+  The configurable-Deal follow-on changes selection to finite capabilities, not fixed stage order or
+  ownership. No umbrella process entity, shared workflow module, cross-module state machine or Deal-owned
+  orchestration is introduced. The .NET 11 slice may improve closure of internal values/capabilities;
+  no union performs service resolution or restores a global workflow. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 - [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish Payment's final consumer-agnostic surface in one breaking release: durable operation references, provider-identifier ownership, reference-keyed escrow/ledger/settlement, legacy raw-identifier removal, and payment-owned vocabulary. B2B and Customer then migrate directly from the old surface once. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
 - [x] ✅ **Customer payment-reference migration** `launch/customer-payment-reference` — Customer ticket purchase now runs on-session Payment sessions addressed by whole Customer-minted operation references; provider identifiers no longer cross or persist at the Customer boundary. Delivered by PRs #939 and #938.
@@ -284,6 +280,10 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Marketing site live with pricing page
 
 ### Not required at launch
+
+- Tenant-authored Deal templates/configurations, tenant-specific Deal feature entitlements, and a visual
+  Deal builder. The four standard arrangements remain the MVP; their common representation refactor is
+  architecture work, not an extra launch gate. See [DEAL_CONFIGURATION_PLAN.md](DEAL_CONFIGURATION_PLAN.md).
 - Native mobile apps
 - Multi-currency support
 - Customer marketplace switch-on
@@ -359,8 +359,8 @@ The settled calls that constrain the work above. Full rationale + dated history 
 - **B2B-first.** The customer ticket marketplace is deferred and additive (§8), not a v1 dependency.
 - **All four contract types ship in v1.** DoorSplit/Versus settle via **manual door-take entry +
   charge-the-venue** — external-ticketer import ruled out; own checkout is the deferred durable feed. §9
-- **Revenue model: one percentage of final deal gross.** B2B owns four deal-specific gross
-  calculations; Payment owns the universal rate, binds it when the payer commits, charges commission
+- **Revenue model: one percentage of final deal gross.** B2B owns the four launch gross
+  formulas and the later configuration evaluator; Payment owns the universal rate, binds it when the payer commits, charges commission
   on top of gross and records the retained amount in the ledger. No fixed/minimum/cap model remains
   after the launch cut-over. [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md)
 - **Monetization principle:** the fee always rides the settlement transaction routed through our

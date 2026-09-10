@@ -295,6 +295,20 @@ the immutable allowed-edge lookup and creates no B2B-to-Payment dependency.
 
 ## 6. Module workflows and Deal-type behaviour
 
+**Configuration follow-on, 2026-09-10:** [DEAL_CONFIGURATION_PLAN.md](DEAL_CONFIGURATION_PLAN.md)
+supersedes whole-Deal `DealType` coverage as the durable selection key, not this plan's module ownership
+or honest-method-header principle. Configurations select finite module-owned capability kinds/versions;
+several configurations may share one implementation. A write-boundary compiler checks complete
+term/capability graphs before publication, while each module composition checks its finite implemented
+capabilities. No runtime DI registration per configuration or global workflow registry is introduced.
+
+The method names/mappings below record the earlier four-case design, not a requirement to recreate
+interfaces removed during delivery. Inventory the landed API first: where Payment owns payment-method
+input and Apply/Accept are homogeneous, preserve that simpler invocation. Retain operation-owned unions
+only for genuinely different headers. Pinned offer revisions and full accepted configuration snapshots
+join the existing acceptance transaction/operation-claim boundary; lifecycle ownership and fixed stage
+order do not change. Tenant entitlement policy and a visual builder are outside this lifecycle plan.
+
 Application, Booking, and Concert each own one executable, module-local workflow. These workflows group
 the named lifecycle operations for one aggregate stage; none spans a module boundary, stores aggregate
 state, or acts as a dependency-holder for an end-to-end process.

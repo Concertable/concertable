@@ -6,6 +6,12 @@
 
 Deal transport, persistence, and strategy dispatch are separate concerns.
 
+**Design reconciliation, 2026-09-10:** the four-case .NET 10 foundation below is a delivered historical
+checkpoint, not the permanent configurable product model. [DEAL_CONFIGURATION_PLAN.md](DEAL_CONFIGURATION_PLAN.md)
+owns the shared template/configuration representation. Its finite rule and capability kinds remain
+code-owned; individual configurations do not become C# subclasses or DI keys. The separate public
+dispatch-library investigation remains valid, but configurability does not depend on it or .NET 11.
+
 The module boundary uses an abstract `DealDto` record with four sealed direct cases:
 
 - `FlatFeeDealDto`;
@@ -93,15 +99,21 @@ called a `variant`, not an operation.
 
 ### Stage 3: later Concertable migration
 
-After Concertable moves to .NET 11 and the public library is published:
+After Concertable moves to .NET 11 and the public library is published, inventory the actual consumers:
 
-- make `DealDto` and appropriate entity roots language-closed;
-- use native unions for genuinely heterogeneous variants;
-- replace only the keyed factory implementation and manual registrations with library-generated
-  dispatch and registrations;
-- preserve `IDealStrategyFactory<TStrategy>`, `IDealMapper`, `IDealUpdater`, and their consumers;
-- retain the JSON protocol and persistence identities through the package cut-over;
-- carry every producer, consumer, and platform-sync PR to terminal green.
+- apply compile-time closure/coverage to genuinely finite rule, value and capability alternatives,
+  not a permanent list of four whole-Deal DTO/entity subclasses;
+- use native unions only for genuinely heterogeneous method headers or value alternatives;
+- replace keyed factory implementation/manual registrations where the surviving family benefits from
+  generated coverage; configurations select supported capability kind/version, not their own DI entry;
+- preserve honest module-local APIs and ownership, not obsolete mapper/updater interfaces removed by
+  the separate Deal layering work;
+- coordinate any published wire/persistence changes with the configuration plan's explicit cut-over;
+  the old four-case JSON protocol is a current compatibility obligation, not the durable extension model;
+- carry every affected producer, consumer, and platform-sync PR to terminal green.
+
+The following foundation-specific architecture and verification sections describe Stage 1. They do
+not authorize restoring deleted strategies or re-closing whole deals after the configuration cut-over.
 
 ## 3. Current .NET 10 architecture
 
