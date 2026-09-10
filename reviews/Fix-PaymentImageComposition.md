@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `55424f06ff29a9f0e41500a4e5ffe349b2277442`  _(2026-09-10)_
+**Reviewed up to commit:** `48210df775728e0d13259d923afd645f6cdc2493`  _(2026-09-10)_
 
 > Range reviewed: `6d0fd42dc..55424f06f` (2 commits, 6 files, +67 −8).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -51,3 +51,11 @@ No security-sensitive path changed, so no security pass was required and no secu
 locally with a `TimeoutException` from `AddStripeCli`'s callback, which waits on a webhook secret that
 only exists when Stripe is running. Verified identical on `origin/main` with none of this branch applied,
 so it is a pre-existing local-environment limitation rather than a regression here, and CI passes it.
+
+## Incremental review — 2026-09-10
+
+> Range reviewed: `203792dae..48210df77` (1 commit).
+
+No findings. Records the corrected discovery-key premise against the entry that carries it, keeps that
+entry open because its symptom is confirmed, and marks both of its proposed remedies as reasoned from
+the wrong mechanism. Documentation only; no runtime path changed.
