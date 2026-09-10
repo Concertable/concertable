@@ -1,5 +1,3 @@
-using Concertable.Auth.Contracts;
-
 namespace Concertable.Auth.Contracts.UnitTests;
 
 public sealed class InteractiveClientsTests
@@ -37,13 +35,13 @@ public sealed class InteractiveClientsTests
     [InlineData("artist-mobile", InteractiveClient.ArtistMobile)]
     [InlineData("admin", InteractiveClient.Admin)]
     [InlineData("concertable-test", InteractiveClient.E2ETest)]
-    public void TryGet_AKnownWireId_ResolvesItsRow(string clientId, InteractiveClient expected)
+    public void Find_AKnownWireId_ResolvesItsRow(string clientId, InteractiveClient expected)
     {
-        var found = InteractiveClients.TryGet(clientId, out var info);
+        var info = InteractiveClients.Find(clientId);
 
-        Assert.True(found);
-        Assert.Equal(expected, info.Client);
-        Assert.Equal(clientId, info.Id);
+        Assert.NotNull(info);
+        Assert.Equal(expected, info.Value.Client);
+        Assert.Equal(clientId, info.Value.Id);
     }
 
     [Theory]
@@ -51,9 +49,9 @@ public sealed class InteractiveClientsTests
     [InlineData("nope")]
     [InlineData("Customer-Web")]
     [InlineData("customer_web")]
-    public void TryGet_AnUnknownWireId_ReturnsFalse(string clientId)
+    public void Find_AnUnknownWireId_ReturnsNull(string clientId)
     {
-        Assert.False(InteractiveClients.TryGet(clientId, out _));
+        Assert.Null(InteractiveClients.Find(clientId));
     }
 
     [Theory]
@@ -64,11 +62,9 @@ public sealed class InteractiveClientsTests
     [InlineData("artist-web", AuthParty.Artist)]
     [InlineData("artist-mobile", AuthParty.Artist)]
     [InlineData("admin", AuthParty.Admin)]
-    public void TryGet_APartyClient_CarriesThatParty(string clientId, AuthParty expected)
+    public void Find_APartyClient_CarriesThatParty(string clientId, AuthParty expected)
     {
-        InteractiveClients.TryGet(clientId, out var info);
-
-        Assert.Equal(expected, info.Party);
+        Assert.Equal(expected, InteractiveClients.Find(clientId)!.Value.Party);
     }
 
     [Fact]

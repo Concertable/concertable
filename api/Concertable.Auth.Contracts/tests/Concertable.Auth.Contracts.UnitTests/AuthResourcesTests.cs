@@ -1,5 +1,3 @@
-using Concertable.Auth.Contracts;
-
 namespace Concertable.Auth.Contracts.UnitTests;
 
 public sealed class AuthResourcesTests
@@ -10,14 +8,7 @@ public sealed class AuthResourcesTests
         var members = Enum.GetValues<AuthResource>();
 
         Assert.Equal(members.Length, AuthResources.All.Count);
-        Assert.Equal(members.ToHashSet(), AuthResources.All.Select(info => info.Resource).ToHashSet());
-    }
-
-    [Fact]
-    public void Info_EveryMember_ReturnsItsOwnRow()
-    {
-        foreach (var resource in Enum.GetValues<AuthResource>())
-            Assert.Equal(resource, resource.Info().Resource);
+        Assert.Equal(members.ToHashSet(), AuthResources.All.ToHashSet());
     }
 
     [Theory]
@@ -27,58 +18,36 @@ public sealed class AuthResourcesTests
     [InlineData(AuthResource.Payment, "concertable.payment.api")]
     public void Audience_IsTheResourceServerAudience(AuthResource resource, string expected)
     {
-        Assert.Equal(expected, resource.Info().Audience);
+        Assert.Equal(expected, resource.Audience());
     }
 
     [Fact]
     public void Payment_AudienceDiffersFromItsScope()
     {
-        Assert.Equal("concertable.payment.api", AuthResource.Payment.Info().Audience);
+        Assert.Equal("concertable.payment.api", AuthResource.Payment.Audience());
         Assert.Equal("payment:write", AuthScope.PaymentWrite.Id());
     }
 
     [Fact]
-    public void Info_AcceptedScopesAndUserClaims_MatchTheDuendeRegistration()
+    public void AcceptedScopesAndIncludedClaims_MatchTheDuendeRegistration()
     {
-        var b2b = AuthResource.B2B.Info();
-        Assert.Equal([AuthScope.B2BApi], b2b.Scopes.ToArray());
-        Assert.Equal(["email"], b2b.UserClaims.ToArray());
+        Assert.Equal([AuthScope.B2BApi], AuthResource.B2B.AcceptedScopes().ToArray());
+        Assert.Equal(["email"], AuthResource.B2B.IncludedClaims().ToArray());
 
-        var customer = AuthResource.Customer.Info();
-        Assert.Equal([AuthScope.CustomerApi, AuthScope.UserClaims], customer.Scopes.ToArray());
-        Assert.Equal(["role", "owner"], customer.UserClaims.ToArray());
+        Assert.Equal([AuthScope.CustomerApi, AuthScope.UserClaims], AuthResource.Customer.AcceptedScopes().ToArray());
+        Assert.Equal(["role", "owner"], AuthResource.Customer.IncludedClaims().ToArray());
 
-        var search = AuthResource.Search.Info();
-        Assert.Equal([AuthScope.SearchApi], search.Scopes.ToArray());
-        Assert.Empty(search.UserClaims);
+        Assert.Equal([AuthScope.SearchApi], AuthResource.Search.AcceptedScopes().ToArray());
+        Assert.Empty(AuthResource.Search.IncludedClaims());
 
-        var payment = AuthResource.Payment.Info();
-        Assert.Equal([AuthScope.PaymentWrite], payment.Scopes.ToArray());
-        Assert.Empty(payment.UserClaims);
+        Assert.Equal([AuthScope.PaymentWrite], AuthResource.Payment.AcceptedScopes().ToArray());
+        Assert.Empty(AuthResource.Payment.IncludedClaims());
     }
 
     [Fact]
-    public void TryGet_ByAudience_RoundTrips()
+    public void AudiencesAreDistinct()
     {
-        foreach (var resource in Enum.GetValues<AuthResource>())
-        {
-            var found = AuthResources.TryGet(resource.Info().Audience, out var info);
-
-            Assert.True(found);
-            Assert.Equal(resource, info.Resource);
-        }
-    }
-
-    [Fact]
-    public void TryGet_AnUnknownAudience_ReturnsFalse()
-    {
-        Assert.False(AuthResources.TryGet("concertable.unknown.api", out _));
-    }
-
-    [Fact]
-    public void All_AudiencesAreDistinct()
-    {
-        var audiences = AuthResources.All.Select(info => info.Audience).ToList();
+        var audiences = AuthResources.All.Select(resource => resource.Audience()).ToList();
 
         Assert.Equal(audiences.Count, audiences.Distinct(StringComparer.Ordinal).Count());
     }
