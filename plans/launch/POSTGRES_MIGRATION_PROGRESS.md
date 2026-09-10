@@ -3,20 +3,20 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: `.worktrees/Refactor-launch_postgres-migration`
-- Branch: `Refactor/launch_postgres-migration`
+- Worktree: `.worktrees/Refactor-launch-postgres-spatial-package`
+- Branch: `Refactor/launch-postgres-spatial-package`
 - PR: Phase 2 producer PR not opened; Phase 1 [#985](https://github.com/Concertable/concertable/pull/985)
   and generated platform sync [#988](https://github.com/Concertable/concertable/pull/988) are merged
 - Dependency/package gates: Phase 2 adds a public API to `Concertable.DataAccess.Infrastructure`; publish
   and platform-sync must complete before the prepared service consumers can enter exact-head CI.
-- Last reconciled: `2026-09-10` against `754f62e57` (`origin/main` at worktree creation)
+- Last reconciled: `2026-09-10` against `7c40ddb00` (`origin/main`)
 
 ## Current state
 
-Phase 1 is delivered. Phase 2 is implemented and locally verified as a publish-first cut-over: the shared
-DataAccess package owns `HasGeographyColumn`, all eight B2B, Customer, and Search mappings consume it, and
-all initial migrations have been re-scaffolded. The package expansion must publish before the prepared
-consumer commit can run exact-head PR CI against the real feed version.
+Phase 1 is delivered. The Phase 2 producer adds `HasGeographyColumn` to the shared DataAccess package. The
+eight B2B, Customer, and Search mappings and their re-scaffolded initial migrations are prepared and locally
+verified on the separate `Refactor/launch_postgres-migration` branch; they cannot enter exact-head PR CI
+until this package expansion publishes and the generated platform sync lands.
 
 ## Next Steps
 
@@ -43,12 +43,13 @@ Do not begin a service cut-over during Phase 2.
 - Selected Search as the pilot service: three spatial read models, two migrations, no write surface.
 - Recorded the decision to phase per service rather than as one flag day, on the evidence that each
   service owns its own database.
-- Prepared the Phase 2 spatial seam: one `HasGeographyColumn` extension in
-  `Concertable.DataAccess.Infrastructure` and eight migrated B2B, Customer, and Search mappings, with entity
-  and query code unchanged on NetTopologySuite.
-- Re-scaffolded all 24 initial-migration contexts. Messaging Outbox, Messaging Inbox, and Auth persisted
-  grants were byte-identical and retained their IDs; the other 21 retained identical migration operations
-  under new IDs while incorporating the already-published Phase 1 Inbox max-length snapshot metadata.
+- Added the producer-side Phase 2 spatial seam: one `HasGeographyColumn` extension in
+  `Concertable.DataAccess.Infrastructure`.
+- On the separate prepared consumer branch, migrated eight B2B, Customer, and Search mappings with entity
+  and query code unchanged on NetTopologySuite, then re-scaffolded all 24 initial-migration contexts.
+  Messaging Outbox, Messaging Inbox, and Auth persisted grants were byte-identical and retained their IDs;
+  the other 21 retained identical migration operations under new IDs while incorporating the
+  already-published Phase 1 Inbox max-length snapshot metadata.
 
 ## Verification
 
@@ -61,12 +62,13 @@ Do not begin a service cut-over during Phase 2.
 - Merge-group run `34451099204` passed and landed Phase 1 as `45e41f648`.
 - Publish run `34452515712` published and restored the complete 58-package closure at
   `0.1.0-alpha.0.1366`; generated sync PR #988 and its cascade-guarded follow-on publication both passed.
-- Local package `0.1.0-local.1789064146595`: full solution build completed with 0 errors; four unrelated
-  existing Auth/E2E warnings remained.
+- Prepared-consumer proof with local package `0.1.0-local.1789064146595`: full solution build completed with
+  0 errors; four unrelated existing Auth/E2E warnings remained.
 - Normalized comparison of all 21 regenerated migration bodies: 0 SQL Server operation differences;
   designers and snapshots differ only by the Phase 1 Inbox `HasMaxLength(450)` metadata.
-- `Concertable.DataAccess.UnitTests`: 31 passed; `Concertable.Search.UnitTests`: 14 passed, including the
-  geometry specification coverage.
+- Producer `Concertable.DataAccess.UnitTests`: 32 passed, including direct geography-column metadata
+  coverage; prepared-consumer `Concertable.Search.UnitTests`: 14 passed, including geometry specification
+  coverage.
 - Exact-local-package architecture suites: B2B 22 passed, Customer 1 passed, Search 7 passed.
 
 ## Reviews
