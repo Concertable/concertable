@@ -943,6 +943,70 @@ pair and the C# 14 `extension()` block form that the monorepo's copy of that fil
 `search`'s 10A is a real two-way merge against a seam that is currently moving, and it is cheaper after
 9B than during it. `auth` and `payment` have no such dependency.
 
+#### What landing `auth` added, and what a green `dotnet build` cannot prove
+
+Run 2026-09-10, carrying the rehearsed `auth` reconciliation through to a pull request with CI green
+on the target. Four results, all of which generalise to the remaining four targets.
+
+**A green `dotnet build` is not a green carve.** The rehearsal's build was already clean, yet two
+more paths were still wrong, because neither is on the build's path:
+
+- `.dockerignore` excludes `**` and re-admits named paths. Leaving Contracts re-admitted at the
+  repository root drops `src/Concertable.Auth.Contracts` from the build context, and the Dockerfile's
+  first `COPY` fails. Only `docker build` reads that file.
+- Contracts owns its own `Directory.Build.props`, whose `../README.md` and `../BannedSymbols.txt` were
+  written for the repository root. One level deeper they resolve to `src/`, so `dotnet pack` fails
+  `NU5019` and takes both the package-readiness and release-candidate gates with it. Only `pack`
+  consults `PackageReadmeFile`.
+
+So the eight fixes recorded for `auth` are ten, and the class is wider than "references to the moved
+project": it is **every reference to a shared file written relative to the project that moved**. Pack
+and image builds are the gates that find them, not the build.
+
+**The shared build rules sit above the service folder, so no extraction reaches them, and their
+absence is silent.** `map.yaml` already lists `.editorconfig` and `.gitattributes` as `replicated`;
+nothing had replicated them into any target. That is not cosmetic. The root `.editorconfig` enforces
+MA0053, CA1848, RS0030 and IDE0130 as errors and sets `dotnet_analyzer_diagnostic.severity = none`
+for everything else, so without it a target both loses four enforced rules and emits warnings the
+monorepo never sees — `auth` went from 246 warnings to 2 on replicating it alone, at 0 errors either
+way. The rehearsal recorded those 246 as `MSB3277` assembly-version conflicts "the same class the
+monorepo emits"; they were mostly Meziantou analyzer noise, and the monorepo does not emit them.
+
+`api/TestConventions.targets` and `api/BannedSymbols*.txt` are the same shape and are **not** on the
+`replicated` list, so add them. Each is referenced through an `Exists`-guarded import that no-ops
+when unresolved, which is why the test-tier gate and the banned-API list were simply off in the
+target with nothing said. `api/PlatformSourcePackages.targets` is the deliberate exception — its own
+header states that a carve must not copy it, because its absence is the cut-over to feed packages.
+
+**"Merge through the target's ordinary PR flow" needs a merge base first.** A target's `main` and a
+fresh extraction do share an ancestor — for `auth`, `532a3a6`, the last commit both extractions
+produced identically — but everything after it is rewritten under map rules that have changed, so an
+ordinary merge conflicts on every touched file. GitHub reports the pull request `DIRTY` and will not
+build a merge ref for it, and because `pull_request` workflows run against that ref, **CI never fires
+either** — which reads as a repository with Actions disabled rather than as a conflict. Resolving
+file by file would be re-deriving the reconciliation by hand, so merge `main` into the import branch
+with `-s ours`: the extraction's tree is kept whole, `main` is recorded as a second parent, the pull
+request becomes mergeable and CI runs. The superseded history stays reachable, which is what the
+no-force-push rule is protecting. Every target needs this step.
+
+**A startup suite races its own developer signing key.** `Concertable.Auth.StartupTests` puts its
+host-building tests in two xUnit collections, so they run in parallel, and both reach
+`AddDeveloperSigningCredential`, which writes one `tempkey.jwk` per output directory. From a clean
+output directory the suite failed three runs of four. CI in the monorepo has not surfaced it, but a
+standalone gate runs the suite on every pull request from a fresh checkout, so it lands with the
+workflow. Disabling collection parallelization in the assembly fixes it. Check each target's startup
+or composition suite for the same shape before landing its CI.
+
+Two smaller results worth carrying:
+
+- **`initial-migrations.ps1 -Check` is a ready-made CI migrations gate.** It runs
+  `dotnet ef migrations has-pending-model-changes` per context and needs no database, which closes
+  the one item on checkpoint 10's verification list that CI did not cover. It needs `dotnet-ef`
+  pinned in a tool manifest, which no target has because the monorepo installs the tool globally.
+- **Disk was rationed against a bad estimate.** A `--single-branch` clone of the monorepo is 110 MB,
+  not the ~500 MB assumed, and the whole `auth` extraction with its green Release build is 750 MB of
+  which 747 MB is `bin`/`obj`. Two targets were held back for space they did not need.
+
 ### Producer parity gates every promotion
 
 Surveyed 2026-09-10. A target repository's published surface must not lose members the monorepo's
@@ -1014,7 +1078,7 @@ mechanical rather than exploratory:
 
 | Target | State | Left before its `10C` |
 |---|---|---|
-| `auth` | reconciled to a green Release build | apply the 8 recorded path fixes; push to the target |
+| `auth` | **`10A` and `10B` landed as a pull request on the target**, CI green | nothing — waiting on `9B` |
 | `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
 | `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
 | `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
