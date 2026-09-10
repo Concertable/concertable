@@ -54,6 +54,38 @@ counterparty-aware and separate from a tenant's private template library.
 | Fully normalized template/rule/parameter/capability tables | Strong foreign keys and ordinary financial queries; optional node shapes, graph ordering and whole-graph validity still need semantic validation. Per-kind tables couple new vocabulary to DDL; generic parameter/EAV rows weaken types | Use relational projections for demonstrated reporting needs, not as the primary authoring representation |
 | Current relational inheritance + `Composite` | Lowest initial disruption and strong typing for four cases; creates two validation, snapshot, execution and reporting paths, with arbitrary permanent distinctions between equivalent arrangements | Rejected as the durable model; existing inheritance survives only until the coherent cut-over |
 
+### Why composition and `jsonb`, rather than whole-Deal TPH
+
+TPH is an inheritance mapping: one table, a discriminator identifying the C# subtype, and columns
+covering the mapped types. `jsonb` is a PostgreSQL column type containing parsed, queryable JSON in an
+internal binary representation. These are not mutually exclusive technologies: a TPH entity can have
+a `jsonb` property. The decision here is first to replace the closed whole-Deal subtype taxonomy with
+composition, then to store its bounded economic graph in `jsonb`. Current Deal persistence uses TPT,
+not TPH; do not attribute TPT's subtype joins to TPH, which already stores a hierarchy in one table.
+
+A configuration may have several term nodes, references and explicit composition operators. Its
+published graph is naturally read, validated and snapshotted as one unit. Existing rule kinds can be
+combined within template and capability constraints without creating a new whole-Deal entity type or
+adding another set of term columns. Serializing the same four closed `DealTerms` variants into JSON
+would change storage without delivering that product model. Conversely, a normalized rule-node model
+could also support composition; `jsonb` is the selected storage fit, not the only scalable option.
+
+The principal scalability gain is product/schema diversity, not an automatic throughput improvement:
+
+| Workload | Implementation requirement and trade-off |
+|---|---|
+| Load one offer/configuration | Select by indexed relational ID and revision, then materialize its bounded graph and selected capabilities. TPH can also load one row efficiently; no speed advantage is assumed |
+| List a tenant's offers | Filter/page/project relational metadata without deserializing every graph. Batch reads and event-wide operations remain real workloads |
+| Filter or aggregate individual terms | Use measured JSON queries, targeted expression indexes or typed read projections. Ordinary typed columns may be simpler and faster for repeated financial aggregation |
+| Edit a configuration | Publish a new atomic revision under the aggregate edit token. A JSON-path update still locks the containing row; it does not provide independent per-term concurrency |
+
+Keep the document bounded; do not put an event's bookings, execution history or financial ledger inside
+it. Immutable parsed revisions are candidates for caching by revision and semantic version if measured
+load warrants it; no cache platform is a prerequisite. Benchmark document sizes, deserialization,
+capability loading, indexes and write contention before making performance claims.
+
+### Storage boundaries
+
 Logical storage, with physical names settled during implementation:
 
 - Template/configuration identity rows: ID, ownership scope, optional tenant ID, creator, lifecycle
@@ -75,6 +107,47 @@ The rule graph is the sole economic authoring authority. Do not duplicate its ed
 relational columns. Capability selections are authoritative relational revision children; the signed
 snapshot materializes them with the graph. Any indexes or reporting projections derived from graph
 values are read-only and have a rebuild/version contract.
+
+### Worked composition and binding example
+
+The following is semantic notation, not an approved wire schema or executable user expression. Phase 1
+must settle the concrete C# shapes, discriminators, node IDs, parameter/input references and versions
+before publishing documents. Each operator's meaning is implemented in the finite C# language.
+
+| Supplied preset | Economic structure |
+|---|---|
+| FlatFee | `FlatCharge(Venue -> Artist, fee)` |
+| VenueHire | `FlatCharge(Artist -> Venue, hireFee)` |
+| DoorSplit | `PercentSplit(doorRevenue, artistPercentage)` |
+| Current Versus | Explicit sum of `Guarantee(guaranteeAmount)` and `PercentSplit(doorRevenue, artistPercentage)` |
+
+FlatFee and VenueHire reuse the same charge semantics with different direction and values. DoorSplit
+and Versus reuse the same percentage calculation. Sharing a term means sharing its typed definition
+and implementation, not mutable values or identity across offers. Terms can own pure calculation and
+validation behaviour; they do not own workflow orchestration, payment execution or other I/O.
+
+A Versus template defines the guarantee-plus-share structure and allowed parameter slots. A reusable
+configuration pins that template revision, supplies defaults/restrictions and chooses compatible
+capabilities. An offer binds its permitted values, for example:
+
+```text
+DealTerms: GBP; Venue -> Artist
+  total: Sum(guarantee, share)
+  guarantee: Guarantee(GBP 500)
+  share: PercentSplit(doorRevenue, 20%)
+  doorRevenue: named future input with agreed source, period and basis
+```
+
+At acceptance the GBP 500 and 20% are fixed; the final revenue input is not yet available. Once that
+input is GBP 2,000, the gross obligation is GBP 900, before any separately defined commission or other
+deductions. A DoorSplit offer using 70% of the same input yields GBP 1,400 through the same percentage
+rule. Current Versus is addition, not the greater of guarantee and share; a collection of two nodes
+without an explicit composition meaning is insufficient.
+
+An ordinary configuration/offer cannot add another term outside the template's permitted structure.
+That requires a template revision with an approved structural choice or a new template. A new supported
+combination is data-only once its constituent rules, composition operator and required capabilities
+are deployed; new calculation/effect semantics still require code and compatibility review.
 
 ### Strong validation and finite execution
 
@@ -100,6 +173,32 @@ the pinned language semantics. Capability catalogs fail composition for missing/
 implementations; configuration publication fails for unsupported slots, versions, bindings or graphs.
 Compile-time C# closure protects vocabulary handling, not the validity of arbitrary incoming JSON.
 Execution still checks real balances, provider state, permissions and lifecycle prerequisites.
+
+EF Core mapping and typed deserialization do not perform this economic compatibility proof. The domain
+compiler owns it; database checks are backstops. Only its validated result can reach executable
+publication or acceptance, including through non-HTTP import and internal command paths.
+
+Module-owned capability descriptors identify the permitted operation slot, typed inputs/bindings,
+prerequisites and effects. Validate selections against the whole graph and its phase-dependent input
+availability, not a preset-name allowlist. Bind monetary effects to explicit obligation/node identities
+and prove accounting coverage without overlapping funding or settlement of the same amount. A declared
+funding path proves configuration compatibility, not that funds have actually arrived at execution.
+
+Use the worked example above for the following compatibility fixtures. These are semantic requirements,
+not a claim that every illustrated capability exists in today's implementation:
+
+| Proposed binding | Required outcome |
+|---|---|
+| Charge the final `total` at acceptance | Reject: final `doorRevenue` is unavailable; never substitute zero or an estimate for the agreed final basis |
+| Settle the `total` after the agreed revenue input is finalized | Structurally eligible only with a deployed capability supporting that input, direction, phase and obligation; runtime prerequisites still apply |
+| Fund `guarantee` at acceptance and settle the remaining share later | Reject unless the deployed partial-funding/accounting capability explicitly supports and credits the funded component; separate charge and settlement handlers alone are insufficient |
+| Release funds without a compatible preceding funding/hold path | Reject even if the individual release capability is known |
+| Bind two payment paths to overlapping amounts of the same obligation | Reject double-payment coverage; deliberate partial allocations require an explicitly supported allocation/accounting model |
+| Move Booking acceptance after Concert settlement | Reject: configuration cannot reorder the owning aggregate lifecycle |
+
+UI step filtering may use the same published descriptor/validation contract for feedback, but the
+server validates the submitted graph regardless of what the UI offered. Do not introduce a global
+workflow executor, tenant-authored code, or new partial-payment primitives to satisfy these examples.
 
 ### PostgreSQL enforcement and queries
 
@@ -215,7 +314,10 @@ to typed inputs during this checkpoint. Do not merge an unused language framewor
 
 Gate: all four current formulas, payer/payee directions, invoice/commission inputs, legal renderings
 and lifecycle capabilities remain equivalent. Negative fixtures reject unsupported kinds, invalid
-bindings, unsafe ordering and incompatible whole graphs. Record every changed module/public consumer
+bindings, unsafe ordering and incompatible whole graphs, including the worked compatibility cases
+above. Prove repeated rule types have independent values, multi-term composition is explicit, template
+restrictions cannot be expanded by a configuration, and every executable write path uses the compiler.
+Record every changed module/public consumer
 and its precise input/output contract before the persistence cut-over.
 
 ### Phase 2 — revision storage and coherent offer-to-Contract cut-over
@@ -252,6 +354,7 @@ merge-queue checks are terminal green before implementation is called delivered.
 - [PostgreSQL JSON types and indexing](https://www.postgresql.org/docs/current/datatype-json.html),
   [constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), and
   [JSON-path functions](https://www.postgresql.org/docs/current/functions-json.html).
+- [EF Core inheritance mapping: TPH and TPT](https://learn.microsoft.com/en-us/ef/core/modeling/inheritance).
 - [Npgsql JSON mapping](https://www.npgsql.org/efcore/mapping/json.html) and
   [concurrency](https://www.npgsql.org/efcore/modeling/concurrency.html).
 - [Finbuckle configuration and usage](https://www.finbuckle.com/MultiTenant/Docs/v10.1.3/ConfigurationAndUsage).
