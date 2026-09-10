@@ -168,7 +168,7 @@ const CHECKS = {
     "features/tenant",
     true,
   ),
-  "@concertable/web-b2b": b2bChecks("@concertable/web-b2b", "features/tenant/constants"),
+  "@concertable/web-b2b": b2bChecks("@concertable/web-b2b"),
   "@concertable/mobile": {
     metro: [
       'import { registerRootComponent } from "expo";',
