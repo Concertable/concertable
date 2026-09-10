@@ -865,9 +865,10 @@ to 815 in about a minute and produced the map's layout exactly. `git format-patc
 the target yielded 13 non-merge patches from its 18 commits, and `git am --3way` matched the
 repository-root Contracts tree to the map's `src/` one on its own, so no duplicate tree appeared.
 
-Two results generalise to every target:
+Two results, the second of which generalises (the first turned out to be `auth` alone — see the
+rehearsals below):
 
-- **The target's first post-extraction commit is a catch-up import and must be skipped, not
+- **`auth`'s first post-extraction commit is a catch-up import and must be skipped, not
   resolved.** `auth`'s `198ca1e` imported the monorepo through platform generation 1279; the fresh
   extraction already carries every file it added, at 1370. Replaying it drags the tree backwards —
   onto the pre-`WithSpaClients` Hosting, the pre-`extension()` member syntax, and the retired
@@ -892,6 +893,50 @@ standalone repository, which is correct there and means their `PackageVersion` e
 The reconciled tree restored all nine projects against the live feed at `0.1.0-alpha.0.1370` and
 built Release with zero errors, carrying `ApiScopeIds`, `AuthConstants.ContainerPort` and
 `WithSpaClients` — so the parity gate below is satisfied by this route rather than by hand-syncing.
+
+#### What the `payment` and `search` rehearsals added
+
+Run 2026-09-10 against the same recipe. `payment` reached a green Release build; `search` was stopped
+deliberately, for the reason at the end.
+
+Three mechanics the `auth` run could not reveal, because `auth` is one of only three targets with no
+`exclude`:
+
+- **Six of the nine targets need a two-pass extraction.** Only `auth`, `platform-frontend` and
+  `org-github` are single-pass. `emit_paths.py` refuses a target declaring `exclude` and says so; pass
+  two is `git filter-repo --invert-paths --path ...`, and **its paths must be written at their
+  post-rename location**, because pass one has already renamed. For `payment` that is
+  `tests/E2ETests/…Helpers`, not `api/Concertable.Payment/tests/E2ETests/…Helpers`.
+- **`git am --3way` needs the target's objects before it can 3-way anything.** Without them it fails
+  `sha1 information is lacking or useless` and cannot build a fake ancestor — not a conflict, a dead
+  stop. Add the target as a remote and fetch it into the extraction first; on that alone `payment`'s
+  patch 7 goes from unappliable to a real three-way merge that resolves two of its three files.
+- **Pass two leaves the solution file dangling.** It deletes the excluded projects and does not touch
+  the `.slnx` that still lists them, so every two-pass target needs its solution reconciled by hand.
+
+Two divergences that are about the map rather than the tooling:
+
+- **Targets still hold E2E projects the map reassigns to `system`** — `payment` keeps
+  `E2ETests.Helpers` and `E2ETests.Helpers.UnitTests`, `search` keeps all of `tests/E2ETests`. Resolve
+  to the map: the extraction is right and the target's solution edit is not.
+- **`payment` is also missing one the map gives it**, `Concertable.Payment.E2ETests.Server`. Its
+  standalone-solution commit drops that project along with the two it should drop, so replaying it
+  verbatim silently loses a suite.
+
+Confirmed on all three: every target's `*ArchitectureTests` graph-validation class is a subset of the
+monorepo's `StartupTests`. `payment` and `search` surface it as a modify/delete conflict on that exact
+file, which is resolved by accepting the deletion; in `auth` it never reaches a conflict because the
+commit carrying it is the skipped catch-up import, so it is settled by inspection instead.
+
+**`search` is blocked on 9B and should not be reconciled until the hosting seam settles.** Its patch 9
+rewrites the Auth composition, and replaying it would drop `--user root`, replace
+`WithHttpsEndpoint(targetPort: AuthConstants.ContainerPort)` with a hardcoded HTTP `8080`, drop
+`WithSpaClients`, and pin a superseded Auth image digest — undoing the work 9B is landing. Five further
+patches build on that same seam. It is not a take-one-side conflict either: `search`'s own
+`Concertable.Search.Hosting` is genuinely ahead of the monorepo's, carrying an `AddSearchMigrations`
+pair and the C# 14 `extension()` block form that the monorepo's copy of that file still lacks. So
+`search`'s 10A is a real two-way merge against a seam that is currently moving, and it is cheaper after
+9B than during it. `auth` and `payment` have no such dependency.
 
 ### Producer parity gates every promotion
 
