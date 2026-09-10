@@ -118,8 +118,13 @@ before publishing documents. Each operator's meaning is implemented in the finit
 |---|---|
 | FlatFee | `FlatCharge(Venue -> Artist, fee)` |
 | VenueHire | `FlatCharge(Artist -> Venue, hireFee)` |
-| DoorSplit | `PercentSplit(doorRevenue, artistPercentage)` |
-| Current Versus | Explicit sum of `Guarantee(guaranteeAmount)` and `PercentSplit(doorRevenue, artistPercentage)` |
+| DoorSplit | `PercentSplit(settlementRevenue, artistPercentage)` |
+| Current Versus | Explicit sum of `Guarantee(guaranteeAmount)` and `PercentSplit(settlementRevenue, artistPercentage)` |
+
+For these supplied presets, `settlementRevenue` preserves the current basis: Concertable ticket revenue
+(`TicketsSold * Price`) plus venue-declared external door revenue. The external component remains
+declared, not independently verified. A future template with another revenue basis is a distinct
+economic agreement; it must not silently change either preset's formula.
 
 FlatFee and VenueHire reuse the same charge semantics with different direction and values. DoorSplit
 and Versus reuse the same percentage calculation. Sharing a term means sharing its typed definition
@@ -134,12 +139,13 @@ capabilities. An offer binds its permitted values, for example:
 DealTerms: GBP; Venue -> Artist
   total: Sum(guarantee, share)
   guarantee: Guarantee(GBP 500)
-  share: PercentSplit(doorRevenue, 20%)
-  doorRevenue: named future input with agreed source, period and basis
+  share: PercentSplit(settlementRevenue, 20%)
+  settlementRevenue: Concertable ticket revenue plus declared external door revenue
 ```
 
 At acceptance the GBP 500 and 20% are fixed; the final revenue input is not yet available. Once that
-input is GBP 2,000, the gross obligation is GBP 900, before any separately defined commission or other
+input is GBP 2,000 (GBP 1,200 ticket revenue plus GBP 800 declared external revenue), the gross obligation
+is GBP 900, before any separately defined commission or other
 deductions. A DoorSplit offer using 70% of the same input yields GBP 1,400 through the same percentage
 rule. Current Versus is addition, not the greater of guarantee and share; a collection of two nodes
 without an explicit composition meaning is insufficient.
@@ -189,7 +195,7 @@ not a claim that every illustrated capability exists in today's implementation:
 
 | Proposed binding | Required outcome |
 |---|---|
-| Charge the final `total` at acceptance | Reject: final `doorRevenue` is unavailable; never substitute zero or an estimate for the agreed final basis |
+| Charge the final `total` at acceptance | Reject: final `settlementRevenue` is unavailable; never substitute zero or an estimate for the agreed final basis |
 | Settle the `total` after the agreed revenue input is finalized | Structurally eligible only with a deployed capability supporting that input, direction, phase and obligation; runtime prerequisites still apply |
 | Fund `guarantee` at acceptance and settle the remaining share later | Reject unless the deployed partial-funding/accounting capability explicitly supports and credits the funded component; separate charge and settlement handlers alone are insufficient |
 | Release funds without a compatible preceding funding/hold path | Reject even if the individual release capability is known |
@@ -317,8 +323,9 @@ and lifecycle capabilities remain equivalent. Negative fixtures reject unsupport
 bindings, unsafe ordering and incompatible whole graphs, including the worked compatibility cases
 above. Prove repeated rule types have independent values, multi-term composition is explicit, template
 restrictions cannot be expanded by a configuration, and every executable write path uses the compiler.
-Record every changed module/public consumer
-and its precise input/output contract before the persistence cut-over.
+Include mixed-source revenue fixtures proving both ticket sales and declared external revenue enter
+the percentage base exactly once. Record every changed module/public consumer and its precise
+input/output contract before the persistence cut-over.
 
 ### Phase 2 — revision storage and coherent offer-to-Contract cut-over
 
