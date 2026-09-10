@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9f4b26ebbd61fe5c5ca517d053098bea2aa7e1db`  _(2026-09-10)_
+**Reviewed up to commit:** `13ec2cf2def446ec4122d20c4509fcc6fa727495`  _(2026-09-10)_
 
 > Range reviewed: `ea985630f..9f4b26ebb` (2 commits, 9 files, +149).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -43,3 +43,11 @@ security pass was required and no security marker is stamped.
 - `Concertable/system` pins eight services, three of which are workers with no HTTP surface. Its
   `EveryPinnedService_ExposesAnEndpoint` expectation cannot hold for those three, and this change does
   not address it.
+
+## Incremental review — 2026-09-10 (base update)
+
+> Range reviewed: `9f4b26ebb..13ec2cf2d` (1 merge commit).
+
+No findings. `origin/main` was 15 commits ahead, including a platform-version bump, so the branch was
+pinned to a stale platform. The merge produced no conflicts and no branch-authored resolution, and all
+three `StartupTests` projects this branch touches rebuild clean against the updated pins.
