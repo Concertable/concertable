@@ -277,6 +277,31 @@ deal-type-agnostic and owns commission configuration/bindings and money movement
 current formulas as fixtures, including the current Versus **guarantee plus percentage share**, not
 `max(guarantee, share)`. Do not introduce tenant commission rates through deal configuration.
 
+## Future economic vocabulary, explicitly outside this implementation
+
+Preserve the ability to extend the finite language for more complex agreements at mid-sized events.
+This is a product-discovery direction, not evidence of validated market demand or an instruction to
+implement more operators in this refactor. The four-preset MVP and the delivery gates below do not grow.
+
+| Candidate | Intended use | Semantics to settle before implementation |
+|---|---|---|
+| `Max` | Guarantee or revenue share, whichever is greater | Compare compatible monetary results for the same obligation; this is not current Versus's additive formula |
+| `Min` | Cap a calculated payment | Define exactly which obligation/component the cap limits and how it composes with other agreed components |
+| Tiered percentage | Different shares at different revenue thresholds | Specify marginal bands versus a rate applied to the whole base, threshold inclusivity, rounding and the agreed revenue basis |
+
+Names here are candidates, not reserved wire discriminators or selectable capabilities. Prefer composing
+existing operators when they express the required semantics; do not introduce separate `Cap`/`Floor`
+kinds merely as labels for the same `Min`/`Max` calculation. Do not add placeholder handlers, arbitrary
+expression evaluation, new payment primitives or a tenant builder to prepare for these candidates.
+
+Before promoting a candidate into a separately scoped feature, validate its use against representative
+real agreements and pin its typed inputs/results, versioned meaning and compatibility requirements.
+Its fixtures must cover calculation boundaries, nesting with other supported rules, unavailable future
+inputs, invalid payment/lifecycle bindings and historical replay. Preserve the four supplied formulas;
+a different formula gets a new template revision/configuration rather than reinterpreting a signed one.
+New operator semantics require a deployment; subsequent permitted combinations use ordinary validated
+configuration publication, as described above.
+
 ## Future tenant eligibility, explicitly outside this implementation
 
 Economic compatibility, tenant eligibility, actor permissions and data visibility are different checks.
