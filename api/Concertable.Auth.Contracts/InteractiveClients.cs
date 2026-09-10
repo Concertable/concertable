@@ -5,7 +5,7 @@ namespace Concertable.Auth.Contracts;
 /// <summary>
 /// The interactive OAuth client roster — the single source for wire client ids and how a client id maps to
 /// a <see cref="AuthParty"/>. Auth registers these with the identity server; downstream services classify
-/// <see cref="Events.CredentialRegisteredEvent.ClientId"/> through <see cref="TryGet"/>.
+/// <see cref="Events.CredentialRegisteredEvent.ClientId"/> through <see cref="Find"/>.
 /// </summary>
 public static class InteractiveClients
 {
@@ -31,8 +31,10 @@ public static class InteractiveClients
     public static InteractiveClientInfo Info(this InteractiveClient client) => ByClient[client];
 
     /// <summary>
-    /// Resolves a wire client id (e.g. <see cref="Events.CredentialRegisteredEvent.ClientId"/>). An id this
-    /// build does not know returns <see langword="false"/> so a consumer can skip it rather than throw.
+    /// Resolves a wire client id (e.g. <see cref="Events.CredentialRegisteredEvent.ClientId"/>), or
+    /// <see langword="null"/> for an id this build does not know — so a consumer skips an event from a
+    /// client it predates rather than throwing.
     /// </summary>
-    public static bool TryGet(string clientId, out InteractiveClientInfo info) => ById.TryGetValue(clientId, out info);
+    public static InteractiveClientInfo? Find(string clientId) =>
+        ById.TryGetValue(clientId, out var info) ? info : null;
 }

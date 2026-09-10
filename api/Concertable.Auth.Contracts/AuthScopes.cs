@@ -14,14 +14,8 @@ public static class AuthScopes
         [AuthScope.UserClaims] = "user:claims",
     }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<string, AuthScope> ById =
-        ByScope.ToFrozenDictionary(pair => pair.Value, pair => pair.Key, StringComparer.Ordinal);
-
     /// <summary>The wire scope string, e.g. <c>concertable.b2b.api</c>.</summary>
     public static string Id(this AuthScope scope) => ByScope[scope];
-
-    /// <summary>Resolves a wire scope string; an unknown value returns <see langword="false"/>.</summary>
-    public static bool TryGet(string scope, out AuthScope value) => ById.TryGetValue(scope, out value);
 
     /// <summary>Every issued scope.</summary>
     public static IReadOnlyCollection<AuthScope> All => ByScope.Keys;

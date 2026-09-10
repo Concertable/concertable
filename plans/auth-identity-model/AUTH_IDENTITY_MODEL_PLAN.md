@@ -6,13 +6,14 @@
 exposes a typed model instead:
 
 - `AuthParty` — Customer | Venue | Artist | Admin. The axis the registration handlers classify on.
-- `InteractiveClient` enum + `InteractiveClientInfo` (`readonly record struct`) + `InteractiveClients`
-  frozen catalog — the browser SPAs, native apps and the E2E harness client. `TryGet(clientId, out info)`
-  resolves a wire id off `CredentialRegisteredEvent`; `Info(client)` gives the row; `All` for registration.
-- `AuthScope` enum + `AuthScopes` catalog — `Id(scope)` / `TryGet(id, out scope)` / `All`. One home for
-  the five scope strings.
-- `AuthResource` enum + `AuthResourceInfo` + `AuthResources` catalog — audience, accepted scopes and user
-  claims per resource server. One home for `concertable.payment.api` (today duplicated Auth ↔ Payment.Web).
+- `InteractiveClient` enum + `InteractiveClientInfo` (`readonly record struct`, scalars only) +
+  `InteractiveClients` frozen catalog — the browser SPAs, native apps and the E2E harness client.
+  `Find(clientId) → InteractiveClientInfo?` resolves a wire id off `CredentialRegisteredEvent` (null on an
+  unknown id); `client.Info()` gives the row; `All` for registration.
+- `AuthScope` enum + `AuthScopes` catalog — `scope.Id()` / `All`. One home for the five scope strings.
+- `AuthResource` enum + `AuthResources` extension catalog — `resource.Audience()` /
+  `resource.AcceptedScopes()` / `resource.IncludedClaims()` / `All`. One home for `concertable.payment.api`
+  (today duplicated Auth ↔ Payment.Web), whose audience is not one of its scopes.
 
 Service-to-service clients (`concertable-b2b/-customer/-auth`) do **not** cross the wire and their secrets
 are Auth's — a `ServiceClient` enum + catalog lives in `Concertable.Auth`, not in the published contract.
@@ -41,9 +42,15 @@ deliberately, not forced by a red gate.
 - **`Browser` / `Mobile`, not `Web`.** `Concertable.X.Web` is the API host; `CustomerWeb` read as "the web
   API host". The OIDC client is the human-facing app, so the member names say `Browser` / `Mobile`.
 - **`InteractiveClient` / `ServiceClient`** — the Duende split (interactive vs machine-to-machine).
-- **`TryGet` returns `false` for an unknown id** rather than throwing: the id arrives on an integration
-  event from Auth; version skew (a client this consumer's build predates) must be a graceful skip.
+- **`Find` returns a nullable `InteractiveClientInfo?`** rather than a `TryGet(out)` that yields a
+  `default` struct on a miss: the id arrives on an integration event from Auth; version skew (a client this
+  consumer's build predates) must be a graceful skip, and a nullable makes "only read it when found"
+  structural. Reverse lookups on `AuthScope` / `AuthResource` had no consumer and are omitted (avoids the
+  same default-value trap on a published contract); add a nullable `Find` if one ever needs it.
 - **`InteractiveClientInfo.Party` is `AuthParty?`** — null only for `E2ETest`, which serves no party.
+- **`AuthResources` is extension methods on the enum, not an info struct** — a struct with
+  `ImmutableArray` members has a `default(T)` NRE trap and fragile equality; the collections come from the
+  catalog keyed by the enum instead.
 
 ## Phases
 
@@ -53,7 +60,7 @@ Branch `Refactor/AuthIdentityModel`. Additive only — nothing outside `Concerta
 changes, because consumers bind the published package.
 
 - Add `AuthParty`, `InteractiveClient`, `InteractiveClientInfo`, `InteractiveClients`, `AuthScope`,
-  `AuthScopes`, `AuthResource`, `AuthResourceInfo`, `AuthResources`.
+  `AuthScopes`, `AuthResource`, `AuthResources`.
 - `[Obsolete]` `ClientIds` and `ApiScopeIds` pointing at the replacements.
 - Add `Concertable.Auth.Contracts.UnitTests` at `api/Concertable.Auth.Contracts/tests/` — co-located so the
   `ProjectReference` (`..\..\Concertable.Auth.Contracts.csproj`) stays inside the package folder and
@@ -62,21 +69,20 @@ changes, because consumers bind the published package.
   `Directory.Build.targets` importing `TestConventions.targets` and test package versions in its
   `Directory.Packages.props`. Registered in `Concertable.slnx` and added to the `carve-auth` project list in
   `.github/workflows/test.yml`. Covers: catalog completeness (every enum member has one row), wire-id
-  round-trips, `TryGet` unknown → false, no duplicate wire ids, `IsB2b` / `IsMobile`, the `AuthParty`
-  classification.
+  values, `Find` miss → null, no duplicate wire ids, `IsB2b` / `IsMobile`, the `AuthParty` classification.
 
 **Consumption contract** (what Phase 2 consumers will call — fixed now, not deferred):
 
 | Consumer | Call |
 |---|---|
 | Auth `Config.cs` `ApiScopes` | `AuthScopes.All.Select(s => new ApiScope(s.Id(), <display>))` |
-| Auth `Config.cs` `ApiResources` | `AuthResources.All.Select(r => new ApiResource(r.Audience, <display>) { Scopes = { …r.Scopes.Select(Id) }, UserClaims = { …r.UserClaims } })` |
+| Auth `Config.cs` `ApiResources` | `AuthResources.All.Select(r => new ApiResource(r.Audience(), <display>) { Scopes = { r.AcceptedScopes().Select(s => s.Id())... }, UserClaims = { r.IncludedClaims()... } })` |
 | Auth `Config.cs` clients | iterate `InteractiveClients.All`; `info.IsMobile` picks the mobile shape, `info.MobileScheme` the redirect scheme, `info.Client is InteractiveClient.E2ETest` the ROPC shape |
-| `TenantProvisioningHandler` | `if (!InteractiveClients.TryGet(e.ClientId, out var c) || c.Party is not (AuthParty.Venue or AuthParty.Artist)) return;` then `c.Party is AuthParty.Venue ? TenantType.Venue : TenantType.Artist` |
-| `CredentialRegisteredHandler` | `if (!InteractiveClients.TryGet(e.ClientId, out var c) || !c.IsB2b) return;` |
-| `UserCreationHandler` | `if (!InteractiveClients.TryGet(e.ClientId, out var c) || c.Party is not AuthParty.Customer) return;` |
-| B2B/Customer/Search web hosts | `options.Audience = AuthResources.Info(AuthResource.B2B).Audience` (+ `Concertable.Auth.Contracts` package ref) |
-| Payment.Web | `ValidAudiences = [AuthResources.Info(AuthResource.Payment).Audience]`; `RequireClaim("scope", AuthScope.PaymentWrite.Id())` |
+| `TenantProvisioningHandler` | `if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Venue or AuthParty.Artist } c) return;` then `c.Party is AuthParty.Venue ? TenantType.Venue : TenantType.Artist` |
+| `CredentialRegisteredHandler` | `if (InteractiveClients.Find(e.ClientId) is not { IsB2b: true }) return;` |
+| `UserCreationHandler` | `if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Customer }) return;` |
+| B2B/Customer/Search web hosts | `options.Audience = AuthResource.B2B.Audience()` (+ `Concertable.Auth.Contracts` package ref) |
+| Payment.Web | `ValidAudiences = [AuthResource.Payment.Audience()]`; `RequireClaim("scope", AuthScope.PaymentWrite.Id())` |
 | `Payment.Client` | `GetTokenAsync(AuthScope.PaymentWrite.Id())` (+ `Concertable.Auth.Contracts` ref, `PrivateAssets="all"` — published package, internal use) |
 | `TestTokenMinter` | `client_id` = `InteractiveClient.E2ETest.Info().Id`; scope = `string.Join(' ', new[]{ B2BApi, CustomerApi, SearchApi }.Select(s => s.Id()))` |
 

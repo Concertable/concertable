@@ -18,9 +18,10 @@
 Phase 1 producer, code complete on `Refactor/AuthIdentityModel`, **not yet committed**.
 
 **Done, uncommitted:**
-- Nine typed-model files in `api/Concertable.Auth.Contracts/` — `AuthParty`, `InteractiveClient`,
-  `InteractiveClientInfo`, `InteractiveClients`, `AuthScope`, `AuthScopes`, `AuthResource`,
-  `AuthResourceInfo`, `AuthResources`.
+- Typed-model files in `api/Concertable.Auth.Contracts/` — `AuthParty`, `InteractiveClient`,
+  `InteractiveClientInfo` (scalars only), `InteractiveClients` (`Find` → nullable, `Info`, `All`),
+  `AuthScope`, `AuthScopes` (`Id`, `All`), `AuthResource`, `AuthResources` (extension methods
+  `Audience()` / `AcceptedScopes()` / `IncludedClaims()` / `All`).
 - `[Obsolete]` on `ClientIds.cs` + `ApiScopeIds.cs`.
 - `api/Concertable.Auth.Contracts/tests/Concertable.Auth.Contracts.UnitTests/` — new xunit project
   (55 tests, all green). `ProjectReference` `..\..\Concertable.Auth.Contracts.csproj` (inside the package
@@ -61,7 +62,16 @@ closed (`worktrees.ps1 retire`).
 
 ## Reviews
 
-- None yet.
+- `review` skill, PR #986 head `5951a90fb` (2026-09-10) — no correctness bugs; all catalog values traced
+  against live `Config.cs` + the four resource-server hosts and confirmed exact. Two findings, both
+  addressed on the branch:
+  1. `AuthResources.TryGet` (and the sibling `TryGet`s) returned a `default` struct on a miss whose
+     `ImmutableArray` members NRE when read — a trap in a published contract. **Fixed:** dropped every
+     reverse-lookup that had no consumer; `InteractiveClients.Find` now returns `InteractiveClientInfo?`;
+     `AuthResourceInfo` collapsed into `AuthResource` extension methods (`Audience()` / `AcceptedScopes()` /
+     `IncludedClaims()`), so no struct carries `ImmutableArray` members.
+  2. Redundant `using Concertable.Auth.Contracts;` in the three test files (namespace is nested). **Fixed.**
+- Re-review of the fix commit owed before merge (`incremental-review`).
 
 ## Decisions, discoveries, blockers, and deviations
 

@@ -1,34 +1,38 @@
 using System.Collections.Frozen;
+using System.Collections.Immutable;
 
 namespace Concertable.Auth.Contracts;
 
 /// <summary>
-/// The resource-server roster — audience, accepted scopes and user claims per API. Auth registers these as
-/// identity-server API resources; each resource server validates its own <see cref="AuthResourceInfo.Audience"/>.
+/// The resource-server roster — the JWT audience, accepted scopes and included user claims per API. Auth
+/// registers these as identity-server API resources; each resource server validates its own
+/// <see cref="Audience"/>. The one home for the audience strings, including <c>concertable.payment.api</c>,
+/// whose audience is not one of its scopes.
 /// </summary>
 public static class AuthResources
 {
-    private static readonly FrozenDictionary<AuthResource, AuthResourceInfo> ByResource = new[]
+    private readonly record struct Row(
+        string Audience,
+        ImmutableArray<AuthScope> Scopes,
+        ImmutableArray<string> IncludedClaims);
+
+    private static readonly FrozenDictionary<AuthResource, Row> ByResource = new Dictionary<AuthResource, Row>
     {
-        new AuthResourceInfo(AuthResource.B2B, "concertable.b2b.api",
-            [AuthScope.B2BApi], ["email"]),
-        new AuthResourceInfo(AuthResource.Customer, "concertable.customer.api",
-            [AuthScope.CustomerApi, AuthScope.UserClaims], ["role", "owner"]),
-        new AuthResourceInfo(AuthResource.Search, "concertable.search.api",
-            [AuthScope.SearchApi], []),
-        new AuthResourceInfo(AuthResource.Payment, "concertable.payment.api",
-            [AuthScope.PaymentWrite], []),
-    }.ToFrozenDictionary(info => info.Resource);
-
-    private static readonly FrozenDictionary<string, AuthResourceInfo> ByAudience =
-        ByResource.Values.ToFrozenDictionary(info => info.Audience, StringComparer.Ordinal);
-
-    /// <summary>The catalog row for a resource.</summary>
-    public static AuthResourceInfo Info(this AuthResource resource) => ByResource[resource];
-
-    /// <summary>Resolves a JWT audience string; an unknown value returns <see langword="false"/>.</summary>
-    public static bool TryGet(string audience, out AuthResourceInfo info) => ByAudience.TryGetValue(audience, out info);
+        [AuthResource.B2B] = new("concertable.b2b.api", [AuthScope.B2BApi], ["email"]),
+        [AuthResource.Customer] = new("concertable.customer.api", [AuthScope.CustomerApi, AuthScope.UserClaims], ["role", "owner"]),
+        [AuthResource.Search] = new("concertable.search.api", [AuthScope.SearchApi], []),
+        [AuthResource.Payment] = new("concertable.payment.api", [AuthScope.PaymentWrite], []),
+    }.ToFrozenDictionary();
 
     /// <summary>Every resource server.</summary>
-    public static IReadOnlyCollection<AuthResourceInfo> All => ByResource.Values;
+    public static IReadOnlyCollection<AuthResource> All => ByResource.Keys;
+
+    /// <summary>The JWT audience a resource server validates, e.g. <c>concertable.b2b.api</c>.</summary>
+    public static string Audience(this AuthResource resource) => ByResource[resource].Audience;
+
+    /// <summary>The scopes the resource accepts.</summary>
+    public static ImmutableArray<AuthScope> AcceptedScopes(this AuthResource resource) => ByResource[resource].Scopes;
+
+    /// <summary>The user-claim types Auth includes in tokens issued for the resource.</summary>
+    public static ImmutableArray<string> IncludedClaims(this AuthResource resource) => ByResource[resource].IncludedClaims;
 }
