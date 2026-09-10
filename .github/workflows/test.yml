@@ -408,6 +408,7 @@ jobs:
           dotnet new sln --name CarveAuth --format slnx
           dotnet sln CarveAuth.slnx add \
             src/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj \
+            src/Concertable.Auth.Contracts/tests/Concertable.Auth.Contracts.UnitTests/Concertable.Auth.Contracts.UnitTests.csproj \
             src/Concertable.Auth/Concertable.Auth.csproj \
             tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj \
             tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj \
