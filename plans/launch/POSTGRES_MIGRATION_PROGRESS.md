@@ -3,32 +3,39 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_postgres-migration`
-- Branch: `Refactor/launch_postgres-migration`
-- PR: not opened
+- Worktree: not created for the next phase; the Phase 1 worktree is retired
+- Branch: not created for the next phase
+- PR: Phase 1 [#985](https://github.com/Concertable/concertable/pull/985) merged; generated
+  platform sync [#988](https://github.com/Concertable/concertable/pull/988) merged
 - Dependency/package gates: Phase 1 changes the published `Concertable.Messaging` and
   `Concertable.DataAccess.Infrastructure` packages and must publish plus platform-sync before any
   service cut-over consumes it. No other phase has a package gate.
-- Last reconciled: `2026-09-09` against `d145503f6` (`origin/main`)
+- Last reconciled: `2026-09-10` against `a8205ffc5` (`origin/main`)
 
 ## Current state
 
-Phase 1 is implemented and locally green on SQL Server. The five shared messaging mappings now use
-provider-neutral length configuration, and only the two Messaging-owned initial migrations regenerated.
-Every other owner context was byte-identical and retained its migration ID.
+Phase 1 is delivered. The five shared messaging mappings use provider-neutral length configuration, the
+re-scaffolded SQL Server schema is equivalent, exact-head CI and the merge queue are green, and package
+version `0.1.0-alpha.0.1366` is published and consumed through the merged platform-sync PR.
 
 ## Next Steps
 
-Push the reviewed Phase 1 candidate and open a draft PR so exact-head CI runs the full affected SQL
-Server integration matrix. Resolve every CI finding, merge the approved candidate, and own publication of `Concertable.Messaging` and
-`Concertable.DataAccess.Infrastructure` plus the causally generated platform-sync PR to green/merged.
+Create a fresh worktree from current `origin/main` and implement Phase 2:
 
-Do not begin a service cut-over in this worktree.
+1. Replace the eight explicit `HasColumnType("geography")` mappings with the plan's single shared spatial
+   configuration extension while keeping entity and query code on NetTopologySuite.
+2. Re-scaffold every initial migration and prove the generated SQL Server schemas remain equivalent.
+3. Run the focused local checks, then use exact-head PR CI for the complete affected SQL Server integration
+   matrix and spatial-query coverage.
+
+Do not begin a service cut-over during Phase 2.
 
 ## Completed work
 
-- Phase 1 replaced the five explicit SQL Server string types with provider-neutral EF configuration and
-  re-scaffolded the two Messaging initial migrations without changing their SQL Server schema (`this commit`).
+- Phase 1 replaced the five explicit SQL Server string types with provider-neutral EF configuration,
+  re-scaffolded the two Messaging initial migrations without changing their SQL Server schema, landed in
+  [#985](https://github.com/Concertable/concertable/pull/985), published `0.1.0-alpha.0.1366`, and completed
+  consumer synchronization through [#988](https://github.com/Concertable/concertable/pull/988).
 - Inventoried the provider-specific surface against `main`: 8 `SET IDENTITY_INSERT`, 2
   `sys.check_constraints` queries, 8 `geography` columns, 5 `nvarchar` column types, the
   `IsRowVersion()` concurrency token with 5 implementers, and 50 migration files.
@@ -45,12 +52,15 @@ Do not begin a service cut-over in this worktree.
 - `Concertable.Messaging.UnitTests`: 45 passed.
 - `Concertable.DataAccess.UnitTests`: 31 passed.
 - `Concertable.DataAccess.IntegrationTests`: 19 passed on SQLite; the exact-head SQL Server service
-  integration matrix remains a PR CI gate.
+  integration matrix passed in PR CI run `34421517660` (93 jobs).
+- Merge-group run `34451099204` passed and landed Phase 1 as `45e41f648`.
+- Publish run `34452515712` published and restored the complete 58-package closure at
+  `0.1.0-alpha.0.1366`; generated sync PR #988 and its cascade-guarded follow-on publication both passed.
 
 ## Reviews
 
-- Canonical review approved with no findings; work order:
-  `reviews/Refactor-launch_postgres-migration.md`.
+- Canonical review approved with no findings through Phase 1 head `4eb4be854`; its spent work order was
+  removed after PR #985 merged.
 
 ## Decisions, discoveries, blockers, and deviations
 
