@@ -12,16 +12,13 @@ namespace Concertable.B2B.Concert.Api.Controllers;
 internal sealed class ConcertController : ControllerBase
 {
     private readonly IConcertService concertService;
-    private readonly IContractService contractService;
     private readonly IInvoiceService invoiceService;
 
     public ConcertController(
         IConcertService concertService,
-        IContractService contractService,
         IInvoiceService invoiceService)
     {
         this.concertService = concertService;
-        this.contractService = contractService;
         this.invoiceService = invoiceService;
     }
 
@@ -45,7 +42,7 @@ internal sealed class ConcertController : ControllerBase
     [HttpGet("{id}/contract/pdf")]
     public async Task<ActionResult<FileDownload>> GetContractPdf(int id)
     {
-        return (await contractService.GetPdfByConcertIdAsync(id))
+        return (await concertService.GetContractPdfAsync(id))
             .ToActionResult(pdf => new ActionResult<FileDownload>(
                 File(pdf.Content, pdf.ContentType, pdf.FileName)));
     }
@@ -88,6 +85,18 @@ internal sealed class ConcertController : ControllerBase
     {
         return Ok((await concertService.GetUpcomingByArtistIdAsync(id)).ToSummaryResponses());
     }
+
+    [HttpGet("upcoming/venue/current")]
+    [RequiredTenantType(TenantType.Venue)]
+    [HasPermission(SharedPermissions.OperationsView)]
+    public async Task<ActionResult<IReadOnlyList<ManagerConcertCard>>> GetUpcomingForCurrentVenue() =>
+        (await concertService.GetUpcomingForCurrentVenueAsync()).ToOkOrProblem();
+
+    [HttpGet("upcoming/artist/current")]
+    [RequiredTenantType(TenantType.Artist)]
+    [HasPermission(SharedPermissions.OperationsView)]
+    public async Task<ActionResult<IReadOnlyList<ManagerConcertCard>>> GetUpcomingForCurrentArtist() =>
+        (await concertService.GetUpcomingForCurrentArtistAsync()).ToOkOrProblem();
 
     [RequiredTenantType(TenantType.Venue)]
     [HttpGet("history/venue/{id}")]

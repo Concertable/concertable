@@ -1,5 +1,4 @@
-using Concertable.B2B.Deal.Application.Interfaces;
-using Concertable.B2B.Deal.Application.Strategies;
+using Concertable.B2B.Deal.Contracts;
 using Concertable.B2B.Deal.Domain.Entities;
 using Reunion.Errors;
 using Reunion;
@@ -8,16 +7,16 @@ namespace Concertable.B2B.Deal.Application.Mappers;
 
 internal sealed class DealMapper : IDealMapper
 {
-    private readonly IDealStrategyFactory<IDealMapper> strategies;
+    private readonly IDealStrategyFactory<IDealMapper> factory;
 
-    public DealMapper(IDealStrategyFactory<IDealMapper> strategies)
+    public DealMapper(IDealStrategyFactory<IDealMapper> factory)
     {
-        this.strategies = strategies;
+        this.factory = factory;
     }
 
-    public IDeal ToDeal(DealEntity entity) =>
-        strategies.Create(entity.DealType).ToDeal(entity);
+    public DealDto ToDeal(DealEntity entity) =>
+        factory.Create(entity.DealType).ToDeal(entity);
 
-    public Result<DealEntity, ValidationErrors> ToEntity(IDeal deal) =>
-        strategies.Create(deal.DealType).ToEntity(deal);
+    public Result<DealEntity, ValidationErrors> ToEntity(DealDto deal) =>
+        factory.Create(deal.DealType).ToEntity(deal);
 }

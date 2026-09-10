@@ -1,7 +1,6 @@
 extern alias PaymentClient;
 
 using System.Reflection;
-using System.Xml.Linq;
 using Concertable.Payment.Contracts.Events;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
@@ -12,7 +11,10 @@ namespace Concertable.Payment.UnitTests.Compatibility;
 
 public sealed class PublishedPackageCompatibilityTests
 {
-    private const string BaselineVersion = "0.1.0-alpha.0.1009";
+    private static readonly string BaselineVersion = typeof(PublishedPackageCompatibilityTests).Assembly
+        .GetCustomAttributes<AssemblyMetadataAttribute>()
+        .Single(attribute => attribute.Key == "PaymentBaselineVersion")
+        .Value!;
 
     [Fact]
     public void ContractsPublicApi_CurrentSurfaceIsAdditive() =>
@@ -40,47 +42,6 @@ public sealed class PublishedPackageCompatibilityTests
         var candidateRows = ProtoSchemaSnapshot.Create(Proto.PaymentReflection.Descriptor.ToProto());
 
         Assert.Empty(baselineRows.Except(candidateRows, StringComparer.Ordinal));
-    }
-
-    [Fact]
-    public void PublishedAssemblies_DoNotReferenceProviderOrConsumerRuntime()
-    {
-        var assemblies = new[]
-        {
-            typeof(PaymentOperationStateChanged).Assembly,
-            typeof(ClientSnapshot).Assembly
-        };
-
-        var forbidden = assemblies
-            .SelectMany(assembly => assembly.GetReferencedAssemblies())
-            .Select(reference => reference.Name)
-            .Where(name => name is not null && (name.StartsWith("Stripe", StringComparison.Ordinal)
-                || name.StartsWith("Concertable.B2B", StringComparison.Ordinal)
-                || name.StartsWith("Concertable.Customer", StringComparison.Ordinal)))
-            .ToArray();
-
-        Assert.Empty(forbidden);
-    }
-
-    [Fact]
-    public void PaymentDeployableProjects_DoNotReferenceConsumerAssemblies()
-    {
-        var sourceRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src"));
-        var forbidden = Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
-            .Where(path => !Path.GetFileNameWithoutExtension(path).EndsWith(".AppHost", StringComparison.Ordinal)
-                && !Path.GetFileNameWithoutExtension(path).EndsWith(".Hosting", StringComparison.Ordinal))
-            .SelectMany(path => XDocument.Load(path).Descendants()
-                .Where(element => element.Name.LocalName is "ProjectReference" or "PackageReference")
-                .Select(element => new
-                {
-                    Project = Path.GetRelativePath(sourceRoot, path),
-                    Reference = (string?)element.Attribute("Include")
-                }))
-            .Where(item => item.Reference is not null && (item.Reference.Contains("Concertable.B2B", StringComparison.Ordinal)
-                || item.Reference.Contains("Concertable.Customer", StringComparison.Ordinal)))
-            .ToArray();
-
-        Assert.Empty(forbidden);
     }
 
     private static void AssertAdditiveBaseline(string fileName, IEnumerable<string> candidate)

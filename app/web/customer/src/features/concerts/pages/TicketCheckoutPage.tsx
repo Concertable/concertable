@@ -3,8 +3,9 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Button } from "@concertable/web/components/ui/button";
 import { Skeleton } from "@concertable/web/components/ui/skeleton";
-import type { TicketPurchasedPayload } from "@concertable/customer/features/notifications";
-import { useConcert, type Concert } from "@concertable/web/features/concerts";
+import type { TicketPurchasedPayload } from "@concertable/customer/features/notifications/types";
+import { useConcert } from "@concertable/web/features/concerts";
+import type { Concert } from "@concertable/web/features/concerts/types";
 import { useTicketCheckoutQuery } from "@concertable/customer/features/tickets";
 import type { CheckoutFlowState } from "@concertable/web/features/concerts/hooks/useCheckoutFlow";
 import { CheckoutLayout } from "@concertable/web/features/concerts/components/checkout/CheckoutLayout";
@@ -72,7 +73,7 @@ function TicketCheckoutForm({ concert }: { concert: Concert }) {
     paymentError,
     paymentConfirmed,
     retryPayment,
-  } = useTicketPaymentFlow(checkout?.session.clientSecret);
+  } = useTicketPaymentFlow(checkout?.reference);
 
   if (submitted) return <TicketCheckoutFlow concert={concert} flow={flow} />;
   if (isCheckoutLoading) return <CheckoutSkeleton />;

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Check, Circle, ShieldCheck } from "lucide-react";
-import type { ProfileHealth } from "@concertable/shared/features/dashboard";
+import type { ProfileHealth } from "@concertable/shared/features/dashboard/types";
 import { cn } from "@/lib/utils";
 
 export function ProfileHealthCard({ health }: { health: ProfileHealth }) {

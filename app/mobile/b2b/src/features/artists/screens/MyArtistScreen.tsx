@@ -2,40 +2,39 @@ import { useLayoutEffect } from "react";
 import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { notify } from "@concertable/mobile/lib/toast";
-import {
-  useMyArtist,
-  useArtistStore,
-} from "@concertable/shared/features/artists";
+import { useMyArtist } from "@concertable/b2b/features/artists";
 import { EditableProvider } from "@concertable/shared/providers";
 import { Screen } from "@concertable/mobile/components/ui/Screen";
 import { Skeleton } from "@concertable/mobile/components/ui/skeleton";
 import { ErrorState } from "@concertable/mobile/components/ui/ErrorState";
 import { ConfigBar } from "@concertable/mobile/components/ConfigBar";
 import { ArtistDetails } from "@concertable/mobile/features/artists/components/ArtistDetails";
+import { useActiveTenantId } from "../../tenant/ActiveTenantContext";
 
 export function MyArtistScreen() {
   const nav = useNavigation();
+  const tenantId = useActiveTenantId();
 
   const {
     artist,
+    draft,
     isLoading,
     isError,
     editMode,
     isDirty,
     isSaving,
+    canSave,
+    saveError,
     save,
     toggleEdit,
     resetDraft,
-  } = useMyArtist({
+    setName,
+    setAbout,
+    setBanner,
+    setAvatar,
+  } = useMyArtist(tenantId, {
     onSuccess: () => notify("Artist saved!", "success"),
-    onError: () => notify("Failed to save artist.", "error"),
   });
-
-  const draft = useArtistStore((s) => s.draft);
-  const setName = useArtistStore((s) => s.setName);
-  const setAbout = useArtistStore((s) => s.setAbout);
-  const setBanner = useArtistStore((s) => s.setBanner);
-  const setAvatar = useArtistStore((s) => s.setAvatar);
 
   useLayoutEffect(() => {
     nav.setOptions({
@@ -44,13 +43,34 @@ export function MyArtistScreen() {
           editMode={editMode}
           isDirty={isDirty}
           isSaving={isSaving}
+          canSave={canSave}
+          error={saveError}
           onToggleEdit={toggleEdit}
           onSave={save}
           onCancel={resetDraft}
         />
       ),
     });
-  }, [nav, editMode, isDirty, isSaving, toggleEdit, save, resetDraft]);
+  }, [
+    nav,
+    editMode,
+    isDirty,
+    isSaving,
+    canSave,
+    saveError,
+    toggleEdit,
+    save,
+    resetDraft,
+  ]);
+
+  // useMyArtist reports isLoading forever without a tenant, and no route guard covers this screen.
+  if (tenantId === undefined) {
+    return (
+      <View className="flex-1 bg-background">
+        <ErrorState message="Sign in to an organization to manage your artist." />
+      </View>
+    );
+  }
 
   if (isLoading) {
     return (

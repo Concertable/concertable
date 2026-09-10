@@ -3,7 +3,10 @@ using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
 using Concertable.Auth.Contracts.Events;
 using Concertable.Auth.Hosting;
+using Concertable.B2B.Application.Contracts.Events;
 using Concertable.B2B.Artist.Contracts.Events;
+using Concertable.B2B.Booking.Contracts.Events;
+using Concertable.B2B.Concert.Contracts.Commands;
 using Concertable.B2B.Concert.Contracts.Events;
 using Concertable.B2B.Hosting;
 using Concertable.B2B.Venue.Contracts.Events;
@@ -16,6 +19,7 @@ using Concertable.Payment.Contracts.Events;
 using Concertable.Payment.Hosting;
 using Concertable.Shared.Email.Application;
 using B2BPayoutOwnerRegisteredEvent = Concertable.B2B.Tenant.Contracts.Events.PayoutOwnerRegisteredEvent;
+using TenantActivityRecordedEvent = Concertable.B2B.Tenant.Contracts.Events.TenantActivityRecordedEvent;
 
 namespace Concertable.AppHost.Shared.UnitTests;
 
@@ -28,7 +32,8 @@ public sealed class ServiceTopologyTests
         builder.AddAzureServiceBus("messaging")
             .Topology()
             .Publish<ConcertPostedEvent>()
-            .Subscribe<ConcertPostedEvent>("consumer")
+            .WithService("consumer")
+            .Subscribe<ConcertPostedEvent>()
             .RunAsEmulator();
 
         var topicName = new AzureServiceBusOptions().TopicNameFor(typeof(ConcertPostedEvent));
@@ -39,6 +44,84 @@ public sealed class ServiceTopologyTests
 
         Assert.Single(topics);
         Assert.Equal("consumer", subscription.SubscriptionName);
+    }
+
+    [Fact]
+    public void WithService_PerService_ScopesEachSubscriptionToItsOwnServiceName()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        builder.AddAzureServiceBus("messaging")
+            .Topology()
+            .Publish<ConcertPostedEvent>()
+            .Publish<ConcertChangedEvent>()
+            .WithService("service-a")
+            .Subscribe<ConcertPostedEvent>()
+            .WithService("service-b")
+            .Subscribe<ConcertChangedEvent>()
+            .RunAsEmulator();
+
+        var subscriptionNames = builder.Resources
+            .OfType<AzureServiceBusSubscriptionResource>()
+            .Select(subscription => subscription.SubscriptionName)
+            .ToHashSet();
+
+        Assert.Equal(["service-a", "service-b"], subscriptionNames.Order());
+    }
+
+    [Fact]
+    public void WithService_ScopedBuildersStayIndependentWhenInterleaved()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        var topology = builder.AddAzureServiceBus("messaging").Topology();
+        var serviceA = topology.WithService("service-a");
+        var serviceB = topology.WithService("service-b");
+
+        serviceA.Subscribe<ConcertPostedEvent>();
+        serviceB.Subscribe<ConcertChangedEvent>();
+        serviceA.Subscribe<ArtistChangedEvent>();
+
+        var perService = builder.Resources
+            .OfType<AzureServiceBusSubscriptionResource>()
+            .GroupBy(subscription => subscription.SubscriptionName)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        Assert.Equal(2, perService["service-a"]);
+        Assert.Equal(1, perService["service-b"]);
+    }
+
+    [Fact]
+    public void WithService_Publish_ProvisionsTheTopicWithoutScopingIt()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        builder.AddAzureServiceBus("messaging")
+            .Topology()
+            .WithService("service-a")
+            .Publish<ConcertPostedEvent>()
+            .Subscribe<ConcertChangedEvent>();
+
+        var topicName = new AzureServiceBusOptions().TopicNameFor(typeof(ConcertPostedEvent));
+        var topics = builder.Resources.OfType<AzureServiceBusTopicResource>().Select(topic => topic.Name);
+        var subscriptions = builder.Resources
+            .OfType<AzureServiceBusSubscriptionResource>()
+            .Select(subscription => subscription.SubscriptionName);
+
+        Assert.Contains(topicName, topics);
+        Assert.Equal(["service-a"], subscriptions);
+    }
+
+    [Fact]
+    public void WithService_Queue_NamesTheQueueForThatService()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        builder.AddAzureServiceBus("messaging")
+            .Topology()
+            .WithService("service-a")
+            .Queue<SendEmailCommand>();
+
+        var expected = new AzureServiceBusOptions().QueueNameFor("service-a", typeof(SendEmailCommand));
+        var queues = builder.Resources.OfType<AzureServiceBusQueueResource>().Select(queue => queue.QueueName);
+
+        Assert.Contains(expected, queues);
     }
 
     [Fact]
@@ -73,19 +156,58 @@ public sealed class ServiceTopologyTests
             typeof(ConcertChangedEvent),
             typeof(ConcertPostedEvent),
             typeof(ConcertRatingUpdatedEvent),
-            typeof(B2BPayoutOwnerRegisteredEvent));
+            typeof(BookingCancelledEvent),
+            typeof(ConcertCancelledEvent),
+            typeof(ConcertCreatedEvent),
+            typeof(B2BPayoutOwnerRegisteredEvent),
+            typeof(TenantActivityRecordedEvent),
+            typeof(ApplicationAcceptedEvent),
+            typeof(BookingConfirmedEvent));
 
     [Fact]
-    public void AddB2BTopology_ProvisionsEmailCommandQueue()
+    public void AddB2BTopology_ProvisionsApplicationAcceptedLoopbackSubscription()
     {
         var builder = DistributedApplication.CreateBuilder();
         var topology = builder.AddAzureServiceBus("messaging").Topology();
         topology.AddB2BTopology();
 
-        var queue = Assert.Single(builder.Resources.OfType<AzureServiceBusQueueResource>());
-        var expected = new AzureServiceBusOptions().QueueNameFor(B2BConstants.ServiceName, typeof(SendEmailCommand));
+        var subscription = Assert.Single(
+            builder.Resources.OfType<AzureServiceBusSubscriptionResource>(),
+            resource => resource.Name == $"{B2BConstants.ServiceName}-application-accepted");
 
-        Assert.Equal(expected, queue.Name);
+        Assert.Equal(B2BConstants.ServiceName, subscription.SubscriptionName);
+    }
+
+    [Fact]
+    public void AddB2BTopology_ProvisionsBookingConfirmedLoopbackSubscription()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        var topology = builder.AddAzureServiceBus("messaging").Topology();
+        topology.AddB2BTopology();
+
+        var subscription = Assert.Single(
+            builder.Resources.OfType<AzureServiceBusSubscriptionResource>(),
+            resource => resource.Name == $"{B2BConstants.ServiceName}-booking-confirmed");
+
+        Assert.Equal(B2BConstants.ServiceName, subscription.SubscriptionName);
+    }
+
+    [Fact]
+    public void AddB2BTopology_ProvisionsCommandQueues()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        var topology = builder.AddAzureServiceBus("messaging").Topology();
+        topology.AddB2BTopology();
+
+        var queues = builder.Resources
+            .OfType<AzureServiceBusQueueResource>()
+            .Select(queue => queue.Name)
+            .ToHashSet();
+        var options = new AzureServiceBusOptions();
+
+        Assert.Equal(2, queues.Count);
+        Assert.Contains(options.QueueNameFor(B2BConstants.ServiceName, typeof(SendEmailCommand)), queues);
+        Assert.Contains(options.QueueNameFor(B2BConstants.ServiceName, typeof(NotifyConcertDraftCreatedCommand)), queues);
     }
 
     [Fact]

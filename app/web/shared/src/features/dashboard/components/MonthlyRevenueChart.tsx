@@ -7,7 +7,7 @@ import {
   YAxis,
 } from "recharts";
 import dayjs from "dayjs";
-import type { MonthlyRevenuePoint } from "@concertable/shared/features/dashboard";
+import type { MonthlyRevenuePoint } from "@concertable/shared/features/dashboard/types";
 import { formatCurrency } from "@concertable/shared/lib";
 import { ChartTooltip } from "./ChartTooltip";
 
@@ -15,6 +15,22 @@ interface MonthlyRevenueChartProps {
   data: MonthlyRevenuePoint[];
   accent?: "emerald" | "sky";
   currency?: string;
+}
+
+interface ChartRevenuePoint {
+  month: string;
+  gross: number;
+  net: number;
+  count: number;
+}
+
+function toChartRevenuePoint(point: MonthlyRevenuePoint): ChartRevenuePoint {
+  return {
+    month: dayjs(point.month).format("MMM"),
+    gross: point.grossCents / 100,
+    net: point.netCents / 100,
+    count: point.count,
+  };
 }
 
 const accentColors = {
@@ -28,12 +44,7 @@ export function MonthlyRevenueChart({
   currency = "GBP",
 }: MonthlyRevenueChartProps) {
   const colors = accentColors[accent];
-  const chartData = data.map((p) => ({
-    month: dayjs(p.month).format("MMM"),
-    gross: p.grossCents / 100,
-    net: p.netCents / 100,
-    count: p.count,
-  }));
+  const chartData = data.map(toChartRevenuePoint);
 
   return (
     <ResponsiveContainer width="100%" height={180}>

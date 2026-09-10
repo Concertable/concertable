@@ -2,7 +2,7 @@ import { View, Text, Image, type ViewProps } from "react-native";
 import { cn } from "@/lib/utils";
 
 interface Props extends ViewProps {
-  uri?: string | null;
+  uri?: string;
   title: string;
   subtitle?: string;
   height?: number;

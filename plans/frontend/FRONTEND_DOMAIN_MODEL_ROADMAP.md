@@ -6,25 +6,26 @@
 >
 > **Current decision:** retain interfaces for object contracts and add same-name value companions for
 > reusable pure conversions. Companion operations use source-owned `toX` names and live directly
-> below the owning type declarations in the feature's `types.ts`. No mapping library is being added.
+> below the owning type declarations in the feature's `types.ts`. Closed labels use direct typed
+> tables, cohesive stateful capabilities use one service/facade, stores remain private, client-owned
+> absence uses `undefined`, and no mapping library is being added.
 
 ## How to continue this roadmap
 
-The selected item is blocked while PRs #595, #600, and #637 own overlapping frontend types and
-guidance. Do not resume its ledger directly. Let those owners reach merged or closed state, then
-reconcile [`DOMAIN_COMPANION_MAPPING_PROGRESS.md`](DOMAIN_COMPANION_MAPPING_PROGRESS.md) against
-current `origin/main`; the ledger becomes actionable only when all three PRs are terminal and no open
-red platform-sync PR remains.
+The selected item is active on `Refactor/frontend_domain-companion-mapping` in the worktree recorded
+by [`DOMAIN_COMPANION_MAPPING_PROGRESS.md`](DOMAIN_COMPANION_MAPPING_PROGRESS.md). Continue only from
+that ledger's `## Next Steps`; it owns the current phase, verification evidence, and delivery state.
 
 ## Status
 
 ### Selected
 
 - [ ] 🟡 **Domain companion mapping convention and migration.** `frontend/domain-companion-mapping`
-  Design and operational state: [`DOMAIN_COMPANION_MAPPING_PLAN.md`](DOMAIN_COMPANION_MAPPING_PLAN.md)
-  and [`DOMAIN_COMPANION_MAPPING_PROGRESS.md`](DOMAIN_COMPANION_MAPPING_PROGRESS.md). Establish the
-  interface-plus-companion convention, correct the known read/write contract leaks, migrate reusable
-  pure transformations, and keep transport, adapter, and presentation mappings boundary-local.
+      Design and operational state: [`DOMAIN_COMPANION_MAPPING_PLAN.md`](DOMAIN_COMPANION_MAPPING_PLAN.md)
+      and [`DOMAIN_COMPANION_MAPPING_PROGRESS.md`](DOMAIN_COMPANION_MAPPING_PROGRESS.md). Establish the
+      interface-plus-companion convention, correct the known read/write contract leaks, migrate reusable
+      pure transformations, make domain-facing APIs cohesive, keep stores private, normalize owned absence,
+      and keep transport, adapter, and presentation mappings boundary-local.
 
 ## Dependency map
 

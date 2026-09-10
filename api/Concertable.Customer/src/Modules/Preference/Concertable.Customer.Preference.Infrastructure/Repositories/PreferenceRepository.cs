@@ -13,34 +13,13 @@ internal sealed class PreferenceRepository : Repository<PreferenceEntity>, IPref
         this.context = context;
     }
 
-    public async Task<bool> InsertAsync(PreferenceEntity preference)
-    {
-        context.Preferences.Add(preference);
+    public Task<bool> InsertAsync(PreferenceEntity preference) => this.TryInsertAsync(preference);
 
-        try
-        {
-            await context.SaveChangesAsync();
-            return true;
-        }
-        catch (DbUpdateException ex) when (ex.IsDuplicateKey())
-        {
-            ex.DiscardFailedChanges();
-            return false;
-        }
-    }
-
-    public override async Task<IEnumerable<PreferenceEntity>> GetAllAsync(CancellationToken ct = default)
+    public override async Task<IReadOnlyList<PreferenceEntity>> GetAllAsync(CancellationToken ct = default)
     {
         return await context.Preferences
             .Include(p => p.GenrePreferences)
             .ToListAsync(ct);
-    }
-
-    public override async Task<PreferenceEntity?> GetByIdAsync(int id, CancellationToken ct = default)
-    {
-        return await context.Preferences
-            .Include(p => p.GenrePreferences)
-            .FirstOrDefaultAsync(p => p.Id == id, ct);
     }
 
     public async Task<PreferenceEntity?> GetByUserIdAsync(Guid id)

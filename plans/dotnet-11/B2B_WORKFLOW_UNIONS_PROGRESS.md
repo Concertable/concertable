@@ -4,34 +4,47 @@
 - Roadmap: `plans/dotnet-11/DOTNET_11_ROADMAP.md`
 - Roadmap item: `dotnet-11/b2b-workflow-unions`
 - Worktree: not created
-- Branch: `Refactor/dotnet-11_b2b-runtime` (reserved; not created)
+- Branch: `Refactor/dotnet-11_b2b-runtime`
 - Plan PR: #448 merged; historical closeout PR #449 does not authorize implementation
-- Dependency/package gates: blocked on terminal delivery of `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`
-- Last reconciled: 2026-08-16 against the approved Application → Booking → Concert ownership decision
+- Dependency/package gates: blocked on terminal delivery of
+  `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`
+- Downstream dependent: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md` requires the supported C# 15
+  native-union/runtime and compiler/target matrix for its method-header and published Deal cut-overs
+- Last reconciled: 2026-08-21 against the direct method-header interface-union decision
 
 ## Current state
 
-No .NET 11 implementation exists. The previous design proposed unions over concrete workflow step
-services. That target is superseded: the lifecycle refactor deletes the cross-stage workflow, keeps
-DI behaviour behind module-local resolvers, and gives Application, Booking, and Concert independent
-state machines. Native unions are selected for closed internal values, beginning with the read-only
-combined journey projection and extending only to proven case-specific module states, triggers, and
-operation outcomes.
+The reserved branch name above has not been created yet. No .NET 11 implementation exists. The previous design proposed unions over concrete workflow step
+services. That target is superseded: the lifecycle refactor deletes the cross-stage workflow and gives
+Application, Booking, and Concert independent state machines and contextual operations. Native unions
+are selected for small closed internal values, beginning with the read-only combined journey
+projection and extending only to proven case-specific module states, triggers, and operation outcomes.
 
-The B2B typed-result dependency landed in PR #552. The lifecycle plan now owns the return path.
+The lifecycle plan now owns the net10 `DealUnionBuilder<TUnion>` over the generic keyed-union builder and
+`IDealUnionFactory<TUnion>` foundation plus Dunet adapter unions for heterogeneous Apply and Accept. This
+runtime plan owns their mechanical replacement with direct native interface unions while preserving the
+factory contract and Deal mappings. Honest same-interface terms, mapper, updater, and completion families
+remain on `IDealStrategyFactory<TStrategy>`.
+
+The B2B typed-result dependency landed in PR #552. The lifecycle plan owns the return path.
 
 ## Next Steps
 
 Blocked: The Application, Booking, and Concert module/state refactor has not completed its delivery lifecycle.
-Blocked by: plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md.
-Unblock action: The lifecycle owner must land the approved module split and reconcile the required journey-stage union plus case-specific module state, trigger, and operation-outcome candidates against the resulting APIs and target graph.
-Resume when: Current main contains the delivered lifecycle split and `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` records every implementation, review, PR, publication, and platform-sync gate as terminal green.
+Blocked by: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`.
+Unblock action: The lifecycle owner must land the approved module split and reconcile the required journey-stage union plus case-specific module state, trigger, and operation-outcome candidates against the resulting APIs and target graph. This plan must then record the C# 15 native-union/runtime and closed-hierarchy compiler/target matrix and notify the Deal dispatch ledger when both gates open.
+Resume when: Current `main` contains the delivered lifecycle split and the lifecycle ledger records every implementation, review, PR, publication, and platform-sync gate as terminal green.
 
 ## Completed work
 
 - Established the B2B runtime/net10 Contracts compatibility boundary and SDK/Functions risks.
-- Rejected unions over DI step implementations after the lifecycle ownership decision.
-- Replanned the work as a runtime upgrade with native unions for closed internal values, never DI services.
+- Rejected the cross-stage union over DI operation implementations after the lifecycle ownership decision.
+- Replanned this work as a runtime upgrade with native unions for closed internal values; the downstream
+  Deal plan owns direct unions of module-owned heterogeneous method-header interfaces.
+- Reconciled the landing shape against current C# 15 union semantics: direct interface cases replace the
+  net10 Dunet adapter records, while keyed DI remains confined to `IDealUnionFactory<TUnion>`.
+- Registered the Deal dispatch/representation plan as a downstream consumer of the supported C# 15
+  native-union/runtime and target matrix.
 
 ## Verification
 
@@ -47,9 +60,25 @@ a fresh docs review before implementation.
 ## Decisions, discoveries, blockers, and deviations
 
 - The runtime upgrade is the platform gate for native union adoption.
-- Native unions model closed values, not services; the journey-stage projection is the first required use.
-- The lifecycle split owns state/resolver architecture; this plan cannot change it.
-- Published Contracts and persisted/wire models remain union-free.
+- This plan's native unions model closed values; the journey-stage projection is the first required use.
+- The net10 lifecycle foundation uses operation-owned Dunet adapter unions because C# 14 cannot express
+  direct interface unions. The .NET 11 replacement is
+  `union Accept(IAccept, IAcceptPaid)`, never a union of wrapper records or concrete
+  implementations.
+- Required invocation input is narrowed with an ordinary `when ... is not null` pattern arm. Its missing
+  arm returns the typed Result failure; it does not use a throwing requirement helper or weaken a method
+  header to accept nullable input.
+- The lifecycle split owns state architecture; the Deal plan owns replacement of its provisional
+  selectors after delivery with invariant same-interface factories, method-header unions, direct calls,
+  or data. The later public dispatch package may replace their internal keyed implementation.
+- The current [C# union reference](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/union)
+  permits interfaces as union cases and defines unions over types, not raw method declarations. Therefore
+  the .NET 11 boundary can directly use `IAccept` and `IAcceptPaid` without adapter records.
+- [Dunet](https://github.com/domn1995/dunet) requires nested partial-record variants. Those adapters are the
+  explicit net10 compatibility boundary for Apply and Accept and are deleted when native interface unions
+  become available.
+- Published Contracts and persisted/wire models remain union-free in this runtime PR.
+- The Deal contract's later closed hierarchy is not a native union and is outside this runtime PR.
 
 ## Resume prompt
 

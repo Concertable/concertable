@@ -9,10 +9,20 @@ and Concert ownership refactor has landed, then use native unions for the result
 value models. Preserve net10-compatible published Contracts and independent Customer, Search,
 Payment, and Auth builds.
 
-The former plan to replace `IConcertWorkflow` and its step interfaces with unions over concrete DI
-implementations is rejected. The approved lifecycle design deletes that cross-stage workflow and gives
-each module local step resolution. Native unions model closed values, not services, lifetimes, or
-keyed dependency resolution.
+The former cross-stage workflow and the proposal to replace it with a union over concrete DI
+implementations are rejected. The approved lifecycle design gives Application, Booking, and Concert one
+executable module-local workflow each. This runtime plan owns small closed internal value unions and
+enables the shared Deal union factory to return a direct native union of module-owned DI method-header
+interfaces. No union owns workflow state, performs keyed dependency resolution, or crosses a published
+boundary.
+
+`@plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md` owns the separate Deal decision: a closed record hierarchy,
+direct native interface unions for heterogeneous internal method headers, and invariant module factories
+for the terms, mapper, and updater families that already share one honest interface. Heterogeneous
+workflow methods use the union factory; homogeneous workflow methods use the strategy factory. This plan must establish
+the native-union runtime/toolchain and whether a C# 15-compiled `Deal.Contracts` can retain net10 assets,
+including which consumers require a compiler/runtime retarget. It does not perform that breaking
+published-package cut-over or reclassify the Deal operations itself.
 
 ## Dependency gate
 
@@ -43,6 +53,10 @@ path for this work.
 A net11 project may consume these net10 assemblies. Never retarget another service merely to silence a
 compatibility error.
 
+This is the boundary for this runtime PR, not a permanent prohibition. The downstream Deal plan may
+change `Deal.Contracts` only through its explicit package/consumer cut-over after proving the supported
+target and compiler matrix.
+
 ## Native union boundary
 
 After the lifecycle refactor lands, inventory its actual closed value alternatives. The first required
@@ -59,13 +73,34 @@ where the inventory proves the alternatives are genuinely closed. Persistence re
 mapped module-owned discriminator rather than serialising the in-process union as a cross-boundary
 contract.
 
-Do not use native unions for:
+Do not use native unions in this runtime plan for:
 
-- step implementations or any DI-resolved service;
+- concrete implementation cases or keyed service resolution. The union cases are capability interfaces;
+  the Deal union factory remains responsible for the one configured keyed lookup;
 - database columns or persistence DTOs in place of an explicit module-owned discriminator;
 - a replacement workflow/process aggregate;
 - integration events, protobuf, persistence, HTTP contracts, or published packages;
-- recreating a cross-module capability registry or exhaustive switch over `DealType` in agnostic code.
+- recreating a cross-module capability registry or exhaustive switch over `DealType` in agnostic code;
+- replacing a genuine same-interface terms, mapper, or updater family with a union merely because the
+  Deal representation is closed.
+
+The published Deal sum uses a closed hierarchy instead of a native union because it has genuine shared
+members, ordinary reference identity, TPT/class-polymorphism alignment, and an established tagged
+`$type` JSON contract. A heterogeneous Deal-varying method uses a direct native union of its existing
+method-header interfaces, for example `union Accept(IAccept, IAcceptPaid)`. Its consumer uses
+ordinary exhaustive type-pattern matching; a `when` guard may narrow required request input, with the
+unguarded arm returning the typed validation Result. The proven uniform terms, mapper, and updater
+operations remain named calls selected through invariant module factories; their selection switches and
+registrations are never repeated in application source.
+
+The native union has no Dunet case records, `.Accept` wrappers, or service-bearing adapter records. The
+net10 `DealUnionBuilder<TUnion>` mapping and `IDealUnionFactory<TUnion>` consumption contract stay
+stable. Registration replaces each Dunet wrapper projection with a native conversion; prefer a zero-lambda
+`Case<TCapability>()` only if the final compiler/runtime exposes a safe generic construction mechanism.
+Otherwise retain an explicit `static value => (Accept)value` conversion at composition. Each header may
+retain multiple DI implementations. No concrete implementation may implement more than one header in the
+same union, because C# permits overlapping interface cases but that overlap would make dispatch
+order-sensitive.
 
 Do not manufacture unions for types that are already honestly represented by an enum or ordinary
 value object. The selected .NET 11 direction requires native unions for the closed journey projection
@@ -76,6 +111,8 @@ state or result to become a union.
 
 - exact .NET 11 SDK/release and support status;
 - final C# union syntax, exhaustiveness diagnostics, runtime support, and serializer behaviour;
+- final C# closed-hierarchy metadata/consumer behavior, including whether a net10-targeted contract
+  compiled by the .NET 11 SDK preserves exhaustiveness for supported consumers;
 - Azure Functions isolated-worker support for the selected net11 release;
 - Reunion target frameworks and whether any internal result union still warrants migration;
 - the complete B2B forward/reverse project-reference graph after module extraction;
@@ -111,11 +148,16 @@ inspection proves published B2B contracts still carry net10 assets.
 1. Add the internal journey-stage native union at the owning read boundary.
 2. Use exhaustive matching and focused tests for every case.
 3. Add only the case-specific module state, trigger, and operation-outcome unions accepted by Phase 0.
-4. Keep module-local step resolvers, state machines, and aggregate ownership unchanged.
-5. Delete superseded value abstractions in the same checkpoint; do not retain parallel models.
+4. Keep module-owned state machines and aggregate ownership unchanged. Replace keyed resolution outside
+   factories, but preserve the method-header interfaces and their DI implementations. Do not convert the
+   downstream Deal plan's same-interface terms, mapper, or updater families into unions.
+5. Replace the net10 Application `Apply` and `Accept` Dunet adapter unions with direct native interface
+   unions. Keep the Deal mappings and `IDealUnionFactory<TUnion>` unchanged, switch directly on capability
+   interfaces, and remove wrapper access and default arms.
+6. Delete superseded value abstractions in the same checkpoint; do not retain parallel models.
 
-Gate: the union remains internal, contains values rather than services, and no module/runtime dependency
-direction changes.
+Gate: this plan's unions remain internal value models, and no module/runtime dependency direction
+changes.
 
 ### Phase 3 — verification and delivery
 
@@ -131,9 +173,12 @@ direction changes.
 
 - B2B runtime and every required reverse consumer compile on a supported .NET 11 SDK.
 - Published B2B Contracts remain net10-compatible and other services build independently.
-- No union contains or dispatches a DI service implementation.
-- Application, Booking, and Concert retain independent state machines and local step resolvers.
+- This runtime plan's value unions contain values or module-owned method-header interfaces. Method unions
+  never resolve services themselves; `IDealUnionFactory<TUnion>` remains the selection boundary.
+- Application, Booking, and Concert retain independent state machines and contextual operations.
 - Native unions model the internal combined journey projection and every proven case-specific module
-  state, trigger, or operation outcome with exhaustive coverage; no union contains runtime services.
+  state, trigger, or operation outcome with exhaustive coverage.
 - Azure Functions deployment support is proven before claiming the Workers deployable.
+- The native-union/runtime and compiler/target matrix needed by the downstream Deal operation and
+  representation cut-over is recorded and its progress ledger is updated when that gate opens.
 - Source PR, package publication, platform sync, and required E2E are terminal green.

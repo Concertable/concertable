@@ -1,17 +1,8 @@
-import { hasConsent } from "@/lib/consent";
+import { consent } from "@/lib/consent";
 import { STORAGE_MANIFEST } from "@/lib/storageManifest";
 
-/**
- * A typed handle to one classified first-party web-storage item — the single sanctioned
- * way our own code reads or writes {@link Storage}. It derives its classification and
- * consent gate from the item's {@link STORAGE_MANIFEST} entry, so an `analytics`/`marketing`
- * item cannot be written before its consent category is granted, and no item can be stored
- * at all until it is classified. This is the storage-write counterpart to
- * `registerConsentGated` (which gates resource/script activation).
- */
 export interface ClassifiedStorage<T extends string = string> {
   get(): T | null;
-  /** Stores the value unless a consent gate withholds it; returns whether it was written. */
   set(value: T): boolean;
   remove(): void;
 }
@@ -34,12 +25,14 @@ export function createClassifiedStorage<T extends string = string>(
   const gate = item.consentCategory;
   const consentGated =
     item.classification === "analytics" || item.classification === "marketing";
-  const store = () => (item.api === "localStorage" ? localStorage : sessionStorage);
+  const store = () =>
+    item.api === "localStorage" ? localStorage : sessionStorage;
 
   return {
     get: () => store().getItem(key) as T | null,
     set: (value) => {
-      if (consentGated && (gate === undefined || !hasConsent(gate))) return false;
+      if (consentGated && (gate === undefined || !consent.has(gate)))
+        return false;
       store().setItem(key, value);
       return true;
     },

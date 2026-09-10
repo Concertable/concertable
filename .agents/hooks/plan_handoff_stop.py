@@ -49,6 +49,14 @@ PATCH_FILE_TARGET = re.compile(
     r"((?:[A-Za-z]:[\\/])?[^\"'\r\n<>|]*?_PROGRESS\.md)",
     re.IGNORECASE,
 )
+CONTEXT_TRANSFER_DIRECTIVE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:"
+    r"(?:please\s+)?(?:clear|reset|restart)\s+(?:the\s+)?context\b|"
+    r"(?:continue|resume|start|pick\s+(?:this|it|the\s+work)\s+up|move)\b"
+    r"[^\n]{0,120}\b(?:fresh|new|separate)\s+context\b"
+    r")",
+    re.IGNORECASE | re.MULTILINE,
+)
 
 
 def strings(value):
@@ -256,10 +264,12 @@ def context_owns_ledger(path, bases, source):
 def transcript_ledgers(records, cwd):
     paths = set()
     contexts = [context for record in records for context in intentional_contexts(record)]
+    targeted_bases = set()
     for context in contexts:
         values = list(strings(context))
         explicit_bases = {Path(path).resolve() for path in workdirs(context)}
-        bases = explicit_bases or {Path(cwd).resolve()}
+        bases = explicit_bases or targeted_bases or {Path(cwd).resolve()}
+        targeted_bases.update(explicit_bases)
         candidates = set()
         for value in values:
             absolute_matches = list(ABSOLUTE_LEDGER.finditer(value))
@@ -336,7 +346,7 @@ def expected_pointer(path):
         opener_path = str(Path(declared_worktree).resolve())
         opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
     elif owner_branch:
-        opener = f"/worktree create {owner_branch}"
+        opener = f"/open-worktree {owner_branch}"
     else:
         opener_path = str(root)
         opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
@@ -386,6 +396,19 @@ def handoff_present(message, path, pointer):
 
 def ends_with_pointer(message, pointer):
     return normalized_handoff_text(message).endswith(normalized_handoff_text(pointer))
+
+
+def context_transfer_attempted(message, active):
+    if CONTEXT_TRANSFER_DIRECTIVE.search(message):
+        return True
+    normalized_message = normalized_handoff_text(message)
+    return any(
+        normalized_handoff_text(pointer) in normalized_message
+        or normalized_handoff_text(
+            f"Why: {path.name} owns unfinished work from this turn:"
+        ) in normalized_message
+        for path, pointer, _, _ in active
+    )
 
 
 def evaluate(data):
@@ -455,7 +478,8 @@ def evaluate(data):
     failures = []
     if blocked_failures:
         failures.append("BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures))
-    if active:
+    active_transfer = bool(active) and context_transfer_attempted(message, active)
+    if active_transfer:
         missing = [
             (path, pointer, body, handoff)
             for path, pointer, body, handoff in active
@@ -465,8 +489,8 @@ def evaluate(data):
         if missing or not ends_with_handoff:
             names = ", ".join(path.name for path, _, _, _ in (missing or active))
             failures.append(
-                f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
-                "omitted its explained continuation or placed prose after it."
+                f"HANDOFF GATE: {names} was selected for context transfer, but the final "
+                "response omitted its explained continuation or placed prose after it."
             )
     if not failures:
         return {}
@@ -477,14 +501,22 @@ def evaluate(data):
         )
         for _, _, details in blocked
     ]
-    required.extend(handoff for _, _, _, handoff in active)
+    if active_transfer:
+        required.extend(handoff for _, _, _, handoff in active)
     replacement = "\n\n".join(required)
+    repair = (
+        "Rewrite the response and end it with this complete handoff block. Nothing may "
+        "follow the final pointer:"
+        if active_transfer
+        else "Rewrite the response with these required blocker lines:"
+    )
     return block_once(
         data,
         (
             "\n\n".join(failures)
-            + "\n\nRewrite the response and end it with this complete handoff block. Nothing may "
-            "follow the final pointer:\n\n"
+            + "\n\n"
+            + repair
+            + "\n\n"
             + replacement
         ),
     )

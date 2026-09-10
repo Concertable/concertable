@@ -1,33 +1,16 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
-using Concertable.B2B.Seed.Contracts;
-using Concertable.Customer.Artist.Infrastructure.Extensions;
-using Concertable.Customer.Concert.Infrastructure.Extensions;
-using Concertable.Customer.Hosting;
-using Concertable.Customer.Preference.Infrastructure.Extensions;
-using Concertable.Customer.Seed.Infrastructure;
-using Concertable.Customer.Venue.Infrastructure.Extensions;
-using Concertable.DataAccess.Application;
-using Concertable.DataAccess.Infrastructure.Data;
-using Concertable.Kernel;
-using Concertable.Kernel.Events;
-using Concertable.Kernel.Extensions;
-using Concertable.Kernel.Identity;
-using Concertable.Messaging.Infrastructure.Extensions;
-using Concertable.Messaging.Infrastructure.Inbox;
-using Concertable.Messaging.Infrastructure.Outbox;
-using Concertable.Seed.Shared;
-using Concertable.Seed.Infrastructure;
-using Concertable.Seed.Shared.Extensions;
-using Microsoft.EntityFrameworkCore;
+using Concertable.Customer.TestKit;
+using Concertable.E2E;
+using Concertable.Payment.E2ETests.Helpers;
+using Concertable.Payment.Hosting;
+using Concertable.Payment.TestKit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Stripe;
 using System.Net.Http.Headers;
-using CustomerDevDbInitializer = Concertable.Customer.Web.DevDbInitializer;
 
 namespace Concertable.Customer.E2ETests;
 
@@ -35,8 +18,11 @@ public sealed class AppFixture : IAsyncLifetime
 {
     private DistributedApplication app = null!;
     private AspireResourceLogger resourceLogger = null!;
-    private IHost host = null!;
     private HealthWaiter healthWaiter = null!;
+    private HttpClient customerAdminClient = null!;
+    private HttpClient paymentAdminClient = null!;
+    private CustomerTestClient customerTestClient = null!;
+    private PaymentIntentService stripePaymentIntents = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
     private readonly IConfiguration configuration;
@@ -48,12 +34,9 @@ public sealed class AppFixture : IAsyncLifetime
     private readonly string authUrl;
     private readonly string customerSpaUrl;
 
-    public const string TestPaymentMethodId = "pm_card_visa";
-
     public HttpClient CustomerClient { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public SeedState SeedState { get; private set; } = null!;
-    public SeedCatalog Catalog { get; private set; } = null!;
     public DbFixture DbFixture { get; private set; } = null!;
     public StripeCustomerResolver StripeCustomerResolver { get; private set; } = null!;
     public string AuthUrl => authUrl;
@@ -92,14 +75,16 @@ public sealed class AppFixture : IAsyncLifetime
         logger.InitializingE2ETestFixture();
 
         healthWaiter = new HealthWaiter(loggerFactory.CreateLogger<HealthWaiter>());
-        var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Concertable_Customer_AppHost>();
+        var composition = Compositions.Source();
+        var builder = await composition.CreateBuilderAsync(Surface.Customer);
         var stripeSecretKey = builder.Configuration["Stripe:SecretKey"]
             ?? throw new InvalidOperationException("Stripe:SecretKey is not configured for the Customer E2E fixture.");
         var stripeClient = new StripeClient(stripeSecretKey);
+        stripePaymentIntents = new PaymentIntentService(stripeClient);
         StripeCustomerResolver = await Concertable.Testing.E2E.StripeCustomerResolver.CreateAsync(stripeClient);
+        var run = Run.Create(Profile.Customer(customerWebUrl, searchWebUrl, authUrl, paymentWebUrl));
 
-        builder.AddE2EStack(customerWebUrl, searchWebUrl, authUrl, paymentWebUrl, StripeCustomerResolver);
+        builder.AddE2EStack(run, composition, StripeCustomerResolver);
 
         app = await builder.BuildAsync();
         resourceLogger = new AspireResourceLogger(
@@ -114,49 +99,45 @@ public sealed class AppFixture : IAsyncLifetime
             [customerWebUrl, searchWebUrl, paymentWebUrl],
             TimeSpan.FromMinutes(12));
 
-        DbFixture = new DbFixture(app);
-        await DbFixture.InitializeAsync();
+        customerAdminClient = new HttpClient { BaseAddress = new Uri(customerWebUrl) };
+        paymentAdminClient = new HttpClient { BaseAddress = new Uri(paymentWebUrl) };
+        customerTestClient = new CustomerTestClient(
+            customerAdminClient,
+            run.AdminKey);
+        var paymentTestClient = new PaymentTestClient(
+            paymentAdminClient,
+            run.AdminKey);
+        DbFixture = new DbFixture(customerTestClient, paymentTestClient);
         await DbFixture.ResetAsync();
+        SeedState = await customerTestClient.GetSeedStateAsync();
 
-        var customerConnectionString = await app.GetConnectionStringAsync(CustomerConstants.Database)
-            ?? throw new InvalidOperationException("Customer DB connection string is missing.");
-
-        var customerSeedConfig = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                [$"ConnectionStrings:{CustomerConstants.Database}"] = customerConnectionString,
-            })
-            .Build();
-
-        host = Host.CreateDefaultBuilder()
-            .ConfigureServices((_, services) =>
-            {
-                services.AddSingleton<IConfiguration>(customerSeedConfig);
-                services.AddLogging(b => b
-                    .AddSimpleConsole(o => o.SingleLine = true)
-                    .SetMinimumLevel(LogLevel.Warning)
-                    .AddFilter("Concertable.Customer.Web.DevDbInitializer", LogLevel.Information));
-                services.AddSingleton(TimeProvider.System);
-                services.AddSingleton<SeedCatalog>();
-                services.AddCurrentUser();
-                services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-                services.AddScoped<AuditInterceptor>();
-                services.AddScoped<IDomainEventDispatchInterceptor, SeedingDomainEventDispatchInterceptor>();
-                services.AddOutbox(opt => opt.UseSqlServer(customerConnectionString), runDispatcher: false);
-                services.AddInbox(opt => opt.UseSqlServer(customerConnectionString));
-                services.AddSeedingInfrastructure();
-                services.AddScoped<SeedState>();
-                services.AddVenueModule(customerSeedConfig);
-                services.AddArtistModule(customerSeedConfig);
-                services.AddConcertModule(customerSeedConfig);
-                services.AddPreferenceModule(customerSeedConfig);
-                services.AddPreferenceDevSeeder();
-                services.AddScoped<IDbInitializer, CustomerDevDbInitializer>();
-            })
-            .Build();
-
-        await host.StartAsync();
-        await ReseedAsync();
+        var payoutAccounts = new PayoutAccountDb(
+            await app.GetConnectionStringAsync(PaymentConstants.Database)
+                ?? throw new InvalidOperationException("Payment connection string is missing."));
+        var buyerId = SeedState.Customer1.Id;
+        var payeeId = SeedState.UpcomingFlatFeeConcert.PayeeOwnerId;
+        try
+        {
+            await Polling.UntilAsync(
+                async () => (
+                    Chargeable: await payoutAccounts.GetChargeableOwnerIdsAsync(),
+                    Payable: await payoutAccounts.GetPayableOwnerIdsAsync()),
+                provisioned =>
+                    provisioned.Chargeable.Contains(buyerId)
+                    && provisioned.Payable.Contains(payeeId),
+                timeout: TimeSpan.FromMinutes(3));
+        }
+        catch (TimeoutException)
+        {
+            var chargeable = await payoutAccounts.GetChargeableOwnerIdsAsync();
+            var payable = await payoutAccounts.GetPayableOwnerIdsAsync();
+            throw new InvalidOperationException(
+                $"Payment never provisioned the owners this suite transacts as. "
+                + $"Buyer {buyerId} chargeable: {chargeable.Contains(buyerId)}. "
+                + $"Payee {payeeId} payable: {payable.Contains(payeeId)}. "
+                + $"Chargeable owners: [{string.Join(", ", chargeable)}]. "
+                + $"Payable owners: [{string.Join(", ", payable)}].");
+        }
 
         logger.E2ETestFixtureReady();
     }
@@ -165,7 +146,7 @@ public sealed class AppFixture : IAsyncLifetime
     {
         logger.ResettingTestState();
         await DbFixture.ResetAsync();
-        await ReseedAsync();
+        SeedState = await customerTestClient.GetSeedStateAsync();
     }
 
     public async Task<HttpClient> CreateAuthenticatedClientAsync(string email)
@@ -179,20 +160,26 @@ public sealed class AppFixture : IAsyncLifetime
     public Task WaitForTokenMintingAsync(string email, string password) =>
         tokenMinter.WaitUntilMintableAsync(email, password, Polling);
 
+    public Task ConfirmPaymentAsync(string clientSecret)
+    {
+        var separatorIndex = clientSecret.IndexOf("_secret_", StringComparison.Ordinal);
+        if (separatorIndex <= 0)
+            throw new ArgumentException("The payment client secret is invalid.", nameof(clientSecret));
+
+        return stripePaymentIntents.ConfirmAsync(
+            clientSecret[..separatorIndex],
+            new PaymentIntentConfirmOptions { PaymentMethod = "pm_card_visa" });
+    }
+
     public async Task DisposeAsync()
     {
         try
         {
             CustomerClient?.Dispose();
+            customerAdminClient?.Dispose();
+            paymentAdminClient?.Dispose();
             tokenMinter.Dispose();
             healthWaiter?.Dispose();
-            if (DbFixture is not null)
-                await DbFixture.DisposeAsync();
-            if (host is not null)
-            {
-                await host.StopAsync();
-                host.Dispose();
-            }
             if (app is not null)
                 await app.DisposeAsync();
             if (resourceLogger is not null)
@@ -214,12 +201,4 @@ public sealed class AppFixture : IAsyncLifetime
 
     public ResourceNotificationService ResourceNotifications => app.ResourceNotifications;
 
-    private async Task ReseedAsync()
-    {
-        await using var scope = host.Services.CreateAsyncScope();
-        var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
-        await initializer.InitializeAsync();
-        SeedState = scope.ServiceProvider.GetRequiredService<SeedState>();
-        Catalog = scope.ServiceProvider.GetRequiredService<SeedCatalog>();
-    }
 }

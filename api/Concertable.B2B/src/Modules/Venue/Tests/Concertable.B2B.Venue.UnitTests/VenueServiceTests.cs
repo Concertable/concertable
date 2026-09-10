@@ -17,14 +17,33 @@ namespace Concertable.B2B.Venue.UnitTests;
 
 public sealed class VenueServiceTests
 {
-    private readonly Mock<IVenueRepository> repository = new();
-    private readonly Mock<IVenueReadRepository> readRepository = new();
-    private readonly Mock<IVenueAdminRepository> adminRepository = new();
-    private readonly Mock<IImageService> imageService = new();
-    private readonly Mock<ICurrentUser> currentUser = new();
-    private readonly Mock<ITenantContext> tenantContext = new();
-    private readonly Mock<IGeocodingClient> geocodingClient = new();
-    private readonly Mock<IGeometryProvider> geometryProvider = new();
+    private readonly Mock<IVenueRepository> repository;
+    private readonly Mock<IVenueReadRepository> readRepository;
+    private readonly Mock<IImageService> imageService;
+    private readonly Mock<ICurrentUser> currentUser;
+    private readonly Mock<ITenantContext> tenantContext;
+    private readonly Mock<IGeocodingClient> geocodingClient;
+    private readonly Mock<IGeometryProvider> geometryProvider;
+    private readonly VenueService service;
+
+    public VenueServiceTests()
+    {
+        repository = new Mock<IVenueRepository>();
+        readRepository = new Mock<IVenueReadRepository>();
+        imageService = new Mock<IImageService>();
+        currentUser = new Mock<ICurrentUser>();
+        tenantContext = new Mock<ITenantContext>();
+        geocodingClient = new Mock<IGeocodingClient>();
+        geometryProvider = new Mock<IGeometryProvider>();
+        service = new VenueService(
+            repository.Object,
+            readRepository.Object,
+            imageService.Object,
+            currentUser.Object,
+            tenantContext.Object,
+            geocodingClient.Object,
+            geometryProvider.Object);
+    }
 
     [Fact]
     public async Task GetDetailsAsync_ProfileMissing_ReturnsNone()
@@ -35,7 +54,17 @@ public sealed class VenueServiceTests
             .Setup(value => value.GetDetailsByTenantIdAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((VenueDetails?)null);
 
-        var result = await CreateService().GetDetailsAsync();
+        var result = await service.GetDetailsAsync();
+
+        Assert.True(result.IsNone);
+    }
+
+    [Fact]
+    public async Task GetCurrentIdAsync_NoTenant_ReturnsNone()
+    {
+        tenantContext.SetupGet(context => context.TenantId).Returns((Guid?)null);
+
+        var result = await service.GetCurrentIdAsync();
 
         Assert.True(result.IsNone);
     }
@@ -66,7 +95,7 @@ public sealed class VenueServiceTests
             Avatar = Mock.Of<IFormFile>()
         };
 
-        var result = await CreateService().CreateAsync(request);
+        var result = await this.service.CreateAsync(request);
 
         Assert.True(result.TryGetError(out var error));
         var invalid = Assert.IsType<CreateVenueError.Invalid>(error);
@@ -109,7 +138,7 @@ public sealed class VenueServiceTests
             Banner = Mock.Of<IFormFile>()
         };
 
-        var result = await CreateService().UpdateAsync(request);
+        var result = await this.service.UpdateAsync(request);
 
         Assert.True(result.TryGetError(out var error));
         Assert.IsType<UpdateVenueError.Invalid>(error);
@@ -124,13 +153,4 @@ public sealed class VenueServiceTests
             Times.Never);
     }
 
-    private VenueService CreateService() => new(
-        repository.Object,
-        readRepository.Object,
-        adminRepository.Object,
-        imageService.Object,
-        currentUser.Object,
-        tenantContext.Object,
-        geocodingClient.Object,
-        geometryProvider.Object);
 }

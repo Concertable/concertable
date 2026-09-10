@@ -1,46 +1,61 @@
 using Concertable.B2B.Concert.Infrastructure;
 using Concertable.B2B.Concert.Infrastructure.Data;
+using Concertable.Customer.Ticket.Contracts.Events;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Messaging.Contracts;
+using Concertable.B2B.Tenant.Contracts;
+using Concertable.B2B.Tenant.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.B2B.Concert.Infrastructure.Services.Payment;
 
-internal sealed class TicketSaleProcessor : IIntegrationEventHandler<PaymentSucceededEvent>
+internal sealed class TicketSaleProcessor : IIntegrationEventHandler<TicketPurchasedEvent>
 {
     private readonly ConcertDbContext context;
     private readonly ILogger<TicketSaleProcessor> logger;
+    private readonly IBus bus;
+    private readonly IOutboxUnitOfWorkBehavior outboxBehavior;
 
-    public TicketSaleProcessor(ConcertDbContext context, ILogger<TicketSaleProcessor> logger)
+    public TicketSaleProcessor(
+        ConcertDbContext context,
+        ILogger<TicketSaleProcessor> logger,
+        IBus bus,
+        IOutboxUnitOfWorkBehavior outboxBehavior)
     {
         this.context = context;
         this.logger = logger;
+        this.bus = bus;
+        this.outboxBehavior = outboxBehavior;
     }
 
-    public async Task HandleAsync(PaymentSucceededEvent @event, MessageEnvelope envelope, CancellationToken ct = default)
+    public async Task HandleAsync(TicketPurchasedEvent @event, MessageEnvelope envelope, CancellationToken ct = default)
     {
-        if (@event.Metadata.GetValueOrDefault(PaymentMetadataKeys.Type) != TransactionTypes.Ticket)
-            return;
-
         if (await context.IsInboxMessageProcessedAsync(envelope.MessageId, nameof(TicketSaleProcessor), ct))
             return;
 
-        var meta = @event.Metadata;
-        var concertId = meta.GetValueAs<int>(PaymentMetadataKeys.ConcertId);
-        var quantity = meta.TryGetValue(PaymentMetadataKeys.Quantity, out var q) ? int.Parse(q) : 1;
-
-        context.AddInboxMessage(envelope, nameof(TicketSaleProcessor));
-
-        var concert = await context.Concerts.FirstOrDefaultAsync(c => c.Id == concertId, ct);
-        if (concert is not null)
-            concert.IncrementTicketsSold(quantity);
-        else
-            logger.ConcertNotFoundForTicketSale(concertId);
-
         try
         {
-            await context.SaveChangesAsync(ct);
+            await outboxBehavior.ExecuteAsync(async () =>
+            {
+                context.AddInboxMessage(envelope, nameof(TicketSaleProcessor));
+                var concert = await context.Concerts.FirstOrDefaultAsync(c => c.Id == @event.ConcertId, ct);
+                if (concert is null)
+                {
+                    logger.ConcertNotFoundForTicketSale(@event.ConcertId);
+                    return;
+                }
+
+                concert.IncrementTicketsSold(1);
+                await bus.PublishAsync(new TenantActivityRecordedEvent(new ActivityRecord(
+                    $"ticket-sale:{envelope.MessageId}",
+                    concert.VenueTenantId,
+                    ActivityType.TicketSold,
+                    envelope.OccurredAtUtc,
+                    $"Ticket sold: \"{concert.Name}\" (now {concert.TicketsSold}/{concert.TotalTickets})",
+                    null,
+                    $"/_venue/my/concerts/concert/{concert.Id}")), ct);
+            }, ct);
         }
         catch (DbUpdateException ex) when (ex.IsDuplicateKey())
         {

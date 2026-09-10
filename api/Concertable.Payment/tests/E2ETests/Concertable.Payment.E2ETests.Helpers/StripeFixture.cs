@@ -1,4 +1,3 @@
-using Concertable.Kernel.ValueObjects;
 using Stripe;
 
 namespace Concertable.Payment.E2ETests.Helpers;
@@ -6,6 +5,7 @@ namespace Concertable.Payment.E2ETests.Helpers;
 public sealed class StripeFixture
 {
     private readonly PaymentIntentService paymentIntents;
+    private readonly SetupIntentService setupIntents;
     private readonly TransferService transfers;
     private readonly PaymentMethodService paymentMethods;
     private readonly RefundService refunds;
@@ -17,6 +17,7 @@ public sealed class StripeFixture
     public StripeFixture(IStripeClient client)
     {
         paymentIntents = new PaymentIntentService(client);
+        setupIntents = new SetupIntentService(client);
         transfers = new TransferService(client);
         paymentMethods = new PaymentMethodService(client);
         refunds = new RefundService(client);
@@ -53,16 +54,30 @@ public sealed class StripeFixture
         }
     }
 
-    public Task AttachTestCardAsync(string customerId, CancellationToken ct = default) =>
-        paymentMethods.AttachAsync(
+    public async Task AttachTestCardAsync(string customerId, CancellationToken ct = default)
+    {
+        var attached = await paymentMethods.AttachAsync(
             "pm_card_visa",
             new PaymentMethodAttachOptions { Customer = customerId },
             cancellationToken: ct);
+
+        // A customer session only re-offers a saved method marked `always`.
+        await paymentMethods.UpdateAsync(
+            attached.Id,
+            new PaymentMethodUpdateOptions { AllowRedisplay = "always" },
+            cancellationToken: ct);
+    }
 
     public Task ConfirmHoldAsync(string clientSecret, string paymentMethodId = "pm_card_visa", CancellationToken ct = default) =>
         paymentIntents.ConfirmAsync(
             clientSecret.Split("_secret_")[0],
             new PaymentIntentConfirmOptions { PaymentMethod = paymentMethodId },
+            cancellationToken: ct);
+
+    public Task ConfirmPaymentMethodAsync(string clientSecret, string paymentMethodId = "pm_card_visa", CancellationToken ct = default) =>
+        setupIntents.ConfirmAsync(
+            clientSecret.Split("_secret_")[0],
+            new SetupIntentConfirmOptions { PaymentMethod = paymentMethodId },
             cancellationToken: ct);
 
     public async Task<PaymentIntent?> GetCapturedHoldAsync(
@@ -72,7 +87,7 @@ public sealed class StripeFixture
     {
         var paymentIntent = await paymentIntents.GetAsync(paymentIntentId, cancellationToken: ct);
 
-        return paymentIntent.Amount == Money.Gbp(amount).ToMinorUnits()
+        return paymentIntent.Amount == ToMinorUnits(amount)
             && paymentIntent.Status == "succeeded"
                 ? paymentIntent
                 : null;
@@ -85,7 +100,9 @@ public sealed class StripeFixture
             Destination = stripeAccountId,
             Created = new DateRangeOptions { GreaterThanOrEqual = LastReset }
         });
-        return results.Data.SingleOrDefault(t => t.Amount == Money.Gbp(amount).ToMinorUnits());
+        return results.Data.SingleOrDefault(t => t.Amount == ToMinorUnits(amount));
     }
+
+    private static long ToMinorUnits(decimal amount) => decimal.ToInt64(amount * 100m);
 
 }

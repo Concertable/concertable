@@ -1,3 +1,4 @@
+using Concertable.Auth;
 using Concertable.Auth.Contracts;
 using Concertable.Auth.Data;
 using Concertable.Auth.Data.Entities;
@@ -51,6 +52,7 @@ public sealed class ApiFixture : IAsyncLifetime
         factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(Environments.Integration);
+            builder.ConfigureAppConfiguration((_, config) => config.RelaxRateLimiting(RateLimitPolicies.All));
             builder.ConfigureTestServices(services =>
             {
                 services.AddXunitLogging(outputAccessor);
@@ -251,7 +253,6 @@ public sealed class ApiFixture : IAsyncLifetime
         SetEnvironment("DOTNET_ENVIRONMENT", Environments.Integration);
         SetEnvironment("ASPNETCORE_ENVIRONMENT", Environments.Integration);
         SetEnvironment("ConnectionStrings__AuthDb", sqlFixture.ConnectionString);
-        SetEnvironment("ConnectionStrings__B2BDb", sqlFixture.ConnectionString);
         SetEnvironment(
             "ConnectionStrings__asb",
             "Endpoint=sb://localhost/;SharedAccessKeyName=test;SharedAccessKey=test");

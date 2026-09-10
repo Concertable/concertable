@@ -4,6 +4,30 @@
 
 ## MED
 
+### Venue Deny button never renders — gated on a wire key the server does not send
+
+`app/web/b2b/venue/src/features/concerts/components/ApplicationCard.tsx:60` gates Deny on
+`actions.reject`. `GET /api/application/opportunity/{id}` returns `VenueApplicationActions`
+(`ApplicationResponses.cs`), whose member is `Decline`, so the serialized key is `decline` and
+`reject` is never present. The href behind it is `/api/application/{id}/reject`, which is what made
+the mismatch look right. The button has therefore never rendered on the venue applications list; the
+venue *dashboard* uses its own type that says `decline`, which is why Decline works there.
+
+`app/web/b2b/shared/src/features/concerts/types.ts` currently declares both `decline` and a
+`@deprecated reject`, the latter existing only so this consumer keeps type-checking.
+
+Not fixable on the branch that found it: `carve-fe` builds each app's committed source against the
+`@concertable/*` tiers **as published to the feed**, and the published `web-b2b` still types
+`ApplicationActions` with `reject` only — so flipping line 60 to `actions.decline` fails
+`carve-fe (web/b2b/venue)` with `TS2339: Property 'decline' does not exist`. It needs the package
+republished first.
+
+**Resolves when:** `@concertable/web-b2b` has published a version whose `ApplicationActions` carries
+`decline` and not `reject`, `ApplicationCard.tsx` gates Deny on `actions.decline`, the `reject` member
+is deleted from `ApplicationActions`, and `carve-fe (web/b2b/venue)` is green.
+
+---
+
 ### Web concert detail Buy Tickets below `@3xl` — fixed, narrow-viewport E2E outstanding
 
 Fixed on `Fix/TechDebtSweep`: the single `ConcertCard` now reflows (full-width at the top below
@@ -17,7 +41,7 @@ every width and stays one unambiguous testid (Playwright strict mode stays happy
 ### Browser-storage classification is detection-by-regex, not prevention-by-construction
 
 First-party device storage has no single sanctioned accessor: `consent.ts` (`cookie-consent`),
-`ThemeProvider` (`theme`), and `useTenantStore` (zustand `persist` → `concertable.active-tenant`) each
+`ThemeProvider` (`theme`), and the B2B tenant session (`concertable.active-tenant`) each
 write `localStorage` their own way. The "new storage must be classified" guarantee is enforced by a
 **regex drift-guard** (`shared/src/lib/storageManifest.test.ts`) that scans for known write patterns
 (`setItem`, `document.cookie=`, `persist(`, `indexedDB.open(`) against `STORAGE_MANIFEST` — detection
@@ -36,20 +60,3 @@ remain the catch-all for those. This hardens only the first-party path.
 
 **Resolves when:** first-party storage writes go through the classified accessor and the drift-guard's
 role is reduced to covering the enumerated third-party/library writers.
-
----
-
-### The customer SPA mounts the Mailbox against an endpoint its backend does not have
-
-`Navbar.tsx` renders `{user && <Mailbox />}` and lives in `app/web/shared` — the universal tier every
-SPA compiles — so the customer app mounts it for any signed-in user. `useMailbox` fires
-`useUnreadCountQuery` on mount, which calls `/message/user/unread-count` on the own-site `apiClient`;
-for the customer app that is the Customer service, which has **no `MessageController` at all**. So every
-customer page load makes a request that 404s, and the bell renders for a product with no messaging.
-
-Found while adding the Online Safety Act report control to the same component; it predates that work.
-
-**Resolves when:** the Mailbox is injected by the manager apps rather than declared in the universal
-Navbar (matching how `app/web/shared/AGENTS.md` says app-specific affordances are composed — a slot the
-owning app fills), or messaging genuinely ships on the customer side. A role check inside shared code is
-explicitly not the fix — that is the disease that doc warns about.

@@ -2,7 +2,7 @@ export type ConsentCategory = "analytics" | "marketing";
 
 export type ConsentDecision = Record<ConsentCategory, boolean>;
 
-export interface ConsentRecord {
+export interface StoredConsent {
   version: number;
   decidedAtUtc: string;
   categories: ConsentDecision;
@@ -22,18 +22,18 @@ export const DENIED_DECISION: ConsentDecision = {
   marketing: false,
 };
 
-type ConsentListener = (record: ConsentRecord) => void;
+type ConsentListener = (record: StoredConsent) => void;
 
 const listeners = new Set<ConsentListener>();
 
-export function onConsentChange(listener: ConsentListener): () => void {
+function subscribe(listener: ConsentListener): () => void {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
   };
 }
 
-function isConsentRecord(value: unknown): value is ConsentRecord {
+function isStoredConsent(value: unknown): value is StoredConsent {
   if (typeof value !== "object" || value === null) return false;
   const record = value as Record<string, unknown>;
   if (typeof record.version !== "number") return false;
@@ -46,25 +46,29 @@ function isConsentRecord(value: unknown): value is ConsentRecord {
   );
 }
 
-export function readConsent(): ConsentRecord | null {
+function read(): StoredConsent | undefined {
   const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
-  if (raw === null) return null;
+  if (raw === null) return undefined;
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch {
-    return null;
+    return undefined;
   }
-  if (!isConsentRecord(parsed) || parsed.version !== CONSENT_VERSION) return null;
+  if (!isStoredConsent(parsed) || parsed.version !== CONSENT_VERSION)
+    return undefined;
   return parsed;
 }
 
-export function writeConsent(decision: ConsentDecision): ConsentRecord {
+function write(decision: ConsentDecision): StoredConsent {
   const categories = CONSENT_CATEGORIES.reduce(
-    (result, category) => ({ ...result, [category]: decision[category] === true }),
+    (result, category) => ({
+      ...result,
+      [category]: decision[category] === true,
+    }),
     {} as ConsentDecision,
   );
-  const record: ConsentRecord = {
+  const record: StoredConsent = {
     version: CONSENT_VERSION,
     decidedAtUtc: new Date().toISOString(),
     categories,
@@ -74,13 +78,11 @@ export function writeConsent(decision: ConsentDecision): ConsentRecord {
   return record;
 }
 
-export function hasConsent(
+function has(
   category: ConsentCategory,
-  record: ConsentRecord | null = readConsent(),
+  record: StoredConsent | undefined = read(),
 ): boolean {
   return record?.categories[category] === true;
 }
 
-export function isDecided(record: ConsentRecord | null): boolean {
-  return record !== null;
-}
+export const consent = { has, read, subscribe, write };

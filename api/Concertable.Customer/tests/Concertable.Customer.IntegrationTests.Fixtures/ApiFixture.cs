@@ -14,6 +14,7 @@ using Concertable.Customer.Seed.Infrastructure;
 using Concertable.Shared.Email.Application;
 using Concertable.Shared.Geocoding.Application;
 using Concertable.Kernel;
+using Concertable.Customer.Web;
 using Concertable.Testing.Integration;
 using Concertable.Testing.Integration.Logging;
 using Concertable.Testing.Integration.Mocks;
@@ -29,7 +30,7 @@ using Xunit.Abstractions;
 
 namespace Concertable.Customer.IntegrationTests.Fixtures;
 
-public sealed class ApiFixture : IAsyncLifetime
+public class ApiFixture : IAsyncLifetime
 {
     private SqlFixture sqlFixture = null!;
     private WebApplicationFactory<Program> factory = null!;
@@ -40,7 +41,10 @@ public sealed class ApiFixture : IAsyncLifetime
     public void DetachOutput() => outputAccessor.Output = null;
 
     public IMockNotificationClient NotificationClient { get; } = new MockNotificationClient();
+    public MockPaymentSessionClient PaymentSessionClient { get; } = new();
     public SeedState SeedState { get; private set; } = null!;
+
+    protected virtual int? RateLimitPermit => null;
 
     public async Task InitializeAsync()
     {
@@ -56,6 +60,10 @@ public sealed class ApiFixture : IAsyncLifetime
                 {
                     ["ConnectionStrings:CustomerDb"] = sqlFixture.ConnectionString,
                 });
+                if (RateLimitPermit is int permit)
+                    config.ConstrainRateLimiting(RateLimitPolicies.All, permit);
+                else
+                    config.RelaxRateLimiting(RateLimitPolicies.All);
             });
 
             builder.ConfigureTestServices(services =>
@@ -63,7 +71,7 @@ public sealed class ApiFixture : IAsyncLifetime
                 services.AddXunitLogging(outputAccessor);
                 services.RemoveAzureServiceBus();
                 services.Replace(ServiceDescriptor.Scoped<IGeocodingClient, MockGeocodingClient>());
-                services.AddScoped<ICustomerPaymentOperationsClient, MockCustomerPaymentClient>();
+                services.AddSingleton<IPaymentSessionOperationsClient>(PaymentSessionClient);
                 services.AddSingleton<IEmailTransport, MockEmailSender>();
                 services.Replace(ServiceDescriptor.Singleton<INotificationClient>(NotificationClient));
 
@@ -89,6 +97,7 @@ public sealed class ApiFixture : IAsyncLifetime
     {
         await sqlFixture.ResetAsync();
         NotificationClient.Reset();
+        PaymentSessionClient.Reset();
 
         scope?.Dispose();
         scope = factory.Services.CreateScope();

@@ -1,8 +1,4 @@
-import {
-  hasConsent,
-  onConsentChange,
-  type ConsentCategory,
-} from "@/lib/consent";
+import { consent, type ConsentCategory } from "@/lib/consent";
 
 export interface ConsentGatedResource {
   category: ConsentCategory;
@@ -10,14 +6,9 @@ export interface ConsentGatedResource {
   deactivate?: () => void;
 }
 
-/**
- * Runs `activate` only while `category` is granted and `deactivate` when it is
- * withdrawn, firing each once per edge. Applies the current decision immediately,
- * then tracks later changes. Returns a teardown that stops tracking (it does not
- * deactivate). This is the primitive that gives `hasConsent` teeth: non-essential
- * tech registers here and loads only after consent, never as a static import.
- */
-export function registerConsentGated(resource: ConsentGatedResource): () => void {
+export function registerConsentGated(
+  resource: ConsentGatedResource,
+): () => void {
   let active = false;
 
   const apply = (granted: boolean) => {
@@ -27,9 +18,9 @@ export function registerConsentGated(resource: ConsentGatedResource): () => void
     else resource.deactivate?.();
   };
 
-  apply(hasConsent(resource.category));
-  return onConsentChange((record) =>
-    apply(hasConsent(resource.category, record)),
+  apply(consent.has(resource.category));
+  return consent.subscribe((record) =>
+    apply(consent.has(resource.category, record)),
   );
 }
 
@@ -49,12 +40,12 @@ export interface ConsentGatedScript {
 export function registerConsentGatedScript(
   script: ConsentGatedScript,
 ): () => void {
-  let element: HTMLScriptElement | null = null;
+  let element: HTMLScriptElement | undefined;
 
   return registerConsentGated({
     category: script.category,
     activate: () => {
-      if (typeof document === "undefined" || element !== null) return;
+      if (typeof document === "undefined" || element !== undefined) return;
       element = document.createElement("script");
       element.src = script.src;
       element.async = true;
@@ -66,7 +57,7 @@ export function registerConsentGatedScript(
     },
     deactivate: () => {
       element?.remove();
-      element = null;
+      element = undefined;
     },
   });
 }

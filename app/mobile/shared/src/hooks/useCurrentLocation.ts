@@ -12,7 +12,7 @@ export interface ResolvedLocation {
 export function useCurrentLocation() {
   const [locating, setLocating] = useState(false);
 
-  const requestLocation = useCallback(async (): Promise<ResolvedLocation | null> => {
+  const requestLocation = useCallback(async (): Promise<ResolvedLocation | undefined> => {
     setLocating(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -21,7 +21,7 @@ export function useCurrentLocation() {
           "Location permission denied",
           "Enable location access in your device settings to use this feature.",
         );
-        return null;
+        return undefined;
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const lat = loc.coords.latitude;
@@ -30,7 +30,7 @@ export function useCurrentLocation() {
       return { lat, lng, label };
     } catch {
       Alert.alert("Couldn't get location", "Please try again.");
-      return null;
+      return undefined;
     } finally {
       setLocating(false);
     }

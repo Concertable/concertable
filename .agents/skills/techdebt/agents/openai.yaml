@@ -1,7 +1,0 @@
-interface:
-  display_name: "Tech Debt"
-  short_description: "Resolve one tech-debt item through a PR"
-  default_prompt: "Use $techdebt to run the canonical Concertable tech-debt command."
-
-policy:
-  allow_implicit_invocation: false

@@ -15,24 +15,56 @@ if (!installTarget || !packageName) {
   );
 }
 
-// One representative export per published tier. Node checks stay light (a pure util / constant /
-// type) so a throwaway NodeNext consumer resolves the tier plus its @concertable deps from the feed
-// without dragging heavy component transitive types in. Mobile is metro-only (react-native runtime).
-function b2bChecks(name, tenantExport = "features/tenant") {
+// One representative export per published tier. Node checks normally stay light so a throwaway
+// NodeNext consumer resolves the tier plus its @concertable deps from the feed. The cross-platform
+// B2B producer deliberately compiles and bundles its active-profile facades because those entrypoints
+// and their runtime dependencies are the capability its downstream consumer stage requires.
+function b2bChecks(
+  name,
+  tenantExport = "features/tenant",
+  verifyActiveProfiles = false,
+) {
   const tenantModule = `${name}/${tenantExport}`;
+  const activeProfileNodeChecks = verifyActiveProfiles
+    ? [
+        `import { artistApi, useMyArtist } from "${name}/features/artists";`,
+        `import type { CreateArtistRequest } from "${name}/features/artists/types";`,
+        `import { venueApi, useMyVenue } from "${name}/features/venues";`,
+        `import type { CreateVenueRequest } from "${name}/features/venues/types";`,
+        'if (typeof artistApi.createArtist !== "function" || typeof useMyArtist !== "function") throw new Error("Missing B2B artist facade");',
+        'if (typeof venueApi.createVenue !== "function" || typeof useMyVenue !== "function") throw new Error("Missing B2B venue facade");',
+        "const artistRequest = {} as CreateArtistRequest;",
+        "const venueRequest = {} as CreateVenueRequest;",
+        "void artistRequest;",
+        "void venueRequest;",
+      ]
+    : [];
+  const activeProfileMetroChecks = verifyActiveProfiles
+    ? [
+        `import { artistApi, useMyArtist } from "${name}/features/artists";`,
+        `import { venueApi, useMyVenue } from "${name}/features/venues";`,
+      ]
+    : [];
 
   return {
     node: [
       `import { TENANT_HEADER } from "${tenantModule}";`,
+      `import type { TenantRole } from "${name}/features/tenant/types";`,
       `if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected ${name} TENANT_HEADER");`,
+      `const role = "owner" as TenantRole;`,
+      "void role;",
+      ...activeProfileNodeChecks,
     ],
     metro: [
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
       'import { Text } from "react-native";',
       `import { TENANT_HEADER } from "${tenantModule}";`,
+      ...activeProfileMetroChecks,
       "function App() {",
-      "  return React.createElement(Text, null, TENANT_HEADER);",
+      verifyActiveProfiles
+        ? '  return React.createElement(Text, null, `${TENANT_HEADER}:${typeof artistApi.createArtist}:${typeof venueApi.createVenue}:${typeof useMyArtist}:${typeof useMyVenue}`);'
+        : "  return React.createElement(Text, null, TENANT_HEADER);",
       "}",
       "registerRootComponent(App);",
     ],
@@ -40,38 +72,54 @@ function b2bChecks(name, tenantExport = "features/tenant") {
 }
 
 const CHECKS = {
-  "@concertable/shared": {
+  "@concertable/build-config": {
     node: [
-      'import { genreLabel } from "@concertable/shared";',
-      'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import type { Genre } from "@concertable/shared/types";',
-      'import { useAuthStore, type User } from "@concertable/shared/features/auth";',
-      'const genre: Genre = "Rock";',
-      'if (genreLabel(genre) !== genre) throw new Error("Unexpected genre label");',
-      'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
-      'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
-      "const user = {} as User;",
-      "void user;",
+      'import { sourceAlias } from "@concertable/build-config/vite";',
+      'import { nodeTests } from "@concertable/build-config/vitest";',
+      'import { aspNetDevelopmentHttps } from "@concertable/build-config/vite-development-https";',
+      'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
+      'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+      'const certificate: Buffer = aspNetDevelopmentHttps(".").cert;',
+      'void certificate;',
     ],
     nodeRuntime: [
-      'import { genreLabel } from "@concertable/shared";',
+      'import { sourceAlias } from "@concertable/build-config/vite";',
+      'import { nodeTests } from "@concertable/build-config/vitest";',
+      'import { aspNetDevelopmentHttps } from "@concertable/build-config/vite-development-https";',
+      'if (sourceAlias(".").find !== "@") throw new Error("Unexpected Vite alias");',
+      'if (nodeTests(".").test.environment !== "node") throw new Error("Unexpected Vitest environment");',
+      'if (typeof aspNetDevelopmentHttps !== "function") throw new Error("Missing dev-certificate helper");',
+    ],
+    commonJsRuntime: [
+      'const createDependencyCruiserConfig = require("@concertable/build-config/dependency-cruiser");',
+      'const withPackageResolution = require("@concertable/build-config/metro");',
+      'const boundaryConfig = createDependencyCruiserConfig({ workspaces: ["app/shared"] });',
+      'if (boundaryConfig.forbidden[0].severity !== "error") throw new Error("Unexpected boundary severity");',
+      'const metroConfig = withPackageResolution({ resolver: {} }, __dirname, ["react"]);',
+      'if (!metroConfig.resolver.nodeModulesPaths.length) throw new Error("Missing Metro package roots");',
+    ],
+    extendsTypeScriptConfig: true,
+  },
+  "@concertable/shared": {
+    node: [
+      'import { GENRE_LABELS, type Genre } from "@concertable/shared/types";',
       'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import { useAuthStore } from "@concertable/shared/features/auth";',
-      'if (genreLabel("Rock") !== "Rock") throw new Error("Unexpected genre label");',
+      'import type { User } from "@concertable/shared/features/auth/types";',
+      'const genre: Genre = "rock";',
+      'if (GENRE_LABELS[genre] !== "Rock") throw new Error("Unexpected genre labels");',
       'if (typeof useMountEffect !== "function") throw new Error("Missing useMountEffect export");',
-      'if (typeof useAuthStore !== "function") throw new Error("Missing useAuthStore export");',
+      "const user = {} as User;",
+      "void user;",
     ],
     metro: [
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
       'import { Text } from "react-native";',
-      'import { useAuthStore } from "@concertable/shared/features/auth";',
       'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";',
-      'import { genreLabel } from "@concertable/shared/types";',
+      'import { GENRE_LABELS } from "@concertable/shared/types";',
       "function App() {",
       "  useMountEffect(() => undefined);",
-      "  void useAuthStore;",
-      '  return React.createElement(Text, null, genreLabel("Rock"));',
+      '  return React.createElement(Text, null, GENRE_LABELS.rock);',
       "}",
       "registerRootComponent(App);",
     ],
@@ -79,17 +127,61 @@ const CHECKS = {
   "@concertable/web": {
     node: [
       'import { cn } from "@concertable/web/lib/utils";',
+      'import type { User } from "@concertable/web/features/auth/types";',
+      'import { ReviewRouteProvider, b2bReviewBasePath, customerReviewBasePath } from "@concertable/web/features/reviews";',
+      'import { useMeQuery } from "@concertable/web/features/user";',
+      'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
+      'if (typeof ReviewRouteProvider !== "function") throw new Error("Missing review route provider export");',
+      'if (typeof useMeQuery !== "function") throw new Error("Missing useMeQuery export");',
+      'const user = {} as User;',
+      'void user;',
+      'if (b2bReviewBasePath("artist", 12) !== "/artist/12/review") throw new Error("Unexpected B2B review route");',
+      'if (customerReviewBasePath("artist", 12) !== "/artists/12/reviews") throw new Error("Unexpected customer review route");',
+    ],
+    nodeRuntime: [
+      'import { cn } from "@concertable/web/lib/utils";',
       'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
     ],
   },
   "@concertable/customer": {
     node: [
+      'import { paymentOperationReferencesMatch } from "@concertable/customer/features/tickets";',
       'import { customerClient } from "@concertable/customer/lib/customerClient";',
+      'import type { PaymentOperationReference, TicketCheckout } from "@concertable/customer/features/tickets";',
+      'import type { TicketPurchaseFailedPayload } from "@concertable/customer/features/notifications/types";',
+      'import type { CreateReviewRequest } from "@concertable/customer/features/reviews/types";',
       'if (!customerClient) throw new Error("Missing @concertable/customer customerClient export");',
+      'const reference: PaymentOperationReference = { operationType: "ticket-purchase", clientReference: "buyer" };',
+      'if (!paymentOperationReferencesMatch(reference, reference)) throw new Error("Payment reference comparison failed");',
+      'if (paymentOperationReferencesMatch(reference, { ...reference, operationType: "other" })) throw new Error("Payment operation type comparison failed");',
+      'if (paymentOperationReferencesMatch(reference, { ...reference, clientReference: "other" })) throw new Error("Payment client reference comparison failed");',
+      'const checkout = {} as TicketCheckout;',
+      'const failure = {} as TicketPurchaseFailedPayload;',
+      'const request = {} as CreateReviewRequest;',
+      'void checkout;',
+      'void failure;',
+      'void request;',
     ],
   },
-  "@concertable/b2b": b2bChecks("@concertable/b2b"),
-  "@concertable/web-b2b": b2bChecks("@concertable/web-b2b", "features/tenant/constants"),
+  "@concertable/b2b": b2bChecks(
+    "@concertable/b2b",
+    "features/tenant",
+    true,
+  ),
+  // web-b2b re-exports TENANT_HEADER from @concertable/b2b rather than owning it, and its
+  // features/tenant barrel cannot be imported under plain Node: the component chain reaches
+  // b2bClient, which calls configureWebClient(import.meta.env.VITE_API_URL) at module load. So this
+  // asserts what the tier does own, from the load-safe leaf. @concertable/b2b's own check covers the
+  // header's value.
+  "@concertable/web-b2b": {
+    node: [
+      'import { TENANT_ROLE_LABELS } from "@concertable/web-b2b/features/tenant/constants";',
+      'import type { TenantRole } from "@concertable/web-b2b/features/tenant/types";',
+      'if (TENANT_ROLE_LABELS.owner !== "Owner") throw new Error("Unexpected web-b2b TENANT_ROLE_LABELS");',
+      'const role = "owner" as TenantRole;',
+      "void role;",
+    ],
+  },
   "@concertable/mobile": {
     metro: [
       'import { registerRootComponent } from "expo";',
@@ -149,12 +241,17 @@ function verifyNodeConsumer() {
       "--save-exact",
       installTarget,
       "react@19.1.0",
+      "react-dom@19.1.0",
       "typescript@5.9",
+      "@types/node@24",
       "@types/react@19",
     ],
     directory,
   );
   writeJson(directory, "tsconfig.json", {
+    ...(checks.extendsTypeScriptConfig
+      ? { extends: "@concertable/build-config/typescript" }
+      : {}),
     compilerOptions: {
       module: "NodeNext",
       moduleResolution: "NodeNext",
@@ -162,15 +259,25 @@ function verifyNodeConsumer() {
       strict: true,
       skipLibCheck: true,
       jsx: "react-jsx",
+      outDir: "dist",
+      ...(checks.extendsTypeScriptConfig
+        ? { noEmit: false, allowImportingTsExtensions: false }
+        : {}),
     },
-    include: ["index.ts"],
+    include: ["*.ts"],
   });
   writeFileSync(join(directory, "index.ts"), checks.node.join("\n") + "\n");
-  // Runtime ESM smoke test — plain JS, so use an explicit runtime profile when the type-check
-  // profile carries type-only syntax; otherwise the type-check lines are already valid JS.
-  writeFileSync(join(directory, "index.mjs"), (checks.nodeRuntime ?? checks.node).join("\n") + "\n");
-  run(["exec", "--", "tsc", "--noEmit"], directory);
-  run(["exec", "--", "node", "index.mjs"], directory);
+  if (checks.nodeRuntime) {
+    writeFileSync(join(directory, "runtime.ts"), checks.nodeRuntime.join("\n") + "\n");
+  }
+  if (checks.commonJsRuntime) {
+    writeFileSync(join(directory, "runtime.cjs"), checks.commonJsRuntime.join("\n") + "\n");
+  }
+  run(["exec", "--", "tsc"], directory);
+  run(["exec", "--", "node", checks.nodeRuntime ? "dist/runtime.js" : "dist/index.js"], directory);
+  if (checks.commonJsRuntime) {
+    run(["exec", "--", "node", "runtime.cjs"], directory);
+  }
 }
 
 function verifyMetroConsumer() {

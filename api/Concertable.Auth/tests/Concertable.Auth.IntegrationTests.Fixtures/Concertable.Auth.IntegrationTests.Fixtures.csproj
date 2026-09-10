@@ -10,8 +10,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Respawn" />
     <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="xunit" />
@@ -19,8 +21,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Concertable.Auth\Concertable.Auth.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared\tests\Concertable.Testing\Concertable.Testing.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared\tests\Concertable.Testing.Integration\Concertable.Testing.Integration.csproj" />
+    <PackageReference Include="Concertable.Testing" />
+    <PackageReference Include="Concertable.Testing.Integration" />
   </ItemGroup>
 
 </Project>

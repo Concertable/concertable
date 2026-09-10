@@ -11,9 +11,15 @@ public sealed class TenantContextTests
 {
     private readonly Mock<ICurrentUser> currentUser = new();
     private readonly Mock<IHttpContextAccessor> httpContextAccessor = new();
-    private readonly Mock<ITenantRepository> repository = new();
+    private readonly Mock<IMembershipRepository> repository = new();
     private readonly DefaultHttpContext httpContext = new();
     private static readonly IPermissionCatalog Catalog = BuildCatalog();
+    private readonly TenantContextAccessor accessor;
+
+    public TenantContextTests()
+    {
+        accessor = new TenantContextAccessor(httpContextAccessor.Object);
+    }
 
     private static IPermissionCatalog BuildCatalog()
     {
@@ -22,7 +28,7 @@ public sealed class TenantContextTests
     }
 
     private TenantContext CreateContext() =>
-        new(currentUser.Object, httpContextAccessor.Object, repository.Object, Catalog);
+        new(currentUser.Object, httpContextAccessor.Object, repository.Object, Catalog, accessor);
 
     private void WithHttpRequest() =>
         httpContextAccessor.SetupGet(h => h.HttpContext).Returns(httpContext);
@@ -68,6 +74,7 @@ public sealed class TenantContextTests
         Assert.True(ctx.HasTenant);
         Assert.False(ctx.IsHost);
         Assert.Equal(TenantRole.Owner, ((IMembershipContext)context).Role);
+        Assert.Equal(TenantType.Venue, ((IMembershipContext)context).Type);
     }
 
     [Fact]
@@ -87,6 +94,7 @@ public sealed class TenantContextTests
         Assert.Null(ctx.TenantId);
         Assert.False(ctx.HasTenant);
         Assert.Null(((IMembershipContext)context).Role);
+        Assert.Null(((IMembershipContext)context).Type);
     }
 
     [Fact]
@@ -106,6 +114,7 @@ public sealed class TenantContextTests
         ITenantContext ctx = context;
         Assert.Equal(headerTenant, ctx.TenantId);
         Assert.Equal(TenantRole.Manager, ((IMembershipContext)context).Role);
+        Assert.Equal(TenantType.Artist, ((IMembershipContext)context).Type);
         Assert.True(((IMembershipContext)context).HasPermission(ArtistPermissions.ApplicationsSubmit, TenantType.Artist));
         repository.Verify(
             r => r.GetMembershipsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
@@ -216,7 +225,7 @@ public sealed class TenantContextTests
     }
 
     [Fact]
-    public async Task HasPermission_WrongPersona_Denies_RightPersona_Grants()
+    public async Task HasPermission_WrongTenantType_Denies_RightTenantType_Grants()
     {
         var membership = await ResolvedMembership(TenantRole.Owner, TenantType.Artist);
 

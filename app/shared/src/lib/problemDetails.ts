@@ -21,12 +21,13 @@ export type ApiErrorMessage =
 export function resolveApiError(
   error: unknown,
   meta: ErrorMeta | undefined,
-): ApiErrorMessage | null {
-  if (meta?.silenceErrors) return null;
-  if (!isApiError(error)) return null;
+): ApiErrorMessage | undefined {
+  if (meta?.silenceErrors) return undefined;
+  if (!isApiError(error)) return undefined;
   const { status } = error;
-  if (status === 401) return null;
-  if (status !== null && meta?.expectedErrors?.includes(status)) return null;
+  if (status === 401) return undefined;
+  if (status !== undefined && meta?.expectedErrors?.includes(status))
+    return undefined;
 
   const { title, detail, errors } = error.details;
   if (errors?.length) return { title: title ?? "Error", errors };

@@ -1,6 +1,6 @@
 import { Keyboard, Pressable, TextInput, View } from "react-native";
 import { Search, SlidersHorizontal, X } from "lucide-react-native";
-import { useSearchFiltersStore } from "@concertable/shared/features/search";
+import { useSearchFilters } from "@concertable/shared/features/search";
 import { theme } from "../../../lib/theme";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function SearchBar({ focused, onFocusChange, onOpenFilters }: Props) {
-  const { filters, setFilters } = useSearchFiltersStore();
+  const { filters, updateFilters } = useSearchFilters();
 
   const hasActiveFilters =
     filters.headerType !== "concert" ||
@@ -39,14 +39,14 @@ export function SearchBar({ focused, onFocusChange, onOpenFilters }: Props) {
           placeholder="Search concerts, artists, venues…"
           placeholderTextColor={theme.mutedForeground}
           value={filters.query ?? ""}
-          onChangeText={(text) => setFilters({ ...filters, query: text || undefined })}
+          onChangeText={(text) => updateFilters({ query: text || undefined })}
           onFocus={() => onFocusChange(true)}
           onBlur={() => onFocusChange(false)}
           returnKeyType="search"
           autoCapitalize="none"
         />
         {!!filters.query && (
-          <Pressable onPress={() => setFilters({ ...filters, query: undefined })} style={{ padding: 4 }}>
+          <Pressable onPress={() => updateFilters({ query: undefined })} style={{ padding: 4 }}>
             <X size={15} color={theme.mutedForeground} />
           </Pressable>
         )}

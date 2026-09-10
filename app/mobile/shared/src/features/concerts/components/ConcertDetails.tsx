@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker } from "react-native-maps";
 import { Image } from "expo-image";
 import { CalendarDays, MapPin, Music, TriangleAlert } from "lucide-react-native";
-import type { Concert } from "@concertable/shared/features/concerts";
+import type { Concert } from "@concertable/shared/features/concerts/types";
 import { useImageUrlQuery } from "@concertable/shared/hooks";
 import { Hero } from "@/components/ui/Hero";
 import { RatingStars } from "@/components/ui/RatingStars";

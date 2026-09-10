@@ -1,7 +1,7 @@
 # Concertable.B2B — Architecture
 
-> Cross-service plan and design rationale: [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../docs/MICROSERVICES_ARCHITECTURE.md)
-> Internal module rules: [`api/agents/CONVENTIONS.md`](../agents/CONVENTIONS.md)
+> Cross-service design rationale and decision history: the `microservices-architecture` skill
+> Internal module rules: the `dotnet-standards:module-structure` and `dotnet:module-structure` skills
 > Outstanding gaps: [`TECH_DEBT.md`](./TECH_DEBT.md)
 
 ---
@@ -22,8 +22,8 @@ B2B owns the venue/artist side of Concertable: opportunities, applications, book
 | `Concertable.B2B.AppHost` | Aspire AppHost | Local-dev orchestrator only. |
 
 **Database:** `B2BDb` (SQL Server). Artist, Venue, and Concert each use a tenant-bound tracked/write
-`<Module>DbContext` plus a tenant-independent read-only `<Module>ReadDbContext`. Venue also has
-`VenueAdminDbContext` for tenant-independent administrative writes.
+`<Module>DbContext` plus a tenant-independent read-only `<Module>ReadDbContext`. Conversations also has
+`ConversationsPrivilegedDbContext` for tenant-independent administrative (moderation) writes.
 
 ---
 
@@ -99,7 +99,7 @@ No sync calls to Customer or Search. B2B and Customer communicate **exclusively 
 
 ## Internal architecture
 
-B2B is a modular monolith *inside* the service. Rules in `api/agents/CONVENTIONS.md` apply verbatim:
+B2B is a modular monolith *inside* the service. The `dotnet-standards:module-structure` and `dotnet:module-structure` skills apply verbatim:
 
 - Cross-module calls: `IXModule` facade only (in `<Module>.Contracts`)
 - Per-module `XDbContext` with its own schema; all point at `B2BDb`

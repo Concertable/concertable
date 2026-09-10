@@ -3,7 +3,7 @@
 > **Roadmap** for making every Stripe-backed workflow durable, idempotent, observable, and reusable
 > across Customer web, Customer mobile, and both B2B web applications. This is the living epic
 > tracker, not an implementation plan. Each buildable item spins off its own `_PLAN.md` and
-> `_PROGRESS.md`; see [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> `_PROGRESS.md`; the roadmap tier is the `plans` skill.
 >
 > **Goal:** a browser, mobile process, SignalR connection, webhook, service process, or provider call
 > may be delayed, duplicated, reordered, disconnected, or restarted without losing the operation,
@@ -57,8 +57,8 @@ actual `origin/main` baseline. It must not infer current delivery state from thi
 | Status | Key | Item | Depends on |
 |---|---|---|---|
 | [x] | `payments/provider-contract-baseline` | Lock Stripe product choices, operation vocabulary, transition tables, package contracts, and executable architecture tests | PR #597 merged; platform `0.1.0-alpha.0.1061`; sync PR #645 merged |
-| [ ] | `payments/payment-session-state` | Persist and idempotently create/reuse PaymentIntent and SetupIntent sessions; publish an agnostic status-read contract | provider contract baseline |
-| [ ] | `payments/provider-reconciliation` | Complete webhook coverage and reconcile stale PaymentIntent, SetupIntent, and Refund state | payment session state; PR #544 foundation |
+| [x] | `payments/payment-session-state` | Persist and idempotently create/reuse PaymentIntent and SetupIntent sessions; publish an agnostic status-read contract | PR #721 merged; Payment `0.1.0-alpha.0.1195`; sync PR #794 merged |
+| [ ] | `payments/provider-reconciliation` | Complete webhook coverage and reconcile stale PaymentIntent, SetupIntent, and Refund state | Phase 1 PR #831 merged; Payment `0.1.0-alpha.0.1242`; sync PR #846 merged; PR #544 foundation |
 | [ ] | `payments/customer-ticket-attempt` | Add the Customer-owned durable ticket-purchase attempt and fulfillment status API | published/synced Payment session contracts |
 | [ ] | `payments/frontend-orchestration-core` | Add reusable headless TanStack Query payment orchestration and optional invalidation adapters | provider contract baseline; consumer status shape locked |
 | [ ] | `payments/customer-web-checkout` | Extract the Stripe web adapter and migrate Customer web to durable ticket-attempt state | customer ticket attempt; frontend core |
@@ -462,6 +462,8 @@ for later implementation items.
 
 **Key:** `payments/provider-reconciliation`
 
+Phase 1 centralized eager session reconciliation and shipped through PR #831 and platform sync PR #846. Webhook/outbox reconciliation, scheduled session and refund recovery, and final delivery verification remain.
+
 - Implement pure normalizers/reducers and complete provider event coverage.
 - Route eager results, webhook work, and scheduled sweeps through the same synchronization services.
 - Make semantic outcome publication idempotent and ordering-safe.
@@ -575,17 +577,19 @@ operation appears in the ownership/reconciliation inventory.
 provider-contract-baseline
     +--> payment-session-state --> provider-reconciliation --> b2b-payment-workflows
     |             |
-    |             +--> customer-ticket-attempt --> customer-web-checkout
-    |                                      |       customer-mobile-checkout
-    |                                      |
-    +--> frontend-orchestration-core ------+
+    |             +--> customer-ticket-attempt --+--> customer-web-checkout
+    |                                              +--> customer-mobile-checkout
+    |
+    +--> frontend-orchestration-core -----------+--> customer-web-checkout
+                                                  +--> customer-mobile-checkout
+                                                  +--> b2b-payment-workflows
 
 all migration items --> reliability-closeout
 ```
 
 Once the baseline locks the consumer status contract, frontend orchestration can proceed in parallel
 with Payment persistence. Customer web and mobile can proceed in parallel after the Customer attempt
-API exists. B2B may proceed independently once its package/consumer gates are clear.
+API exists. B2B remains independent of Customer work, but may proceed only after provider reconciliation and frontend orchestration are terminal and its package/consumer gates are clear.
 
 ### Delivery DAG
 

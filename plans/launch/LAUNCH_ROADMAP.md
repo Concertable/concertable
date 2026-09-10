@@ -1,6 +1,6 @@
 # Concertable Launch Roadmap
 
-> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; see [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; the roadmap tier is the `plans` skill.
 >
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
@@ -32,29 +32,50 @@ table-stakes items were resolved in the same pass.
 - [x] ✅ **DAC7 onboarding completion** — shipped (`Feature/Dac7Onboarding`): fail-closed DAC7 payout gate + jurisdiction seam (UK-only, keyed strategy) + tax-details nag on both dashboards; VAT collapsed to a single number. NINO / UTR / Company-Reg on `Tenant.Compliance`; no payout until the payee tenant is jurisdiction-complete (no de-minimis for services — reportable from £1).
 - [x] ✅ **Self-billed VAT invoice engine** — complete (`Feature/VatAndSelfBilledInvoicing` + `Feature/SelfBillingAgreement`): invoice generation (per-settlement immutable invoice, gap-free per-supplier numbering, VAT-status branching (inclusive-gross decompose), HMRC self-billing legends + both parties' VAT numbers, PDF via `IPdfRenderer` lazy render-on-download `invoices/` prefix, two-party-scoped `GET /api/Concert/{id}/invoice[/pdf]` + HATEOAS link — items 1, 3, 4) **plus** the per-supplier self-billing *agreement* + 12-month renewal consent: immutable e-signed `SelfBillingAgreementEntity` (single-owner, frozen identity + supplier e-signature, `ExpiresAtUtc = AcceptedAtUtc + 12 months`, lazy PDF under `self-billing-agreements/`), append-only grant/renew surface in both manager SPAs (HATEOAS grant/renew/pdf + dashboard nag), and a **fail-closed settlement gate** — `FinishExecutor` mints no self-billed invoice unless the supplier holds a current agreement, deferring + self-healing on the hourly sweep exactly like the tax-compliance gate. The invoice's "raised under a self-billing agreement" legend is now always truthful.
 - [x] ✅ **`holdsMusicLicence` attestation** `launch/music-licence-attestation` on `Tenant.Compliance` — shipped (`Feature/launch_music-licence-attestation`): one `bool` on the shipped `TaxCompliance` VO, threaded through the org read/update DTO + mapper and the b2b/shared Org setup form (new "Music licence" checkbox). Record-only — the venue's responsibility; no verification, no payout/booking gate.
-- [ ] 🟠 **Manager front-page dashboards.** `launch/manager-front-page` Venue and artist manager workbenches are implemented through the current fixture-backed and KPI slices; remaining UX freeze, real-data wiring, delivery, and closeout are owned by [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
+- [x] ✅ **Manager front-page dashboards** — shipped in PR #563: live Venue and Artist manager workbenches, role-specific application actions, contract downloads, authenticated desktop/tablet/mobile acceptance, and durable IPv4/shared development-certificate setup. Exact-head and merge-group CI passed, including API and both UI E2E suites; packages published successfully and platform sync `0.1.0-alpha.0.1133` merged in PR #730.
 - [x] ✅ **Swim-lane B complete** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8, all shipped; plan deleted). **Phase 6** (`Feature/TenantInvitationsFrontend`): invitation endpoints + last-Owner invariants + provisioning invitation-first branch + member-management UI + tenant switcher + UI E2E. **Phase 8** (`Feature/MessagingGroupInbox` + `Feature/MessagingGroupInboxPhase2`): tenant-owned conversations, per-member read pointer, member SignalR + email fan-out, org-identity/member-attribution DTO + group-inbox SPA, new Conversations unit/integration + UI E2E. **Phase 7** (`Feature/RetireRoleClaim`): retired the flat `Role` enum, manager-profile tables, and the `role` token claim — B2B tokens are identity-only; `/me` collapsed to one membership-shaped DTO; guards/persona derive from tenant memberships.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
-- [ ] 🟠 **Percentage commission + B2B pricing transparency** `launch/platform-commission` — Payment Phase 1 is merged, published and synced: immutable percentage revisions, Payment-issued bindings, binding-aware money RPCs, and durable transaction/refund/tax/ledger facts. Phase 1b now removes caller-supplied commission and total from post-binding actions so B2B retains only the binding ID and frozen gross; its package publication, Payment deployment and platform sync are the hard gate before the four gross strategies and payer disclosure in Phase 2. The temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
+- [ ] 🟠 **Percentage commission + B2B pricing transparency** `launch/platform-commission` — Payment Phases 1 and 1b are merged, published and synced. Phase 1: immutable percentage revisions, Payment-issued bindings, binding-aware money RPCs, durable transaction/refund/tax/ledger facts. Phase 1b (landed 2026-08-07 via PR #392, which absorbed and superseded PR #296): caller-supplied commission and total removed from every post-binding action — bound calculation and money-movement requests reserve `expected_commission_minor`/`expected_payer_total_minor`, and `ConfirmReviewedGross` is the sole reviewed-amount boundary; the breaking package published and platform sync migrated B2B/Customer consumers. **Phase 2 is now the active work**: the four B2B keyed gross strategies, the frozen final-gross snapshot for deferred deals, routing all four payment journeys through the binding-aware Payment methods, and payer/artist disclosure in the manager SPAs. The temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
 - [x] ✅ **Browser-storage audit + consent correction** `launch/browser-storage-consent` — shipped (`Feature/launch_browser-storage-consent`, #482): evidence-led audit (static sweep + anonymous runtime capture) of the four SPAs' device storage, every item classified necessary/functional/optional in a drift-guarded `app/web/shared/src/lib/storageManifest.ts` and the engineering inventory `app/web/shared/BROWSER_STORAGE.md`. Removed the dead `sidebar_state` cookie; made the two boot-time third parties load on use only (lazy Stripe `getStripe()`; Google Maps via a scoped `MapsProvider` on find/detail routes, no longer at app boot); added `consentGate.ts` so the retained analytics/marketing banner's toggles actually gate loading (the integration point for roadmapped GA4/pixels). Banner retained by decision — analytics/marketing is roadmapped and UK PECR mandates the banner once such tech loads. Legal-gated tail only: solicitor policy-copy wire into the `/cookies` page (separate item, line 198) and whether Maps needs a `functional` consent category.
 - [ ] 🔴 **Stripe webhook coverage — disputes, account status, money-movement failures** `launch/stripe-webhook-coverage` — surfaced by the 2026-08-16 sweep. Payment handles exactly four events (`payment_intent.succeeded|payment_failed`, `setup_intent.succeeded|setup_failed`); [../payments/PROVIDER_CONTRACT_BASELINE_PLAN.md](../payments/PROVIDER_CONTRACT_BASELINE_PLAN.md) confirms "only succeeded/failed subsets are handled today" and puts full webhook handling **outside its own scope**, so nothing owns this. Unhandled: **`charge.dispute.created`** — chargebacks are invisible, and `EscrowStatus.Disputed` is an enum value nothing ever sets; **`account.updated`** — a connected account losing its payouts capability is never detected, so settlement keeps routing money at a restricted account; **`payout.failed`/`transfer.failed`** — silent money failures. Hard gate: this is real money on the differentiating settlement path. Sequence after the Payment provider-contract baseline so normalized states and transition legality land first.
-- [ ] 🔴 **Tenant verification — venue and artist legitimacy** `launch/tenant-verification` — surfaced by the 2026-08-16 sweep. `VenueEntity.Approved` and `[Admin] PATCH /api/Venue/{id}/approve` exist, but the flag is **decorative**: no query filter, guard or workflow reads it, so an unapproved venue publishes opportunities, accepts artists and takes money exactly like an approved one. No evidence is ever collected (a venue uploads only `Banner`/`Avatar`); there is no reject/pending/suspended state, no reason, no re-submission, no notification, and no record of who approved. Artists have no verification concept at all. Needs an evidence-upload surface (licence / proof of address / company docs) on its own blob prefix, a real verification state machine on the tenant, admin review with reasons, and the gate **actually enforced** at opportunity publication and at settlement.
-- [ ] 🔴 **Admin console + production admin provisioning** `launch/admin-console` — surfaced by the 2026-08-16 sweep. There is **no admin SPA** (`app/web/` is `b2b`, `customer`, `shared`) and **no production path to create an admin**: the `Admin` policy is granted only when a credential registers with `ClientId == "admin"` (`CredentialRegisteredHandler`), which only `AuthDevSeeder` ever does. The already-shipped admin backends — OSA moderation (hide/restore/resolve) and venue approval — are therefore unreachable in production. Blocks `launch/tenant-verification` and is what actually closes the OSA enforcement loop.
+- [x] ✅ **Tenant verification — venue and artist legitimacy** `launch/tenant-verification` — shipped across six phases. Replaces the decorative `VenueEntity.Approved` bool with a real `TenantVerificationEntity` state machine (Pending/Approved/Rejected, append-only evidence) owned by the Tenant module, so it covers artists too. Phase 1 (#772): the domain + migration. Phase 2 (#784): tenant-facing submit API — evidence upload (licence / proof of address / company registration) via `IBlobStorageService` on its own `verification-evidence/` prefix, content-type + magic-byte + size validation. Phase 3 (#792): `ITenantModule.IsVerifiedAsync` (fail-closed), **enforced** at `OpportunityService.CreateAsync`/`CreateMultipleAsync` (unverified venue can't publish → `opportunity.venue_not_verified`) and `FinishExecutor.FinishAsync` (unverified party → `SettlementOutcome.DeferredPendingVerification`, self-heals on the hourly sweep). Phase 4 (#799): `[Admin]` pending-queue / approve / reject-with-reason on `VerificationController`, `IVenueModule`/`IArtistModule.GetContactByTenantIdAsync` for the enriched queue, `IVerificationNotifier` email on decision. Phase 5 (#825 publish + #824): admin `features/verification` SPA + the tenant-facing `VerificationBanner` + `VerificationForm` in `app/web/b2b/shared`, `/settings/verification` routes. Phase 6 (#824): removed `VenueEntity.Approved`, the `[Admin]` approve/`pending-approval` endpoints, `ApproveVenueError`, `PendingVenue`, the dead `VenuePrivileged*` chain, and `app/web/admin/features/venues/`.
+- [x] ✅ **Admin console + production admin provisioning** `launch/admin-console` — shipped across four phases. Phase 1 (#624): invitation-or-bootstrap admin provisioning, granted post-login (`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync` off `GET /api/auth/me`, not the raw unverified registration event) so a self-serve "become an admin" path never opens. Phase 2 (#648): new top-level `app/web/admin` SPA, its own Duende client, admin invite/revoke UI. Phase 3 (#722): moderation UI wired to the existing `ModerationController`. Phase 4 (#737): venue-approval UI — new `[Admin]`-gated `GET /api/venue/pending-approval` plus the pending-venues list/approve UI, closing the loop `VenueEntity.Approved` needed. The already-shipped OSA moderation and venue-approval backends are reachable in production for the first time. Unblocked the tenant-verification gate below — **which then replaced Phase 4's venue-approval surface entirely** (`tenant-verification` Phase 6, #824): `VenueEntity.Approved`, `GET /api/venue/pending-approval`, `PATCH /api/venue/{id}/approve` and `app/web/admin/features/venues/` are gone, superseded by `features/verification`.
 - [ ] 🔴 **GDPR subject rights — erasure + data export** `launch/gdpr-subject-rights` — surfaced by the 2026-08-16 sweep. No account deletion, data export or anonymisation anywhere in `api/` or `app/`; the roadmap tracks the ICO *fee* but no DSAR capability. Not a `DELETE` endpoint: settled invoices, self-billing agreements and ledger entries are HMRC-retained for six years, so this needs a designed retain-vs-erase split (anonymise the identity, keep the financial record), an export format, and a documented response SLA.
-- [ ] 🟠 **API rate limiting** `launch/rate-limiting` — surfaced by the 2026-08-16 sweep. Zero `AddRateLimiter` in the codebase; login, apply, messaging and file upload are all unthrottled. Cheap at the shared pipeline seam, and exactly the gap a Stripe production review or a pen-test raises.
+- [x] ✅ **API rate limiting** `launch/rate-limiting` — shipped (`Feature/launch_rate-limiting`) as an opt-in seam in `Concertable.ServiceDefaults` (`AddDefaultRateLimiting`/`AddRateLimitPolicy`/`UseDefaultRateLimiting`, 429 + `Retry-After`, per-`sub` or per-IP fixed-window partitioning, lazy per-policy config binding; producer #655 + platform-sync #663) plus named policies applied across all five web hosts on the ~36 real abuse surfaces the sweep identified (credential/change-password, public reads, blob upload, apply/messaging/checkout, profile-image, purchase/review, search, setup-intent). Opt-in, no global fallback — evidence and rationale in the shipping PRs #655 (producer seam) + #670 (consumers across all five hosts). In-process only (distributed store deferred) and three adjacent anonymous-endpoint auth gaps logged in [api/TECH_DEBT.md](../../api/TECH_DEBT.md).
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT_PLAN.md](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md).
+
+- [ ] 🔴 **SQL Server → Postgres migration** `launch/postgres-migration` — decided 2026-09-05. Provider swap, not a data migration: it happens before launch so there is no production data, no dual-write window and no ETL, and each service owns its own database so the cut-over is per service rather than a flag day. Measured surface on `main`: 8 `SET IDENTITY_INSERT` + 2 `sys.check_constraints` in seeders/fixtures, 8 `geography` columns, 5 `nvarchar` column types, the B2B-local `IsRowVersion()` token with 5 implementers, and 50 migration files. Driven by PostGIS, `EXCLUDE` constraints for venue double-booking, and Testcontainers startup cost — not by a SQL Server capability ceiling. Migration cost compounds with schema churn, so the provider-neutral prep phases start now. Plan: [POSTGRES_MIGRATION_PLAN.md](POSTGRES_MIGRATION_PLAN.md).
+- [ ] 🟡 **Lifecycle seal enforcement — superseded stages become immutable rows** `launch/lifecycle-seal-enforcement` — decided 2026-09-05. The existing `ApplicationAcceptanceSnapshot` / `ContractSnapshot` / `ConfirmedBooking` records freeze only the facts carried across a module boundary; the source row stays writable through a tracked entity, `ExecuteUpdateAsync` or any SQL client. Seals a row once its state machine has no outgoing transition — terminality derived from the transition table, never declared beside it — via one stored `IsSealed` boolean, a `SaveChanges` guard in DataAccess, and a database write-block for everything that bypasses the change tracker. Kernel/DataAccess phases are implementable now; B2B adoption is sequenced behind the Application → Booking → Concert module carve above. Plan: [LIFECYCLE_SEAL_ENFORCEMENT_PLAN.md](LIFECYCLE_SEAL_ENFORCEMENT_PLAN.md).
 
 **Architecture refactors — ready, not launch gates:**
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
-- [ ] 🟡 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16: split the current
+- [ ] 🟡 **Deal representation and common-interface dispatch** `launch/deal-closed-sum-model` — immediate architecture owner before lifecycle PR #633 resumes. First land the B2B-local generator/analyzer and Deal-owned mapper/updater net10 foundation from current `main`; then PR #633 consumes it for Application terms and heterogeneous operation factories. One reusable generator template emits invariant common-interface factories and dedicated union factories while each runtime factory remains module-owned. Heterogeneous operations use Dunet implementation unions on net10 and native implementation unions on C# 15; consumers match operation kind and multiple Deals may share one implementation. The later .NET 11 cut-over closes the published Deal hierarchy without changing consumer factory APIs. Plan: [DEAL_CLOSED_SUM_MODEL_PLAN.md](DEAL_CLOSED_SUM_MODEL_PLAN.md).
+- [ ] 🔴 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16; PR #633 carries the whole decomposition and is merging through the merge queue, consuming the now-terminal Deal generator/mapper/updater foundation (#678/#694) and Kernel state machine (#719/#730) directly. Split the current
   Concert umbrella into honest Opportunity, Application, Booking/Contract, and Concert ownership;
-  each lifecycle aggregate owns independent state, transitions, contextual steps, and a module-local
-  resolver. The fixed stage order never varies by `DealType`; no umbrella process entity, shared
+  each lifecycle aggregate owns independent state, transitions, and contextual operations. Its current
+  keyed selectors are provisional delivery seams owned for replacement by the Deal dispatch plan:
+  honest same-interface mapper/updater/terms families use generated invariant factories, while
+  heterogeneous lifecycle operations use dedicated typed factories plus implementation-union matches;
+  multiple Deals may share one operation implementation; identical behavior is direct and
+  static variation is data. The fixed
+  stage order never varies by `DealType`; no umbrella process entity, shared
   workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
-  allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
-  dispatch. See
+  allowed. The remaining decomposition lands as one complete PR; its implementation phases are draft-
+  branch checkpoints, not separately mergeable slices. Split only if a real published-package or
+  deployment dependency appears. The follow-on .NET 11 slice owns native unions for closed internal
+  values and module-local heterogeneous operation choices; typed factories own DI construction and no
+  union performs service resolution or restores the global workflow. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
+- [ ] 🟡 **Payment operation ownership** `launch/payment-operation-ownership` — publish Payment's final consumer-agnostic surface in one breaking release: durable operation references, provider-identifier ownership, reference-keyed escrow/ledger/settlement, legacy raw-identifier removal, and payment-owned vocabulary. B2B and Customer then migrate directly from the old surface once. See [PAYMENT_METHOD_COMMITMENTS_PLAN.md](PAYMENT_METHOD_COMMITMENTS_PLAN.md).
+- [x] ✅ **Customer payment-reference migration** `launch/customer-payment-reference` — Customer ticket purchase now runs on-session Payment sessions addressed by whole Customer-minted operation references; provider identifiers no longer cross or persist at the Customer boundary. Delivered by PRs #939 and #938.
+
+- [ ] 🟡 **Lifecycle reporting read projections** `launch/lifecycle-read-projections` — deferred until
+  the lifecycle ownership refactor is terminal. Replace the Application dashboard's transitive
+  Opportunity query with a narrow Application-owned, event-fed availability projection while keeping
+  Apply, Accept, checkout, and invariant decisions on authoritative synchronous reads. This is a
+  selective reporting boundary, not a Dashboard-wide database or a rule to denormalize every reverse
+  read. See [LIFECYCLE_READ_PROJECTIONS_PLAN.md](LIFECYCLE_READ_PROJECTIONS_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**
 
@@ -240,7 +261,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [x] VAT calculated per contract type + self-billed invoice generated per settlement, gated on a current e-signed self-billing agreement (12-month renewal)
 - [ ] Tenant config surface live (PRS / VAT / payment terms read from it, not constants)
 - [ ] Stripe webhook coverage handles disputes, connected-account status changes, and payout/transfer failures
-- [ ] Venue/artist verification enforced before an opportunity can be published or a settlement can run
+- [x] Venue/artist verification enforced before an opportunity can be published or a settlement can run — `launch/tenant-verification`, shipped #772/#784/#792/#799/#825/#824
 - [ ] Pre-launch dataset cleared / fresh seeded
 
 ### Compliance UI/UX
@@ -257,7 +278,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] support@ inbox monitored; SLA documented (target: first response within 1 working day)
 - [ ] Status page live
 - [ ] Database backups verified
-- [ ] Rate limiting active on auth, apply, messaging and upload endpoints
+- [x] Rate limiting active on auth, apply, messaging and upload endpoints
 - [ ] Incident response process documented
 - [ ] First 10 beta venues + 50 beta artists onboarded
 - [ ] Marketing site live with pricing page
@@ -287,35 +308,23 @@ See [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md) for the detail. He
 
 **Earliest realistic marketplace switch-on:** Q1 2027 (3 months after B2B launch). Push later if B2B traction needs all the focus.
 
-## 8b. Repo topology — stay monorepo until the polyrepo trigger fires (post-launch)
+## 8b. Repo topology — the cut is running, and it is not launch-gated
 
-We stay on the **monorepo** through launch and well beyond. What we have is already a *monorepo of
-independently-deployable services*, not a lazy monolith: package-clean service closures off the org
-feed, `EnforceServiceBoundary` + `carve-*` CI gates, standalone AppHosts, and six read-only mirror
-repos that already clone-and-build (see [../POLYREPO.md](../platform/POLYREPO.md) and
-[../../api/ARCHITECTURE.md](../../api/ARCHITECTURE.md)). The split to a **true polyrepo** (mirrors
-become the writable dev repos) is a **one-way door** — bias to cutting *late*, not on time.
+Owned by [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md)
+(§6 of [`POLYREPO_ROADMAP.md`](../platform/POLYREPO_ROADMAP.md)) — approved and in execution, stages 1–2
+delivered. Nothing about it waits for launch.
 
-The trigger is the **AND** of two conditions; the first alone is necessary but **not** sufficient:
+**Tommy's ruling, 2026-08-27:** the monorepo has cost real development time — repeated setbacks, not a
+theoretical tax — and cutting is the fix. That settles it against the two-condition trigger this section
+used to carry (a codebase milestone AND a second engineer owning a service). That trigger is **deleted**,
+not deferred: it argued the monorepo was strictly better for a single developer, and delivery has shown
+otherwise. It also rested on facts that no longer hold — the six read-only mirror repos are gone, so a
+"make the mirror writable" flip is not the mechanism; extraction is `git-filter-repo`, proven end to end
+on Payment.
 
-1. **Cost gone (codebase milestone).** Post-launch, cross-service contracts frozen, `Shared`/`Kernel`
-   core stopped churning, and the **cross-boundary commit rate down to ~single digits** (measured
-   **~47%** pre-launch — half of `api/` commits touch >1 service; ~16% touch `Shared`). Above ~20% the
-   publish→platform-sync→migrate tax bleeds you, and atomic cross-service changes stop being possible.
-2. **A distinct owner (team milestone).** A second engineer owns a service end-to-end and is genuinely
-   blocked by the shared merge stream or needs a hard source boundary. Polyrepo's payoff is *purely
-   organizational* — with one person (+ agents) the monorepo is strictly better (atomic cross-service
-   changes, trivial cross-service E2E, zero cross-repo tax), no matter how stable or large the code gets.
-
-Stable-steady-state feature delivery makes a split *cheap and safe*; it does not make it *worth it*.
-Worth-it waits on the second owner. Parallel-agent isolation is **not** a reason to split — worktrees
-already give per-service isolation inside the monorepo, and a cross-cutting refactor is *harder* across
-repos (N coordinated PRs + a sync), not easier.
-
-When both fire, execute **service-by-service, cheapest-first** — `Auth`/`Payment` (stable adapters,
-low co-change) before the churny `B2B`/`Customer`/`Shared` core — never big-bang. The mirrors already
-build standalone, so each flip is mechanical (make the mirror writable, redirect dev, give it its own
-copy of the workflows).
+Sequencing lives in the plan's ledger, not here. The shape of it: the monorepo survives as the fallback
+for local development and cross-service E2E until the final stage, so a service can be extracted before
+its AppHost and E2E story is perfect.
 
 ## 9. Decision points still open
 
@@ -340,7 +349,7 @@ it are operational choices that are not urgent yet.
 - [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
 - [../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md) — deal + workflow architecture
-- [CONVENTIONS.md](../../api/agents/CONVENTIONS.md) — module boundary rules
+- [CONVENTIONS.md](../../api/agents/MODULE_STRUCTURE.md) — module boundary rules
 
 ## Decisions locked
 

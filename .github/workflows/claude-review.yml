@@ -23,16 +23,18 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           use_sticky_comment: true
           prompt: |
-            Review this PR for a .NET 10 / React modular monolith called Concertable.
+            Review this PR for Concertable, a .NET 10 / React platform of independent microservices.
             Your final response will be posted verbatim as a PR comment, so write it as a review.
 
-            Follow the rules in the repo-root `CLAUDE.md` and `api/agents/MODULAR_MONOLITH_RULES.md`.
-            Pay particular attention to:
-            - Module boundaries: cross-module calls must go through `IXModule` facades in `Module.Contracts`, never direct project references into another module's Application/Infrastructure.
-            - DTO vs Response: services return DTOs from `Module.Application/DTOs`; controllers return DTOs verbatim unless a `Response` shape is genuinely needed.
-            - Migrations: no additive migrations — model changes require re-running `initial-migrations.ps1`.
-            - Module services save their own context (`xRepository.SaveChangesAsync()`), never `IUnitOfWork`.
-            - Read-model `Id` must be `ValueGeneratedNever`.
+            The conventions are load-on-demand skills that are NOT vendored into this repo, so on this
+            runner you do not have them. Do not review from memory of them and do not restate one here —
+            each has exactly one home and a copy in this prompt would drift from it.
+
+            Read, and review against, the docs that ARE in the checkout: repo-root `AGENTS.md`,
+            `docs/INDEX.md`, `api/Concertable.B2B/CODE_PATTERNS.md`,
+            and any `AGENTS.md` in a directory the diff touches. `.agents/skill-routes.json` maps each
+            changed path to the skill that owns its rules: name that skill when a change lands in its
+            territory and say the rule could not be checked here, rather than guessing at it.
 
             Be terse. Flag real issues only — don't nit-pick style or restate what the diff does.
             Group findings as: 🔴 Bugs/regressions, 🟡 Suggestions, 🟣 Pre-existing debt to ignore.

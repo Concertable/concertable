@@ -3,8 +3,8 @@
 > **Roadmap** for adopting one Reunion-backed `Result` and `Option` vocabulary across every backend
 > microservice while keeping Concertable's error unions and HTTP policy application-owned. This is
 > the living cross-workstream dependency map, not an implementation plan. Each
-> buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`; see
-> [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`; the roadmap tier is the `plans`
+> skill.
 >
 > **Goal:** replace the temporary Concertable-owned carriers with Reunion, remove third-party Result
 > carriers and ambiguous application/module lookup contracts, and keep every service independently

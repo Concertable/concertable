@@ -10,6 +10,7 @@ import { useArtistNotifications } from "../../features/notifications";
 import { requireArtist } from "../../features/artist";
 import { AppLayout } from "@concertable/web/components/AppLayout";
 import type { ProfileMenuItem } from "@concertable/web/components/ProfileMenu";
+import { Mailbox } from "@concertable/web/features/messaging";
 
 const links = [
   { label: "Dashboard", to: "/" },
@@ -25,13 +26,14 @@ const profileItems: ProfileMenuItem[] = [
 
 function ArtistLayout() {
   useArtistNotifications();
-  const { selectionRequired } = useTenant("Artist");
-  if (selectionRequired) return <TenantChooser tenantType="Artist" />;
+  const { selectionRequired } = useTenant("artist");
+  if (selectionRequired) return <TenantChooser tenantType="artist" />;
   return (
     <AppLayout
       links={links}
       profileItems={profileItems}
-      headerSlot={<TenantSwitcher tenantType="Artist" />}
+      headerSlot={<TenantSwitcher tenantType="artist" />}
+      messagingSlot={<Mailbox />}
     />
   );
 }
@@ -42,7 +44,7 @@ export const Route = createFileRoute("/_artist")({
       await requireLocalB2bAuth({ location });
       return;
     }
-    const { selectionRequired } = await resolveTenantRoute("Artist");
+    const { selectionRequired } = await resolveTenantRoute("artist");
     if (selectionRequired) return;
     await requireArtist({ pathname: location.pathname });
   },

@@ -50,7 +50,7 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     purpose: "Records the user's cookie-consent decision so the banner is shown once.",
     duration: "Persistent until cleared",
     classification: "necessary",
-    apps: ["customer", "venue", "artist", "business"],
+    apps: ["customer", "venue", "artist", "business", "admin"],
     writeSites: ["shared/src/lib/consent.ts"],
   },
   {
@@ -61,7 +61,7 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     purpose: "Remembers the light/dark UI preference.",
     duration: "Persistent until cleared",
     classification: "functional",
-    apps: ["customer", "venue", "artist"],
+    apps: ["customer", "venue", "artist", "admin"],
   },
   {
     key: "concertable.active-tenant",
@@ -74,10 +74,10 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     classification: "functional",
     apps: ["venue", "artist"],
     writeSites: [
-      "b2b/shared/src/features/tenant/store/useTenantStore.ts",
+      "b2b/shared/src/features/tenant/webTenantSession.ts",
     ],
     notes:
-      "Written by the zustand persist middleware (default localStorage); key set via its name option.",
+      "Written by the manager-web adapter for the cross-platform B2B tenant session.",
   },
   {
     key: "oidc.user:*, oidc.* state",
@@ -87,7 +87,7 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     purpose: "Auth tokens and sign-in/silent-renew state for the logged-in session.",
     duration: "Session / token lifetime",
     classification: "necessary",
-    apps: ["customer", "venue", "artist"],
+    apps: ["customer", "venue", "artist", "admin"],
     notes:
       "Written internally by oidc-client-ts via WebStorageStateStore in shared/src/features/auth/config/oidcConfig.ts; not an explicit setItem call.",
   },

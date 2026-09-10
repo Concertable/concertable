@@ -8,7 +8,7 @@ export class ApiError extends Error {
   readonly name = "ApiError";
 
   constructor(
-    readonly status: number | null,
+    readonly status: number | undefined,
     readonly details: ProblemDetails,
     readonly method: string | undefined,
     readonly url: string | undefined,
@@ -17,7 +17,7 @@ export class ApiError extends Error {
     super(
       details.detail ??
         details.title ??
-        (status === null
+        (status === undefined
           ? "The request could not be completed"
           : `The request failed with status ${status}`),
     );

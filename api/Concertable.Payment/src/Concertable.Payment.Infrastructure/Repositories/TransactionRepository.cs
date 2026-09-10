@@ -36,18 +36,36 @@ internal sealed class TransactionRepository : Repository<TransactionEntity>, ITr
             t => t.CommissionBindingId == commissionBindingId,
             ct);
 
-    public Task<SettlementTransactionEntity?> GetSettlementWithRefundsByBookingIdAsync(
-        int bookingId,
+    public Task<SettlementTransactionEntity?> GetSettlementByOperationIdAsync(
+        Guid operationId,
+        CancellationToken ct = default) =>
+        context.SettlementTransactions.SingleOrDefaultAsync(
+            transaction => transaction.OperationId == operationId,
+            ct);
+
+    public Task<SettlementTransactionEntity?> ReloadSettlementByOperationIdAsync(
+        Guid operationId,
+        CancellationToken ct = default)
+    {
+        context.ChangeTracker.Clear();
+        return GetSettlementByOperationIdAsync(operationId, ct);
+    }
+
+    public Task<SettlementTransactionEntity?> GetSettlementWithRefundsByReferenceAsync(
+        PaymentOperationReference reference,
         CancellationToken ct = default) =>
         context.SettlementTransactions
             .Include(t => t.Refunds)
-            .FirstOrDefaultAsync(t => t.BookingId == bookingId, ct);
+            .FirstOrDefaultAsync(
+                t => t.OperationType == reference.OperationType
+                    && t.ClientReference == reference.ClientReference,
+                ct);
 
-    public async Task<long> GetCompletedTicketRevenueAsync(
+    public async Task<long> GetCompletedPaymentRevenueAsync(
         Guid payeeId,
         DateRange period,
         CancellationToken ct = default) =>
-        await context.TicketTransactions
+        await context.PaymentTransactions
             .Where(t =>
                 t.PayeeId == payeeId &&
                 t.Status == TransactionStatus.Complete &&
@@ -67,12 +85,12 @@ internal sealed class TransactionRepository : Repository<TransactionEntity>, ITr
                 t.CompletedAt < period.End)
             .SumAsync(t => (long?)t.PayeeGrossMinor, ct) ?? 0;
 
-    public async Task<IReadOnlyList<MonthlyPaymentTotal>> GetCompletedTicketRevenueByMonthAsync(
+    public async Task<IReadOnlyList<MonthlyPaymentTotal>> GetCompletedPaymentRevenueByMonthAsync(
         Guid payeeId,
         DateRange period,
         CancellationToken ct = default)
     {
-        var totals = await context.TicketTransactions
+        var totals = await context.PaymentTransactions
             .Where(t =>
                 t.PayeeId == payeeId &&
                 t.Status == TransactionStatus.Complete &&
@@ -144,18 +162,12 @@ internal sealed class TransactionRepository : Repository<TransactionEntity>, ITr
             .Take(take)
             .Select(t => new SettlementSummary(
                 t.Id,
-                t.BookingId,
+                new PaymentOperationReference(t.OperationType, t.ClientReference),
                 t.PayerId,
                 t.PayeeId,
                 t.PayeeGrossMinor,
                 t.CompletedAt!.Value))
             .ToListAsync(ct);
-
-    public async Task CreateAsync(TransactionEntity entity)
-    {
-        await context.Transactions.AddAsync(entity);
-        await context.SaveChangesAsync();
-    }
 
     public async Task<bool> TryReserveSettlementRefundGrossAsync(
         int settlementId,
@@ -170,6 +182,12 @@ internal sealed class TransactionRepository : Repository<TransactionEntity>, ITr
                 s => s.SetProperty(t => t.RefundedGrossMinor, t => t.RefundedGrossMinor + grossMinor),
                 ct);
         return affected == 1;
+    }
+
+    public async Task CreateAsync(TransactionEntity entity)
+    {
+        await context.Transactions.AddAsync(entity);
+        await context.SaveChangesAsync();
     }
 
     public Task ReleaseReservedSettlementRefundGrossAsync(

@@ -4,7 +4,7 @@
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Roadmap item: `typed-result/reunion-shared-contraction`
 - Worktree: not created
-- Branch: `Refactor/typed-result_reunion-shared-contraction` (reserved)
+- Branch: `Refactor/typed-result_reunion-shared-contraction`
 - PR: not opened
 - Dependency/package gates: implementation inventory waits only for the B2B preparation ledger;
   Payment, Auth, Customer Ticket, and Customer non-Payment are terminal
@@ -12,7 +12,8 @@
 
 ## Current state
 
-Payment, Auth, and Customer Ticket are terminal. Customer non-Payment is terminal on published Reunion
+The reserved branch name above has not been created yet — implementation hasn't started. Payment, Auth,
+and Customer Ticket are terminal. Customer non-Payment is terminal on published Reunion
 `0.1.0-alpha.3` and platform `.963`; its five-module production scope has no remaining old carrier,
 old terminal, or third-party functional dependency. Auth reports no old Kernel functional/error
 carrier, Shared.Api terminal, third-party functional carrier, or legacy Reunion factory in its owned

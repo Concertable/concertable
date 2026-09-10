@@ -4,14 +4,15 @@
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Roadmap item: `typed-result/reunion-alpha2-baseline`
 - Worktree: not created
-- Branch: reserved `Feature/typed-result_reunion-alpha2-baseline`
+- Branch: `Feature/typed-result_reunion-alpha2-baseline`
 - PR: not opened
 - Package gate: NuGet.org publishes `0.1.0-alpha.2` for `Reunion`, `Reunion.Validation`,
   `Reunion.Errors`, and `Reunion.AspNetCore`.
 
 ## Current State
 
-The producer gate is open. Current `origin/main` has existing Reunion-family references split across
+The reserved branch name above has not been created yet — implementation hasn't started. The producer
+gate is open. Current `origin/main` has existing Reunion-family references split across
 alpha.1 and alpha.2, so the repository lacks one canonical consumer baseline. This plan owns that
 package-only cutover. B2B, Auth, and Customer may adopt alpha.2 in their own locally implementable
 checkpoints without waiting for this plan to merge.

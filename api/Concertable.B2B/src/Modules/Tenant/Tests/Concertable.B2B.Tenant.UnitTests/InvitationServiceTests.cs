@@ -12,10 +12,31 @@ namespace Concertable.B2B.Tenant.UnitTests;
 
 public sealed class InvitationServiceTests
 {
-    private readonly Mock<ITenantRepository> repository = new();
-    private readonly Mock<ITenantContext> tenantContext = new();
-    private readonly Mock<ICurrentUser> currentUser = new();
-    private readonly Mock<IUserModule> userModule = new();
+    private readonly Mock<ITenantRepository> tenantRepository;
+    private readonly Mock<IMembershipRepository> membershipRepository;
+    private readonly Mock<IInvitationRepository> repository;
+    private readonly Mock<ITenantContext> tenantContext;
+    private readonly Mock<ICurrentUser> currentUser;
+    private readonly Mock<IUserModule> userModule;
+    private readonly InvitationService service;
+
+    public InvitationServiceTests()
+    {
+        this.tenantRepository = new Mock<ITenantRepository>();
+        this.membershipRepository = new Mock<IMembershipRepository>();
+        this.repository = new Mock<IInvitationRepository>();
+        this.tenantContext = new Mock<ITenantContext>();
+        this.currentUser = new Mock<ICurrentUser>();
+        this.userModule = new Mock<IUserModule>();
+        this.service = new InvitationService(
+            this.tenantRepository.Object,
+            this.membershipRepository.Object,
+            this.repository.Object,
+            this.tenantContext.Object,
+            this.currentUser.Object,
+            this.userModule.Object,
+            TimeProvider.System);
+    }
 
     [Fact]
     public async Task AcceptInvitationAsync_ExpiredInvitation_MapsDomainFailureWithoutCreatingMembership()
@@ -38,24 +59,21 @@ public sealed class InvitationServiceTests
         currentUser.SetupGet(user => user.Id).Returns(userId);
         currentUser.SetupGet(user => user.Email).Returns(invitation.Email);
         repository
-            .Setup(value => value.GetInvitationByIdAsync(invitation.Id, It.IsAny<CancellationToken>()))
+            .Setup(value => value.GetByIdAsync(invitation.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(invitation);
-        repository
+        tenantRepository
             .Setup(value => value.GetByIdAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tenant);
-        repository
+        membershipRepository
             .Setup(value => value.IsMemberAsync(tenantId, userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var result = await CreateService().AcceptInvitationAsync(invitation.Id);
+        var result = await this.service.AcceptInvitationAsync(invitation.Id);
 
         Assert.True(result.TryGetError(out var error));
         Assert.IsType<AcceptInvitationError.InvitationExpired>(error);
-        repository.Verify(
-            value => value.AddMembership(It.IsAny<TenantMembershipEntity>()),
-            Times.Never);
-        repository.Verify(
-            value => value.SaveChangesAsync(It.IsAny<CancellationToken>()),
+        membershipRepository.Verify(
+            value => value.InsertAsync(It.IsAny<TenantMembershipEntity>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -74,10 +92,10 @@ public sealed class InvitationServiceTests
         Assert.True(invitation.Accept(Guid.NewGuid(), DateTime.UtcNow.AddMinutes(1)).IsSuccess);
         tenantContext.SetupGet(context => context.TenantId).Returns(tenantId);
         repository
-            .Setup(value => value.GetInvitationByIdAsync(invitation.Id, It.IsAny<CancellationToken>()))
+            .Setup(value => value.GetByIdAsync(invitation.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(invitation);
 
-        var result = await CreateService().RevokeInvitationAsync(invitation.Id);
+        var result = await this.service.RevokeInvitationAsync(invitation.Id);
 
         Assert.True(result.TryGetError(out var error));
         Assert.IsType<RevokeInvitationError.InvitationNotPending>(error);
@@ -92,13 +110,13 @@ public sealed class InvitationServiceTests
         var tenantId = Guid.NewGuid();
         var tenant = TenantEntity.Create("Acme Ltd", Guid.NewGuid(), TenantType.Venue, DateTime.UtcNow);
         tenantContext.SetupGet(context => context.TenantId).Returns(tenantId);
-        repository.Setup(value => value.GetByIdAsync(tenantId, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
-        repository.Setup(value => value.ListMembershipsByTenantAsync(tenantId, It.IsAny<CancellationToken>()))
+        tenantRepository.Setup(value => value.GetByIdAsync(tenantId, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
+        membershipRepository.Setup(value => value.ListMembershipsByTenantAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
         userModule.Setup(value => value.GetEmailsByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(new Dictionary<Guid, string>());
 
-        var result = await CreateService().InviteAsync(new InviteMemberRequest
+        var result = await this.service.InviteAsync(new InviteMemberRequest
         {
             Email = "member@example.com",
             Role = TenantRole.Staff
@@ -106,25 +124,21 @@ public sealed class InvitationServiceTests
 
         Assert.True(result.TryGetError(out var error));
         Assert.IsType<InviteMemberError.Unauthenticated>(error);
-        repository.Verify(value => value.AddInvitation(It.IsAny<TenantInvitationEntity>()), Times.Never);
+        repository.Verify(
+            value => value.InsertAsync(It.IsAny<TenantInvitationEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
     public async Task AcceptInvitationAsync_UnauthenticatedUser_ReturnsForbiddenWithoutLoadingInvitation()
     {
-        var result = await CreateService().AcceptInvitationAsync(Guid.NewGuid());
+        var result = await this.service.AcceptInvitationAsync(Guid.NewGuid());
 
         Assert.True(result.TryGetError(out var error));
         Assert.IsType<AcceptInvitationError.Unauthenticated>(error);
         repository.Verify(
-            value => value.GetInvitationByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            value => value.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
-    private InvitationService CreateService() => new(
-        repository.Object,
-        tenantContext.Object,
-        currentUser.Object,
-        userModule.Object,
-        TimeProvider.System);
 }

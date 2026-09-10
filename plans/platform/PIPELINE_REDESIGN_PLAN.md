@@ -107,11 +107,11 @@ Every one of these is downstream of: *required checks are not authoritative on t
 |---|---|---|
 | `test.yml` (CI) | Classify diff → tiered build/carve/unit/integration/e2e | **Keep the engine, re-shape the gate.** Classifier logic is sound; the required-check surface and PR-vs-queue asymmetry are the problem. |
 | `auto-merge.yml` | External poller nudging stuck PRs into the queue | **Retire.** Pure compensation for unreliable admission (N1). Deletable once the gate is deterministic. |
-| `platform-sync.yml` | Publish→pin-bump PR→auto-merge | **Keep, simplify.** Inherits the queue fix; its stalls disappear. |
-| `platform-sync-alert.yml` | Issue+label when a sync PR goes red | **Keep** as a cheap path-independent backstop; re-assess post-migration. |
+| `platform-sync.yml` | Publish→pin-bump PR→auto-merge | **Superseded** — deleted by `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 2. |
+| `platform-sync-alert.yml` | Issue+label when a sync PR goes red | **Superseded** — deleted alongside it by that plan's Phase 2. |
 | `publish-packages.yml` | Pack `IsPackable` + verify-restore closure | **Keep, gate smarter.** Well-designed; reduce needless republish churn (N3). |
-| `mirror.yml` | Subtree-split 6 services → standalone repos on every push | **Move off the hot path** (N4, N7): tag/manual-triggered, `git archive`-based. |
-| `mirror-parity.yml` | Nightly drift check of the mirrors | **Keep** (already off the hot path). |
+| ~~`mirror.yml`~~ | ~~Subtree-split 6 services → standalone repos on every push~~ | **VOID 2026-08-27 — deleted.** The six mirror repos no longer exist; the polyrepo cut extracts with `git-filter-repo`. |
+| ~~`mirror-parity.yml`~~ | ~~Nightly drift check of the mirrors~~ | **VOID 2026-08-27 — deleted** with `mirror.yml`. |
 | `claude-review.yml` | Opt-in AI PR review on a label | **Keep** (independent, harmless). |
 
 ---
@@ -215,8 +215,8 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
 - **`publish-packages` + verify-restore kept**; reduce needless churn (N3) by gating the *republish*
   on "did any `IsPackable` project's inputs actually change" rather than every `api/**` commit. Keep
   MinVer + `--skip-duplicate` semantics.
-- **`platform-sync` kept**; it inherits the queue simplification (single required check, native
-  auto-merge) so its own admission stalls vanish. `platform-sync-alert` stays as the backstop.
+- **`platform-sync` is superseded** by `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 2, which deletes it and
+  `platform-sync-alert` rather than inheriting the queue simplification.
 - **Mirror moved off the hot path** (N4, N7): tag/manual-triggered, `git archive`-based, not
   subtree-split-on-every-push. `mirror-parity` (nightly) already covers drift.
 
@@ -266,7 +266,10 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   for a one-time human nudge, never an automated poke). No retry machinery is added: a real failure is
   surfaced to debug, the glitch is surfaced to nudge, and the two are told apart by inspecting `merge_group`
   run results (not just PR state — seed #4: ejected-after-failure looks identical to never-admitted).
-- ⬜ **Phases 3–5** — outstanding (below).
+- ✅ **Phase 3b** — merge-queue wall clock (PR #973, merged `3095cb655`). The serial E2E chain is
+  unbraided, both E2E lanes are per-service matrices, and an `api/` runtime diff can no longer opt out of
+  E2E. **Measured: 35m55s → 17m37s.**
+- ⬜ **Phases 3c–5** — outstanding (below).
 
 Each phase is independently shippable, ends green, and is reversible. **A gate is never removed before
 its replacement is proven.** CI-hardening (no Azure) comes first; cloud/ephemeral-env work is last,
@@ -326,6 +329,143 @@ Both change live repo state, so they wait on an explicit go-ahead — but they'r
   reliable.
 - **Gate:** a full week / N merges land with zero manual queue intervention; no stall, no jam loop.
 - **Reversible:** the deleted workflows are in git history; restore if a regression appears.
+
+### Phase 3b — Merge-queue wall clock: unbraid the serial E2E chain. Fixes N11.
+
+**N11 (new finding) — the queue's wall clock is one long serial chain, not the job count.** Merge-queue
+run `34367029757` (frontend-only diff): 14:57:21Z→15:33:16Z = **35m55s**. A green `api/` run
+(`34360270574`) is the same order. The chain is `changes → local-platform-pack (2m45) → build (3m17) →
+e2e-api-tests (8m50) → e2e-ui-tests (20m43)` ≈ 33m of the 36m. The carve tier is **not** the driver:
+`carve-*`, `carve-fe` and `fe-boundaries` hang off `changes`, run in parallel and are done inside two
+minutes — anything blaming carve duplication for the latency is measuring the wrong thing. Three of the
+four edges in that chain are ordering conveniences, not data dependencies:
+
+- **`e2e-ui-tests: needs: [build, e2e-api-tests, changes]`** — the only `needs:` in `test.yml` carrying no
+  justifying comment. It dates from `e53681f1e` (2026-06-04, "E2E legs … serialized jobs"), when both
+  suites shared **fixed** Stripe test customers and a concurrent run genuinely would have corrupted the
+  other. That precondition is gone (settled below), so the edge buys nothing and costs 8m50 of dead time.
+- **`needs: build` on both E2E lanes** — `build` compiles the slnx *as a gate*; it produces nothing either
+  E2E job consumes. Both download the `local-platform` feed artifact (from `local-platform-pack`) and
+  compile their own project closure from it. The edge is fail-fast ordering and costs 3m17 on the critical
+  path — the same reasoning that already removed `architecture-tests` from `e2e-api-tests`' needs.
+- **One job running two services' suites back to back** — 11m37 (B2B) + 4m17 (Customer) in `e2e-ui-tests`,
+  5m03 + 2m40 in `e2e-api-tests`. A per-service matrix runs them concurrently, and
+  `SPLIT_TIME_E2E_STRATEGY.md` wants these owned per service anyway, so per-service rows are the shape the
+  polyrepo cut inherits rather than undoes.
+
+#### The Stripe precondition, settled
+
+The serialization edge would be load-bearing if the two suites shared mutable Stripe test-account state:
+the B2B UI suite's `@ResetsStripe` hook calls `StripeHooks.DetachSeededCustomerCardsAsync`, which detaches
+every card from the seeded customers. Against shared customers that corrupts a concurrently-running API
+suite. It does not, and the isolation is deliberate and documented:
+
+- `StripeCustomerResolver.CreateAsync` **creates fresh Stripe customers per fixture**, stamped with a
+  per-run `runId`, and deletes them on dispose. Every `AppFixture` (B2B API, B2B UI, Customer API, Customer
+  UI) constructs its own. `DetachSeededCustomerCardsAsync` resolves through that per-run map, so it can
+  only ever touch its own run's customers.
+- `Concertable.Payment.E2ETests.Stripe/AGENTS.md` states the rule directly: "Each E2E fixture creates
+  distinct test-mode customers … never restore fixed shared customer IDs. Connect account IDs remain fixed
+  because tests do not mutate them." `StripeAccountClient` bears that out — it links pre-provisioned
+  Connect accounts to DB rows and never creates, updates or deletes one.
+- Webhook cross-talk is already handled for the account-wide `stripe listen` stream:
+  `StripeWebhookProcessor` drops any `PaymentIntent`/`SetupIntent` event whose customer is not in this
+  run's map (`OwnsCustomer`), and the production `WebhookProcessor` handles no other object type.
+- Provenance: per-run customers plus account-wide webhook isolation landed in `3f9d95497` (2026-08-09),
+  **two months after** the serialization edge. The edge is a leftover from the shared-customer era, not a
+  live guard.
+- Everything else the two suites touch is per-runner: SQL is a Testcontainer, Service Bus and Blob storage
+  are `RunAsEmulator()` containers, and the `local-platform` feed is a read-only artifact download.
+
+Correction to the handoff's counter-evidence: `e2e-ui-quarantine` does **not** already prove concurrent
+safety — it is `pull_request`-only while `e2e-api-tests` is `merge_group`-only, so those two never overlap.
+The real proof is the per-run customer provisioning above, plus the fact that the queue already builds up
+to five entries concurrently, which puts two full E2E runs on one Stripe test account today.
+
+**Therefore: delete the edge; per-suite Stripe customer isolation is already the design.**
+
+#### The change set
+
+1. **Decouple `e2e-ui-tests` from `e2e-api-tests`** (−8m50). Both lanes gate independently through
+   `ci-complete`; nothing is skipped, only unbraided.
+2. **Drop `build` from both E2E lanes' `needs`, keeping `local-platform-pack`** (−3m17). `build` still
+   gates the merge through `ci-complete`; it just stops standing in front of the longest job in the run.
+   Trade-off taken deliberately: a broken compile now burns E2E runner minutes before failing. That is
+   cost, and this phase optimises wall clock.
+3. **Split each E2E lane into a per-service matrix** (`B2B`, `Customer`), `fail-fast: false` so one
+   service's red never cancels the other's verdict (−4m17 of Customer UI and −2m40 of Customer API off
+   their lanes' critical paths).
+4. **Force the E2E tier on for an `api/` runtime diff** — below; a hardening, not a speed-up.
+
+Projected critical path: `changes → local-platform-pack (2m45) → e2e-ui-tests (B2B) (≈4m setup + 11m37)`
+≈ **18m30 against today's ≈36m**. `build`, the carves, unit/integration/startup, `e2e-api-tests` and the
+Customer UI row all finish inside that window.
+
+- **Gate: met.** Run `34387954665` (PR #973's own queue entry, labelled `full-e2e` so both suites ran in
+  full rather than waiting for an unrelated `api/` diff to prove the restructure): 18:16:03Z→18:33:40Z =
+  **17m37s green**, against the 35m55s baseline — a 51% cut. Every edge behaved as designed:
+  `local-platform-pack` 3m01, then `build` (3m04), `container-images`, and all four E2E rows starting
+  together at 18:19:21-22 — `e2e-api-tests` B2B 6m07 / Customer 5m03, `e2e-ui-tests` Customer 8m47,
+  B2B 14m11. `ci-complete` remained the single required check over every lane.
+- **What this hands Phase 3c:** the B2B UI row at 14m11 is now the entire critical path — 3m01 of pack
+  plus that row is 17m12 of the 17m37 — so sharding it is the only remaining lever of size.
+- **Reversible:** restore the two `needs:` entries and collapse the matrices; nothing outside `test.yml`
+  and its policy test changes.
+
+#### Phase 3c — Shard the B2B UI suite (the next ≈−5m, after 3b is measured)
+
+32 scenarios / 11m37 in one row is then the whole critical path. Sharding it needs a partition that cannot
+silently drop a scenario, and `StripFeatureTraits` strips the `FeatureTitle` trait, so the filter dimension
+has to be `FullyQualifiedName` (one generated class per feature file, never stripped). Design: enumerate
+classes with `dotnet test --no-build --list-tests`, greedily bin-pack **whole classes** by scenario count
+into N shards, and fail the job if a shard's class list is empty or the union of shards is not the full
+list. Whole classes, never scenarios split within a feature, so a feature-internal ordering assumption
+cannot be broken by a shard boundary. **Precondition to prove first:** the suite's stated
+scenario-independence convention actually holds — every scenario reaching its start state through a seeded
+fast-forward `Given` rather than through the residue of the previous one. Deliberately sequenced after 3b,
+which is an edge deletion with no way to change a suite's verdict; this one can.
+
+#### Phase 3d — Stop re-running queue jobs whose inputs are byte-identical to the PR head (≈−6m)
+
+The queue legitimately re-tests the merge commit. But when `main` has only moved by paths a job does not
+consume, that job's inputs on the merge commit are byte-identical to the PR head's, which the PR run
+already proved. `changes` computes both diffs already and could compare the two trees per job scope.
+**E2E is explicitly excluded**: another PR's runtime change can break your surface without touching a file
+you own, which is the entire reason the queue gate exists. Not free either — reusing `build`'s verdict
+means reusing `local-platform-pack`'s artifact across runs — so it is sequenced last of the three.
+
+#### Phase 3e — Delete the carve tier at the polyrepo cut, not before
+
+`carve-*`, `carve-fe` and `split-inventory` simulate standalone repos. Once each service is its own repo
+that is just its normal build. They are off the critical path (all inside two minutes, parallel to
+`local-platform-pack`), so this is cleanup that follows the cut — never a latency lever, and never a reason
+to weaken the standalone-build guarantee early.
+
+#### Tightening what counts as a positive E2E trigger (same pass, no wall clock)
+
+On 2026-09-09 the UI suite produced six failures and all six were genuine defects — a missing
+`(Processing, Authorize, Authorized)` payment state-machine edge that left an authorized escrow
+permanently uncaptured, and an invitation-acceptance deadlock that made joining an organization
+impossible. Zero flakes. Both had sat undetected for days because `Skip-E2E` was being applied per-PR to
+behaviour-changing diffs: tier selection was a judgment call, and the judgment was wrong.
+
+So the classifier stops accepting the unsafe direction of that call: **a non-inert change under `api/`
+that is not confined to a service's test tier forces both E2E lanes on, and the `Skip-E2E` /
+`Skip-E2E-UI` trailer and label are ignored for that diff.** A change to an E2E suite's own sources counts
+as a positive trigger too — that is the gate re-validating itself. The opt-out survives only where it was
+always defensible: frontend-only, unit/integration/architecture test-tier-only, `eng/`, `scripts/` and
+workflow diffs. `merge`'s Step 4 still selects the tier; it simply can no longer select *off* for a
+runtime diff.
+
+One case would have become unmergeable, so it gets a named exception instead of a silent one.
+`PIPELINE_DEBT.md` records a published-package **expand** merge: the backend flips to the new wire shape
+while its consumer surfaces are deferred to the sync merge, so `carve-fe` needs the old shape and UI E2E
+needs the new one — full UI E2E cannot pass by construction, and the documented workaround was a generic
+`skip-e2e-ui`. That is exactly the runtime diff the rule above now refuses to let opt out. The classifier
+therefore honours one label, **`expand-merge`**, which drops the UI lane only and never the API lane that
+proves the backend flip. Naming the situation rather than the effect is the point: claiming it is a
+deliberate, greppable act pointing at a documented structural conflict, where `skip-e2e-ui` was
+indistinguishable from ordinary "this seems fine". It retires with that debt entry.
 
 ### Phase 4 — Modularize workflows into composite actions + scripts (portability + DRY).
 - **What:** Extract the repeated `setup-dotnet` / NuGet cache / feed-auth / carve blocks into

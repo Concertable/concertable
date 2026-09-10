@@ -1,7 +1,5 @@
 using System.Net;
-using Concertable.B2B.Concert.Application.DTOs;
-using Concertable.B2B.Concert.Api.Responses;
-using Concertable.Payment.Client;
+using Concertable.B2B.TestKit;
 using Concertable.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -62,6 +60,9 @@ public sealed class ConcertDraftTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCreateDraftAndPayVenue_WhenVenueHireApplicationAccepted()
     {
+        var artistClient = await fixture.CreateAuthenticatedClientAsync(fixture.SeedState.ArtistManager1.Email);
+        await fixture.CommitArtistPaymentMethodAsync(artistClient, fixture.SeedState.VenueHireApp.OpportunityId);
+
         var response = await venueManagerClient.PostAsync(
             $"/api/application/{fixture.SeedState.VenueHireApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
         await response.ShouldBe(HttpStatusCode.NoContent);
@@ -90,7 +91,7 @@ public sealed class ConcertDraftTests : IAsyncLifetime
     {
         var acceptResponse = await venueManagerClient.PostAsync(
             $"/api/application/{fixture.SeedState.DoorSplitApp.Id}/accept",
-            new { PaymentMethodId = AppFixture.TestPaymentMethodId, eSignature = new { signatoryName = "Test Signatory" } });
+            new { eSignature = new { signatoryName = "Test Signatory" } });
         await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
 
         var applicationResponse = await venueManagerClient.GetAsync($"/api/application/{fixture.SeedState.DoorSplitApp.Id}");
@@ -104,7 +105,7 @@ public sealed class ConcertDraftTests : IAsyncLifetime
     {
         var acceptResponse = await venueManagerClient.PostAsync(
             $"/api/application/{fixture.SeedState.VersusApp.Id}/accept",
-            new { PaymentMethodId = AppFixture.TestPaymentMethodId, eSignature = new { signatoryName = "Test Signatory" } });
+            new { eSignature = new { signatoryName = "Test Signatory" } });
         await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
 
         var applicationResponse = await venueManagerClient.GetAsync($"/api/application/{fixture.SeedState.VersusApp.Id}");
@@ -117,9 +118,7 @@ public sealed class ConcertDraftTests : IAsyncLifetime
     {
         var response = await venueManagerClient.PostAsync($"/api/application/{applicationId}/checkout");
         await response.ShouldBe(HttpStatusCode.OK);
-        var checkout = await response.Content.ReadAsync<CheckoutResult>();
+        var checkout = await response.Content.ReadAsync<B2BCheckoutState>();
         return checkout!.Session.ClientSecret;
     }
-
-    private sealed record CheckoutResult(CheckoutSession Session);
 }

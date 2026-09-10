@@ -54,25 +54,29 @@ internal static class PaymentErrorMappers
             [Proto.OperationErrorKind.OperationErrorPaymentRequired] = ErrorKind.PaymentRequired
         }.ToFrozenDictionary();
 
-    private static readonly FrozenDictionary<string, ManagerPaymentError> managerPaymentErrors =
-        Index(Composite<ManagerPaymentError>(
-            error => new ManagerPaymentError.PaymentFailure(error),
-            error => new ManagerPaymentError.CommissionFailure(error)));
-
-    private static readonly FrozenDictionary<string, HoldSessionError> holdSessionErrors =
-        Index(Composite<HoldSessionError>(
-            error => new HoldSessionError.PaymentFailure(error),
-            error => new HoldSessionError.CommissionFailure(error)));
+    private static readonly FrozenDictionary<string, PaymentMethodChargeError> paymentMethodChargeErrors =
+        Index(paymentOperationErrors.Values.Select(error =>
+                (PaymentMethodChargeError)new PaymentMethodChargeError.PaymentMethodFailure(error))
+            .Concat(directPaymentErrors.Select(error =>
+                (PaymentMethodChargeError)new PaymentMethodChargeError.PaymentFailure(error)))
+            .Concat(commissionErrors.Values.Select(error =>
+                (PaymentMethodChargeError)new PaymentMethodChargeError.CommissionFailure(error)))
+            .Append(new PaymentMethodChargeError.AuthenticationRequired())
+            .Append(new PaymentMethodChargeError.OperationConflict()));
 
     private static readonly FrozenDictionary<string, EscrowDepositError> escrowDepositErrors =
         Index(Composite<EscrowDepositError>(
             error => new EscrowDepositError.PaymentFailure(error),
-            error => new EscrowDepositError.CommissionFailure(error)));
+            error => new EscrowDepositError.CommissionFailure(error))
+            .Concat(paymentOperationErrors.Values.Select(error =>
+                (EscrowDepositError)new EscrowDepositError.PaymentOperationFailure(error))));
 
     private static readonly FrozenDictionary<string, EscrowCaptureError> escrowCaptureErrors =
         Index(Composite<EscrowCaptureError>(
             error => new EscrowCaptureError.PaymentFailure(error),
-            error => new EscrowCaptureError.CommissionFailure(error)));
+            error => new EscrowCaptureError.CommissionFailure(error))
+            .Concat(paymentOperationErrors.Values.Select(error =>
+                (EscrowCaptureError)new EscrowCaptureError.PaymentOperationFailure(error))));
 
     private static readonly FrozenDictionary<string, EscrowReleaseError> escrowReleaseErrors =
         Index(new EscrowReleaseError[]
@@ -81,6 +85,13 @@ internal static class PaymentErrorMappers
             new EscrowReleaseError.EscrowNotHeld()
         }.Concat(paymentErrors.Values.Select(error =>
             (EscrowReleaseError)new EscrowReleaseError.PaymentFailure(error))));
+
+    private static readonly FrozenDictionary<string, EscrowReleaseOperationError> escrowReleaseOperationErrors =
+        Index(new EscrowReleaseOperationError[]
+        {
+            new EscrowReleaseOperationError.OperationConflict()
+        }.Concat(escrowReleaseErrors.Values.Select(error =>
+            (EscrowReleaseOperationError)new EscrowReleaseOperationError.ReleaseFailure(error))));
 
     private static readonly FrozenDictionary<string, EscrowRefundError> escrowRefundErrors =
         Index(new EscrowRefundError[]
@@ -94,6 +105,19 @@ internal static class PaymentErrorMappers
             new EscrowRefundError.Conflict()
         }.Concat(paymentErrors.Values.Select(error =>
             (EscrowRefundError)new EscrowRefundError.PaymentFailure(error))));
+
+    private static readonly FrozenDictionary<string, SettlementRefundError> settlementRefundErrors =
+        Index(new SettlementRefundError[]
+        {
+            new SettlementRefundError.SettlementNotFound(),
+            new SettlementRefundError.SettlementNotRefundable(),
+            new SettlementRefundError.CommissionBindingNotFound(),
+            new SettlementRefundError.CurrencyMismatch(),
+            new SettlementRefundError.AmountMustBePositive(),
+            new SettlementRefundError.AmountExceedsRemaining(),
+            new SettlementRefundError.Conflict()
+        }.Concat(paymentErrors.Values.Select(error =>
+            (SettlementRefundError)new SettlementRefundError.PaymentFailure(error))));
 
     extension(RpcException exception)
     {
@@ -109,11 +133,8 @@ internal static class PaymentErrorMappers
         internal PaymentOperationError ToPaymentOperationError() =>
             exception.ToError(paymentOperationErrors);
 
-        internal ManagerPaymentError ToManagerPaymentError() =>
-            exception.ToError(managerPaymentErrors);
-
-        internal HoldSessionError ToHoldSessionError() =>
-            exception.ToError(holdSessionErrors);
+        internal PaymentMethodChargeError ToPaymentMethodChargeError() =>
+            exception.ToError(paymentMethodChargeErrors);
 
         internal EscrowDepositError ToEscrowDepositError() =>
             exception.ToError(escrowDepositErrors);
@@ -124,8 +145,14 @@ internal static class PaymentErrorMappers
         internal EscrowReleaseError ToEscrowReleaseError() =>
             exception.ToError(escrowReleaseErrors);
 
+        internal EscrowReleaseOperationError ToEscrowReleaseOperationError() =>
+            exception.ToError(escrowReleaseOperationErrors);
+
         internal EscrowRefundError ToEscrowRefundError() =>
             exception.ToError(escrowRefundErrors);
+
+        internal SettlementRefundError ToSettlementRefundError() =>
+            exception.ToError(settlementRefundErrors);
 
         private TError ToError<TError>(FrozenDictionary<string, TError> errors)
             where TError : IError

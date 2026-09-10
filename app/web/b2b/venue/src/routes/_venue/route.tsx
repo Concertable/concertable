@@ -10,6 +10,7 @@ import { useVenueNotifications } from "../../features/notifications";
 import { requireVenue } from "../../features/venue";
 import { AppLayout } from "@concertable/web/components/AppLayout";
 import type { ProfileMenuItem } from "@concertable/web/components/ProfileMenu";
+import { Mailbox } from "@concertable/web/features/messaging";
 
 const links = [
   { label: "Dashboard", to: "/" },
@@ -25,13 +26,14 @@ const profileItems: ProfileMenuItem[] = [
 
 function VenueLayout() {
   useVenueNotifications();
-  const { selectionRequired } = useTenant("Venue");
-  if (selectionRequired) return <TenantChooser tenantType="Venue" />;
+  const { selectionRequired } = useTenant("venue");
+  if (selectionRequired) return <TenantChooser tenantType="venue" />;
   return (
     <AppLayout
       links={links}
       profileItems={profileItems}
-      headerSlot={<TenantSwitcher tenantType="Venue" />}
+      headerSlot={<TenantSwitcher tenantType="venue" />}
+      messagingSlot={<Mailbox />}
     />
   );
 }
@@ -42,7 +44,7 @@ export const Route = createFileRoute("/_venue")({
       await requireLocalB2bAuth({ location });
       return;
     }
-    const { selectionRequired } = await resolveTenantRoute("Venue");
+    const { selectionRequired } = await resolveTenantRoute("venue");
     if (selectionRequired) return;
     await requireVenue({ pathname: location.pathname });
   },

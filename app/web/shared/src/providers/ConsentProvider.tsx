@@ -2,12 +2,10 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import {
   CONSENT_CATEGORIES,
   DENIED_DECISION,
-  hasConsent as hasConsentInRecord,
-  readConsent,
-  writeConsent,
+  consent,
   type ConsentCategory,
   type ConsentDecision,
-  type ConsentRecord,
+  type StoredConsent,
 } from "@/lib/consent";
 
 const GRANTED_DECISION: ConsentDecision = CONSENT_CATEGORIES.reduce(
@@ -16,9 +14,9 @@ const GRANTED_DECISION: ConsentDecision = CONSENT_CATEGORIES.reduce(
 );
 
 interface ConsentContextValue {
-  record: ConsentRecord | null;
+  record: StoredConsent | undefined;
   isDecided: boolean;
-  hasConsent: (category: ConsentCategory) => boolean;
+  has: (category: ConsentCategory) => boolean;
   acceptAll: () => void;
   rejectAll: () => void;
   save: (decision: ConsentDecision) => void;
@@ -27,21 +25,25 @@ interface ConsentContextValue {
   preferencesOpen: boolean;
 }
 
-const ConsentContext = createContext<ConsentContextValue | null>(null);
+const ConsentContext = createContext<ConsentContextValue | undefined>(
+  undefined,
+);
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
-  const [record, setRecord] = useState<ConsentRecord | null>(() => readConsent());
+  const [record, setRecord] = useState<StoredConsent | undefined>(() =>
+    consent.read(),
+  );
   const [preferencesOpen, setPreferencesOpen] = useState(false);
 
   function save(decision: ConsentDecision) {
-    setRecord(writeConsent(decision));
+    setRecord(consent.write(decision));
     setPreferencesOpen(false);
   }
 
   const value: ConsentContextValue = {
     record,
-    isDecided: record !== null,
-    hasConsent: (category) => hasConsentInRecord(category, record),
+    isDecided: record !== undefined,
+    has: (category) => consent.has(category, record),
     acceptAll: () => save(GRANTED_DECISION),
     rejectAll: () => save(DENIED_DECISION),
     save,

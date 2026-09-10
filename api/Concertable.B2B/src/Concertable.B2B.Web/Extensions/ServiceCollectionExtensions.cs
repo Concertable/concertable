@@ -27,25 +27,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddSharedInfrastructure(configuration);
-        services.AddScoped<AuditInterceptor>();
-        services.AddScoped<TenantInterceptor>();
-        services.AddScoped<VenueArtistTenantInterceptor>();
-        services.AddScoped<IDomainEventDispatchInterceptor, DomainEventDispatchInterceptor>();
-
-        services.AddDataAccessSpecifications();
-
-        services.AddScoped<IDbConnection>(_ =>
-            new SqlConnection(configuration.GetConnectionString(B2BDb.Name)));
-
-        return services;
-    }
-
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddGeometry();
+        services.AddClientContext();
         services.AddUris(configuration);
 
         return services;
@@ -72,6 +57,7 @@ public static class ServiceCollectionExtensions
             {
                 options.MapInboundClaims = false;
                 options.Authority = configuration["Auth:Authority"] ?? configuration["services__auth__https__0"];
+                options.RequireHttpsMetadata = !environment.IsDevelopment();
                 options.Audience = "concertable.b2b.api";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -92,6 +78,22 @@ public static class ServiceCollectionExtensions
             });
 
         services.AddAuthorization();
+
+        return services;
+    }
+
+    private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSharedInfrastructure(configuration);
+        services.AddScoped<AuditInterceptor>();
+        services.AddScoped<TenantInterceptor>();
+        services.AddScoped<VenueArtistTenantInterceptor>();
+        services.AddScoped<IDomainEventDispatchInterceptor, DomainEventDispatchInterceptor>();
+
+        services.AddDataAccessSpecifications();
+
+        services.AddScoped<IDbConnection>(_ =>
+            new SqlConnection(configuration.GetConnectionString(B2BDb.Name)));
 
         return services;
     }

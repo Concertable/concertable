@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
+  # No branches filter, deliberately: on pull_request it matches the BASE branch, so `- main` ran no CI
+  # at all on a PR stacked on another PR. Every PR is gated whatever it targets; E2E stays merge-queue-only.
   pull_request:
-    branches:
-      - main
   merge_group:
     branches:
       - main
@@ -24,13 +24,13 @@ jobs:
     #   run_e2e_ui -> e2e-ui-tests
     #   run_fe     -> fe-boundaries + carve-fe (the FE COMPILE FLOOR: ownership holds and each surface builds from the feed)
     # Automatic classification, by the changed-file set:
-    #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
-    #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
+    #   - non-code    (docs / .claude / .agents / .codex / plans / reviews / root dotfiles) -> ALL FOUR
+    #                 false: nothing to compile or test. build + carve no-op, unit/integration skip, E2E no-op.
     #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
     #   - anything else -> initially enables every job; this is conservative job plumbing, not E2E-tier policy.
-    # `.agents/skills/merge/SKILL.md` is the single source of truth for the E2E tier: a positive trigger keeps
+    # The `merge` skill's Step 4 is the single source of truth for the E2E tier: a positive trigger keeps
     # full E2E on via `full-e2e`; no positive trigger selects `skip-e2e`. The hard floor remains build + carve +
     # unit + integration, and every PR still merges through the queue on current main.
     # The same E2E selections can also be supplied as git TRAILERS on their own line — `Skip-E2E: true` or
@@ -38,6 +38,10 @@ jobs:
     # token can't trip it (the pr-227 bug). A PR label of the same name (skip-e2e / skip-e2e-ui) works too.
     #   Skip-E2E-UI / skip-e2e-ui -> run_e2e_ui off       (build+carve, unit+integration, api E2E still run)
     #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
+    # Both opt-outs are IGNORED for a diff that can change runtime behaviour — a non-inert api/ path outside
+    # a test folder, or any E2E suite/harness source. The skill selects the tier; it cannot select E2E off
+    # for a runtime diff. One named exception outranks that: the `expand-merge` label, for the cut-over
+    # merge that PIPELINE_DEBT.md shows cannot pass UI E2E by construction (API E2E still runs).
     # NOTE: `ci-complete` is the single required check. Jobs with no work are skipped before runner allocation;
     # `ci-complete` accepts skipped dependencies and reports the required success result.
     runs-on: ubuntu-latest
@@ -52,8 +56,11 @@ jobs:
       run_e2e:    ${{ steps.detect.outputs.run_e2e }}
       run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
       run_fe:     ${{ steps.detect.outputs.run_fe }}
-      unit_projects: ${{ steps.test-projects.outputs.unit_projects }}
-      integration_projects: ${{ steps.test-projects.outputs.integration_projects }}
+      unit_projects: ${{ steps.scope.outputs.unit_projects }}
+      architecture_projects: ${{ steps.scope.outputs.architecture_projects }}
+      startup_projects: ${{ steps.scope.outputs.startup_projects }}
+      integration_projects: ${{ steps.scope.outputs.integration_projects }}
+      services:             ${{ steps.detect.outputs.services }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,11 +69,17 @@ jobs:
         id: test-projects
         run: |
           unit_projects=$(find api -type f -name '*.UnitTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          architecture_projects=$(find api -type f -name '*.ArchitectureTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          startup_projects=$(find api -type f -name '*.StartupTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           integration_projects=$(find api -type f -name '*.IntegrationTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
           [ "$unit_projects" != '[]' ] || { echo "No unit test projects found."; exit 1; }
+          [ "$architecture_projects" != '[]' ] || { echo "No architecture test projects found."; exit 1; }
+          [ "$startup_projects" != '[]' ] || { echo "No startup test projects found."; exit 1; }
           [ "$integration_projects" != '[]' ] || { echo "No integration test projects found."; exit 1; }
-          echo "unit_projects=$unit_projects" >> "$GITHUB_OUTPUT"
-          echo "integration_projects=$integration_projects" >> "$GITHUB_OUTPUT"
+          echo "all_unit=$unit_projects"                 >> "$GITHUB_OUTPUT"
+          echo "all_architecture=$architecture_projects" >> "$GITHUB_OUTPUT"
+          echo "all_startup=$startup_projects"           >> "$GITHUB_OUTPUT"
+          echo "all_integration=$integration_projects"   >> "$GITHUB_OUTPUT"
       - name: Classify changed files
         id: detect
         run: |
@@ -88,12 +101,13 @@ jobs:
             echo "run_e2e=true"    >> "$GITHUB_OUTPUT"
             echo "run_e2e_ui=true" >> "$GITHUB_OUTPUT"
             echo "run_fe=true"     >> "$GITHUB_OUTPUT"
+            echo "services=ALL"    >> "$GITHUB_OUTPUT"
             exit 0
           fi
           files=$(git diff --name-only "$base" "$head")
           echo "Changed files:"; printf '%s\n' "$files"
           # Inert = cannot affect any build or test: markdown anywhere, and the doc/tooling trees.
-          INERT='(\.md$|^\.claude/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
+          INERT='(\.md$|^\.claude/|^\.agents/|^\.codex/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
           PKG='(^|/)Directory\.Packages\.props$'
           run_code=true
           run_tests=true
@@ -116,6 +130,42 @@ jobs:
           elif printf '%s\n' "$files" | grep -qE '^app/scripts/carve-fe\.mjs$|^\.github/workflows/test\.yml$'; then run_fe=true
           else run_fe=false; fi
           echo "-> run_fe=$run_fe (FE feed-restore carves)."
+          # SERVICE SCOPE: which services a change can actually affect, so an unrelated service's
+          # suites and standalone carve never gate this PR. Fails safe to ALL: only a diff whose every
+          # api/ path sits inside one service folder narrows the scope, and any file outside those
+          # folders (shared tiers, api/ root config, the umbrella AppHost, this workflow) means ALL.
+          # An empty scope is legitimate — a frontend-only change affects no backend service.
+          api_files=$(printf '%s\n' "$files" | grep -E '^api/' || true)
+          SERVICE_DIRS='^api/Concertable\.(Auth|B2B|Customer|Payment|Search)([./]|$)'
+          if printf '%s\n' "$files" | grep -qE '^\.github/workflows/test\.yml$'; then
+            services=ALL
+            echo "-> the gate itself changed; every service in scope."
+          elif [ -z "$api_files" ]; then
+            services=""
+            echo "-> no api/ change; no backend service in scope."
+          elif printf '%s\n' "$api_files" | grep -qvE "$SERVICE_DIRS"; then
+            services=ALL
+            echo "-> a shared or api-root path changed; every service in scope."
+          else
+            services=$(printf '%s\n' "$api_files" \
+              | sed -E 's#^api/Concertable\.(Auth|B2B|Customer|Payment|Search).*#\1#' \
+              | sort -u | tr '\n' ' ')
+            echo "-> service scope: $services"
+          fi
+          echo "services=$services" >> "$GITHUB_OUTPUT"
+          # A diff that can change runtime behaviour may NOT opt out of E2E. Two genuine defects reached main
+          # on 2026-09-09 — a missing payment state-machine edge that stranded an authorized escrow, and an
+          # invitation-acceptance deadlock — because Skip-E2E was applied per-PR to behaviour-changing diffs
+          # and the UI suite had not run for days. Runtime = a non-inert api/ path outside a test folder; an
+          # E2E suite's or harness's own sources count too, since that is the gate re-validating itself.
+          api_changed=$(printf '%s\n' "$files" | grep -vE "$INERT" | grep -E '^api/' || true)
+          api_runtime=false
+          if [ -n "$api_changed" ]; then
+            if printf '%s\n' "$api_changed" | grep -qE 'E2E'; then api_runtime=true
+            elif printf '%s\n' "$api_changed" | grep -qvE '(^|/)[Tt]ests?/'; then api_runtime=true
+            fi
+          fi
+          echo "-> api_runtime=$api_runtime (mandatory E2E when true)."
           # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
           # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
           # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
@@ -135,7 +185,17 @@ jobs:
             git log --format="%(trailers:key=$1,valueonly=true)" "$base..$head" | grep -qiE '^[[:space:]]*(true|yes|1|on)[[:space:]]*$' && return 0
             printf '%s\n' "$labels" | grep -qixF "$2"
           }
-          if printf '%s\n' "$labels" | grep -qixF full-e2e; then
+          if printf '%s\n' "$labels" | grep -qixF expand-merge; then
+            # The one sanctioned exception, owned by PIPELINE_DEBT.md: a published-package EXPAND merge flips
+            # the backend while its consumer surfaces stay on the old wire shape, so full UI E2E cannot pass
+            # by construction. Named rather than folded into the generic opt-out, so claiming it is a
+            # deliberate, greppable act. API E2E still runs and still gates the backend flip; the sync merge
+            # is where UI E2E validates the migrated surfaces.
+            run_e2e_ui=false
+            echo "-> expand-merge; UI E2E off by construction (PIPELINE_DEBT.md). API E2E still gates the backend flip."
+          elif [ "$api_runtime" = true ]; then
+            echo "-> api/ runtime or E2E-suite change; E2E is mandatory and every Skip-E2E opt-out is ignored."
+          elif printf '%s\n' "$labels" | grep -qixF full-e2e; then
             echo "-> full-e2e override; historical skip labels/trailers ignored."
           else
             if optout Skip-E2E-UI skip-e2e-ui; then
@@ -157,6 +217,43 @@ jobs:
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
           echo "run_e2e_ui=$run_e2e_ui" >> "$GITHUB_OUTPUT"
           echo "run_fe=$run_fe"         >> "$GITHUB_OUTPUT"
+
+      - name: Scope test projects to the affected services
+        id: scope
+        env:
+          ALL_UNIT: ${{ steps.test-projects.outputs.all_unit }}
+          ALL_ARCHITECTURE: ${{ steps.test-projects.outputs.all_architecture }}
+          ALL_STARTUP: ${{ steps.test-projects.outputs.all_startup }}
+          ALL_INTEGRATION: ${{ steps.test-projects.outputs.all_integration }}
+          SERVICES: ${{ steps.detect.outputs.services }}
+        run: |
+          # ALL keeps the historical full fan-out. A named scope filters each matrix to the owning
+          # service's projects; an empty scope yields empty matrices, so the jobs skip rather than
+          # running another service's suites. Shared-tier projects live outside the five service
+          # folders and therefore only ever run under ALL, which is exactly when they can be affected.
+          if [ "$SERVICES" = "ALL" ]; then
+            unit="$ALL_UNIT"; architecture="$ALL_ARCHITECTURE"; startup="$ALL_STARTUP"; integration="$ALL_INTEGRATION"
+            echo "-> full fan-out."
+          else
+            pattern=$(printf '%s' "$SERVICES" | tr ' ' '\n' | grep -v '^$' \
+              | sed -E 's|^|^api/Concertable\\.|' | paste -sd '|' -)
+            if [ -z "$pattern" ]; then
+              unit='[]'; architecture='[]'; startup='[]'; integration='[]'
+              echo "-> no service in scope; backend test matrices are empty."
+            else
+              filter() { printf '%s' "$1" | jq -c --arg p "$pattern" 'map(select(test($p)))'; }
+              unit=$(filter "$ALL_UNIT")
+              architecture=$(filter "$ALL_ARCHITECTURE")
+              startup=$(filter "$ALL_STARTUP")
+              integration=$(filter "$ALL_INTEGRATION")
+              echo "-> scoped to /$pattern/."
+            fi
+          fi
+          echo "unit=$unit"; echo "architecture=$architecture"; echo "startup=$startup"; echo "integration=$integration"
+          echo "unit_projects=$unit"                 >> "$GITHUB_OUTPUT"
+          echo "architecture_projects=$architecture" >> "$GITHUB_OUTPUT"
+          echo "startup_projects=$startup"           >> "$GITHUB_OUTPUT"
+          echo "integration_projects=$integration"   >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -202,6 +299,25 @@ jobs:
         shell: pwsh
         run: ./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release
 
+  split-inventory:
+    # Gate: the committed repository-split inventory is current, and no runtime or test-tier project
+    # declares a blocking cross-repository ProjectReference. The carve jobs catch such an edge only in
+    # the service they carve, and only once its whole closure compiles; this catches it repo-wide in
+    # seconds, with no build and no feed. Rule + rationale: eng/repository-split/inventory.py.
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.run_code == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install --quiet pyyaml
+      - run: python eng/repository-split/inventory.py --check
+      - run: python eng/repository-split/validate_map.py --owner-operations-only
+
   local-platform-pack:
     runs-on: ubuntu-latest
     needs: changes
@@ -229,13 +345,18 @@ jobs:
           if-no-files-found: error
 
   carve-auth:
-    # Gate: Concertable.Auth must build standalone from its own package closure — a ProjectReference
-    # escaping api/Concertable.Auth/ fails here (project-not-found) instead of silently at a repo split.
+    # Gate: Concertable.Auth and its non-E2E test tier must build standalone from their own package
+    # closure — a ProjectReference escaping api/Concertable.Auth/ fails here (project-not-found)
+    # instead of silently at a repo split. ArchitectureTests is out until the AppHost stages: it
+    # reaches the composition layer, which still references cross-folder projects by design.
     # Use `git archive`, not `git subtree split`: the split rewrites the folder's whole history and is
     # far too slow for a gate; archive extracts the tracked tree at HEAD instantly (no fetch-depth: 0).
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Auth'))
     permissions:
       contents: read
       packages: read
@@ -275,25 +396,38 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
           git archive HEAD:api/Concertable.Auth | tar -x -C "$RUNNER_TEMP/carve"
-          echo "Carved tree (only api/Concertable.Auth tracked files):"
+          mkdir -p "$RUNNER_TEMP/carve/src/Concertable.Auth.Contracts"
+          git archive HEAD:api/Concertable.Auth.Contracts | tar -x -C "$RUNNER_TEMP/carve/src/Concertable.Auth.Contracts"
+          echo "Carved Auth target tree (Auth runtime plus Auth.Contracts):"
           ls -la "$RUNNER_TEMP/carve"
 
       - name: Restore + build the carved Auth from the feed (packages only)
         if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
-        run: pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/src/Concertable.Auth/Concertable.Auth.csproj" --configuration Release
+        run: |
+          dotnet new sln --name CarveAuth --format slnx
+          dotnet sln CarveAuth.slnx add \
+            src/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj \
+            src/Concertable.Auth/Concertable.Auth.csproj \
+            tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj \
+            tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj \
+            tests/Concertable.Auth.IntegrationTests/Concertable.Auth.IntegrationTests.csproj
+          pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveAuth.slnx" --configuration Release
 
   carve-payment:
-    # Gate: Concertable.Payment's deployable closure must build standalone from its own package
-    # closure — a ProjectReference escaping api/Concertable.Payment/ fails here (project-not-found)
-    # instead of silently at a repo split. Same `git archive` technique as carve-auth.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost.Extensions and the
-    # E2ETests.Helpers harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.Testing.E2E) that are absent from the carve and exempt by design (composition / E2E
-    # harness layers). The solution lists every package-clean project so each is built directly.
+    # Gate: Concertable.Payment's deployable closure AND its non-E2E test tier must build standalone
+    # from their own package closure — a ProjectReference escaping api/Concertable.Payment/ fails here
+    # (project-not-found) instead of silently at a repo split. Same `git archive` technique as carve-auth.
+    # Not the whole .slnx: the AppHost/Hosting composition layer and the E2E harness still reference
+    # cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E, sibling services'
+    # Hosting) that are absent from the carve, and ArchitectureTests reaches them via the AppHost.
+    # Those wait on the packable-Hosting, AppHost-image-mode and E2E-to-fleet stages.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Payment'))
     permissions:
       contents: read
       packages: read
@@ -352,21 +486,27 @@ jobs:
             src/Concertable.Payment.Application/Concertable.Payment.Application.csproj \
             src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj \
             src/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj \
-            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj
+            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj \
+            tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj \
+            tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj \
+            tests/Compatibility/Concertable.Payment.PublishedContractFixture/Concertable.Payment.PublishedContractFixture.csproj
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarvePayment.slnx" --configuration Release -p:MinVerSkip=true
 
   carve-search:
-    # Gate: Concertable.Search's deployable closure must build standalone from its own package
-    # closure — a ProjectReference escaping api/Concertable.Search/ fails here (project-not-found)
-    # instead of silently at a repo split. Same `git archive` technique as carve-auth/carve-payment.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost.Extensions and the
-    # IntegrationTests/E2ETests.Helpers harness, which reference cross-folder projects
-    # (Concertable.AppHost.Shared, Concertable.Testing*) absent from the carve and exempt by design
-    # (composition / test-harness layers). The solution lists every package-clean project so each is
-    # built directly. Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
+    # Gate: Concertable.Search's deployable closure AND its non-E2E test tier must build standalone
+    # from their own package closure — a ProjectReference escaping api/Concertable.Search/ fails here
+    # (project-not-found) instead of silently at a repo split. Same `git archive` technique as
+    # carve-auth/carve-payment. Not the whole .slnx: the AppHost/Hosting composition layer and the E2E
+    # harness still reference cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E)
+    # absent from the carve, and ArchitectureTests reaches them via the AppHost — those wait on the
+    # packable-Hosting, AppHost-image-mode and E2E-to-fleet stages.
+    # Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Search'))
     permissions:
       contents: read
       packages: read
@@ -423,22 +563,28 @@ jobs:
             src/Concertable.Search.Application/Concertable.Search.Application.csproj \
             src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
             src/Concertable.Search.Domain/Concertable.Search.Domain.csproj \
-            src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
+            src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj \
+            tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj \
+            tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj \
+            tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveSearch.slnx" --configuration Release
 
   carve-b2b:
     # Gate: Concertable.B2B's deployable closure must build standalone from its own package closure —
     # a ProjectReference escaping api/Concertable.B2B/ fails here (project-not-found) instead of
     # silently at a repo split. Same `git archive` technique as carve-auth/carve-payment/carve-search.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost(.Extensions) and the
-    # IntegrationTests/E2ETests harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.Testing*, Payment/Search E2E helpers) absent from the carve and exempt by design
-    # (composition / test-harness layers). The closure is large (42 projects), so discover it as "every
+    # Not the whole .slnx: the AppHost/Hosting composition layer and the E2E harness still reference
+    # cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E, Payment/Search E2E
+    # helpers) absent from the carve, and ArchitectureTests reaches them via the AppHost — those wait on
+    # the packable-Hosting, AppHost-image-mode and E2E-to-fleet stages. The non-E2E test tier is in. The closure is large (42 projects), so discover it as "every
     # csproj that is not a test or AppHost project" — every package-clean project is built directly, and
     # a new closure project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'B2B'))
     permissions:
       contents: read
       packages: read
@@ -487,12 +633,12 @@ jobs:
         # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
         run: |
           dotnet new sln --name CarveB2B --format slnx
-          # Closure = every csproj except the test (Tests/) and AppHost (composition) projects, which
-          # legitimately reference cross-folder projects absent from the carve. Path/name based, so it
-          # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
+          # Every csproj except E2E, ArchitectureTests and the AppHost/Hosting composition projects,
+          # which legitimately reference cross-folder projects absent from the carve. Path/name based, so
+          # it can't drift on comment wording and auto-includes new or transitively-only-reached projects.
           mapfile -t PROJS < <(find . -name '*.csproj' \
-            -not -path '*/Tests/*' \
-            -not -path '*/tests/*' \
+            -not -path '*E2ETests*' \
+            -not -name '*.ArchitectureTests.csproj' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.B2B.AppHost.csproj' \
             -not -name 'Concertable.B2B.Hosting.csproj')
@@ -505,15 +651,18 @@ jobs:
     # Gate: Concertable.Customer's deployable closure must build standalone from its own package closure —
     # a ProjectReference escaping api/Concertable.Customer/ fails here (project-not-found) instead of
     # silently at a repo split. Same `git archive` technique as carve-auth/carve-payment/carve-search/carve-b2b.
-    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost(.Extensions) and the
-    # IntegrationTests/E2ETests harness, which reference cross-folder projects (Concertable.AppHost.Shared,
-    # Concertable.Testing*, Payment/Search E2E helpers) absent from the carve and exempt by design
-    # (composition / test-harness layers). The closure is large, so discover it as "every csproj that is
+    # Not the whole .slnx: the AppHost/Hosting composition layer and the E2E harness still reference
+    # cross-folder projects (Concertable.AppHost.Shared, Concertable.Testing.E2E, Payment/Search E2E
+    # helpers) absent from the carve, and ArchitectureTests reaches them via the AppHost — those wait on
+    # the packable-Hosting, AppHost-image-mode and E2E-to-fleet stages. The non-E2E test tier is in. The closure is large, so discover it as "every csproj that is
     # not a test or AppHost project" — every package-clean project is built directly, and a new closure
     # project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_code == 'true'
+    if: >-
+      needs.changes.outputs.run_code == 'true' &&
+      (needs.changes.outputs.services == 'ALL' ||
+       contains(needs.changes.outputs.services, 'Customer'))
     permissions:
       contents: read
       packages: read
@@ -562,12 +711,12 @@ jobs:
         # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
         run: |
           dotnet new sln --name CarveCustomer --format slnx
-          # Closure = every csproj except the test (Tests/) and AppHost (composition) projects, which
-          # legitimately reference cross-folder projects absent from the carve. Path/name based, so it
-          # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
+          # Every csproj except E2E, ArchitectureTests and the AppHost/Hosting composition projects,
+          # which legitimately reference cross-folder projects absent from the carve. Path/name based, so
+          # it can't drift on comment wording and auto-includes new or transitively-only-reached projects.
           mapfile -t PROJS < <(find . -name '*.csproj' \
-            -not -path '*/Tests/*' \
-            -not -path '*/tests/*' \
+            -not -path '*E2ETests*' \
+            -not -name '*.ArchitectureTests.csproj' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.Customer.AppHost.csproj' \
             -not -name 'Concertable.Customer.Hosting.csproj')
@@ -575,6 +724,61 @@ jobs:
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarveCustomer.slnx" --configuration Release -p:MinVerSkip=true
+
+  container-images:
+    # Gate: every deployable that opts into a container image with <ContainerRepository> must actually
+    # produce one. publish-images.yml only runs after merge, so without this a project that cannot be
+    # imaged (a missing base image, a Functions app whose host contract is wrong, a Worker that forgot
+    # EnableSdkContainerSupport) would break main rather than the PR that broke it.
+    #
+    # Builds to a local OCI archive instead of pushing: the PR needs to know the image BUILDS, and a PR
+    # must never write to the registry. Goes through local-platform.ps1 like every other build job, so a
+    # PR that changes platform source images against that source and not the stale feed.
+    #
+    # The set is derived from <ContainerRepository>, identically to publish-images.yml, so the gate and
+    # the publish can never cover different sets. One sequential job rather than a matrix on purpose:
+    # the nine publishes share this workspace's obj/, so each reuses what the previous ones compiled,
+    # where a matrix would rebuild the shared closure nine times on nine cold runners.
+    runs-on: ubuntu-latest
+    needs: [local-platform-pack, changes]
+    if: needs.changes.outputs.run_code == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Build every opted-in deployable as an image
+        shell: bash
+        run: |
+          projects=$(grep -rl '<ContainerRepository>' api --include='*.csproj' | sort)
+          test -n "$projects" || { echo "No <ContainerRepository> projects found — refusing to pass"; exit 1; }
+          echo "Deployables to image:"
+          echo "$projects"
+          mkdir -p "$RUNNER_TEMP/images"
+          while IFS= read -r project; do
+            echo "::group::$project"
+            pwsh ./scripts/local-platform.ps1 publish "$project" --configuration Release \
+              /t:PublishContainer \
+              -p:ContainerImageTag=ci \
+              -p:ContainerArchiveOutputPath="$RUNNER_TEMP/images/$(basename "$project" .csproj).tar.gz"
+            echo "::endgroup::"
+          done <<< "$projects"
+          ls -l "$RUNNER_TEMP/images"
 
   fe-boundaries:
     runs-on: ubuntu-latest
@@ -615,7 +819,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
+        surface: [web/customer, web/admin, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -630,7 +834,7 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes, local-platform-pack]
-    if: needs.changes.outputs.run_tests == 'true'
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.unit_projects != '[]'
     permissions:
       contents: read
       packages: read
@@ -667,10 +871,84 @@ jobs:
         shell: pwsh
         run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
 
-  integration-tests:
+  architecture-tests:
     runs-on: ubuntu-latest
     needs: [build, changes, local-platform-pack]
-    if: needs.changes.outputs.run_tests == 'true'
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.architecture_projects != '[]'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.changes.outputs.architecture_projects) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Run ${{ matrix.project }}
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
+
+  startup-tests:
+    runs-on: ubuntu-latest
+    needs: [build, changes, local-platform-pack]
+    # Gate: would any host refuse to boot on the configuration its app model supplies? Builds every real
+    # registration graph and every AppHost resource graph without starting a process, so a configuration or
+    # deployment-topology defect fails here in seconds on the PR instead of surfacing as an unrelated E2E
+    # timeout in the merge queue. integration-tests orders behind it; queue E2E deliberately takes no
+    # needs: on a service-scoped matrix, so ci-complete is what makes this tier blocking there.
+    if: needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.startup_projects != '[]'
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.changes.outputs.startup_projects) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@v4
+        with:
+          name: local-platform
+          path: artifacts/local-platform
+      - name: Run ${{ matrix.project }}
+        shell: pwsh
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [build, changes, local-platform-pack, architecture-tests, startup-tests]
+    # A cheap gate with an empty matrix skips, and a skipped need would otherwise cascade into skipping
+    # this job — silently, which for Concertable.Auth (a service with startup tests and no architecture
+    # tests) would mean an Auth-only PR running neither integration nor E2E. Gate on no need having
+    # FAILED instead, so ordering still holds but an inapplicable tier does not suppress a later one.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && needs.changes.outputs.run_tests == 'true' && needs.changes.outputs.integration_projects != '[]' }}
     permissions:
       contents: read
       packages: read
@@ -710,16 +988,35 @@ jobs:
 
   e2e-api-tests:
     runs-on: ubuntu-latest
-    needs: [build, changes]
+    # local-platform-pack only. This job consumes that job's feed artifact and compiles its own project
+    # closure from it; `build` produces nothing it reads. `build` is a separate gate that ci-complete waits
+    # on, so depending on it here only parked the longest jobs in the run behind a 3m compile. Never depend
+    # on a service-scoped matrix job either: frontend-only changes deliberately produce empty backend
+    # matrices, and a skipped dependency fails the implicit `success()` over `needs`, taking this job down
+    # with it. ci-complete independently waits for architecture-tests and startup-tests when in scope.
+    needs: [local-platform-pack, changes]
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
-    # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
-    # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
-    # can't stall queue admission.
+    # E2E is the queue's gate; the PR is gated by build + carve + unit + integration + startup. It skips only
+    # when the selected E2E tier says so; ci-complete is the sole required check and aggregates the result.
     if: github.event_name == 'merge_group' && needs.changes.outputs.run_e2e == 'true'
 
     permissions:
       contents: read
       packages: read
+
+    strategy:
+      # One row per owning service: the two suites run concurrently instead of back to back, and each row
+      # lifts into that service's own repository at the polyrepo cut (plans/platform/SPLIT_TIME_E2E_STRATEGY.md).
+      # Each row boots its own stack and provisions its own per-run Stripe customers, so nothing is shared
+      # between them (plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 3b).
+      # fail-fast off: each row is an independent gate, and cancelling the other loses its verdict for nothing.
+      fail-fast: false
+      matrix:
+        include:
+          - service: B2B
+            project: api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj
+          - service: Customer
+            project: api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj
 
     env:
       # Required: dotnet test restores the AppHost + Payment.Client/Contracts, which pull Auth's and
@@ -732,21 +1029,14 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      - name: Skip API E2E (no runtime change)
-        if: needs.changes.outputs.run_e2e != 'true'
-        run: echo "No runtime change (non-code or package-only) -> skipping API E2E; build + carve + unit + integration gate this."
-
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.run_e2e == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -754,23 +1044,26 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - uses: actions/download-artifact@v4
-        if: needs.changes.outputs.run_e2e == 'true'
         with:
           name: local-platform
           path: artifacts/local-platform
 
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.run_e2e == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.run_e2e == 'true'
         uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.run_e2e == 'true'
         # The B2B Workers host is an Azure Functions (v4) app; Aspire launches it via `dotnet run`,
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
@@ -778,27 +1071,25 @@ jobs:
           npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
-      - name: Run B2B API E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
+      - name: Run ${{ matrix.service }} API E2E tests
         shell: pwsh
-        run: ./scripts/local-platform.ps1 test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
-
-      - name: Run Customer API E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
-        shell: pwsh
-        run: ./scripts/local-platform.ps1 test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+        run: ./scripts/local-platform.ps1 test ${{ matrix.project }} --configuration Release --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
-        if: always() && needs.changes.outputs.run_e2e == 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-api-diagnostics
+          name: e2e-api-diagnostics-${{ matrix.service }}
           path: '**/e2e-diagnostics.log'
           if-no-files-found: ignore
 
   e2e-ui-tests:
     runs-on: ubuntu-latest
-    needs: [build, e2e-api-tests, changes]
+    # See e2e-api-tests for why this takes local-platform-pack rather than build. It no longer takes
+    # e2e-api-tests either: that edge dates from when both suites shared FIXED Stripe test customers, and
+    # per-run customer provisioning (StripeCustomerResolver, 3f9d95497) replaced that two months later, so
+    # it cost 9m of serial dead time guarding nothing. Both lanes still gate the merge through ci-complete.
+    needs: [local-platform-pack, changes]
     # Merge-queue only (see e2e-api-tests): genuinely skipped on the PR, runs the real UI suite in the queue.
     # BLOCKING lane — excludes @quarantine (Category!=quarantine); the flaky scenario runs in the non-gating
     # e2e-ui-quarantine job.
@@ -807,6 +1098,16 @@ jobs:
     permissions:
       contents: read
       packages: read
+
+    strategy:
+      # One row per owning service — see e2e-api-tests.
+      fail-fast: false
+      matrix:
+        include:
+          - service: B2B
+            project: api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj
+          - service: Customer
+            project: api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj
 
     env:
       # Required: building the UI E2E projects restores the AppHost + Payment.Client/Contracts → Auth's and Payment's feed packages (see e2e-api-tests).
@@ -818,23 +1119,14 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      # Gated on run_e2e_ui: off for non-code and package-only changes.
-      # Aggregated by ci-complete, which tolerates a skipped need, so it no-ops green when off.
-      - name: Skip UI E2E (no runtime change)
-        if: needs.changes.outputs.run_e2e_ui != 'true'
-        run: echo "UI E2E gated off (non-code / package-only) -> build + carve gate this."
-
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.run_e2e_ui == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -842,23 +1134,26 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - uses: actions/download-artifact@v4
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         with:
           name: local-platform
           path: artifacts/local-platform
 
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
@@ -866,13 +1161,11 @@ jobs:
           func --version
 
       - name: Set up Node
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install web SPA dependencies
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         # The UI E2E AppHost serves the venue/artist/business/customer SPAs via `npm run dev` (Vite).
         # They live in the app/ npm workspace; node_modules is gitignored, so without this the dev
         # servers never start and every scenario fails at warm-up with ERR_CONNECTION_REFUSED.
@@ -880,7 +1173,6 @@ jobs:
         run: npm ci
 
       - name: Build frontend package dependencies
-        if: needs.changes.outputs.run_e2e_ui == 'true'
         # The SPAs consume the shared FE tiers from their built dist (@concertable/web, /b2b,
         # /customer), so all of them must be built before the Vite dev servers start — not just
         # @concertable/shared, or the dev server can't resolve the tier imports and every scenario
@@ -888,35 +1180,23 @@ jobs:
         working-directory: app
         run: npm run build:web-packages
 
-      - name: Build B2B UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
+      - name: Build ${{ matrix.service }} UI E2E tests
         shell: pwsh
-        run: ./scripts/local-platform.ps1 build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
-
-      - name: Build Customer UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        shell: pwsh
-        run: ./scripts/local-platform.ps1 build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+        run: ./scripts/local-platform.ps1 build ${{ matrix.project }} --configuration Release
 
       - name: Install Playwright browsers
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: pwsh api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        run: pwsh "$(dirname '${{ matrix.project }}')/bin/Release/net10.0/playwright.ps1" install --with-deps chromium
 
-      - name: Run B2B UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
-
-      - name: Run Customer UI E2E tests
-        if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
+      - name: Run ${{ matrix.service }} UI E2E tests
+        run: dotnet test ${{ matrix.project }} --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
         # the trace bundle is large (~hundreds of MB), so don't upload it on green runs.
-        if: failure() && needs.changes.outputs.run_e2e_ui == 'true'
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-ui-diagnostics
+          name: e2e-ui-diagnostics-${{ matrix.service }}
           path: |
             **/e2e-diagnostics.log
             **/playwright-traces/**
@@ -976,6 +1256,14 @@ jobs:
           name: local-platform
           path: artifacts/local-platform
 
+      - name: Log in to GHCR
+        if: env.RUN == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Provision HTTPS dev certificate
         if: env.RUN == 'true'
         run: |
@@ -1019,7 +1307,15 @@ jobs:
 
       - name: Run quarantined Customer UI E2E scenarios
         if: env.RUN == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine"
+        shell: bash
+        # An empty quarantine lane is the healthy steady state, but VSTest exits 1 when a filter matches
+        # nothing — so only that specific message is allowed to pass; any other failure still reports.
+        run: |
+          set -o pipefail
+          if dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine" 2>&1 | tee quarantine-run.log; then
+            exit 0
+          fi
+          grep -q "No test matches the given testcase filter" quarantine-run.log
 
       - name: Upload quarantine E2E diagnostics
         if: env.RUN == 'true' && failure()
@@ -1032,27 +1328,77 @@ jobs:
             **/playwright-failures/**
           if-no-files-found: ignore
 
+  hook-tests:
+    # The vendored hooks are generated copies of Concertable/agent-standards, and this is the only
+    # thing that catches one edited in place or a harness wiring dropped. It never skips: a change
+    # anywhere can break it, and the hook set is what enforces the standards on every other change.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Vendored hooks match upstream and this repo's tables give the expected verdicts
+        run: python -m unittest discover -s .agents/hooks/tests -t .agents/hooks/tests -v
+
+  workflow-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Test repository-split owner operations
+        shell: pwsh
+        run: |
+          ./scripts/test-owner-operations.ps1
+          ./scripts/test-system-bootstrap.ps1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test repository workflow policy helpers
+        run: node --test .github/scripts/*.test.mjs
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test the CI service-scope classifier
+        run: |
+          python -m pip install --quiet pyyaml
+          python .github/workflows/tests/test_service_scope.py
+
   ci-complete:
     # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
     # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
     # event, and it passes iff nothing it needs failed or was cancelled. Inert jobs skip before allocating
     # runners; this aggregator turns those skipped dependencies into the required success result. needs EVERY gating job directly
-    # (build + all carves + unit + integration + both e2e) so it reflects the full pipeline.
+    # (build + all carves + unit + integration + both e2e + hook tests) so it reflects the full pipeline.
     runs-on: ubuntu-latest
     needs:
       - build
+      - split-inventory
       - local-platform-pack
       - carve-auth
       - carve-payment
       - carve-search
       - carve-b2b
       - carve-customer
+      - container-images
       - fe-boundaries
       - carve-fe
       - unit-tests
+      - architecture-tests
+      - startup-tests
       - integration-tests
       - e2e-api-tests
       - e2e-ui-tests
+      - hook-tests
+      - workflow-tests
     if: always()
     steps:
       - name: Fail if any CI job failed or was cancelled

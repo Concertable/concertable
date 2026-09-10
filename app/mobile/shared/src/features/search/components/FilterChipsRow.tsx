@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { MapPin, X } from "lucide-react-native";
 import dayjs from "dayjs";
-import { useSearchFiltersStore } from "@concertable/shared/features/search";
+import { useSearchFilters } from "@concertable/shared/features/search";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import { HEADER_TYPE_OPTIONS } from "../constants";
 
 export function FilterChipsRow() {
-  const { filters, setFilters } = useSearchFiltersStore();
+  const { filters, updateFilters } = useSearchFilters();
 
   const chips = useMemo(() => {
     const result: { key: string; label: string; icon?: boolean; onRemove: () => void }[] = [];
@@ -19,7 +19,7 @@ export function FilterChipsRow() {
         result.push({
           key: "type",
           label: opt.label,
-          onRemove: () => setFilters({ ...filters, headerType: "concert" }),
+          onRemove: () => updateFilters({ headerType: "concert" }),
         });
     }
 
@@ -27,7 +27,7 @@ export function FilterChipsRow() {
       result.push({
         key: "genres",
         label: filters.genres.join(", "),
-        onRemove: () => setFilters({ ...filters, genres: undefined }),
+        onRemove: () => updateFilters({ genres: undefined }),
       });
     }
 
@@ -37,7 +37,7 @@ export function FilterChipsRow() {
       result.push({
         key: "dates",
         label: `${from} – ${to}`,
-        onRemove: () => setFilters({ ...filters, from: undefined, to: undefined }),
+        onRemove: () => updateFilters({ from: undefined, to: undefined }),
       });
     }
 
@@ -49,8 +49,7 @@ export function FilterChipsRow() {
         label: `${r}km of ${place}`,
         icon: true,
         onRemove: () =>
-          setFilters({
-            ...filters,
+          updateFilters({
             lat: undefined,
             lng: undefined,
             locationLabel: undefined,
@@ -60,7 +59,7 @@ export function FilterChipsRow() {
     }
 
     return result;
-  }, [filters, setFilters]);
+  }, [filters, updateFilters]);
 
   if (!chips.length) return null;
 

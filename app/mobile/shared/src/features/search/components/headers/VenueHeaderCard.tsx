@@ -3,7 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
-import type { Header, VenueHeader } from "@concertable/shared/features/search";
+import type { Header, VenueHeader } from "@concertable/shared/features/search/types";
 import { useImageUrlQuery } from "@concertable/shared/hooks";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { Text } from "@/components/ui/text";

@@ -49,7 +49,7 @@ SQL**, and one is a hard floor:
 | ACA environment + 8 backend apps | Consumption, scale-to-zero + KEDA | **~£0–5** | within the free grant if nothing is pinned always-on |
 | **Service Bus** | **Standard** (topics required) | **~£8 (hard floor while it exists)** | Basic can't do topics; ~28 subscriptions in use. Base charge is monthly, can't pause |
 | Azure SQL (5 DBs) | Serverless, auto-pause 1h | **~£2 idle → +~£0.20/DB/awake-hour** | storage ~£0.10/GB always; compute only while awake; ~30s cold resume |
-| Container registry | **GHCR (free private)** or ACR Basic | **£0** (GHCR) / ~£4 (ACR) | GHCR saves the ACR Basic charge |
+| Container registry | **GHCR (public images)** or ACR Basic | **£0** (GHCR) / ~£4 (ACR) | public source/images avoid a runtime pull credential |
 | App Configuration | **Free tier** | **£0** | 1,000 req/day — fine (config read at startup + rare refresh) |
 | Key Vault | Standard | **~£0–1** | pennies per operation |
 | Log Analytics | daily cap | **~£0–3** | cap ingestion; ACA needs a log sink |
@@ -113,7 +113,7 @@ modules. The earlier ~£380 figure was a pessimistic everything-pinned top-end, 
 | `payment-workers` | inbox only | min 0, **KEDA ASB-subscription scale (0→1 on depth)** | **min 1** |
 | `search-workers` | inbox only (6 projections) | min 0, **KEDA ASB scale** | **min 1** |
 | `search-web` | none (query API) | min 0, HTTP scale | min 1 |
-| `b2b-workers` | Azure Functions, hourly timer | Functions consumption / ACA Job on cron — native scale-to-zero | same |
+| `b2b-workers` | Azure Functions on ACA, hourly timer | native Functions timer scaling, min 0 | same |
 
 **How scale-to-zero still processes messages (Mode B / cheap Mode A):**
 - Inbox consumers (`payment-workers`, `search-workers`, and the Web hosts) get a **KEDA `azure-servicebus`
@@ -214,17 +214,16 @@ scale-to-zero dependence entirely). Same modules, different variables.
 - `dotnet publish <proj> -t:PublishContainer -p:ContainerRegistry=<registry>` for the 5 Web hosts +
   `payment-workers` + `search-workers` (plain ASP.NET Core / Worker SDK → works out of the box, no
   Dockerfiles).
-- **`b2b-workers` is Azure Functions (isolated) → Functions Consumption plan. DECIDED.** The project is a
+- **`b2b-workers` is Azure Functions v4 isolated on Azure Container Apps.** The project is a
   single function — `ConcertFinishedFunction`, an hourly `[TimerTrigger("0 0 * * * *")]`, no HTTP/queue
-  triggers — and is *already* an Azure Functions v4 isolated worker (`FunctionsApplication.CreateBuilder`,
-  registered via `AddAzureFunctionsProject`). Consumption is native scale-to-zero (effectively free for a
-  once-an-hour job) and the zero-friction target for a project that's already Functions. The rejected
-  alternative — containerize on ACA — would mean either an always-on replica (wasteful for hourly work) or a
-  KEDA `cron` rule to wake an ACA Job, i.e. re-hosting the one non-standard build onto the standard path for
-  no benefit. Build: Functions base image (`func` / the Functions container build), not
-  `dotnet publish -t:PublishContainer`.
-- **Registry: GHCR** (free private, saves the ACR Basic ~£4) — ACA pulls with a registry credential /
-  federated identity. ACR Basic is the alternative if you want it all in Azure.
+  triggers. It stays a native Functions app, but is built with the Functions base image and deployed by
+  immutable digest like every other runtime. Consumption/Flex Consumption cannot run custom containers;
+  Functions on ACA preserves the trigger model, scale-to-zero, and the same artifact across local,
+  system-test, production, and rollback environments.
+- **Registry: public GHCR.** Canonical source is already public, and images become public only after
+  provenance, vulnerability, layer-secret, and clean-pull checks pass. ACA and local AppHosts pull
+  anonymously, so there is no long-lived GHCR credential to distribute. ACR with managed identity remains
+  the fallback if images ever need to become private.
 
 ## Terraform layout
 
@@ -256,11 +255,11 @@ Add a `deploy.yml` (today CI does build/test/NuGet-publish/mirror only — **no 
 
 1. **Auth:** GitHub OIDC → Azure (federated credential; no stored SP secret) — `azure/login` with
    `client-id`/`tenant-id`/`subscription-id`.
-2. **Build+push images** (matrix over the hosts) via `dotnet publish -t:PublishContainer` → GHCR; tag =
-   git SHA.
-3. **`terraform apply`** (env-selected) with `image_tag=$SHA`.
+2. **Build+push images** (matrix over the hosts) to GHCR, including the Functions-container build for
+   `b2b-workers`; record each pushed manifest digest against the git SHA.
+3. **`terraform apply`** (env-selected) with the immutable image digests.
 4. **Migrations:** `az containerapp job start` for the 5 DBs (B2BDb first) → poll to success.
-5. **Roll revisions:** `apply` already points apps at the new tag; confirm healthy.
+5. **Roll revisions:** `apply` already points apps at the new digests; confirm healthy.
 6. **SPAs:** build each with per-env `VITE_*` → deploy via the Static Web Apps deploy action.
 
 For **Mode B (ephemeral)**: a manual `workflow_dispatch` `spin-up` (apply + migrate + seed) and `tear-down`
@@ -295,7 +294,7 @@ The goal: one command to a full local stack, and the **same config keys** locall
 
 1. **Prep code** (before any cloud): ✅ SPA `vite.config.ts` `define` de-hardcoded + real `.env.production` +
    `staticwebapp.config.json` (done — see "SPAs → Azure Static Web Apps"); ✅ `b2b-workers` home **decided:
-   Functions Consumption** (see Images); delete + history-purge + rotate the orphaned
+   Azure Functions on Azure Container Apps** (see Images); delete + history-purge + rotate the orphaned
    `B2B.Web/appsettings.Production.json` SQL password (Phase 2). *(The old "move local dev secrets to
    user-secrets" item is **dev-only hygiene, not cloud prep** — prod reads secrets from Key Vault and never
    sees the local dev files; see "Local provisioning / Secrets".)*
@@ -316,9 +315,8 @@ The goal: one command to a full local stack, and the **same config keys** locall
   filled with the prod DNS-scheme hosts, `staticwebapp.config.json` shipped in each SPA. All 4 builds green.
 - **ASB topology drift** — generate the Terraform topic/subscription map from `*Topology.cs`, or accept
   hand-maintained parity. (nice-to-have)
-- ~~**`b2b-workers` (Functions)** — confirm Functions Consumption vs containerized-on-ACA.~~ ✅ **DECIDED —
-  Functions Consumption** (single hourly `TimerTrigger`, already a Functions v4 isolated worker; ACA rejected).
-  See Images section for the rationale + build note.
+- ~~**`b2b-workers` (Functions)** — confirm Functions hosting.~~ ✅ **DECIDED — Azure Functions on Azure
+  Container Apps**, using the same immutable Functions image in local, system-test, and deployment.
 - **Custom domains / OIDC — Cloudflare + `concertable.co.uk` — scheme decided + runbook authored 2026-07-17,
   see [`DOMAINS_AND_DNS.md`](DOMAINS_AND_DNS.md).** Per-surface subdomains: `customer.` / `venue.` /
   `artist.` / `business.` (SPAs on SWA), `auth.` + per-service `b2b-api.` / `customer-api.` / `search-api.` /

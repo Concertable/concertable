@@ -1,4 +1,7 @@
+using Concertable.DataAccess.Infrastructure.Extensions;
+using Concertable.Payment.Domain;
 using Concertable.Payment.Infrastructure.Data;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Payment.Infrastructure.Repositories;
@@ -19,10 +22,15 @@ internal sealed class EscrowRepository
             .Include(e => e.Refunds)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
-    public Task<EscrowEntity?> GetByBookingIdAsync(int bookingId, CancellationToken ct = default) =>
+    public Task<EscrowEntity?> GetByReferenceAsync(
+        PaymentOperationReference reference,
+        CancellationToken ct = default) =>
         context.Escrows
             .Include(e => e.Refunds)
-            .FirstOrDefaultAsync(e => e.BookingId == bookingId, ct);
+            .FirstOrDefaultAsync(
+                e => e.OperationType == reference.OperationType
+                    && e.ClientReference == reference.ClientReference,
+                ct);
 
     public Task<EscrowEntity?> GetByChargeIdAsync(string chargeId, CancellationToken ct = default) =>
         context.Escrows
@@ -37,6 +45,50 @@ internal sealed class EscrowRepository
             .FirstOrDefaultAsync(
             e => e.CommissionBindingId == commissionBindingId,
             ct);
+
+    public async Task<(EscrowEntity? Escrow, bool Conflict)> ReserveReleaseAsync(
+        int escrowId,
+        Guid operationId,
+        SettlementOperationFingerprint fingerprint,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            await context.Escrows
+                .Where(escrow =>
+                    escrow.Id == escrowId &&
+                    escrow.Status == EscrowStatus.Held &&
+                    escrow.ReleaseOperationId == null)
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(escrow => escrow.ReleaseOperationId, operationId)
+                        .SetProperty(escrow => escrow.ReleaseOperationFingerprintVersion, fingerprint.Version)
+                        .SetProperty(escrow => escrow.ReleaseOperationFingerprint, fingerprint.Value),
+                    ct);
+        }
+        catch (DbUpdateException ex) when (ex.IsDuplicateKey())
+        {
+            return (await ReloadByIdAsync(escrowId, ct), true);
+        }
+        catch (SqlException ex) when (ex.IsDuplicateKey())
+        {
+            return (await ReloadByIdAsync(escrowId, ct), true);
+        }
+
+        return (await ReloadByIdAsync(escrowId, ct), false);
+    }
+
+    public Task<EscrowEntity?> ReloadByIdAsync(int escrowId, CancellationToken ct = default)
+    {
+        foreach (var entry in context.ChangeTracker.Entries<EscrowEntity>()
+            .Where(entry => entry.Entity.Id == escrowId)
+            .ToList())
+        {
+            entry.State = EntityState.Detached;
+        }
+
+        return context.Escrows.SingleOrDefaultAsync(escrow => escrow.Id == escrowId, ct);
+    }
 
     public async Task<bool> TryReserveRefundGrossAsync(int escrowId, long grossMinor, CancellationToken ct = default)
     {

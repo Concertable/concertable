@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@concertable/shared/features/auth";
 import { userApi } from "@concertable/shared/features/user";
+import { mobileAuthSession } from "./mobileAuthSession";
 import { tokenStorage } from "./tokenStorage";
 import "../lib/apiClient";
 import "../lib/searchClient";
 import "../lib/paymentClient";
 
 export function useAuthInit() {
-  const setUser = useAuthStore((s) => s.setUser);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -15,9 +14,10 @@ export function useAuthInit() {
       if (token) {
         try {
           const user = await userApi.getMe();
-          setUser(user);
+          mobileAuthSession.set(user);
         } catch {
           await tokenStorage.clear();
+          mobileAuthSession.clear();
         }
       }
       setIsReady(true);

@@ -7,5 +7,4 @@ export { ActivityFeed } from "./ActivityFeed";
 export { RecentReviewsList } from "./RecentReviewsList";
 export { StripeConnectBanner } from "./StripeConnectBanner";
 export { ProfileHealthCard } from "./ProfileHealthCard";
-export { PersonaSwitcher } from "./PersonaSwitcher";
 export { WidgetLoading, WidgetError, WidgetEmpty } from "./WidgetState";

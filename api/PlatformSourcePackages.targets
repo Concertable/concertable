@@ -1,0 +1,53 @@
+<Project>
+
+  <!-- Swaps a test or AppHost project's platform PackageReference for the in-repo project while this file
+       and the platform source are on disk. Rule + rationale: the `packages` skill.
+
+       Two invariants a caller can break:
+       - Import this AFTER a folder's UseLocalCore swap. That swap removes the same PackageReference ids
+         when it is on, which is what stops both mechanisms firing on Messaging.* in one build.
+       - A carve must NOT copy this file. Its absence is the cut-over to feed packages. -->
+
+  <PropertyGroup>
+    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $(MSBuildProjectName.EndsWith('.AppHost'))">true</_SwapPlatformSourcePackages>
+    <_SwapPlatformSourcePackages Condition="'$(UseLocalPlatformPackages)' != 'true' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectFullPath)', '[\\/][Tt]ests[\\/]'))">true</_SwapPlatformSourcePackages>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true'">
+    <PlatformSourcePackage Include="Concertable.Testing"                  Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing\Concertable.Testing.csproj" />
+    <PlatformSourcePackage Include="Concertable.Testing.Architecture"     Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing.Architecture\Concertable.Testing.Architecture.csproj" />
+    <PlatformSourcePackage Include="Concertable.Testing.Integration"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\tests\Concertable.Testing.Integration\Concertable.Testing.Integration.csproj" />
+    <PlatformSourcePackage Include="Concertable.Seed.Shared"              Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Shared\Concertable.Seed.Shared.csproj" />
+    <PlatformSourcePackage Include="Concertable.Seed.Infrastructure"      Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Infrastructure\Concertable.Seed.Infrastructure.csproj" />
+    <PlatformSourcePackage Include="Concertable.Seed.Identity"            Project="$(MSBuildThisFileDirectory)Concertable.Shared\src\Seed\Concertable.Seed.Identity\Concertable.Seed.Identity.csproj" />
+    <PlatformSourcePackage Include="Concertable.Messaging.Domain"         Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
+    <PlatformSourcePackage Include="Concertable.Messaging.Infrastructure" Project="$(MSBuildThisFileDirectory)Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
+    <PlatformSourcePackage Include="Concertable.AppHost.Shared"            Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
+    <PlatformSourcePackage Include="Concertable.Auth.Hosting"             Project="$(MSBuildThisFileDirectory)Concertable.Auth\src\Concertable.Auth.Hosting\Concertable.Auth.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.B2B.Hosting"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.Hosting\Concertable.B2B.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Customer.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.Hosting\Concertable.Customer.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Payment.Hosting"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.Hosting\Concertable.Payment.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Search.Hosting"           Project="$(MSBuildThisFileDirectory)Concertable.Search\src\Concertable.Search.Hosting\Concertable.Search.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.Frontend.Hosting"         Project="$(MSBuildThisFileDirectory)Concertable.Frontend.Hosting\Concertable.Frontend.Hosting.csproj" />
+    <PlatformSourcePackage Include="Concertable.B2B.TestKit"              Project="$(MSBuildThisFileDirectory)Concertable.B2B\src\Concertable.B2B.TestKit\Concertable.B2B.TestKit.csproj" />
+    <PlatformSourcePackage Include="Concertable.Customer.TestKit"         Project="$(MSBuildThisFileDirectory)Concertable.Customer\src\Concertable.Customer.TestKit\Concertable.Customer.TestKit.csproj" />
+    <PlatformSourcePackage Include="Concertable.Payment.TestKit"          Project="$(MSBuildThisFileDirectory)Concertable.Payment\src\Concertable.Payment.TestKit\Concertable.Payment.TestKit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalPlatformSources)' == 'true'">
+    <PlatformSourcePackage Include="Concertable.AppHost.Shared" Project="$(MSBuildThisFileDirectory)Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" />
+    <PlatformSourcePackage Include="Concertable.Frontend.Hosting" Project="$(MSBuildThisFileDirectory)Concertable.Frontend.Hosting\Concertable.Frontend.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
+    <PackageReference Update="@(PlatformSourcePackage)" PlatformSourceProject="%(PlatformSourcePackage.Project)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(_SwapPlatformSourcePackages)' == 'true' or '$(UseLocalPlatformSources)' == 'true'">
+    <!-- The transform emits a ProjectReference only for the ids this project actually references
+         (the rest transform to an empty Include and are skipped); the Remove drops the same ids. -->
+    <ProjectReference Include="@(PackageReference->'%(PlatformSourceProject)')" IsAspireProjectResource="false" />
+    <PackageReference Remove="@(PlatformSourcePackage)" />
+  </ItemGroup>
+
+</Project>

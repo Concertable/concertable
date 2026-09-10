@@ -27,10 +27,17 @@
     <ProjectReference Include="..\..\src\Concertable.Payment.Infrastructure\Concertable.Payment.Infrastructure.csproj" Aliases="global,PaymentInfrastructure" />
     <ProjectReference Include="..\Compatibility\Concertable.Payment.PublishedContractFixture\Concertable.Payment.PublishedContractFixture.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\E2ETests\Concertable.Payment.E2ETests.Stripe\Concertable.Payment.E2ETests.Stripe.csproj" />
+    <PackageReference Include="Concertable.Testing" />
   </ItemGroup>
+
+  <Import Project="..\..\PublishedBaseline.props" />
 
   <ItemGroup>
     <None Update="Compatibility\Baselines\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PaymentBaselineVersion</_Parameter1>
+      <_Parameter2>$(PaymentBaselineName)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

@@ -45,7 +45,7 @@ public sealed class MemberManagementSteps
         using var client = await fixture.App.CreateAuthenticatedClientAsync(fixture.App.SeedState.VenueManager1.Email);
         var response = await client.PostAsJsonAsync(
             "/api/organization/invitations",
-            new { email = ColleagueEmail, role = "Staff" });
+            new { email = ColleagueEmail, role = "staff" });
         response.EnsureSuccessStatusCode();
         var invitation = await response.Content.ReadFromJsonAsync<InvitationReference>();
         invitationId = invitation!.Id;
@@ -90,7 +90,7 @@ public sealed class MemberManagementSteps
     [When(@"the owner returns to the members page")]
     public async Task OwnerReturnsToTheMembersPage()
     {
-        await browser.UsePersonaAsync(LoginPersona.VenueManager);
+        await browser.UseUserAsync(SeededUser.VenueManager);
         membersPage = new MembersPage(browser.Page, VenueSpaUrl);
         await membersPage.GotoAsync();
         await membersPage.WaitForRosterAsync();

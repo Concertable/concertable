@@ -17,16 +17,19 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
         long commissionVatMinor,
         Percentage commissionVatRate,
         TransactionStatus status,
-        int bookingId,
-        Guid? commissionBindingId)
+        PaymentOperationReference reference,
+        Guid? commissionBindingId,
+        Guid? operationId,
+        SettlementOperationFingerprint? operationFingerprint,
+        bool requiresAction)
         : base(
             payerId,
             payeeId,
             paymentIntentId,
             checked(payeeGrossMinor + commissionGrossMinor),
-            status)
+            status,
+            reference)
     {
-        BookingId = bookingId;
         Currency = currency;
         PayeeGrossMinor = payeeGrossMinor;
         CommissionGrossMinor = commissionGrossMinor;
@@ -35,10 +38,13 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
         CommissionVatRate = commissionVatRate;
         PayerTotalMinor = checked(payeeGrossMinor + commissionGrossMinor);
         CommissionBindingId = commissionBindingId;
+        OperationId = operationId;
+        OperationFingerprintVersion = operationFingerprint?.Version;
+        OperationFingerprint = operationFingerprint?.Value;
+        RequiresAction = requiresAction;
     }
 
     public override TransactionType TransactionType => TransactionType.Settlement;
-    public int BookingId { get; private set; }
     public Guid? CommissionBindingId { get; private set; }
     public CommissionBindingEntity? CommissionBinding { get; private set; }
     public Currency Currency { get; private set; }
@@ -48,6 +54,10 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
     public long CommissionVatMinor { get; private set; }
     public Percentage CommissionVatRate { get; private set; }
     public long PayerTotalMinor { get; private set; }
+    public Guid? OperationId { get; private set; }
+    public int? OperationFingerprintVersion { get; private set; }
+    public string? OperationFingerprint { get; private set; }
+    public bool RequiresAction { get; private set; }
 
     /// <summary>
     /// Running total of cumulative gross reserved across non-failed refunds. Maintained by the
@@ -102,7 +112,7 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
         long amount,
         long platformFee,
         TransactionStatus status,
-        int bookingId) =>
+        PaymentOperationReference reference) =>
         new(
             payerId,
             payeeId,
@@ -114,8 +124,39 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
             0,
             Percentage.From(0m),
             status,
-            bookingId,
-            null);
+            reference,
+            null,
+            null,
+            null,
+            false);
+
+    internal static SettlementTransactionEntity CreateForOperation(
+        Guid payerId,
+        Guid payeeId,
+        string paymentIntentId,
+        long amount,
+        long platformFee,
+        TransactionStatus status,
+        PaymentOperationReference reference,
+        Guid operationId,
+        SettlementOperationFingerprint operationFingerprint,
+        bool requiresAction) =>
+        new(
+            payerId,
+            payeeId,
+            paymentIntentId,
+            Currency.Gbp,
+            checked(amount - platformFee),
+            platformFee,
+            platformFee,
+            0,
+            Percentage.From(0m),
+            status,
+            reference,
+            null,
+            operationId,
+            operationFingerprint,
+            requiresAction);
 
     internal static SettlementTransactionEntity CreateBound(
         Guid payerId,
@@ -123,7 +164,7 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
         string paymentIntentId,
         CommissionCalculation calculation,
         TransactionStatus status,
-        int bookingId,
+        PaymentOperationReference reference,
         Guid commissionBindingId) =>
         new(
             payerId,
@@ -136,6 +177,16 @@ internal sealed class SettlementTransactionEntity : TransactionEntity
             calculation.CommissionVatMinor,
             calculation.CommissionVatRate,
             status,
-            bookingId,
-            commissionBindingId);
+            reference,
+            commissionBindingId,
+            null,
+            null,
+            false);
+
+    internal bool MatchesOperation(
+        Guid operationId,
+        SettlementOperationFingerprint fingerprint) =>
+        OperationId == operationId
+        && OperationFingerprintVersion == fingerprint.Version
+        && string.Equals(OperationFingerprint, fingerprint.Value, StringComparison.Ordinal);
 }

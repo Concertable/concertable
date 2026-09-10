@@ -10,6 +10,7 @@ public sealed class PlaywrightHooks
     [BeforeTestRun(Order = 1)]
     public static async Task BeforeRun()
     {
+        LoginCaptureHooks.Reset();
         Fixture = new UiFixture();
         await Fixture.InitializeAsync();
     }
@@ -30,16 +31,15 @@ public sealed class PlaywrightHooks
     public async Task BeforeScenario(ScenarioContext scenarioContext)
     {
         await fixture.App.ResetAsync();
-        LoginCaptureHooks.Reset();
 
         var tags = scenarioContext.ScenarioInfo.Tags;
         var isSignUp = scenarioContext.HasTag("SignUp");
 
-        var persona = isSignUp ? null : tags
-            .Select(tag => Enum.TryParse<LoginPersona>(tag, out var p) ? (LoginPersona?)p : null)
+        var user = isSignUp ? null : tags
+            .Select(tag => Enum.TryParse<SeededUser>(tag, out var p) ? (SeededUser?)p : null)
             .FirstOrDefault(p => p is not null);
 
-        await browser.InitializeAsync(fixture.Browser, persona, fixture);
+        await browser.InitializeAsync(fixture.Browser, user, fixture);
     }
 
     [AfterScenario]

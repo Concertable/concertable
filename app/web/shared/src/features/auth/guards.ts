@@ -1,9 +1,8 @@
 import { redirect } from "@tanstack/react-router";
 import userApi from "@/features/user/api/userApi";
-import { meQueryKey } from "@/features/user/hooks/useSyncUser";
+import { meQueryOptions } from "@/features/user/hooks/useMeQuery";
 import { queryClient } from "@/lib/queryClient";
 import { userManager } from "./config/oidcConfig";
-import { useAuthStore } from "./store/useAuthStore";
 import type { User } from "./types";
 
 async function hasValidSession() {
@@ -11,17 +10,13 @@ async function hasValidSession() {
   return !!oidcUser && !oidcUser.expired;
 }
 
-async function ensureUser(getMe: () => Promise<User>): Promise<User | null> {
+async function ensureUser<TUser extends User>(
+  getMe: () => Promise<TUser>,
+): Promise<TUser | undefined> {
   try {
-    const user = await queryClient.ensureQueryData({
-      queryKey: meQueryKey,
-      queryFn: getMe,
-      meta: { expectedErrors: [404] },
-    });
-    useAuthStore.getState().setUser(user);
-    return user;
+    return await queryClient.ensureQueryData(meQueryOptions(getMe));
   } catch {
-    return null;
+    return undefined;
   }
 }
 

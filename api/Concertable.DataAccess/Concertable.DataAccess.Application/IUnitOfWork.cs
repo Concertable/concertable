@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Concertable.DataAccess.Application;
@@ -12,6 +13,21 @@ namespace Concertable.DataAccess.Application;
 public interface IUnitOfWork<TContext>
 {
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Saves, treating every <see cref="DbUpdateException"/> — <see cref="DbUpdateConcurrencyException"/> included —
+    /// as expected: returns <see langword="false"/> and clears the tracker. Prefer the predicate overload wherever
+    /// only some write failures are expected, so the rest still surface.
+    /// </summary>
+    Task<bool> TrySaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Saves, returning <see langword="false"/> and clearing the tracker when <paramref name="isExpected"/> accepts
+    /// the failure; every other <see cref="DbUpdateException"/> propagates.
+    /// </summary>
+    Task<bool> TrySaveChangesAsync(
+        Func<DbUpdateException, bool> isExpected,
+        CancellationToken cancellationToken = default);
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>

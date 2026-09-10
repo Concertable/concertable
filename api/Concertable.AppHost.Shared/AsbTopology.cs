@@ -21,19 +21,7 @@ public sealed class AsbTopology
         return this;
     }
 
-    public AsbTopology Subscribe<TEvent>(string serviceName)
-    {
-        var topicBuilder = GetOrAddTopic<TEvent>();
-        topicBuilder.AddServiceBusSubscription($"{serviceName}-{KebabCase(typeof(TEvent))}", serviceName);
-        subscribedTopics.Add(topicBuilder.Resource.TopicName);
-        return this;
-    }
-
-    public AsbTopology Queue<TCommand>(string serviceName)
-    {
-        asb.AddServiceBusQueue(options.QueueNameFor(serviceName, typeof(TCommand)));
-        return this;
-    }
+    public AsbServiceTopology WithService(string serviceName) => new(this, serviceName);
 
     public IResourceBuilder<AzureServiceBusResource> RunAsEmulator()
     {
@@ -49,6 +37,16 @@ public sealed class AsbTopology
 
         return asb.RunAsEmulator();
     }
+
+    internal void Subscribe<TEvent>(string forServiceName)
+    {
+        var topicBuilder = GetOrAddTopic<TEvent>();
+        topicBuilder.AddServiceBusSubscription($"{forServiceName}-{KebabCase(typeof(TEvent))}", forServiceName);
+        subscribedTopics.Add(topicBuilder.Resource.TopicName);
+    }
+
+    internal void Queue<TCommand>(string forServiceName) =>
+        asb.AddServiceBusQueue(options.QueueNameFor(forServiceName, typeof(TCommand)));
 
     private IResourceBuilder<AzureServiceBusTopicResource> GetOrAddTopic<TEvent>()
     {
