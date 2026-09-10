@@ -254,7 +254,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [x] Tenancy refactor, membership and authorization sweep shipped (Swim-lane B complete)
 - [ ] All Stripe Connect Express payouts flowing through TenantId
 - [ ] ComplianceContext snapshot populated on every Booking created post-launch
-- [ ] Auth checks routed through tenant membership (not legacy TPH FK)
+- [x] Auth checks routed through tenant membership (not legacy TPH FK)
 - [x] Booking agreement generated + click-wrap consent recorded at every Accept
 - [x] VAT calculated per contract type + self-billed invoice generated per settlement, gated on a current e-signed self-billing agreement (12-month renewal)
 - [ ] Tenant config surface live (PRS / VAT / payment terms read from it, not constants)
