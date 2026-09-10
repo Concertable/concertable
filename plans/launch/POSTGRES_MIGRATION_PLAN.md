@@ -59,7 +59,7 @@ the per-service phases flip anything.
 
 ### Phase 1 — shared package column types
 
-- [ ] Replace `HasColumnType("nvarchar(450)")` and `nvarchar(max)` in `Concertable.Messaging` outbox and
+- [x] Replace `HasColumnType("nvarchar(450)")` and `nvarchar(max)` in `Concertable.Messaging` outbox and
   inbox configurations and in `DataAccess` `DbContextBase` with `HasMaxLength(450)` and an unbounded
   string, letting each provider render its own type.
 
