@@ -32,9 +32,9 @@ public static class InteractiveClients
 
     /// <summary>
     /// Resolves a wire client id (e.g. <see cref="Events.CredentialRegisteredEvent.ClientId"/>), or
-    /// <see langword="null"/> for an id this build does not know — so a consumer skips an event from a
-    /// client it predates rather than throwing.
+    /// <see langword="null"/> for an absent or unrecognised id — so a consumer skips an event from a
+    /// client it predates, or a malformed one, rather than throwing.
     /// </summary>
-    public static InteractiveClientInfo? Find(string clientId) =>
-        ById.TryGetValue(clientId, out var info) ? info : null;
+    public static InteractiveClientInfo? Find(string? clientId) =>
+        clientId is not null && ById.TryGetValue(clientId, out var info) ? info : null;
 }
