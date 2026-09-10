@@ -4,7 +4,7 @@
 
 **Judgment:** `approved`
 
-**Reviewed up to commit:** `07a52528fb0a0245d70b1ab0c56ec657248fe1be`
+**Reviewed up to commit:** `2a6d2fa20f19d834539c94e63cd16b8beadd792f`
 
 - Candidate (final): `ea985630f..07a52528fb0a0245d70b1ab0c56ec657248fe1be` — one line of `app/scripts/verify-fe-package.mjs`
 - Branch: `Fix/web-b2b-tenant-header-verification`
