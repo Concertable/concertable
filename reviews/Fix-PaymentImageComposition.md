@@ -20,6 +20,10 @@
   `services__{resourceName}__{endpointName}__0`, keyed by endpoint **name**. `payment-web` declares an
   endpoint named `https`, so that key should exist and the stated mechanism cannot be the explanation.
 
+  **Closed 2026-09-10** by the incremental pass at the end of this file: the mechanism is established
+  from the Aspire source and the causal chain does hold, via the client's `grpc:0` preference rather
+  than via the key the PR body named.
+
   Both changes in this branch remain independently justified — the version pin genuinely drifted 36
   versions behind and its client lacks both the `grpc:0` fallback and the h2c insecure-credential
   handling, read directly out of the published assemblies; the duplicate endpoint genuinely breaks the
@@ -76,3 +80,28 @@ recorded before any CI run on this branch existed. Run `34486226594` on `0f96513
 the `AssertImageEndpoint(..., "http", ...)` call, which `55424f06f` then deleted; no run ever fired for
 `55424f06f..dadc14d04`, so the fix has never been exercised remotely. This merge push is the first head
 that carries both halves, and its run is the gate.
+
+## Incremental review — 2026-09-10 (discovery-key mechanism established)
+
+> Range reviewed: `84795c778..HEAD` (1 commit, 1 file).
+
+No findings. This closes the Medium finding above by supplying the mechanism that finding said was
+missing, read out of the Aspire source rather than inferred from Concertable's own code.
+
+`ResourceBuilderExtensions` in Aspire 13.3.2 builds each service-discovery variable as
+`services__{resource}__{endpoint.IsHttpSchemeNamedEndpoint ? endpoint.Scheme : endpointName}__{index}`,
+and `EndpointReference.IsHttpSchemeNamedEndpoint` is true for exactly the endpoint names `http` and
+`https`. An endpoint named `https` is thus keyed by its **scheme**, which `WithHttpEndpoint` sets to
+`http`. `services:payment-web:https:0` is therefore never produced by any composition. The finding's
+counter-evidence, `Concertable.Frontend.Hosting`, hand-writes name-keyed variables and never reaches
+`WithReference`, so it was never evidence about this path.
+
+The version pin is consequently load-bearing after all, for a reason neither the original PR body nor
+the finding stated: from `0.1.0-alpha.0.1364` `AddPaymentClient` reads `services:payment-web:grpc:0`
+before `:https:0`, and `grpc` is not an http-scheme name, so Aspire does produce that key. The image
+that failed carried the `0.1.0-alpha.0.1330` client, provable from the error text alone — it names one
+key, where every version since names two. The endpoint removal remains independently justified on the
+port-binding evidence already recorded.
+
+Both statements in the branch that reasoned from the wrong premise are corrected: the debt entry here,
+and the PR body.
