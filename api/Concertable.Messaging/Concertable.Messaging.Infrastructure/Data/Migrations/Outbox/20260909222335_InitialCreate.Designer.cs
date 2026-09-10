@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Concertable.Messaging.Infrastructure.Data.Migrations.Outbox
 {
     [DbContext(typeof(OutboxDbContext))]
-    [Migration("20260724223648_InitialCreate")]
+    [Migration("20260909222335_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,6 +34,7 @@ namespace Concertable.Messaging.Infrastructure.Data.Migrations.Outbox
                         .HasColumnType("int");
 
                     b.Property<string>("CorrelationId")
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset?>("DispatchedAtUtc")
@@ -47,6 +48,7 @@ namespace Concertable.Messaging.Infrastructure.Data.Migrations.Outbox
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset?>("NextRetryAtUtc")
