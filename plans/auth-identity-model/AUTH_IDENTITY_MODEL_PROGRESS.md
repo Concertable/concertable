@@ -103,40 +103,24 @@ version doesn't carry (they didn't consume it before this plan). `node --test
 
 ## Next Steps
 
-**The old step 1 and step 2 below (extension-block fix, `AuthParty` question) were both wrong or incomplete
-in ways that cost real time this session — read the corrections, don't repeat either mistake.**
+**RESOLVED 2026-09-11 (repository owner):** the B2B Authorization module question is decided — leave the
+interim placement, Phase 2 proceeds to close-out. Logged in `api/Concertable.B2B/TECH_DEBT.md`
+("Authorization code is homed by accident-of-ownership, not by a real module") with the design sketch and
+an objective resolution condition; roadmap item `b2b-authorization/authorization-module` in
+`plans/b2b-authorization/B2B_AUTHORIZATION_ROADMAP.md` — the next plan to work once Phase 2 merges, not
+indefinitely deferred. See `AUTH_IDENTITY_MODEL_PLAN.md`'s Open Questions for the full rationale. The
+extension-block-syntax roadmap item was also added (`auth-identity-model/extension-block-syntax` in this
+epic's own roadmap) — do not fold it into Phase 2.
 
-1. **Decide the newly-surfaced B2B Authorization module question first** — see
-   `AUTH_IDENTITY_MODEL_PLAN.md`, Open Questions, "Not yet decided" paragraph under the RESOLVED entry.
-   Repository owner call, genuinely undecided:
-   - **(a) Build `Concertable.B2B.Authorization` now**, as its own new plan (own roadmap item, own worktree/
-     branch — this is out of Phase 2's scope and out of this worktree per the worktree identity gate, since
-     it rewires every B2B module's policy registration and inverts Tenant's dependency direction). Phase 2
-     stays open until that plan exists and is at least scoped.
-   - **(b) Leave the interim placement** (`ManagerClients` in `Concertable.B2B.Infrastructure/Authorization/`,
-     current state — already consolidated, already the right *local* shape, just not the full module move)
-     and log the rest as a tracked `api/Concertable.B2B/TECH_DEBT.md` entry with an objective resolution
-     condition. Phase 2 can proceed to close-out on its own terms.
-   Do not pick one unilaterally — this was raised explicitly for the repository owner to decide, not to
-   guess at again the way the old steps 1/2 below were guessed at.
-2. **The extension-block conversion is not a same-branch fix — do not attempt it inside a PR that also
-   touches consumers.** The old step 1 called it "mechanical, no design call" and cited a scratch-branch
-   verification as proof; that verification only proved `Concertable.Auth.Contracts` itself builds with the
-   new shape, never that any consumer does. `Concertable.Auth.Contracts` is `PackageReference`-only
-   everywhere (confirmed: `git checkout`-reverted after a 31-error build across `Concertable.Auth` alone),
-   so `.Id()` → `.Id` etc. is a real breaking-package change needing its own **producer-only** PR (touches
-   only `api/Concertable.Auth.Contracts/`, self-contained, publishes independently — same shape as Phase 1),
-   then a separate consumer-sync PR after that publish lands. If not already a roadmap item, add one; do not
-   fold it into Phase 2 again.
-3. Once (1) is decided and, if (b), logged: rerun the suites not yet re-verified this session
-   (`Concertable.Auth.UnitTests`, `Concertable.Auth.StartupTests`, `Concertable.Customer.User.UnitTests`,
-   B2B Tenant/User/Admin integration — Docker required), review (`review` skill) + record in `## Reviews`,
-   confirm CI on the exact head, apply the `merge` skill's tier table.
-4. Merge. No sync PR follows this one (see Phase 1 note above) — Phase 2 is delivery-terminal on its own
+1. Rerun the suites not yet re-verified this session (`Concertable.Auth.UnitTests`,
+   `Concertable.Auth.StartupTests`, `Concertable.Customer.User.UnitTests`, B2B Tenant/User/Admin integration
+   — Docker required), review (`review` skill) + record in `## Reviews`, confirm CI on the exact head, apply
+   the `merge` skill's tier table.
+2. Merge. No sync PR follows this one (see Phase 1 note above) — Phase 2 is delivery-terminal on its own
    merge.
-5. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
-   tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail). If (1a) was
-   chosen, its own new plan stays open after this one closes — it is a separate epic from here on.
+3. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
+   tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail). The new
+   `plans/b2b-authorization/` epic stays open after this one closes — it is a separate epic from here on.
 
 ## Reviews
 

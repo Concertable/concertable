@@ -13,3 +13,12 @@ switch on `AuthParty` instead of matching hand-maintained string sets.
   (Auth `Config.cs` + host wiring, the B2B/Customer registration handlers, the four resource-server hosts,
   `TestTokenMinter`, tests) and delete the old classes. Breaking published-contract change: producer PR
   publishes first, consumer migration follows against the bumped pin.
+- [ ] `auth-identity-model/extension-block-syntax` — convert `InteractiveClients`/`AuthScopes`/
+  `AuthResources`/`ServiceClients` from legacy `this`-parameter extension methods to C# 14 `extension()`
+  blocks (`csharp-style` requirement, missed by both Phase 1 review rounds). Two PRs, not one: a
+  producer-only PR touching only `api/Concertable.Auth.Contracts/` that publishes independently, then a
+  separate consumer-sync PR retargeting every `.Id()`/`.Info()`/`.Audience()`/`.AcceptedScopes()`/
+  `.IncludedClaims()` call site to the parenless property form once that publish lands and every consumer's
+  `ConcertableAuthVersion` pin moves past it. Attempted inside Phase 2 alongside consumer migration and
+  reverted — see `AUTH_IDENTITY_MODEL_PROGRESS.md`'s "extension-block conversion was attempted and reverted"
+  entry for why the combined shape cannot build.
