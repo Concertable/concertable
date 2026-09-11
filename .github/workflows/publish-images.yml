@@ -88,13 +88,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare local platform packages
-        run: ./scripts/local-platform.ps1 prepare
+        run: pwsh ./scripts/local-platform.ps1 prepare
 
       - name: Build and push the image
         # Registry and repository come from the project's own build config, so this step carries no
         # per-service knowledge and a new deployable needs no edit here.
         run: |
-          ./scripts/local-platform.ps1 publish "${{ matrix.project }}" \
+          pwsh ./scripts/local-platform.ps1 publish "${{ matrix.project }}" \
             --configuration Release \
             /t:PublishContainer \
             -p:ContainerImageTag=${{ github.sha }}
