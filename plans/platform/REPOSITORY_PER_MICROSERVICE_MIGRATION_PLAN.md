@@ -1074,7 +1074,8 @@ and `verify-artifact-integrity.ps1` produced six of eight SBOMs before its Trivy
 download took 25 minutes and the run was stopped.
 
 - **Reconciling the `.slnx` enlarges the compile surface, so build immediately afterwards.** The
-  rehearsal above ends at "reconcile the solution in both directions"; doing so is not a neutral edit.
+  rehearsal above ends by asking for the solution to be reconciled in both directions; doing that is not
+  a neutral edit.
   Adding the five missing entries put `tests/Concertable.Customer.AppHost.ArchitectureTests` in front
   of the compiler for the first time and it failed `CS0103` on `CustomerAppHost` — the class the
   monorepo renamed to `AppHost` — plus `CS0619` on an obsolete `Assert.ThrowsAny` overload. The
@@ -1183,7 +1184,7 @@ mechanical rather than exploratory:
 | `auth` | reconciled to a green Release build | apply the 8 recorded path fixes; push to the target |
 | `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
 | `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
-| `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
+| `customer` | re-cut, built, and pushed as `Concertable/customer#4` | see "What the `customer` re-cut added"; its CI waits on `CONCERTABLE_PACKAGES_TOKEN` |
 | `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none; green build needs disk |
 
 Detail for `customer` and `b2b` is in `~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and
