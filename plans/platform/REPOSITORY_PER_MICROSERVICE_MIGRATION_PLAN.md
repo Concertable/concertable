@@ -489,9 +489,16 @@ permissions are separate per environment.
 
 Secrets are redistributed by least privilege:
 
-- service repositories receive only package credentials — including `CONCERTABLE_PACKAGES_TOKEN`, which
+- service repositories receive only package credentials — including `CONCERTABLE_PACKAGES_READ`, which
   their restore steps need before an AppHost joins their solution — and their own integration-test
-  secrets;
+  secrets. **Read and write are two separate secrets and the names are not interchangeable.**
+  `CONCERTABLE_PACKAGES_READ` is the organization secret carrying a `read:packages` PAT, scoped to the
+  five service repositories and `system`; `CONCERTABLE_PACKAGES_TOKEN` is the `write:packages` secret
+  held only by the two publisher repositories. A workflow naming the wrong one resolves it empty, falls
+  through any `|| secrets.GITHUB_TOKEN`, and 403s on the first private cross-repository package —
+  indistinguishable at the feed from the secret never having been set. Read what a repository can
+  actually see with `gh api repos/Concertable/<repo>/actions/organization-secrets`, which needs no
+  `admin:org` scope;
 - Stripe/Google/full-system service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
 - canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
@@ -1102,10 +1109,23 @@ that AppHost's cross-service packages for the first time, and `payment`'s reposi
 runs, while `Concertable.AppHost.Shared`, same visibility and same binding, restored in those same runs
 with the same token. The pinned version is on the feed and a user PAT with org-wide `read:packages`
 restores the whole solution. Since there is no per-package panel to grant, the remedy is the
-account-scoped `CONCERTABLE_PACKAGES_TOKEN` the secrets-distribution list above assigns to every service
+account-scoped `CONCERTABLE_PACKAGES_READ` the secrets-distribution list above assigns to every service
 repository, preferred over `GITHUB_TOKEN` in the restore steps. **Every carve repository reaches this at
 the moment its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per
 service.
+
+**Name the secret the repository can actually see, and verify it rather than inferring it.** Settled
+2026-09-11 after three sessions spent an afternoon on it: the consumer workflows asked for
+`CONCERTABLE_PACKAGES_TOKEN` — the publishers' write secret, which no service repository holds — so the
+expression resolved empty, fell through `|| secrets.GITHUB_TOKEN`, and produced the same `403` the
+secret was created to remove. Every intermediate theory pointed at the credential rather than its name:
+that the secret had not been set, that it was scoped to the wrong repositories, that its PAT lacked
+`read:packages`, and that the `secrets` context is unavailable in workflow-level `env`. **The last of
+those is false** — GitHub's context-availability table lists `env` as `github, secrets, inputs, vars`,
+and `payment` proved it by restoring cleanly with the declaration left at workflow level. An empty
+token and an unauthorised one are indistinguishable at the feed, so do not reason about which it is:
+run `gh api repos/Concertable/<repo>/actions/organization-secrets`, which lists the organization
+secrets visible to that repository and requires no `admin:org` scope.
 
 `eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
 is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
