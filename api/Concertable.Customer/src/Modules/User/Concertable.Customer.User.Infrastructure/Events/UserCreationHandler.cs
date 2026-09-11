@@ -16,7 +16,9 @@ internal sealed class UserCreationHandler : IIntegrationEventHandler<CredentialR
 
     public async Task HandleAsync(CredentialRegisteredEvent e, MessageEnvelope envelope, CancellationToken ct = default)
     {
-        if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Customer })
+        // Customer's own classification of which interactive clients are its own — Auth's InteractiveClient
+        // is identity-only and carries no business-party opinion.
+        if (InteractiveClients.Find(e.ClientId) is not { Client: InteractiveClient.CustomerBrowser or InteractiveClient.CustomerMobile })
             return;
 
         if (await context.IsInboxMessageProcessedAsync(envelope.MessageId, nameof(UserCreationHandler), ct))

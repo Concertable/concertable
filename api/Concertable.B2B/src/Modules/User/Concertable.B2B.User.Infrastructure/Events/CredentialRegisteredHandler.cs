@@ -1,5 +1,6 @@
 using Concertable.Auth.Contracts;
 using Concertable.Auth.Contracts.Events;
+using Concertable.B2B.Infrastructure.Authorization;
 using Concertable.B2B.User.Infrastructure.Data;
 using Concertable.Messaging.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ internal sealed class CredentialRegisteredHandler : IIntegrationEventHandler<Cre
     {
         logger.HandlingCredentialRegistered(e.UserId, e.ClientId);
 
-        if (InteractiveClients.Find(e.ClientId) is not { IsB2b: true })
+        if (InteractiveClients.Find(e.ClientId) is not { } client || !client.Client.IsManagerClient)
         {
             logger.SkippedCredentialRegistered(e.UserId, $"ClientId '{e.ClientId}' is not a manager client");
             return;
