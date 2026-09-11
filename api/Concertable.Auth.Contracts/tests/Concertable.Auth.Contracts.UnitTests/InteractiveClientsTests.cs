@@ -55,36 +55,6 @@ public sealed class InteractiveClientsTests
         Assert.Null(InteractiveClients.Find(clientId));
     }
 
-    [Theory]
-    [InlineData("customer-web", AuthParty.Customer)]
-    [InlineData("customer-mobile", AuthParty.Customer)]
-    [InlineData("venue-web", AuthParty.Venue)]
-    [InlineData("venue-mobile", AuthParty.Venue)]
-    [InlineData("artist-web", AuthParty.Artist)]
-    [InlineData("artist-mobile", AuthParty.Artist)]
-    [InlineData("admin", AuthParty.Admin)]
-    public void Find_APartyClient_CarriesThatParty(string clientId, AuthParty expected)
-    {
-        Assert.Equal(expected, InteractiveClients.Find(clientId)!.Value.Party);
-    }
-
-    [Fact]
-    public void E2ETest_HasNoParty()
-    {
-        Assert.Null(InteractiveClient.E2ETest.Info().Party);
-    }
-
-    [Theory]
-    [InlineData(InteractiveClient.VenueBrowser, true)]
-    [InlineData(InteractiveClient.ArtistMobile, true)]
-    [InlineData(InteractiveClient.Admin, true)]
-    [InlineData(InteractiveClient.CustomerBrowser, false)]
-    [InlineData(InteractiveClient.E2ETest, false)]
-    public void IsB2b_IsTrueForVenueArtistAndAdminOnly(InteractiveClient client, bool expected)
-    {
-        Assert.Equal(expected, client.Info().IsB2b);
-    }
-
     [Fact]
     public void IsMobile_TracksMobileSchemePresence()
     {

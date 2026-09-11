@@ -3,22 +3,23 @@ using System.Collections.Frozen;
 namespace Concertable.Auth.Contracts;
 
 /// <summary>
-/// The interactive OAuth client roster — the single source for wire client ids and how a client id maps to
-/// a <see cref="AuthParty"/>. Auth registers these with the identity server; downstream services classify
-/// <see cref="Events.CredentialRegisteredEvent.ClientId"/> through <see cref="Find"/>.
+/// The interactive OAuth client roster — the single source for wire client ids. Auth registers these with
+/// the identity server; downstream services classify <see cref="Events.CredentialRegisteredEvent.ClientId"/>
+/// through <see cref="Find"/>. Identity-only — never grows a business-party or role field; a consuming
+/// service that needs to know what a client id means to it owns that classification locally.
 /// </summary>
 public static class InteractiveClients
 {
     private static readonly FrozenDictionary<InteractiveClient, InteractiveClientInfo> ByClient = new[]
     {
-        new InteractiveClientInfo(InteractiveClient.CustomerBrowser, "customer-web",     AuthParty.Customer, null),
-        new InteractiveClientInfo(InteractiveClient.CustomerMobile,  "customer-mobile",  AuthParty.Customer, "concertable-customer://"),
-        new InteractiveClientInfo(InteractiveClient.VenueBrowser,    "venue-web",        AuthParty.Venue,    null),
-        new InteractiveClientInfo(InteractiveClient.VenueMobile,     "venue-mobile",     AuthParty.Venue,    "concertable-business://"),
-        new InteractiveClientInfo(InteractiveClient.ArtistBrowser,   "artist-web",       AuthParty.Artist,   null),
-        new InteractiveClientInfo(InteractiveClient.ArtistMobile,    "artist-mobile",    AuthParty.Artist,   "concertable-business://"),
-        new InteractiveClientInfo(InteractiveClient.Admin,           "admin",            AuthParty.Admin,    null),
-        new InteractiveClientInfo(InteractiveClient.E2ETest,         "concertable-test", null,               null),
+        new InteractiveClientInfo(InteractiveClient.CustomerBrowser, "customer-web",     null),
+        new InteractiveClientInfo(InteractiveClient.CustomerMobile,  "customer-mobile",  "concertable-customer://"),
+        new InteractiveClientInfo(InteractiveClient.VenueBrowser,    "venue-web",        null),
+        new InteractiveClientInfo(InteractiveClient.VenueMobile,     "venue-mobile",     "concertable-business://"),
+        new InteractiveClientInfo(InteractiveClient.ArtistBrowser,   "artist-web",       null),
+        new InteractiveClientInfo(InteractiveClient.ArtistMobile,    "artist-mobile",    "concertable-business://"),
+        new InteractiveClientInfo(InteractiveClient.Admin,           "admin",            null),
+        new InteractiveClientInfo(InteractiveClient.E2ETest,         "concertable-test", null),
     }.ToFrozenDictionary(info => info.Client);
 
     private static readonly FrozenDictionary<string, InteractiveClientInfo> ById =
