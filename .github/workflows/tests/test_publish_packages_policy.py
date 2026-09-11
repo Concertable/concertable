@@ -51,28 +51,33 @@ def main() -> None:
     triggers = spec.get("on", spec.get(True))
     require(set(triggers) == {"push"}, "packages publish only from a main push")
     require(triggers["push"]["branches"] == ["main"], "push trigger is restricted to main")
+    paths = triggers["push"]["paths"]
     require(
-        ".github/workflows/publish-packages.yml" in triggers["push"]["paths"],
+        paths.index("api/**") < paths.index("!api/**/*.md"),
+        "API Markdown is excluded after the API source inclusion",
+    )
+    require(
+        ".github/workflows/publish-packages.yml" in paths,
         "publication-policy repairs trigger their own acceptance publish",
     )
     require(
-        ".github/scripts/package_publication_policy.py" in triggers["push"]["paths"],
+        ".github/scripts/package_publication_policy.py" in paths,
         "publication-policy implementation changes trigger acceptance publishing",
     )
     require(
-        ".github/scripts/package_ownership.py" in triggers["push"]["paths"],
+        ".github/scripts/package_ownership.py" in paths,
         "package-ownership changes trigger acceptance publishing",
     )
     require(
-        "eng/repository-split/inventory.py" in triggers["push"]["paths"],
+        "eng/repository-split/inventory.py" in paths,
         "inventory generator changes trigger acceptance publishing",
     )
     require(
-        "eng/repository-split/inventory.json" in triggers["push"]["paths"],
+        "eng/repository-split/inventory.json" in paths,
         "inventory changes trigger acceptance publishing",
     )
     require(
-        "eng/repository-split/map.yaml" in triggers["push"]["paths"],
+        "eng/repository-split/map.yaml" in paths,
         "ownership-map changes trigger acceptance publishing",
     )
     require(
