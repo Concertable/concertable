@@ -5,7 +5,7 @@
 - Roadmap item: `auth-identity-model/extension-block-syntax`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-AuthIdentityContractShapes`
 - Branch: `Refactor/AuthIdentityContractShapes`
-- PR: not yet opened
+- PR: #1021 (draft) — https://github.com/Concertable/concertable/pull/1021
 - Last reconciled: `2026-09-11` against `origin/main` `9e77b42b4` (post PR #1020, Auth resumed
   monorepo-publishing).
 
