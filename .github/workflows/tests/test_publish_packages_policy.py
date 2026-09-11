@@ -317,12 +317,33 @@ def main() -> None:
             "platform, future-system and promoted packages leave the publish batch",
         )
         require(
-            "auth" in ownership.KNOWN_TARGETS and "auth" not in ownership.RETAINED_TARGETS,
+            package_targets["Concertable.Auth.Contracts"] == "auth",
             "a promoted target stays loadable while leaving the retained set",
         )
+
+        conflicted_source = OWNERSHIP.read_text(encoding="utf-8").replace(
+            'PROMOTED_TARGETS = frozenset({"auth"})',
+            'PROMOTED_TARGETS = frozenset({"auth", "b2b"})',
+        )
         require(
-            not (ownership.RETAINED_TARGETS & ownership.PROMOTED_TARGETS),
-            "no target is both retained and promoted",
+            'frozenset({"auth", "b2b"})' in conflicted_source,
+            "the two-publisher fixture still matches the PROMOTED_TARGETS declaration",
+        )
+        try:
+            exec(
+                compile(conflicted_source, str(OWNERSHIP), "exec"),
+                {"__name__": "package_ownership_conflict"},
+            )
+        except ValueError as error:
+            require(
+                "b2b" in str(error),
+                "a target left in both the retained and promoted sets refuses to load",
+            )
+        else:
+            raise SystemExit("FAIL: a target published from two repositories was allowed to load")
+        require(
+            not any((package_dir / f"{name}.1.0.0.nupkg").exists() for name in removed),
+            "withheld packages are deleted from disk, not merely excluded from the batch",
         )
         require(
             ownership.packages_for(package_targets, "platform-dotnet")
@@ -339,6 +360,23 @@ def main() -> None:
             print("ok  retained package metadata rejects a mismatched platform train")
         else:
             raise SystemExit("FAIL: retained package metadata accepts a mismatched platform train")
+
+        promoted_only = root / "promoted-only"
+        promoted_only.mkdir()
+        with zipfile.ZipFile(promoted_only / "Concertable.Auth.Contracts.1.0.0.nupkg", "w") as archive:
+            archive.writestr(
+                "Concertable.Auth.Contracts.nuspec",
+                "<package><metadata><id>Concertable.Auth.Contracts</id></metadata></package>",
+            )
+        try:
+            ownership.validate_platform_dependencies(promoted_only, package_targets, "1.0.0")
+        except ValueError as error:
+            require(
+                "not published by this repository" in str(error),
+                "validation rejects an artifact this repository no longer publishes",
+            )
+        else:
+            raise SystemExit("FAIL: validation accepted a package this repository no longer publishes")
 
 
 if __name__ == "__main__":
