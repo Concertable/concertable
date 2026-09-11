@@ -84,7 +84,10 @@ test('every Concertable package id is pinned to the train that publishes it', ()
     for (const { id, version } of packageVersions(xml)) {
       if (!id.startsWith('Concertable.')) continue;
       const target = targets.get(id);
-      if (target === undefined) continue;
+      if (target === undefined) {
+        failures.push(`${relative(repoRoot, file)}: ${id} is absent from the ownership inventory`);
+        continue;
+      }
       checked += 1;
       const expected = TARGET_PINS.get(target);
       const actual = rootProperty(version, properties);
