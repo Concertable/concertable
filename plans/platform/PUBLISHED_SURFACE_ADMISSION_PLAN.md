@@ -17,8 +17,8 @@ default, because the monorepo publishes whatever carries `<IsPackable>true</IsPa
 
 Of 58 published packages, 16 are `*.Contracts`. The other 42 are a shared framework: `Kernel`,
 `DataAccess` (2), `Messaging` (5), `ServiceDefaults`, `Grpc`, `Shared.Api`, seven `Shared.*` SaaS
-adapters split across Application and Infrastructure (12), five `Testing.*`, three `*.TestKit`, three
-`Seed.*`, five `*.Hosting`, `AppHost.Shared`.
+adapters split across Application and Infrastructure (13), five `Testing.*`, three `*.TestKit`, three
+`Seed.*`, six `*.Hosting`, `AppHost.Shared`.
 
 Sharing contracts across a service boundary is the intended coupling. Sharing a framework reintroduces
 the compile-time coupling the service split exists to remove: five services that cannot move
@@ -41,7 +41,7 @@ the boundary check should reject, is unsettled and is settled here.
 One row per `IsPackable` project, each with a written reason, assigning:
 
 - **verdict** — `platform` (domain-neutral, admitted to a platform repo), `service-owned` (published,
-  but on its owning service's train), `vendor` (unpublished; each consumer owns a copy), or `promote`
+  on its owning service or System producer train), `vendor` (unpublished; each consumer owns a copy), or `promote`
   (the capability becomes a service, not a library);
 - **train** — the release train and consumer property it versions under, feeding
   `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 3;
@@ -85,16 +85,16 @@ release-train property.
 | `Concertable.Auth.Hosting` | 6 | service-owned | `ConcertableAuthVersion` | `Concertable/auth` | Auth composition remains owner-versioned and is legitimately consumed by service and system AppHosts. |
 | `Concertable.B2B.Admin.Contracts` | 0 | vendor | — | `Concertable/b2b` | No cross-repository consumer; keep the contract internal and unpublished. |
 | `Concertable.B2B.Application.Contracts` | 0 | vendor | — | `Concertable/b2b` | No cross-repository consumer; keep the contract internal and unpublished. |
-| `Concertable.B2B.Artist.Contracts` | 2 | service-owned | `ConcertableB2BVersion` | `Concertable/b2b` | B2B-owned projection contract consumed by Customer and Search. |
+| `Concertable.B2B.Artist.Contracts` | 2 | service-owned | `ConcertableB2BContractsVersion` | `Concertable/b2b` | B2B-owned projection contract consumed by Customer and Search. |
 | `Concertable.B2B.Booking.Contracts` | 0 | vendor | — | `Concertable/b2b` | No cross-repository consumer; keep the contract internal and unpublished. |
-| `Concertable.B2B.Concert.Contracts` | 2 | service-owned | `ConcertableB2BVersion` | `Concertable/b2b` | B2B-owned projection contract consumed by Customer and Search. |
+| `Concertable.B2B.Concert.Contracts` | 2 | service-owned | `ConcertableB2BContractsVersion` | `Concertable/b2b` | B2B-owned projection contract consumed by Customer and Search. |
 | `Concertable.B2B.Deal.Contracts` | 0 | vendor | — | `Concertable/b2b` | No cross-repository consumer; keep the contract internal and unpublished. |
-| `Concertable.B2B.Hosting` | 4 | service-owned | `ConcertableB2BVersion` | `Concertable/b2b` | B2B composition is a service concept and remains on the B2B train. |
-| `Concertable.B2B.Seed.Contracts` | 2 | service-owned | `ConcertableB2BVersion` | `Concertable/b2b` | B2B-owned seed contract consumed by Customer and Search. |
+| `Concertable.B2B.Hosting` | 4 | service-owned | `ConcertableB2BContractsVersion` | `Concertable/b2b` | B2B composition is a service concept and remains on the B2B producer train. |
+| `Concertable.B2B.Seed.Contracts` | 2 | service-owned | `ConcertableB2BContractsVersion` | `Concertable/b2b` | B2B-owned seed contract consumed by Customer and Search. |
 | `Concertable.B2B.Tenant.Contracts` | 0 | vendor | — | `Concertable/b2b` | No cross-repository consumer; keep the contract internal and unpublished. |
-| `Concertable.B2B.TestKit` | 1 | service-owned | `ConcertableB2BVersion` | `Concertable/b2b` | Public/test-admin clients remain owner-versioned for B2B and future system tests. |
+| `Concertable.B2B.TestKit` | 1 | service-owned | `ConcertableB2BContractsVersion` | `Concertable/b2b` | Public/test-admin clients remain owner-versioned for B2B and future system tests. |
 | `Concertable.B2B.User.Contracts` | 0 | vendor | — | `Concertable/b2b` | No cross-repository consumer; keep the contract internal and unpublished. |
-| `Concertable.B2B.Venue.Contracts` | 2 | service-owned | `ConcertableB2BVersion` | `Concertable/b2b` | B2B-owned projection contract consumed by Customer and Search. |
+| `Concertable.B2B.Venue.Contracts` | 2 | service-owned | `ConcertableB2BContractsVersion` | `Concertable/b2b` | B2B-owned projection contract consumed by Customer and Search. |
 | `Concertable.Contracts` | 3 | platform | `ConcertableDotNetPlatformVersion` | `Concertable/platform-dotnet` | Domain-neutral result, paging and integration contract primitives have three product consumers. |
 | `Concertable.Customer.Hosting` | 2 | service-owned | `ConcertableCustomerVersion` | `Concertable/customer` | Customer composition is a service concept and remains on the Customer train. |
 | `Concertable.Customer.Review.Contracts` | 1 | service-owned | `ConcertableCustomerVersion` | `Concertable/customer` | Customer-owned wire contract is consumed across the B2B boundary. |
@@ -120,17 +120,17 @@ release-train property.
 | `Concertable.Seed.Shared` | 5 | platform | `ConcertableDotNetPlatformVersion` | `Concertable/platform-dotnet` | Domain-neutral seed contracts are shared across all product services. |
 | `Concertable.ServiceDefaults` | 5 | platform | `ConcertableDotNetPlatformVersion` | `Concertable/platform-dotnet` | Domain-neutral service defaults are used by all five product services. |
 | `Concertable.Shared.Api` | 4 | platform | `ConcertableDotNetPlatformVersion` | `Concertable/platform-dotnet` | Domain-neutral HTTP terminals and middleware have four product consumers. |
-| `Concertable.Shared.Blob.Application` | 1 | vendor | — | consuming services | The thin external-storage seam is cheaper to own locally than coordinate cross-repository. |
-| `Concertable.Shared.Blob.Infrastructure` | 3 | vendor | — | consuming services | The thin external-storage adapter is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Email.Application` | 3 | vendor | — | consuming services | The thin external-email seam is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Email.Infrastructure` | 3 | vendor | — | consuming services | The thin external-email adapter is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Geocoding.Application` | 2 | vendor | — | consuming services | The thin external-geocoding seam is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Geocoding.Infrastructure` | 3 | vendor | — | consuming services | The thin external-geocoding adapter is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Imaging.Application` | 1 | vendor | — | consuming services | The thin external-imaging seam is cheaper to own locally than coordinate cross-repository. |
-| `Concertable.Shared.Imaging.Infrastructure` | 3 | vendor | — | consuming services | The thin external-imaging adapter is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Notification.Infrastructure` | 2 | vendor | — | consuming services | The thin notification adapter is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Pdf.Application` | 2 | vendor | — | consuming services | The thin PDF seam is cheaper to duplicate than platform-version. |
-| `Concertable.Shared.Pdf.Infrastructure` | 3 | vendor | — | consuming services | The thin PDF adapter is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Blob.Application` | 1 | vendor | — | `Concertable/b2b` | The thin external-storage seam is cheaper to own locally than coordinate cross-repository. |
+| `Concertable.Shared.Blob.Infrastructure` | 3 | vendor | — | `Concertable/auth`, `Concertable/b2b`, `Concertable/customer` | The thin external-storage adapter is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Email.Application` | 3 | vendor | — | `Concertable/auth`, `Concertable/b2b`, `Concertable/customer` | The thin external-email seam is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Email.Infrastructure` | 3 | vendor | — | `Concertable/auth`, `Concertable/b2b`, `Concertable/customer` | The thin external-email adapter is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Geocoding.Application` | 2 | vendor | — | `Concertable/b2b`, `Concertable/customer` | The thin external-geocoding seam is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Geocoding.Infrastructure` | 3 | vendor | — | `Concertable/auth`, `Concertable/b2b`, `Concertable/customer` | The thin external-geocoding adapter is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Imaging.Application` | 1 | vendor | — | `Concertable/b2b` | The thin external-imaging seam is cheaper to own locally than coordinate cross-repository. |
+| `Concertable.Shared.Imaging.Infrastructure` | 3 | vendor | — | `Concertable/auth`, `Concertable/b2b`, `Concertable/customer` | The thin external-imaging adapter is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Notification.Infrastructure` | 2 | vendor | — | `Concertable/b2b`, `Concertable/customer` | The thin notification adapter is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Pdf.Application` | 2 | vendor | — | `Concertable/b2b`, `Concertable/customer` | The thin PDF seam is cheaper to duplicate than platform-version. |
+| `Concertable.Shared.Pdf.Infrastructure` | 3 | vendor | — | `Concertable/auth`, `Concertable/b2b`, `Concertable/customer` | The thin PDF adapter is cheaper to duplicate than platform-version. |
 | `Concertable.Shared.QrCode.Application` | 1 | vendor | — | `Concertable/customer` | Only Customer consumes the QR-code seam; keep it local and unpublished. |
 | `Concertable.Shared.QrCode.Infrastructure` | 1 | vendor | — | `Concertable/customer` | Only Customer consumes the QR-code adapter; keep it local and unpublished. |
 | `Concertable.Testing` | 5 | platform | `ConcertableDotNetPlatformVersion` | `Concertable/platform-dotnet` | Domain-neutral test primitives support all five service repositories. |
