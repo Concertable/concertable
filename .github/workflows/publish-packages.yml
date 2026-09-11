@@ -1,23 +1,5 @@
 name: Publish packages
 
-# Packaging rails for SERVICE_BUILD_SEPARATION: pack the publishable Concertable.*
-# projects with a MinVer-derived version and push them to the org's GitHub Packages
-# NuGet feed, then prove a fresh consumer can restore the full published closure from the feed.
-#
-# What publishes is gated by ONE thing: <IsPackable>true</IsPackable> on a project. The
-# pack step packs every IsPackable project in the solution, so opting a package in is a
-# one-line csproj edit with no workflow change. The BUILD1 invariant: every packable lib's
-# own ProjectReferences must also be packable, else its package declares a feed-absent
-# Concertable.* dependency and restore fails NU1101. The verify-restore job below guards this
-# by restoring the entire published closure (every Concertable.* package) into a fresh consumer.
-#
-# Versioning is lockstep (one MinVer line for every package) while this is one repo; it
-# becomes independent per-repo versioning for free once a service splits out. The push
-# trigger is the coarse backend boundary 'api/**' — deliberately NOT a per-package folder
-# list, which would have to track IsPackable and would silently mis-publish the moment it
-# drifted. 'api/**' only avoids re-running on frontend/docs-only pushes; IsPackable still
-# decides what actually ships.
-
 on:
   push:
     branches:
@@ -27,6 +9,7 @@ on:
       # A publication-policy repair must be able to republish without an unrelated api/** touch.
       - '.github/workflows/publish-packages.yml'
       - '.github/scripts/package_publication_policy.py'
+      - '.github/scripts/package_ownership.py'
 
 permissions:
   contents: read
@@ -63,6 +46,12 @@ jobs:
       - name: List packages
         run: ls -l ${{ runner.temp }}/nupkgs
 
+      - name: Keep service-owned packages
+        run: >-
+          python .github/scripts/package_ownership.py
+          eng/repository-split/inventory.json
+          filter "${{ runner.temp }}/nupkgs"
+
       - name: Require a new lockstep package version
         id: version
         run: python .github/scripts/package_publication_policy.py "${{ runner.temp }}/nupkgs"
@@ -86,19 +75,7 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Restore the full published closure from the feed (fresh consumer)
-        # A fresh consumer referencing EVERY published Concertable.* package, restored from the
-        # feed alone. If any package declares a feed-absent Concertable.* dependency (the BUILD1
-        # trap: a packable lib that ProjectReferences a non-packable one) this restore fails
-        # NU1101. VERSION is the exact version validated and pushed by the publish job; nuget.org
-        # is inherited (no <clear/>) so the packages' external dependencies resolve normally.
-        #
-        # The package list is GENERATED from the <IsPackable>true</IsPackable> projects — the same
-        # single source of truth that drives `dotnet pack` — so it can't drift from what publishes:
-        # opting a package in (the one-line csproj edit) automatically adds it to this check, with no
-        # second hand-maintained list to forget. Relies on every packable project's PackageId being
-        # its project-file name (none override PackageId/AssemblyName); the empty-list guard fails
-        # loudly if the grep ever stops matching.
+      - name: Restore the published service closure from the feed (fresh consumer)
         run: |
           mkdir "$RUNNER_TEMP/consumer" && cd "$RUNNER_TEMP/consumer"
           cat > nuget.config <<EOF
@@ -115,18 +92,24 @@ jobs:
             </packageSourceCredentials>
           </configuration>
           EOF
-          packable=$(grep -rl '<IsPackable>true</IsPackable>' "$GITHUB_WORKSPACE/api" --include='*.csproj' \
-            | xargs -n1 basename | sed 's/\.csproj$//' | sort -u || true)
-          test -n "$packable" || { echo "No <IsPackable>true</IsPackable> projects found — refusing to pass"; exit 1; }
-          echo "Published packages to verify (derived from IsPackable projects):"
-          echo "$packable"
+          retained=$(python "$GITHUB_WORKSPACE/.github/scripts/package_ownership.py" \
+            "$GITHUB_WORKSPACE/eng/repository-split/inventory.json" list retained)
+          platform=$(python "$GITHUB_WORKSPACE/.github/scripts/package_ownership.py" \
+            "$GITHUB_WORKSPACE/eng/repository-split/inventory.json" list platform-dotnet)
+          platform_version=$(sed -nE \
+            's:.*<ConcertableDotNetPlatformVersion>([^<]+)</ConcertableDotNetPlatformVersion>.*:\1:p' \
+            "$GITHUB_WORKSPACE/api/Concertable.Shared/Directory.Packages.props")
+          test -n "$retained" || { echo "No retained packages found — refusing to pass"; exit 1; }
+          test -n "$platform" || { echo "No platform packages found — refusing to pass"; exit 1; }
+          test -n "$platform_version" || { echo "No platform version found — refusing to pass"; exit 1; }
           {
             echo '<Project Sdk="Microsoft.NET.Sdk">'
             echo '  <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>'
             echo '  <ItemGroup>'
-            echo "$packable" | sed "s#.*#    <PackageReference Include=\"&\" Version=\"$VERSION\" />#"
+            echo "$retained" | sed "s#.*#    <PackageReference Include=\"&\" Version=\"$VERSION\" />#"
+            echo "$platform" | sed "s#.*#    <PackageReference Include=\"&\" Version=\"$platform_version\" />#"
             echo '  </ItemGroup>'
             echo '</Project>'
           } > consumer.csproj
           dotnet restore
-          echo "Restored the full published Concertable.* closure ($(echo "$packable" | wc -l) packages) from GitHub Packages."
+          echo "Restored the retained and platform package closure from GitHub Packages."
