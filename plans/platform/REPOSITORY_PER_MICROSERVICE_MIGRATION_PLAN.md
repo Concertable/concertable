@@ -935,10 +935,22 @@ Two divergences that are about the map rather than the tooling:
   standalone-solution commit drops that project along with the two it should drop, so replaying it
   verbatim silently loses a suite.
 
-Confirmed on all three: every target's `*ArchitectureTests` graph-validation class is a subset of the
-monorepo's `StartupTests`. `payment` and `search` surface it as a modify/delete conflict on that exact
-file, which is resolved by accepting the deletion; in `auth` it never reaches a conflict because the
-commit carrying it is the skipped catch-up import, so it is settled by inspection instead.
+Confirmed on `auth`, `payment` and `customer`: every target's `*ArchitectureTests` graph-validation
+class is a subset of the monorepo's `StartupTests`. `payment` and `search` surface it as a
+modify/delete conflict on that exact file; in `auth` it never reaches a conflict because the commit
+carrying it is the skipped catch-up import, so it is settled by inspection instead.
+
+**`search` is the counter-example, and it shows what the subset check has to ask.** Its deleted class
+is the only cover for four assertions — that the migrations resource carries environment callbacks and
+waits on the database, that web and workers wait for its completion, and that the seed simulator waits
+on workers. None has a counterpart in `StartupTests`, because `Concertable.Search.Migrations` is a
+project the target repository authored and the monorepo does not have: search's migrations live inside
+`Infrastructure` there, and `WaitForCompletion` appears nowhere in `api/**/*.cs`. A split made upstream
+cannot cover a resource that exists only downstream. So before accepting one of these deletions, check
+whether any assertion in it names a resource absent from the monorepo — not merely whether
+`StartupTests` has a `ValidateComposition` test. Where one does, accept the deletion anyway (the class
+will not compile against the renamed and re-referenced projects) and move those assertions into
+`StartupTests`, which already builds the AppHost graph.
 
 **`search` is blocked on 9B and should not be reconciled until the hosting seam settles.** Its patch 9
 rewrites the Auth composition, and replaying it would drop `--user root`, replace
@@ -1043,7 +1055,7 @@ four packed packages.
 
 - **Pass two now works.** The CRLF defect above is fixed: `payment`'s cut kept exactly the four E2E
   projects the map gives it and dropped both `Helpers` projects, so the re-check that section asks for
-  is done for `payment`. `search` is still outstanding.
+  is done for `payment`, and the `search` re-cut below closes the same re-check for `search`.
 - **Its `Directory.Packages.props` audit comes out clean.** One property,
   `ConcertableDotNetPlatformVersion` at `0.1.0-alpha.0.1370`, covers every `Concertable.*` id; there is
   no second stale train of the kind `customer` carried. `PublishedBaseline.props` pins
@@ -1058,6 +1070,38 @@ four packed packages.
   class. **`customer` carries the same escape and it is still open** — as of 2026-09-11 its
   `customer-web` output lands outside its checkout. Audit every `..` in a carved project file: a path
   that counted directories from the monorepo layout is wrong standalone and says nothing about it.
+
+#### What the `search` re-cut added
+
+Run 2026-09-11 from a fresh cut at monorepo `main`, all 23 authored commits replayed, and carried to a
+green Release build with 74 green tests across four tiers. `search` was the last service at zero.
+
+- **The Auth endpoint seam has two right answers, and the composition decides which.** The warning
+  against a hardcoded HTTP `8080` and 9B's finding that `WithHttpsEndpoint` stops DCP describe
+  different hosts. `system` composes Auth with `WithHttpEndpoint(AuthConstants.ContainerPort,
+  name: "https")` because the pinned image serves plaintext on 8080 and ships *no certificate*. Every
+  standalone AppHost composes it with `WithHttpsEndpoint(AuthConstants.ContainerPort, name: "https")`,
+  which also produces the developer certificate that makes TLS there work — and each service's own
+  `StartupTests/ResourceGraphTests` asserts both the `https` scheme and `UseDeveloperCertificate`.
+  Carrying `system`'s form into a carve fails two assertions in the extraction's own test. Read the
+  target host's `ResourceGraphTests` before resolving an endpoint conflict; it states the answer.
+- **A three-way merge can duplicate a `GlobalPackageReference` without conflicting.** A patch adding
+  `MinVer` at the head of the analyser `ItemGroup` applies cleanly over an extraction that already
+  carries the identical item at its foot, because the contexts differ. Nothing reports it. Grep for
+  duplicate ids after any `Directory.Packages.props` replay: a clean apply is not evidence of a
+  correct one.
+- **Every carve references a `BannedSymbols.txt` that no carve ships.** `Directory.Build.props` carries
+  `<AdditionalFiles Include="$(MSBuildThisFileDirectory)../BannedSymbols.txt" Condition="Exists(…)" />`.
+  That `../` is `api/` in the monorepo and *above the repository root* standalone, and the `Exists()`
+  guard turns the miss into silence, so `Microsoft.CodeAnalysis.BannedApiAnalyzers` runs with an empty
+  list in `auth`, `payment`, `customer` and `search` alike. Same `..`-counted class as the
+  `BaseOutputPath` escape above, but anchoring on `$(ConcertableServiceRoot)` does not fix it — the
+  file has to be carved in or the reference dropped. Open on all four.
+- **Its own audits come out clean.** The solution file balances in both directions, 17 entries against
+  17 project files on disk with no `../Concertable.*` escapes; no project file contains a
+  `BaseOutputPath` or any other `..`-counted output path; and the map's assignment of
+  `api/Concertable.Search/tests/E2ETests` to `system` is honoured — the cut kept neither `Helpers`
+  project, which closes the pass-two re-check.
 
 ### Producer parity gates every promotion
 
