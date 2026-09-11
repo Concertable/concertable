@@ -3,32 +3,35 @@
 - Plan: `plans/platform/PLATFORM_RELEASE_TRAINS_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/release-trains`
-- Worktree: none yet
-- Branch: none yet
-- PR: none yet
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Chore-PlatformImagesFromSource`
+- Branch: `Chore/PlatformImagesFromSource`
+- PR: `https://github.com/Concertable/concertable/pull/1002`
 - Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
   train membership. Phases 1 and 2 have no dependency.
-- Last reconciled: 2026-09-09 against `origin/main` `081e149a2e0a4544e1c781adc5e322a6ee0e4f85`, merged
-  into this branch.
+- Last reconciled: 2026-09-11 against `origin/main` `1f8f1d59a8dc9e0c94e745c81eb41a4c409725ef`.
 
 ## Current state
 
-Authored, not started. No phase implemented, no worktree, no branch.
-
-The evidence the plan rests on was gathered by reading the live workflows at the SHA above and is
-recorded in the plan rather than here, because it is design input rather than recovery state.
+Phase 1 is implemented on the branch above. Every image matrix leg now prepares the local platform and
+publishes through `scripts/local-platform.ps1`, matching the existing `container-images` CI path. The
+focused workflow-policy test is wired into the repository's workflow-test aggregator.
 
 ## Completed milestones
 
-None.
+None delivered yet.
 
 ## Latest verification
 
-None. Nothing implemented.
+- `python .github/workflows/tests/test_service_scope.py`: 41/41 service/E2E scope checks passed; package
+  publication policy passed; image publication policy passed 6/6.
+- `git diff --check`: passed.
 
 ## Reviews
 
-None recorded — nothing implemented to review.
+- Independent merge review of `fe4b7919e`: one finding — invoke the non-executable PowerShell script
+  explicitly through `pwsh` on Ubuntu runners.
+- Incremental independent review of `f22f784e9`: clean; both workflow calls and their policy assertions
+  now require the explicit PowerShell host.
 
 ## Decisions and discoveries
 
@@ -53,16 +56,7 @@ None recorded — nothing implemented to review.
 
 ## Next Steps
 
-Implement Phase 1 in a fresh worktree off the current remote default:
-
-1. `./scripts/worktrees.ps1` a worktree for branch `Chore/PlatformImagesFromSource`.
-2. In `.github/workflows/publish-images.yml`, replace the `Build and push the image` step's plain
-   `dotnet publish` with a `scripts/local-platform.ps1 prepare` step followed by
-   `scripts/local-platform.ps1 publish "<project>" --configuration Release /t:PublishContainer
-   -p:ContainerImageTag=${{ github.sha }}`, mirroring `test.yml`'s `container-images` job. The matrix
-   shares one workspace per job, so `prepare` runs once per matrix leg.
-3. Keep the `discover` job, the `<ContainerRepository>` derivation, the GHCR login, the SHA-only tag and
-   the digest report exactly as they are.
-4. Gate: `ci-complete` and `workflow-tests` green on the PR; after merge, confirm the
-   `Concertable.DataAccess.Infrastructure.dll` `ProductVersion` inside one published image equals that
-   run's local platform version.
+1. Push the reviewed Phase 1 candidate and require exact-head `ci-complete` and `workflow-tests` green.
+2. Merge and confirm one published image contains the local-platform DataAccess assembly version from its
+   exact publication run.
+3. Resume Phase 2: retire platform sync and hand the slow floor to Renovate.
