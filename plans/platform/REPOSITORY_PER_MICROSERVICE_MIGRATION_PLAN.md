@@ -750,7 +750,9 @@ private extraction proof.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
 - 7C (GitHub): apply the `platform-dotnet` repository policy, then authenticate its publisher and the org
-  reusable `nuget-publish` workflow with `CONCERTABLE_PACKAGES_TOKEN` instead of `GITHUB_TOKEN`. The package
+  reusable `nuget-publish` workflow's **push** step with `CONCERTABLE_PACKAGES_TOKEN` instead of
+  `GITHUB_TOKEN` — that workflow's `verify` job still restores on `GITHUB_TOKEN`, which the token-scope
+  section below shows is not enough for a carve repository. The package
   links stay on the monorepo; the section on package ownership below says why. Any unrelated historical
   mirror is excluded from this publisher cutover.
   **Done 2026-09-10.** `Concertable.Build 0.2.0-alpha.0.3` published from `platform-dotnet` at
@@ -1114,13 +1116,16 @@ off the repository rather than off this document:
 moment its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per
 service.
 
-One consumer of that rail cannot be fixed from the service repository at all. The `verify` job in
-`Concertable/.github`'s `nuget-publish.yml` hardcodes both `GITHUB_PACKAGES_TOKEN` and `NUGET_AUTH_TOKEN`
-from `secrets.GITHUB_TOKEN`, and uses the caller's `PACKAGES_TOKEN` only on the push step, so no value a
-service passes authenticates its restore. Packing a solution that contains an AppHost therefore fails
-there for every carve repository on the rail. The fix is `secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN`
-on those two variables, matching what that workflow's own push step already does, plus a re-pin in each
-consumer.
+One consumer of that rail cannot be fixed from the service repository at all, and it is why 7C's "Done"
+above is narrowed to the push step. The `verify` job in `Concertable/.github`'s `nuget-publish.yml`
+hardcodes both `GITHUB_PACKAGES_TOKEN` and `NUGET_AUTH_TOKEN` from `secrets.GITHUB_TOKEN`, and uses
+`PACKAGES_TOKEN` — that workflow's own `workflow_call` name for the secret a caller maps
+`CONCERTABLE_PACKAGES_TOKEN` into — only on the push step. So no value a service passes authenticates
+its restore, and packing a solution that contains an AppHost fails there for every carve repository on
+the rail. Nor is passing `PACKAGES_TOKEN` through to the restore quite the fix: that input is declared
+`write:packages`, so it would make every consumer hold a write token merely to pack. The workflow needs
+a read credential it can accept from a caller — a second, read-scoped secret input, or `PACKAGES_TOKEN`
+redefined as read-at-minimum — after which each consumer re-pins.
 
 `eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
 is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
