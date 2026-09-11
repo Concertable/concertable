@@ -1103,6 +1103,28 @@ green Release build with 74 green tests across four tiers. `search` was the last
   matches `auth`; **`customer` has only the `../` line and no file, and is still unguarded.** Another
   `..`-counted path that says nothing about being wrong, but unlike `BaseOutputPath` it is not fixed by
   anchoring on `$(ConcertableServiceRoot)` — the file has to come with the carve.
+- **`Directory.Build.targets` carries the same dead `..` imports, and the test-tier gate is one of
+  them.** `TestConventions.targets` and `PlatformSourcePackages.targets` are both imported as
+  `$(MSBuildThisFileDirectory)../<file>` under `Exists()`, so a carve that ships neither loses the
+  tier gate — the rule that the project *name* is the only declaration of tier, and the unit-tier
+  `BannedSymbols.UnitTests.txt` bans that go with it — in the same silence. `auth` again shows the
+  fix: carve `TestConventions.targets` and `BannedSymbols.UnitTests.txt` in at the root and anchor
+  that one import, leaving `../PlatformSourcePackages.targets` dead on purpose because a carve has no
+  sibling core tree. `payment` matches it, with the same duplicated `../` line as its
+  `BannedSymbols.txt`. **`customer` and `search` ship neither file and import only `../`.** So the
+  audit for a carve is both shared files, not just the banned list.
+- **Turning that gate on is not always mechanical, and for `search` it is a tier decision.** Search
+  authored `Concertable.Search.StandaloneTests`, which boots the standalone AppHost through
+  `Aspire.Hosting.Testing` and asserts seed convergence against real containers. The monorepo has no
+  `.StandaloneTests` anywhere and the gate resolves only `.UnitTests`, `.IntegrationTests`,
+  `.ArchitectureTests`, `.StartupTests` and a `.E2ETests` substring, so importing the gate fails the
+  build on that project — correctly, because the name states no tier. It is also the one suite with
+  no `AssemblyTrait("Category", …)`, which is the same gap showing twice. The tier is a real choice:
+  the unit-tier ban list already rules that *starting the distributed application* makes a test E2E,
+  which argues `*.E2ETests`, while the suite is service-local and `map.yaml` gives search's E2E path
+  to `system`. **Open**, and worth settling before the next carve authors a suite outside the four
+  names. The general lesson: a guardrail a carve silently dropped may have been holding something
+  that drifted while it was off, so budget for the finding, not just the one-line fix.
 - **Its own audits come out clean.** The solution file balances in both directions, 17 entries against
   17 project files on disk with no `../Concertable.*` escapes; no project file contains a
   `BaseOutputPath` or any other `..`-counted output path; and the map's assignment of
