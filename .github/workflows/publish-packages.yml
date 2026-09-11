@@ -55,6 +55,16 @@ jobs:
           eng/repository-split/inventory.json
           filter "${{ runner.temp }}/nupkgs"
 
+      - name: Validate service platform dependencies
+        run: |
+          platform_version=$(sed -nE \
+            's:.*<ConcertableDotNetPlatformVersion>([^<]+)</ConcertableDotNetPlatformVersion>.*:\1:p' \
+            api/Concertable.Shared/Directory.Packages.props)
+          test -n "$platform_version" || { echo "No platform version found — refusing to publish"; exit 1; }
+          python .github/scripts/package_ownership.py \
+            eng/repository-split/inventory.json \
+            validate-platform "${{ runner.temp }}/nupkgs" "$platform_version"
+
       - name: Require a new lockstep package version
         id: version
         run: python .github/scripts/package_publication_policy.py "${{ runner.temp }}/nupkgs"

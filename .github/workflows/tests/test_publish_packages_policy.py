@@ -144,6 +144,19 @@ def main() -> None:
         and "eng/repository-split/inventory.json" in partition_step["run"],
         "package ownership comes from the generated split inventory",
     )
+    dependency_step = next(
+        step for step in publish["steps"] if step.get("name") == "Validate service platform dependencies"
+    )
+    require(
+        publish["steps"].index(partition_step) < publish["steps"].index(dependency_step)
+        < publish["steps"].index(version_step),
+        "packed dependency metadata is validated before version acceptance",
+    )
+    require(
+        "validate-platform" in dependency_step["run"]
+        and "api/Concertable.Shared/Directory.Packages.props" in dependency_step["run"],
+        "service package dependencies target the repository platform pin",
+    )
     require("package_publication_policy.py" in version_script, "all packed artifacts use the tested policy")
     push_step = next(step for step in publish["steps"] if step.get("name") == "Push to GitHub Packages")
     require("--skip-duplicate" not in push_step["run"], "immutable package collisions cannot be hidden")
@@ -268,10 +281,17 @@ def main() -> None:
             "Concertable.B2B.Contracts",
             "Concertable.Testing.E2E",
         ):
+            dependencies = (
+                '<dependencies><group targetFramework="net10.0">'
+                '<dependency id="Concertable.DataAccess.Infrastructure" version="1.0.0" />'
+                "</group></dependencies>"
+                if package_id == "Concertable.B2B.Contracts"
+                else ""
+            )
             with zipfile.ZipFile(package_dir / f"{package_id}.1.0.0.nupkg", "w") as archive:
                 archive.writestr(
                     f"{package_id}.nuspec",
-                    f"<package><metadata><id>{package_id}</id></metadata></package>",
+                    f"<package><metadata><id>{package_id}</id>{dependencies}</metadata></package>",
                 )
         package_targets = ownership.load_ownership(inventory_path)
         retained, removed = ownership.filter_batch(package_dir, package_targets)
@@ -285,6 +305,16 @@ def main() -> None:
             == ["Concertable.DataAccess.Infrastructure"],
             "platform restore list excludes the future-system package",
         )
+        require(
+            ownership.validate_platform_dependencies(package_dir, package_targets, "1.0.0") == 1,
+            "retained package metadata targets the expected platform train",
+        )
+        try:
+            ownership.validate_platform_dependencies(package_dir, package_targets, "2.0.0")
+        except ValueError:
+            print("ok  retained package metadata rejects a mismatched platform train")
+        else:
+            raise SystemExit("FAIL: retained package metadata accepts a mismatched platform train")
 
 
 if __name__ == "__main__":
