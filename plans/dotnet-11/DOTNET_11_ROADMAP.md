@@ -4,27 +4,28 @@
 > independently deployed net10 services or published cross-service contracts onto a preview runtime.
 > Each implementation item owns a plan and progress ledger in this folder.
 >
-> **Current decision:** first deliver the net10 Deal generator plus mapper/updater foundation, then
-> complete the Application, Booking, and Concert module split that consumes it. The first .NET 11
+> **Current decision:** consume the landed net10 Deal DTO/keyed-dispatch foundation (its generator
+> prototype was not shipped) and Application, Booking, and Concert boundaries. The first .NET 11
 > adoption slice is the B2B runtime after that module split lands. Native unions will model closed
 > internal values, beginning with the combined journey projection and proven case-specific module
-> states, triggers, and operation outcomes. The later Deal cut-over uses module-local implementation
-> unions for heterogeneous operations without restoring cross-module workflow ownership or service
-> location.
+> states, triggers, and operation outcomes. Later closure applies to finite rule/capability alternatives
+> and genuine heterogeneous method headers, not a permanent closed catalog of whole deals. The
+> configurable-Deal model is independent of this runtime upgrade and never restores cross-module
+> workflow ownership or service location.
 
 ## How to continue this roadmap
 
-The selected item is blocked behind the lifecycle ownership implementation, which is itself suspended
-behind the actionable Deal dispatch foundation. Continue that foundation owner directly:
+The Deal dispatch foundation is delivered and lifecycle source PR #633 is merged. The reserved runtime
+owner still requires the lifecycle owner's terminal delivery/API reconciliation; do not restart either
+merged source PR. Its current gate and continuation live here:
 
 ```text
-/resume-plan @plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md
+/resume-plan @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md
 ```
 
-The Deal owner will reopen the lifecycle ledger after the foundation lands; the lifecycle owner then
-opens this blocked .NET 11 ledger. Do not resume either blocked ledger directly, and do not start
-another .NET 11 service slice until this one establishes the package, CI, hosting, and toolchain
-conventions.
+The lifecycle owner opens the remaining gate after reconciliation. Do not start another .NET 11 service
+slice until this one establishes the package, CI, hosting and toolchain conventions. The separate
+configurable-Deal plan can implement its typed language without this runtime upgrade.
 
 ## Status
 
@@ -33,10 +34,9 @@ conventions.
 - [x] ✅ **ReUnion integration and Payment carrier cutover.** PR #453 and platform-sync PR #463 are
   merged; B2B now owns its remaining Reunion migration directly.
 - [x] ✅ **B2B typed-result migration.** Landed in PR #552. It no longer owns this roadmap's return path.
-- [ ] 🟡 **Net10 Deal dispatch foundation.** Owned by
-  [`../launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`](../launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md) Phases 0-1.
-  It delivers the generator/analyzer and Deal-owned mapper/updater factories before lifecycle PR #633
-  resumes; it does not change target frameworks or introduce native unions.
+- [x] ✅ **Net10 Deal dispatch foundation.** Delivered through #678/#694; recorded in
+  [`../launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`](../launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md).
+  DTO/keyed factories shipped; the generator/analyzer prototype remains separate research.
 - [ ] 🟠 **Application, Booking, and Concert ownership.** Owned by
   [`../launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`](../launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md).
   It deletes the cross-stage workflow model this roadmap previously intended to convert.
@@ -68,13 +68,16 @@ slice.
 
 ```text
 ReUnion integration + B2B typed-result delivery
-└── net10 Deal generator + mapper/updater foundation
+└── net10 Deal DTO/keyed-dispatch foundation (landed; generator prototype is separate research)
     └── Application → Booking → Concert ownership delivery
         └── B2B .NET 11 platform-only checkpoint
             ├── native closed-value unions
             │   └── merge-queue full E2E + platform sync
             └── supported C# 15 compiler/target matrix
-                └── launch/deal-closed-sum-model native-operation-union + closed-Deal cut-over
+                └── launch/deal-closed-sum-model finite-vocabulary closure + honest-header unions
+
+launch/deal-configuration typed language (independent of .NET 11)
+└── B2B Postgres delivery → hybrid configuration revisions + immutable Contract snapshots
 
 .NET 11 GA + Azure Functions net11 support
 └── B2B GA/deployment-readiness follow-up

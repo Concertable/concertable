@@ -1,0 +1,13 @@
+<Project>
+
+  <!-- Shared test-tier gate for this package's tests/ project. Exists()-guarded so a carve that leaves
+       api/TestConventions.targets behind degrades to the standalone shape rather than failing. -->
+  <Import Project="$(MSBuildThisFileDirectory)../TestConventions.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)../TestConventions.targets')" />
+
+  <!-- Same source-swap the sibling carve roots import: keeps the tests/ project building against in-repo
+       platform source rather than a stale published NuGet if it ever takes a platform PackageReference. -->
+  <Import Project="$(MSBuildThisFileDirectory)../PlatformSourcePackages.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)../PlatformSourcePackages.targets')" />
+
+</Project>

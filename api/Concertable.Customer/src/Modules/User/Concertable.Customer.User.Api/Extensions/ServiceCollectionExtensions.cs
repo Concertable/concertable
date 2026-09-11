@@ -1,3 +1,4 @@
+using Concertable.Auth.Contracts;
 using Concertable.Customer.User.Api.Controllers;
 using Concertable.Customer.User.Infrastructure.Data;
 using Concertable.Customer.User.Infrastructure.Extensions;
@@ -18,7 +19,7 @@ public static class ServiceCollectionExtensions
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("UserClaimsScope", p =>
-                    p.RequireClaim("scope", "user:claims"));
+                    p.RequireClaim("scope", AuthScope.UserClaims.Id()));
             });
             services.AddControllers()
                 .AddInternalControllers(typeof(UserController).Assembly);
