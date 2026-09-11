@@ -28,25 +28,55 @@ platform package** — the producer PR's own author bumps every consumer's `Conc
 directly, in the same PR that migrates consumers (or a dedicated pin-bump PR, same as before this cutover
 existed). This is a repo-wide change, not particular to this plan.
 
-## Current state — Phase 2, code-complete, not yet committed
+## Current state — Phase 2, `AuthParty` resolved and decentralized, uncommitted; one new question open
 
-All consumer migration done: `ConcertableAuthVersion` pin (all 6 consumers); Auth `Config.cs` +
-`AuthHostExtensions` + new `ServiceClient`/`ServiceClientInfo`/`ServiceClients` in `Concertable.Auth`;
-`AuthDevSeeder`; the three registration handlers; the four resource-server hosts (+ package refs, Search's
-new `PackageVersion`); `Payment.Client` (`PrivateAssets="all"`); `Concertable.Testing.E2E`'s
-`TestTokenMinter`; every `[InlineData(ClientIds.X)]` test site moved to `[InlineData(InteractiveClient.X)]`
-+ `.Info().Id` inside the test body (the const string can't survive as a typed-enum inline-data value, so
-each affected test's parameter type changed from `string` to `InteractiveClient`). `ClientIds.cs` /
-`ApiScopeIds.cs` deleted; `api/Concertable.Auth/TECH_DEBT.md` → "No outstanding debt"; `AGENTS.md` updated.
+All original consumer migration done (as before): `ConcertableAuthVersion` pin (all 6 consumers); Auth
+`Config.cs` + `AuthHostExtensions` + new `ServiceClient`/`ServiceClientInfo`/`ServiceClients` in
+`Concertable.Auth`; `AuthDevSeeder`; the four resource-server hosts (+ package refs, Search's new
+`PackageVersion`); `Payment.Client` (`PrivateAssets="all"`); `Concertable.Testing.E2E`'s `TestTokenMinter`;
+every `[InlineData(ClientIds.X)]` test site moved to `[InlineData(InteractiveClient.X)]` +
+`.Info().Id` inside the test body. `ClientIds.cs` / `ApiScopeIds.cs` deleted; `api/Concertable.Auth/TECH_DEBT.md`
+→ "No outstanding debt"; `AGENTS.md` updated.
 
 `grep -rln "ClientIds\.\|ApiScopeIds\." api --include='*.cs'` → zero.
 
-**Verified:** every touched project builds 0 warnings (`Concertable.Auth`, `Concertable.Auth.Contracts` +
-its tests, B2B.Web, Customer.Web, Payment.Web, Payment.Client, Search.Web, Testing.E2E, the three handler
-projects, all touched test projects). Non-Docker suites green: `Concertable.Auth.Contracts.UnitTests`
-(50), `Concertable.Auth.UnitTests` (13), `Concertable.Auth.StartupTests` (11), `Concertable.Customer.User.UnitTests`
-(15). Docker was down locally — B2B Tenant/User/Admin integration tests only build-verified; the merge
-queue's `carve-*`/`integration-tests` jobs are the real gate.
+**New this session (2026-09-11, same evening):** the `AuthParty` open question resolved (repository owner,
+mid-session) — see Plan's Open Questions "RESOLVED 2026-09-11" entry for the full rationale. Mechanically:
+
+- `api/Concertable.Auth.Contracts/AuthParty.cs` **deleted**. `InteractiveClientInfo` now carries only
+  `Client`, `Id`, `MobileScheme` — no `Party`, no `IsB2b`. `InteractiveClientsTests.cs` trimmed to match
+  (50 → 37 tests; removed `Find_APartyClient_CarriesThatParty`, `E2ETest_HasNoParty`,
+  `IsB2b_IsTrueForVenueArtistAndAdminOnly`).
+- New `Concertable.B2B.Infrastructure/Authorization/ManagerClients.cs` — B2B's own registration-time role
+  classification: one `FrozenDictionary<InteractiveClient, TenantType?>`, exposed via C# 14 `extension()`
+  block members (`client.IsManagerClient`, `client.ManagerTenantType`), matching the
+  `InteractiveClients`/`AuthScopes`/`AuthResources`/`ServiceClients` catalog idiom already used 4× in this
+  codebase. **One table, not two** — the first pass split it into two parallel per-handler maps
+  (`TenantTypeByClient` in `TenantProvisioningHandler`, `ManagerClients` HashSet in
+  `CredentialRegisteredHandler`); consolidated before landing, since two hand-written maps over the same key
+  set is exactly the drift risk `csharp-naming`'s "never a parallel frozen map per consumer" line exists to
+  prevent. `extension()` blocks are safe here (unlike in Auth.Contracts — see below) because
+  `Concertable.B2B.Infrastructure` is `ProjectReference`-only within the same service, never published.
+- `TenantProvisioningHandler` (B2B/Tenant), `CredentialRegisteredHandler` (B2B/User) now read
+  `client.Client.ManagerTenantType` / `client.Client.IsManagerClient` from `ManagerClients`.
+  `Concertable.B2B.Infrastructure.csproj` gained a `PackageReference` to `Concertable.Auth.Contracts`;
+  `Concertable.B2B.User.Infrastructure.csproj` gained a `ProjectReference` to `Concertable.B2B.Infrastructure`
+  (it had none before — User and Tenant modules now share this one classification via the existing
+  cross-module shared-infra project, the same project Tenant.Infrastructure already referenced).
+- `UserCreationHandler` (Customer) now matches `client.Client is InteractiveClient.CustomerBrowser or
+  InteractiveClient.CustomerMobile` inline — no table, single call site.
+- **Reverted this session, do not redo without reading the note below:** an attempt to also convert
+  `InteractiveClients`/`AuthScopes`/`AuthResources`/`ServiceClients` from legacy `this`-parameter extension
+  methods to C# 14 `extension()` blocks (the old Next Steps step 1) was fully reverted — see Decisions.
+
+`grep -rniE "AuthParty|IsB2b|\.Party\b" api --include='*.cs'` → zero.
+
+**Verified this session:** `Concertable.Auth.Contracts` + its tests (37 pass, 0 warnings); full rebuild of
+`Concertable.B2B.Web`, `Concertable.Customer.Web`, `Concertable.Payment.Web`, `Concertable.Search.Web`,
+`Concertable.Auth` — all 0 warnings, 0 errors, against the still-published `0.1.0-alpha.0.1383` package
+(these changes needed no new publish — see Decisions). Not yet re-run this session:
+`Concertable.Auth.UnitTests`, `Concertable.Auth.StartupTests`, `Concertable.Customer.User.UnitTests`,
+B2B Tenant/User/Admin integration (Docker). Do that before considering Phase 2 close-out-ready.
 
 **Environment note:** mid-session the workstation hit ~0 bytes free disk (unrelated background load from
 this machine's other worktrees/NuGet cache, not this plan's own doing) — background jobs got killed by the
@@ -70,31 +100,40 @@ version doesn't carry (they didn't consume it before this plan). `node --test
 
 ## Next Steps
 
-PR #1008 already exists (draft) — the "push, open the PR" step below is stale in that this branch is
-already pushed; treat it as "confirm CI on the current head" instead. Two things surfaced 2026-09-11
-reviewing this branch against a scratch spike of the same migration (see Decisions) — resolve both before
-requesting review:
+**The old step 1 and step 2 below (extension-block fix, `AuthParty` question) were both wrong or incomplete
+in ways that cost real time this session — read the corrections, don't repeat either mistake.**
 
-1. **Apply the extension-block fix** (`AUTH_IDENTITY_MODEL_PLAN.md`, "Design decisions" — the new
-   `extension()`-block bullet). Mechanical, no design call: convert `InteractiveClients`/`AuthScopes`/
-   `AuthResources`/`ServiceClients` from legacy `this`-parameter extension methods to `extension()` blocks
-   with property members, and update every call site (`.Id()` → `.Id`, `.Info()` → `.Info`, `.Audience()` →
-   `.Audience`, `.AcceptedScopes()` → `.AcceptedScopes`, `.IncludedClaims()` → `.IncludedClaims`). Rebuild +
-   rerun the non-Docker suites listed under Verified above.
-2. **Resolve the `AuthParty` open question** (`AUTH_IDENTITY_MODEL_PLAN.md`, "Open questions") — repository
-   owner call: does client → business-party classification stay in `Concertable.Auth.Contracts` as
-   `AuthParty`, or move to `Concertable.Contracts` as a neutral `Party` (the `Genre` precedent)? This is the
-   one open item that is genuinely undecided, not something to guess at again. It only affects
-   `TenantProvisioningHandler`/`CredentialRegisteredHandler`/`UserCreationHandler` and their tests — rework
-   those three (and only those three) once decided.
-3. Once both are resolved: push, confirm CI on the head that includes the fixes, review (`review` skill) +
-   record in `## Reviews`, get exact-head CI green (Docker-backed integration tests run there —
-   Auth/B2B Tenant/User/Admin were only build-verified locally). Apply the `merge` skill's tier table fresh
-   for the final head.
+1. **Decide the newly-surfaced B2B Authorization module question first** — see
+   `AUTH_IDENTITY_MODEL_PLAN.md`, Open Questions, "Not yet decided" paragraph under the RESOLVED entry.
+   Repository owner call, genuinely undecided:
+   - **(a) Build `Concertable.B2B.Authorization` now**, as its own new plan (own roadmap item, own worktree/
+     branch — this is out of Phase 2's scope and out of this worktree per the worktree identity gate, since
+     it rewires every B2B module's policy registration and inverts Tenant's dependency direction). Phase 2
+     stays open until that plan exists and is at least scoped.
+   - **(b) Leave the interim placement** (`ManagerClients` in `Concertable.B2B.Infrastructure/Authorization/`,
+     current state — already consolidated, already the right *local* shape, just not the full module move)
+     and log the rest as a tracked `api/Concertable.B2B/TECH_DEBT.md` entry with an objective resolution
+     condition. Phase 2 can proceed to close-out on its own terms.
+   Do not pick one unilaterally — this was raised explicitly for the repository owner to decide, not to
+   guess at again the way the old steps 1/2 below were guessed at.
+2. **The extension-block conversion is not a same-branch fix — do not attempt it inside a PR that also
+   touches consumers.** The old step 1 called it "mechanical, no design call" and cited a scratch-branch
+   verification as proof; that verification only proved `Concertable.Auth.Contracts` itself builds with the
+   new shape, never that any consumer does. `Concertable.Auth.Contracts` is `PackageReference`-only
+   everywhere (confirmed: `git checkout`-reverted after a 31-error build across `Concertable.Auth` alone),
+   so `.Id()` → `.Id` etc. is a real breaking-package change needing its own **producer-only** PR (touches
+   only `api/Concertable.Auth.Contracts/`, self-contained, publishes independently — same shape as Phase 1),
+   then a separate consumer-sync PR after that publish lands. If not already a roadmap item, add one; do not
+   fold it into Phase 2 again.
+3. Once (1) is decided and, if (b), logged: rerun the suites not yet re-verified this session
+   (`Concertable.Auth.UnitTests`, `Concertable.Auth.StartupTests`, `Concertable.Customer.User.UnitTests`,
+   B2B Tenant/User/Admin integration — Docker required), review (`review` skill) + record in `## Reviews`,
+   confirm CI on the exact head, apply the `merge` skill's tier table.
 4. Merge. No sync PR follows this one (see Phase 1 note above) — Phase 2 is delivery-terminal on its own
    merge.
 5. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
-   tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail).
+   tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail). If (1a) was
+   chosen, its own new plan stays open after this one closes — it is a separate epic from here on.
 
 ## Reviews
 
@@ -125,8 +164,42 @@ its own fresh `review` pass before merge.
   no PR), not knowing this branch/PR #1008 already existed. It independently found the two issues in
   "Open questions" above — the extension-block-syntax gap and the `AuthParty`-in-an-identity-package
   concern — reverted its own attempt at the three handlers rather than guess at the resolution, and wrote
-  both up. That worktree's own copies of this plan/ledger are now superseded by this entry; its code
-  changes (extension-block conversion, Auth `Config.cs`/`TestTokenMinter` wiring) are a verified-safe
-  reference for step 1 above but were never intended to ship from there. Retire that worktree
-  (`worktrees.ps1 retire`) once step 1 above is done here — nothing in it needs preserving beyond what
-  this entry already captured.
+  both up. That worktree's own copies of this plan/ledger are now superseded by this entry.
+  **Correction, same evening, later:** its extension-block conversion is *not* a safe reference after
+  all — see the entry below. Its code changes are otherwise dead; retire that worktree
+  (`worktrees.ps1 retire`) whenever convenient — nothing in it needs preserving beyond what this ledger
+  already captures.
+- **2026-09-11, later the same evening — the extension-block conversion was attempted and reverted.**
+  Converted `InteractiveClients`/`AuthScopes`/`AuthResources`/`ServiceClients` to C# 14 `extension()` blocks
+  and updated every call site across all 6 consumers (~20 files). `Concertable.Auth.Contracts` itself built
+  and its own 50 tests passed. Building `Concertable.Auth` then failed with 31 errors — `CS0119`/`CS1503`
+  at every `.Id`/`.Info`/`.Audience`/`.AcceptedScopes`/`.IncludedClaims` call site, because every consumer
+  restores `Concertable.Auth.Contracts` as a `PackageReference` pinned to the already-published
+  `0.1.0-alpha.0.1383`, which still has the *legacy method* shape — confirmed via
+  `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure/*.csproj`'s own comment
+  ("Keep as PackageReference, never a ProjectReference") and `api/PlatformSourcePackages.targets` (does
+  not list `Concertable.Auth.Contracts` among the locally source-swappable packages), and
+  `.github/workflows/publish-packages.yml` (`on: push: branches: [main]` only — no PR-time publish, so
+  there is structurally no way to build a consumer against the new shape before merge). Reverted with
+  `git checkout --` on every extension-block-only file, plus a manual partial revert on the two files that
+  mixed the extension-block change with the (kept) `AuthParty` removal (`InteractiveClients.cs`,
+  `InteractiveClientsTests.cs`). This is exactly the `dotnet:package-cutover` "expand merge, structural red"
+  situation, except normally expand and sync are separate PRs — this branch tried to do both against an
+  unpublished shape in one PR, which cannot work. See Next Steps step 2.
+- **`ManagerClients` design iteration, same evening.** First cut: two independent hand-written maps, one per
+  consuming handler (`TenantTypeByClient` in `TenantProvisioningHandler`, a `ManagerClients` `HashSet` in
+  `CredentialRegisteredHandler`), and free static methods instead of extension members. Both wrong per this
+  repo's own `csharp-naming`/`keyed-strategies` conventions (parallel maps risk drift; new extension members
+  must be `extension()` blocks, not `this`-parameter methods) — consolidated to one table with extension
+  properties before landing. Location also iterated: `Concertable.B2B.Infrastructure/Auth/` (wrong — reads
+  as Auth-service content) → `.../Registration/` (wrong — this repo already has a real `Authorization/`
+  naming convention, in `Concertable.B2B.Tenant.Infrastructure/Authorization/PermissionAuthorizationHandler`,
+  that should have been searched for and matched first) → `.../Authorization/` (current, matches the
+  existing convention). See the Plan's Open Questions "Not yet decided" entry for the bigger, still-open
+  question this raised — whether B2B needs a real Authorization module rather than this interim placement.
+- **A citation in the Plan's "Design decisions" section was factually wrong and got corrected twice this
+  evening** — see that section directly (`AUTH_IDENTITY_MODEL_PLAN.md`, the `extension(AuthScope scope)`
+  discriminated-union bullet). First claimed a repo-wide Dunet avoidance that doesn't exist; the fix for that
+  then wrongly reframed the reasoning around the published-package boundary instead of the actual test
+  (is the shape a genuine union of heterogeneous cases, or a flat homogeneous table — `InteractiveClient` is
+  the latter). Read that section directly rather than this summary before citing it again.

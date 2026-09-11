@@ -87,8 +87,17 @@ errors** — nothing forces Phase 2's timing.
   win: the current enum-keyed shape is what gives the compiler-checked exhaustiveness the "Enum +
   descriptor" decision above deliberately wants across the three classifying handlers; a record-per-shape
   split would need either two separate catalogs (losing one `Find(clientId)` entry point across both) or
-  a discriminated union (this repo deliberately avoids `Dunet` in shared production — see root
-  `TECH_DEBT.md`). Keeping the current shape.
+  a discriminated union. **Correction 2026-09-11, twice:** an earlier version of this line claimed "this
+  repo deliberately avoids `Dunet` in shared production" — false; Dunet is used extensively elsewhere here
+  (B2B Deal lifecycle, `TYPED_RESULT_MIGRATION_ROADMAP.md`, error unions), and is this repo's correct,
+  current-best tool for a genuine discriminated union — a deliberate bridge until C#'s native `union`
+  keyword ships, not something to avoid. A first fix wrongly reframed the reasoning around the *published
+  package* boundary instead; that's not the test either. The actual, simple reason `InteractiveClient` isn't
+  a Dunet union: **it isn't a union at all.** Every case (`CustomerBrowser`, `VenueMobile`, …) carries the
+  identical shape — one wire id, one optional mobile scheme — so it's a flat, homogeneous enum-keyed data
+  table, correctly modeled as enum + `FrozenDictionary` catalog. Dunet is for *heterogeneous* cases (each
+  carrying genuinely different fields/behavior); reach for it only when the shape actually calls for it,
+  published package or not.
 
 ## Phases
 
@@ -107,18 +116,23 @@ changes, because consumers bind the published package.
   `Directory.Build.targets` importing `TestConventions.targets` and test package versions in its
   `Directory.Packages.props`. Registered in `Concertable.slnx` and added to the `carve-auth` project list in
   `.github/workflows/test.yml`. Covers: catalog completeness (every enum member has one row), wire-id
-  values, `Find` miss → null, no duplicate wire ids, `IsB2b` / `IsMobile`, the `AuthParty` classification.
+  values, `Find` miss → null, no duplicate wire ids, `IsMobile`. (`IsB2b` / `AuthParty` were removed — see
+  "RESOLVED 2026-09-11" under Open questions below; this row is stale w.r.t. that removal, kept only as a
+  historical record of what Phase 1 originally shipped.)
 
-**Consumption contract** (what Phase 2 consumers will call — fixed now, not deferred):
+**Consumption contract** (what Phase 2 consumers will call — fixed now, not deferred). **Superseded
+2026-09-11 for the three handler rows below** by the `AuthParty` resolution under Open questions — kept here
+struck-through as the historical record of what this table originally specified; the current shape is in that
+section, not here:
 
 | Consumer | Call |
 |---|---|
 | Auth `Config.cs` `ApiScopes` | `AuthScopes.All.Select(s => new ApiScope(s.Id(), <display>))` |
 | Auth `Config.cs` `ApiResources` | `AuthResources.All.Select(r => new ApiResource(r.Audience(), <display>) { Scopes = { r.AcceptedScopes().Select(s => s.Id())... }, UserClaims = { r.IncludedClaims()... } })` |
 | Auth `Config.cs` clients | iterate `InteractiveClients.All`; `info.IsMobile` picks the mobile shape, `info.MobileScheme` the redirect scheme, `info.Client is InteractiveClient.E2ETest` the ROPC shape |
-| `TenantProvisioningHandler` | `if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Venue or AuthParty.Artist } c) return;` then `c.Party is AuthParty.Venue ? TenantType.Venue : TenantType.Artist` |
-| `CredentialRegisteredHandler` | `if (InteractiveClients.Find(e.ClientId) is not { IsB2b: true }) return;` |
-| `UserCreationHandler` | `if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Customer }) return;` |
+| ~~`TenantProvisioningHandler`~~ | ~~`if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Venue or AuthParty.Artist } c) return;` then `c.Party is AuthParty.Venue ? TenantType.Venue : TenantType.Artist`~~ — now `InteractiveClients.Find(e.ClientId) is not { } c \|\| c.Client.ManagerTenantType is not { } type` via B2B-local `ManagerClients` |
+| ~~`CredentialRegisteredHandler`~~ | ~~`if (InteractiveClients.Find(e.ClientId) is not { IsB2b: true }) return;`~~ — now `!c.Client.IsManagerClient` via the same B2B-local `ManagerClients` |
+| ~~`UserCreationHandler`~~ | ~~`if (InteractiveClients.Find(e.ClientId) is not { Party: AuthParty.Customer }) return;`~~ — now `c.Client is InteractiveClient.CustomerBrowser or InteractiveClient.CustomerMobile`, inline, Customer-local |
 | B2B/Customer/Search web hosts | `options.Audience = AuthResource.B2B.Audience()` (+ `Concertable.Auth.Contracts` package ref) |
 | Payment.Web | `ValidAudiences = [AuthResource.Payment.Audience()]`; `RequireClaim("scope", AuthScope.PaymentWrite.Id())` |
 | `Payment.Client` | `GetTokenAsync(AuthScope.PaymentWrite.Id())` (+ `Concertable.Auth.Contracts` ref, `PrivateAssets="all"` — published package, internal use) |
@@ -152,30 +166,51 @@ still references the deleted classes once it merges; no further sync PR to follo
 
 ## Open questions — surfaced 2026-09-11, this branch is code-complete but not yet reconciled with them
 
-Not addressed by either Phase 1 review round. One (extension-block syntax) is a same-branch fix with no
-design call to make; the other (`AuthParty` placement) needs a decision before this branch is review-ready.
+Not addressed by either Phase 1 review round.
 
-### Does business/party classification belong in an identity-only Auth package at all?
+### RESOLVED 2026-09-11: business/party classification does not belong in Auth.Contracts at all
 
-`Concertable.Auth` is documented as an identity-only adapter (its own `AGENTS.md`). `AuthParty`
-(Customer/Venue/Artist/Admin) and `InteractiveClientInfo.IsB2b` are marketplace/domain classification, not
-authentication facts — yet exactly three consumers on this branch import Auth's opinion of what party a
-client belongs to, to make their own domain decisions: `TenantProvisioningHandler` (B2B's own domain,
-deciding B2B's own `TenantType`), `CredentialRegisteredHandler` (`IsB2b`), `UserCreationHandler`. Before
-this plan, each made that call locally from the raw wire-id string, with no cross-service enum dependency.
-Nothing else on this branch is affected — `AuthScope`/`AuthResource`/`ServiceClient` and the four
-resource-server hosts are genuinely Auth's own scope/audience vocabulary, no boundary issue there.
+Decision (repository owner, same evening the question was surfaced): stronger than the "move `Party` into
+`Concertable.Contracts`" option originally floated below — **no shared party/classification type at all**,
+in *any* package. `AuthParty` is deleted outright from `Concertable.Auth.Contracts`; `InteractiveClientInfo`
+carries only identity facts (`Client`, `Id`, `MobileScheme`). Each of the three consuming handlers now
+resolves the *typed* `InteractiveClient` via Auth's `InteractiveClients.Find` (identity resolution — still
+legitimately Auth's job, since `CredentialRegisteredEvent.ClientId` is a raw wire string), then classifies
+what that client means **locally**, in its own service:
 
-One option surfaced, not chosen: move `Party` (renamed from `AuthParty`) into `Concertable.Contracts`
-(`api/Concertable.Shared/src/Concertable.Contracts/`) — the existing home for shared reference vocabulary no
-single service owns, the same place `Genre` lives (`module-structure` skill). `InteractiveClientInfo.Party`
-would then be typed as the neutral `Party`, not an Auth-branded enum; `Concertable.Auth.Contracts` keeps only
-wire ids, redirect schemes, scopes and audiences. Also flagged: `Party` (Customer/Venue/Artist/Admin) risks
-duplicating the vocabulary B2B already has in `TenantType` (Venue/Artist) — worth resolving together, not as
-two separate enums that happen to mean the same thing for two of their four cases.
+- `TenantProvisioningHandler` / `CredentialRegisteredHandler` (B2B) read a new
+  `Concertable.B2B.Infrastructure.Authorization.ManagerClients` — one `FrozenDictionary<InteractiveClient,
+  TenantType?>`, C# 14 `extension()` block members (`client.IsManagerClient`, `client.ManagerTenantType`),
+  matching the `InteractiveClients`/`AuthScopes`/`AuthResources`/`ServiceClients` catalog idiom already used
+  4× in this codebase. One table, not two — the first attempt split it into two parallel per-handler maps,
+  which is the exact "parallel hand-written maps... lets one family drift" anti-pattern the `csharp-naming`
+  skill calls out; consolidated before landing.
+- `UserCreationHandler` (Customer) matches `client.Client is InteractiveClient.CustomerBrowser or
+  InteractiveClient.CustomerMobile` inline — single call site, no table needed (`keyed-strategies`'s
+  "one exhaustive match... at one call site is not the anti-pattern" carve-out).
 
-**Blocks:** merge-readiness of the three handler files above (and their tests) as currently written. Does
-not block the extension-block fix, or anything else on this branch.
+Rationale volunteered unprompted, not merely accepted: B2B and Customer are two standalone apps with
+unrelated authorization needs: there is no product reason to centralize authorization in a shared package,
+and the previous design (Auth-owned `AuthParty`) was reintroducing exactly the centralization this repo's
+microservice boundaries exist to prevent. This is stronger than, and supersedes, the "move to
+`Concertable.Contracts`" option originally recorded here.
+
+**Not yet decided — surfaced while resolving the above, needs the repository owner's call before this can be
+called closed:** B2B has no dedicated Authorization module. The pre-existing `PermissionAuthorizationHandler`
+/ `PermissionRequirement` / `IMembershipContext` (request-time policy checks) live inside
+`Concertable.B2B.Tenant.Infrastructure`/`.Contracts` purely because Tenant happens to own the membership data
+they read — which means *every* B2B module with a protected endpoint depends on Tenant.Contracts for an
+orthogonal concern, the wrong dependency direction. The new `ManagerClients` (registration-time role
+assignment — a different lifecycle moment, same underlying concern: authorization) currently sits as an
+interim placement in `Concertable.B2B.Infrastructure/Authorization/` — the smallest correct move for *this*
+PR, not a resolution of the module question. The real fix, sketched but **not decided or scoped**: a genuine
+`Concertable.B2B.Authorization` module (`.Contracts` — `PermissionRequirement`, a membership/role-fact facade
+interface Tenant *implements*; `.Infrastructure` — `PermissionAuthorizationHandler`, `ManagerClients`; no
+`.Domain`/`.Api`, no persisted aggregate of its own), inverting today's direction so every module depends on
+Authorization directly instead of on Tenant. This is materially bigger than this PR (rewires every module's
+policy registration) and is **not this plan's scope** — it needs its own plan if pursued. Record the decision
+(build it now as its own epic, or leave the interim placement and log the rest as tracked tech debt) before
+treating Phase 2 as closable on this question.
 
 ### Does `TestTokenMinter` belong inside the service-agnostic `Concertable.Testing.E2E` harness?
 
