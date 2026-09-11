@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Concertable.Customer.Review.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ReviewDbContext))]
-    [Migration("20260724224031_InitialCreate")]
+    [Migration("20260910191615_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -82,6 +82,7 @@ namespace Concertable.Customer.Review.Infrastructure.Data.Migrations
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")

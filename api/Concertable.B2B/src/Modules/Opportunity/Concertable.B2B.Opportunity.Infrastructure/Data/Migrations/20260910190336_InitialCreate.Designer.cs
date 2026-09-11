@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Concertable.B2B.Opportunity.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(OpportunityDbContext))]
-    [Migration("20260906113104_InitialCreate")]
+    [Migration("20260910190336_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -83,6 +83,7 @@ namespace Concertable.B2B.Opportunity.Infrastructure.Data.Migrations
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")
