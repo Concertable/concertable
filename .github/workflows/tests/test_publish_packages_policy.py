@@ -306,27 +306,32 @@ def main() -> None:
                 )
         package_targets = ownership.load_ownership(inventory_path)
         retained, removed = ownership.filter_batch(package_dir, package_targets)
-        require(retained == ["Concertable.B2B.Contracts"], "service package remains in the publish batch")
+        require(
+            retained == ["Concertable.Auth.Contracts", "Concertable.B2B.Contracts"],
+            "service packages remain in the publish batch",
+        )
         require(
             removed
             == [
-                "Concertable.Auth.Contracts",
                 "Concertable.DataAccess.Infrastructure",
                 "Concertable.Testing.E2E",
             ],
-            "platform, future-system and promoted packages leave the publish batch",
+            "platform and future-system packages leave the publish batch",
         )
         require(
             package_targets["Concertable.Auth.Contracts"] == "auth",
-            "a promoted target stays loadable while leaving the retained set",
+            "every known target loads from the inventory",
         )
 
+        # Substituting into RETAINED_TARGETS rather than PROMOTED_TARGETS keeps this independent of which
+        # service is mid-promotion: PROMOTED_TARGETS is empty between promotions, and a fixture naming a
+        # specific service silently stops substituting the moment that service moves.
         conflicted_source = OWNERSHIP.read_text(encoding="utf-8").replace(
-            'PROMOTED_TARGETS = frozenset({"auth"})',
-            'PROMOTED_TARGETS = frozenset({"auth", "b2b"})',
+            "PROMOTED_TARGETS = frozenset()",
+            'PROMOTED_TARGETS = frozenset({"b2b"})',
         )
         require(
-            'frozenset({"auth", "b2b"})' in conflicted_source,
+            'frozenset({"b2b"})' in conflicted_source,
             "the two-publisher fixture still matches the PROMOTED_TARGETS declaration",
         )
         try:
@@ -361,15 +366,15 @@ def main() -> None:
         else:
             raise SystemExit("FAIL: retained package metadata accepts a mismatched platform train")
 
-        promoted_only = root / "promoted-only"
-        promoted_only.mkdir()
-        with zipfile.ZipFile(promoted_only / "Concertable.Auth.Contracts.1.0.0.nupkg", "w") as archive:
+        foreign_only = root / "foreign-only"
+        foreign_only.mkdir()
+        with zipfile.ZipFile(foreign_only / "Concertable.DataAccess.Infrastructure.1.0.0.nupkg", "w") as archive:
             archive.writestr(
-                "Concertable.Auth.Contracts.nuspec",
-                "<package><metadata><id>Concertable.Auth.Contracts</id></metadata></package>",
+                "Concertable.DataAccess.Infrastructure.nuspec",
+                "<package><metadata><id>Concertable.DataAccess.Infrastructure</id></metadata></package>",
             )
         try:
-            ownership.validate_platform_dependencies(promoted_only, package_targets, "1.0.0")
+            ownership.validate_platform_dependencies(foreign_only, package_targets, "1.0.0")
         except ValueError as error:
             require(
                 "not published by this repository" in str(error),

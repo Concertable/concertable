@@ -10,8 +10,8 @@ from xml.etree import ElementTree
 # A service leaves RETAINED_TARGETS for PROMOTED_TARGETS when it starts publishing its own packages
 # from its own repository. It stays in KNOWN_TARGETS because the inventory still carries its projects
 # until its source is removed; dropping it from there makes load_ownership reject them.
-PROMOTED_TARGETS = frozenset({"auth"})
-RETAINED_TARGETS = frozenset({"b2b", "customer", "payment", "search"})
+PROMOTED_TARGETS = frozenset()
+RETAINED_TARGETS = frozenset({"auth", "b2b", "customer", "payment", "search"})
 KNOWN_TARGETS = RETAINED_TARGETS | PROMOTED_TARGETS | {"platform-dotnet", "system"}
 
 # Promoting a target by adding it here without removing it from RETAINED_TARGETS would leave the
