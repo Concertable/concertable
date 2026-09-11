@@ -1,3 +1,4 @@
+using Concertable.Auth.Contracts;
 using Concertable.Kernel.Auth;
 using Concertable.Payment.Client.Adapters;
 using Microsoft.Extensions.Configuration;
@@ -62,7 +63,7 @@ public static class ServiceCollectionExtensions
 
         client.AddCallCredentials(async (_, metadata, serviceProvider) =>
         {
-            var token = await serviceProvider.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
+            var token = await serviceProvider.GetRequiredService<ITokenService>().GetTokenAsync(AuthScope.PaymentWrite.Id());
             metadata.Add("Authorization", $"Bearer {token}");
         });
     }

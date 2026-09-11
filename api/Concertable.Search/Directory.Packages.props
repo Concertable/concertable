@@ -38,6 +38,7 @@
        else restore fails NU1101. -->
   <ItemGroup>
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableAuthVersion)" />
     <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableAuthVersion)" />
     <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Search.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />

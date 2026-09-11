@@ -28,33 +28,43 @@ platform package** — the producer PR's own author bumps every consumer's `Conc
 directly, in the same PR that migrates consumers (or a dedicated pin-bump PR, same as before this cutover
 existed). This is a repo-wide change, not particular to this plan.
 
-## Current state — Phase 2, not yet started
+## Current state — Phase 2, code-complete, not yet committed
 
-Fresh worktree created; no code changes yet. Plan's Phase 2 section and Package topology updated for the
-no-sync-bot reality.
+All consumer migration done: `ConcertableAuthVersion` pin (all 6 consumers); Auth `Config.cs` +
+`AuthHostExtensions` + new `ServiceClient`/`ServiceClientInfo`/`ServiceClients` in `Concertable.Auth`;
+`AuthDevSeeder`; the three registration handlers; the four resource-server hosts (+ package refs, Search's
+new `PackageVersion`); `Payment.Client` (`PrivateAssets="all"`); `Concertable.Testing.E2E`'s
+`TestTokenMinter`; every `[InlineData(ClientIds.X)]` test site moved to `[InlineData(InteractiveClient.X)]`
++ `.Info().Id` inside the test body (the const string can't survive as a typed-enum inline-data value, so
+each affected test's parameter type changed from `string` to `InteractiveClient`). `ClientIds.cs` /
+`ApiScopeIds.cs` deleted; `api/Concertable.Auth/TECH_DEBT.md` → "No outstanding debt"; `AGENTS.md` updated.
+
+`grep -rln "ClientIds\.\|ApiScopeIds\." api --include='*.cs'` → zero.
+
+**Verified:** every touched project builds 0 warnings (`Concertable.Auth`, `Concertable.Auth.Contracts` +
+its tests, B2B.Web, Customer.Web, Payment.Web, Payment.Client, Search.Web, Testing.E2E, the three handler
+projects, all touched test projects). Non-Docker suites green: `Concertable.Auth.Contracts.UnitTests`
+(50), `Concertable.Auth.UnitTests` (13), `Concertable.Auth.StartupTests` (11), `Concertable.Customer.User.UnitTests`
+(15). Docker was down locally — B2B Tenant/User/Admin integration tests only build-verified; the merge
+queue's `carve-*`/`integration-tests` jobs are the real gate.
+
+**Environment note:** mid-session the workstation hit ~0 bytes free disk (unrelated background load from
+this machine's other worktrees/NuGet cache, not this plan's own doing) — background jobs got killed by the
+harness and one `Concertable.Auth.StartupTests` run failed on a Duende dev-signing-key file write race.
+Freed ~27GB (`bin`/`obj` sweep + NuGet http-cache clear); re-run in isolation and full-suite both passed
+clean afterward. Not a code defect — noted in case the same signature recurs.
 
 ## Next Steps
 
-1. ~~Add `ConcertableAuthVersion`~~ — **done.** User confirmed the `ConcertablePaymentVersion` pattern,
-   named it `ConcertableAuthVersion` (not `ConcertableAuthContractsVersion`). Added to all 6 consumers
-   (Auth, B2B, Customer, Payment, Search, Shared) at `0.1.0-alpha.0.1383`, `Concertable.Auth.Hosting` +
-   `.Contracts` retargeted onto it. Verified: `Concertable.Auth`, `B2B.Web`, `Customer.Web`, `Payment.Web`,
-   `Search.Web` all restore clean. (First attempt had an illegal `--` inside an XML comment, breaking CPM
-   for every package in the file — fixed.)
-2. Migrate every consumer per the Phase 2 consumption table in `AUTH_IDENTITY_MODEL_PLAN.md`: Auth
-   `Config.cs`/`AuthHostExtensions` (+ new `ServiceClient` enum/catalog in `Concertable.Auth`), the three
-   registration handlers (`TenantProvisioningHandler`, `CredentialRegisteredHandler`, `UserCreationHandler`),
-   the four resource-server hosts (add `Concertable.Auth.Contracts` package refs where missing — Search
-   needs a new `PackageVersion` too), `Payment.Client` (`PrivateAssets="all"`), `Concertable.Testing.E2E`
-   (`TestTokenMinter`), and the Auth/B2B/Customer test `[InlineData]` sites using client-id string literals.
-3. Delete `ClientIds` / `ApiScopeIds`; delete the resolved `api/Concertable.Auth/TECH_DEBT.md` entry; update
-   its `AGENTS.md` "Duende config is in code" note.
-4. `grep -rniE "ClientIds|ApiScopeIds"` → zero (allowlist: none needed, both are fully removed).
-5. Build affected projects + run Auth/B2B Tenant/User/Customer User unit+integration suites; open the PR
-   (breaking-but-safe republish — nothing outside the repo references the deleted classes); review; merge.
-   No sync PR follows — Phase 2 is delivery-terminal on its own merge.
-6. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
-   tick the roadmap item, in the Phase 2 PR's own commit (not a separate docs tail).
+1. Commit Phase 2 (all the above, one or a few logical commits) on `Refactor/AuthIdentityModelPhase2`.
+2. Push, open the PR (`open-pr`) — breaking-but-safe republish of `Concertable.Auth.Contracts` (removes
+   `ClientIds`/`ApiScopeIds`); nothing outside this repo references them. Full E2E likely required (auth
+   flow, cross-service) — apply the `merge` skill's tier table fresh rather than assuming.
+3. Review (`review` skill) + record in `## Reviews`; get exact-head CI green (Docker-backed integration
+   tests run there). Merge. No sync PR follows this one either (see Phase 1 note above) — Phase 2 is
+   delivery-terminal on its own merge.
+4. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
+   tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail).
 
 ## Reviews
 
