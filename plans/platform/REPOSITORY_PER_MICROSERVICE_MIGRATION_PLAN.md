@@ -489,10 +489,10 @@ permissions are separate per environment.
 
 Secrets are redistributed by least privilege:
 
-- service repositories receive only package credentials — the read secret their restore steps need
-  before an AppHost joins their solution, named `CONCERTABLE_PACKAGES_READ`, and their own
-  integration-test secrets. `CONCERTABLE_PACKAGES_TOKEN` is the publishers' write credential and is
-  **not** distributed to a service repository;
+- service repositories receive only package credentials — the **read** token
+  `CONCERTABLE_PACKAGES_READ`, which their restore steps need before an AppHost joins their solution,
+  not the `CONCERTABLE_PACKAGES_TOKEN` that publisher repositories hold to push — and their own
+  integration-test secrets;
 - Stripe/Google/full-system service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
 - canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
@@ -750,7 +750,9 @@ private extraction proof.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
 - 7C (GitHub): apply the `platform-dotnet` repository policy, then authenticate its publisher and the org
-  reusable `nuget-publish` workflow with `CONCERTABLE_PACKAGES_TOKEN` instead of `GITHUB_TOKEN`. The package
+  reusable `nuget-publish` workflow's **push** step with `CONCERTABLE_PACKAGES_TOKEN` instead of
+  `GITHUB_TOKEN` — that workflow's `verify` job still restores on `GITHUB_TOKEN`, which the token-scope
+  section below shows is not enough for a carve repository. The package
   links stay on the monorepo; the section on package ownership below says why. Any unrelated historical
   mirror is excluded from this publisher cutover.
   **Done 2026-09-10.** `Concertable.Build 0.2.0-alpha.0.3` published from `platform-dotnet` at
@@ -1126,6 +1128,18 @@ green Release build with 74 green tests across four tiers. `search` was the last
   to `system`. **Open**, and worth settling before the next carve authors a suite outside the four
   names. The general lesson: a guardrail a carve silently dropped may have been holding something
   that drifted while it was off, so budget for the finding, not just the one-line fix.
+- **A carve's MinVer height restarts, so floor `0.1` publishes *underneath* the retained train.**
+  Measured 2026-09-11 by packing: `search` produces height **311**, and `auth` published
+  `0.2.0-alpha.0.285` — both an order of magnitude below the monorepo's, because MinVer counts the
+  carve's own history, not the history the ids were published from. The monorepo has those ids at
+  `0.1.0-alpha.0.1393`, so a canonical publish left on floor `0.1` lands ~1000 versions *below* the
+  last build it replaces: a silent downgrade for any floating resolve, and uncorrectable afterwards
+  because the retiring publisher cannot republish over it. **Raise
+  `MinVerMinimumMajorMinor` to `0.2` before a carve's `10C`, not after.** The floor rather than the
+  tag, because it holds whatever the height turns out to be. This is not a per-repository
+  measurement: every carve restarts in the same range against the same high-water, so `payment`,
+  `customer` and `b2b` each need the identical one-line change, and none of them is accidentally
+  safe. `auth` and `search` are done.
 - **Its own audits come out clean.** The solution file balances in both directions, 17 entries against
   17 project files on disk with no `../Concertable.*` escapes; no project file contains a
   `BaseOutputPath` or any other `..`-counted output path; and the map's assignment of
@@ -1175,28 +1189,27 @@ that AppHost's cross-service packages for the first time, and `payment`'s reposi
 runs, while `Concertable.AppHost.Shared`, same visibility and same binding, restored in those same runs
 with the same token. The pinned version is on the feed and a user PAT with org-wide `read:packages`
 restores the whole solution. Since there is no per-package panel to grant, the remedy is the
-account-scoped read secret the secrets-distribution list above assigns to every service repository,
-preferred over `GITHUB_TOKEN` in the restore steps. **Every carve repository reaches this at the moment
-its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per service.
+account-scoped read token the secrets-distribution list above assigns to every service repository,
+preferred over `GITHUB_TOKEN` in the restore steps. **Name it `CONCERTABLE_PACKAGES_READ`** — the
+write-side `CONCERTABLE_PACKAGES_TOKEN` this section settles is *not* distributed to consumers, and
+`${{ secrets.<wrong-name> || secrets.GITHUB_TOKEN }}` fails soundlessly: the unknown secret resolves
+empty, the fallback restores every id that already worked, and the one cross-repository package keeps
+returning the identical 403, so a misnamed secret is indistinguishable from an unset one. Read the names
+off the repository rather than off this document:
+`gh api repos/<owner>/<repo>/actions/organization-secrets`. **Every carve repository reaches this at the
+moment its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per
+service.
 
-**Get the secret's name from the API, not from this plan or a sibling's workflow.** Settled 2026-09-11
-after it cost four services a day between them. The name is `CONCERTABLE_PACKAGES_READ` —
-`gh api repos/Concertable/<repo>/actions/organization-secrets` returns exactly that one on all six
-service repositories and nothing else. Three carves wrote `CONCERTABLE_PACKAGES_TOKEN`, each copying
-the one before, and this section named it too.
-
-The reason a wrong name survived that long is the shape of the expression it sits in:
-
-```yaml
-GITHUB_PACKAGES_TOKEN: ${{ secrets.CONCERTABLE_PACKAGES_READ || secrets.GITHUB_TOKEN }}
-```
-
-**A `secrets.X || secrets.GITHUB_TOKEN` fallback cannot fail loudly.** An undistributed or misspelled
-first operand is empty, not an error, so the expression silently degrades to the repository token and
-restore returns exactly the `NU1301` / `403` an ungranted package produces. The two are
-indistinguishable from the log, so a one-word typo reads as somebody else's credential action — and
-`search` was parked behind a secret that had been provisioned all along. Enumerate the secret before
-writing its name, and when a fallback expression yields a 403, suspect the operand before the grant.
+One consumer of that rail cannot be fixed from the service repository at all, and it is why 7C's "Done"
+above is narrowed to the push step. The `verify` job in `Concertable/.github`'s `nuget-publish.yml`
+hardcodes both `GITHUB_PACKAGES_TOKEN` and `NUGET_AUTH_TOKEN` from `secrets.GITHUB_TOKEN`, and uses
+`PACKAGES_TOKEN` — that workflow's own `workflow_call` name for the secret a caller maps
+`CONCERTABLE_PACKAGES_TOKEN` into — only on the push step. So no value a service passes authenticates
+its restore, and packing a solution that contains an AppHost fails there for every carve repository on
+the rail. Nor is passing `PACKAGES_TOKEN` through to the restore quite the fix: that input is declared
+`write:packages`, so it would make every consumer hold a write token merely to pack. The workflow needs
+a read credential it can accept from a caller — a second, read-scoped secret input, or `PACKAGES_TOKEN`
+redefined as read-at-minimum — after which each consumer re-pins.
 
 `eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
 is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
