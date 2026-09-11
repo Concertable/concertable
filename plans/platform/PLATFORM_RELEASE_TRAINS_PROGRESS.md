@@ -28,7 +28,10 @@ None delivered yet.
 
 ## Reviews
 
-Review pending for this Phase 1 candidate.
+- Independent merge review of `fe4b7919e`: one finding — invoke the non-executable PowerShell script
+  explicitly through `pwsh` on Ubuntu runners.
+- Incremental independent review of `f22f784e9`: clean; both workflow calls and their policy assertions
+  now require the explicit PowerShell host.
 
 ## Decisions and discoveries
 
@@ -53,8 +56,7 @@ Review pending for this Phase 1 candidate.
 
 ## Next Steps
 
-1. Commit and review the Phase 1 candidate.
-2. Push the PR and require exact-head `ci-complete` and `workflow-tests` green.
-3. Merge and confirm one published image contains the local-platform DataAccess assembly version from its
+1. Push the reviewed Phase 1 candidate and require exact-head `ci-complete` and `workflow-tests` green.
+2. Merge and confirm one published image contains the local-platform DataAccess assembly version from its
    exact publication run.
-4. Resume Phase 2: retire platform sync and hand the slow floor to Renovate.
+3. Resume Phase 2: retire platform sync and hand the slow floor to Renovate.
