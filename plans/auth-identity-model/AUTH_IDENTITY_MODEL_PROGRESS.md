@@ -3,93 +3,80 @@
 - Plan: `plans/auth-identity-model/AUTH_IDENTITY_MODEL_PLAN.md`
 - Roadmap: `plans/auth-identity-model/AUTH_IDENTITY_MODEL_ROADMAP.md`
 - Roadmap item: `auth-identity-model/typed-identity-contract`
-- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-AuthIdentityModel`
-- Branch: `Refactor/AuthIdentityModel`
-- PR: #986 (draft) — Phase 1 producer. https://github.com/Concertable/concertable/pull/986
-- Dependency/package gates: `Concertable.Auth.Contracts` must publish and `platform-sync` bump the pins
-  before Phase 2 consumers can reference the typed model. `[Obsolete]` is warn-only (no
-  `TreatWarningsAsErrors` in the repo), so the post-publish sync PR goes green unaided — Phase 2 is driven,
-  not gate-forced.
-- Last reconciled: `2026-09-10` against `origin/main` `ea985630f` (merged in; platform pin now
-  `0.1.0-alpha.0.1364`)
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-AuthIdentityModel-Phase2`
+- Branch: `Refactor/AuthIdentityModelPhase2`
+- PR: not yet opened (Phase 2 — consumer migration)
+- Dependency/package gates: none remaining — `ConcertableAuthVersion` now pins all 6 consumers to
+  `0.1.0-alpha.0.1383`, the version `Concertable.Auth.Contracts` published at. `ConcertableDotNetPlatformVersion`
+  stays untouched at `0.1.0-alpha.0.1370` (frozen — see Decisions).
+- Last reconciled: `2026-09-11` against `origin/main` `48ce79347` (Phase 1's own merge commit).
 
-## Current state
+## Phase 1 — terminal (producer)
 
-Phase 1 producer, code complete on `Refactor/AuthIdentityModel`, **not yet committed**.
+PR #986 merged (`48ce79347`, 2026-09-11); published `Concertable.Auth.Contracts` `0.1.0-alpha.0.1383`.
+Reviewed twice (4 findings, all fixed — see `reviews/Refactor-AuthIdentityModel.md`, retained until this
+whole plan closes). Merge-queue ejection on the way in was a Docker/Testcontainers infra flake in
+`Concertable.Payment.IntegrationTests` (PR touched zero Payment files) — re-enqueued, landed clean.
 
-**Done, uncommitted:**
-- Typed-model files in `api/Concertable.Auth.Contracts/` — `AuthParty`, `InteractiveClient`,
-  `InteractiveClientInfo` (scalars only), `InteractiveClients` (`Find` → nullable, `Info`, `All`),
-  `AuthScope`, `AuthScopes` (`Id`, `All`), `AuthResource`, `AuthResources` (extension methods
-  `Audience()` / `AcceptedScopes()` / `IncludedClaims()` / `All`).
-- `[Obsolete]` on `ClientIds.cs` + `ApiScopeIds.cs`.
-- `api/Concertable.Auth.Contracts/tests/Concertable.Auth.Contracts.UnitTests/` — new xunit project
-  (55 tests, all green). `ProjectReference` `..\..\Concertable.Auth.Contracts.csproj` (inside the package
-  folder → resolves in repo and in the `carve-auth` tree alike). Package csproj gains
-  `<Compile Remove="tests/**/*.cs" />`; folder gains `Directory.Build.targets` (imports
-  `TestConventions.targets`) and test package versions in `Directory.Packages.props`. Registered in
-  `api/Concertable.slnx` and the `carve-auth` project list in `.github/workflows/test.yml`.
-- Plan + roadmap + ledger under `plans/auth-identity-model/`.
+**Discovery that reshapes Phase 2:** commit `7adedd3a0` ("Cut over platform package publishing", merged
+2026-09-11 ~03:27, ~7h before #986) **deleted the `platform-sync` bot** (`platform-sync.yml` /
+`platform-sync-alert.yml` — the thing that used to open a `chore/platform-sync-<version>` PR bumping every
+service's pin within minutes of a publish). Pin refresh is now **Renovate**, weekly
+(`renovate.json`: `schedule: ["* 0-4 * * 1"]`), `automerge: false`, grouped as "shared .NET platform
+train". **There is no sync PR to wait on or follow for this plan, or any future plan that publishes a
+platform package** — the producer PR's own author bumps every consumer's `ConcertableDotNetPlatformVersion`
+directly, in the same PR that migrates consumers (or a dedicated pin-bump PR, same as before this cutover
+existed). This is a repo-wide change, not particular to this plan.
 
-Test-project placement went through two dead ends: (1) inside `Concertable.Auth.Contracts/tests/` with no
-glob exclude → the flat package csproj compiled the test `.cs` into the package; (2) under
-`api/Concertable.Auth/tests/` → a `ProjectReference` from there to `api/Concertable.Auth.Contracts/` is a
-cross-folder edge whose relative path differs between the repo and the carve tree, and `split-inventory`
-flags cross-repo test edges. Final: co-located inside the package's own `tests/` with the glob exclude.
+## Current state — Phase 2, not yet started
+
+Fresh worktree created; no code changes yet. Plan's Phase 2 section and Package topology updated for the
+no-sync-bot reality.
 
 ## Next Steps
 
-1. Review PR #986 (`review` skill) and record the outcome under `## Reviews`. Then mark it ready once
-   review + exact-head CI are green. Merging it publishes `Concertable.Auth.Contracts`.
-2. After the publish + the generated `platform-sync` PR merges (pin moves past `0.1.0-alpha.0.1364`),
-   start Phase 2 from a fresh worktree off that `origin/main`. Close this PR's worktree first
-   (`worktrees.ps1 close -PullRequest 986 -PlanManaged`), then create the Phase 2 one and resume this
-   ledger. Phase 2 scope + consumption table: `AUTH_IDENTITY_MODEL_PLAN.md`.
-
-Housekeeping (any time): retire the stale `Chore-TechDebt-20260909-234925` worktree — its PR #981 is
-closed (`worktrees.ps1 retire`).
-
-## Completed work
-
-- Phase 1 producer code + tests written; `Concertable.Auth.Contracts` and its unit suite build clean
-  (0 warnings), 55/55 tests green. Uncommitted pending the first commit.
-
-## Verification
-
-- `dotnet build api/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj` — 0 warnings, 0 errors
-  (2026-09-10).
-- `dotnet test …/Concertable.Auth.Contracts.UnitTests` — 55 passed, 0 failed (2026-09-10).
+1. ~~Add `ConcertableAuthVersion`~~ — **done.** User confirmed the `ConcertablePaymentVersion` pattern,
+   named it `ConcertableAuthVersion` (not `ConcertableAuthContractsVersion`). Added to all 6 consumers
+   (Auth, B2B, Customer, Payment, Search, Shared) at `0.1.0-alpha.0.1383`, `Concertable.Auth.Hosting` +
+   `.Contracts` retargeted onto it. Verified: `Concertable.Auth`, `B2B.Web`, `Customer.Web`, `Payment.Web`,
+   `Search.Web` all restore clean. (First attempt had an illegal `--` inside an XML comment, breaking CPM
+   for every package in the file — fixed.)
+2. Migrate every consumer per the Phase 2 consumption table in `AUTH_IDENTITY_MODEL_PLAN.md`: Auth
+   `Config.cs`/`AuthHostExtensions` (+ new `ServiceClient` enum/catalog in `Concertable.Auth`), the three
+   registration handlers (`TenantProvisioningHandler`, `CredentialRegisteredHandler`, `UserCreationHandler`),
+   the four resource-server hosts (add `Concertable.Auth.Contracts` package refs where missing — Search
+   needs a new `PackageVersion` too), `Payment.Client` (`PrivateAssets="all"`), `Concertable.Testing.E2E`
+   (`TestTokenMinter`), and the Auth/B2B/Customer test `[InlineData]` sites using client-id string literals.
+3. Delete `ClientIds` / `ApiScopeIds`; delete the resolved `api/Concertable.Auth/TECH_DEBT.md` entry; update
+   its `AGENTS.md` "Duende config is in code" note.
+4. `grep -rniE "ClientIds|ApiScopeIds"` → zero (allowlist: none needed, both are fully removed).
+5. Build affected projects + run Auth/B2B Tenant/User/Customer User unit+integration suites; open the PR
+   (breaking-but-safe republish — nothing outside the repo references the deleted classes); review; merge.
+   No sync PR follows — Phase 2 is delivery-terminal on its own merge.
+6. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
+   tick the roadmap item, in the Phase 2 PR's own commit (not a separate docs tail).
 
 ## Reviews
 
-- `review` skill, PR #986 head `5951a90fb` (2026-09-10) — no correctness bugs; all catalog values traced
-  against live `Config.cs` + the four resource-server hosts and confirmed exact. Two findings, both
-  addressed on the branch:
-  1. `AuthResources.TryGet` (and the sibling `TryGet`s) returned a `default` struct on a miss whose
-     `ImmutableArray` members NRE when read — a trap in a published contract. **Fixed:** dropped every
-     reverse-lookup that had no consumer; `InteractiveClients.Find` now returns `InteractiveClientInfo?`;
-     `AuthResourceInfo` collapsed into `AuthResource` extension methods (`Audience()` / `AcceptedScopes()` /
-     `IncludedClaims()`), so no struct carries `ImmutableArray` members.
-  2. Redundant `using Concertable.Auth.Contracts;` in the three test files (namespace is nested). **Fixed.**
-- `review` re-run at head `3bc6f5b3a` (2026-09-10) — default-struct trap confirmed fixed. Two more, both
-  addressed:
-  1. `Directory.Build.targets` imported only `TestConventions.targets`, not `PlatformSourcePackages.targets`
-     that every sibling carve root carries — a later platform `PackageReference` on the test project would
-     miss the source swap. **Fixed:** added the import.
-  2. `InteractiveClients.Find` threw `ArgumentNullException` on a null `clientId`, contradicting its "returns
-     null rather than throwing" doc — a null `CredentialRegisteredEvent.ClientId` would fault the handler.
-     **Fixed:** `Find(string?)` guards null; test covers it.
-- Head `<next>` after the fix commit — re-review owed before merge (`incremental-review`).
+Phase 1's two review passes are recorded in `reviews/Refactor-AuthIdentityModel.md` (kept live until this
+plan closes, since it is still this branch's local merge-gate evidence trail for that PR). Phase 2 needs
+its own fresh `review` pass before merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Superseded `Chore/TechDebt-20260909-234925` / PR #981 (closed): it wired `Config.cs` + `TestTokenMinter`
-  onto the old `ApiScopeIds` names, which this plan replaces. Its worktree
-  `C:\Users\tommy\source\repos\Concertable\.worktrees\Chore-TechDebt-20260909-234925` is stale — retire it.
+- **No platform-sync bot any more, and `ConcertableDotNetPlatformVersion` is frozen** (see above) — the
+  load-bearing facts for Phase 2 and any future published-package change in this repo. Tried bumping
+  `ConcertableDotNetPlatformVersion` to `0.1.0-alpha.0.1383` first (matching Phase 1's published version);
+  restore broke (`NU1605` downgrade conflict) because the feed's platform-dotnet train (`Concertable.Kernel`
+  etc.) tops out at `0.1.0-alpha.0.1371` / has moved to an independent `0.2.0-alpha.0.x` line — reverted.
+  `plans/platform/PLATFORM_RELEASE_TRAINS_PROGRESS.md` confirms this is deliberate, not a gap: the pin stays
+  at its "resolvable slow floor" until retained packages (Auth.Contracts, B2B.*, …) get their own train
+  property, same as `ConcertablePaymentVersion` already gives Payment.
 - `Concertable.Auth.Contracts` is consumed only as a feed `PackageReference`, never source-swapped
-  (`PlatformSourcePackages.targets` does not list it), so even Auth's own `Config.cs` cannot see the new
-  types until the package republishes. This is why Phase 1 is additive-only.
+  (`PlatformSourcePackages.targets` does not list it) — this is why Phase 1 had to be additive-only and
+  Phase 2 needs the pin bump before any consumer can see the new types.
 - Service clients (`concertable-b2b` etc.) stay out of the published contract — they do not cross the wire
-  and their secrets are Auth's. `ServiceClient` enum lands in `Concertable.Auth` in Phase 2.
-- The `api/Concertable.Auth/TECH_DEBT.md` "E2E client identity … magic strings" entry is resolved by this
-  plan and deleted in Phase 2 (not before — the drift is only actually closed once consumers migrate).
+  and their secrets are Auth's. `ServiceClient` enum lands in `Concertable.Auth` this phase.
+- Superseded `Chore/TechDebt-20260909-234925` / PR #981 (closed) — its worktree is still unretired
+  (`worktrees.ps1 retire` needs a durable evidence commit; #981 was closed not merged, so there is none —
+  low-priority manual cleanup, not blocking this plan).
