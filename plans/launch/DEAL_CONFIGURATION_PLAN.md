@@ -315,10 +315,20 @@ for shared presets and counterparty-visible offers. Do not bypass filters or inf
 an unvalidated claim. Eligibility changes govern new usage; they must not rewrite an existing Contract
 or strand its required settlement/refund operations. Define any future revocation policy explicitly.
 
-Finbuckle provides tenant resolution, stores and per-tenant options/integration infrastructure. It is
-not required for this business authorization policy, does not validate the Deal language and is not an
-MVP dependency. Evaluate it separately only if replacing/standardizing tenant infrastructure becomes a
-demonstrated need.
+Future tenant-policy ownership and tenancy infrastructure remain open architecture decisions. The
+PostgreSQL/`jsonb` decision covers versioned Deal records; it is not a blanket decision to store every
+tenant setting in B2B. When designing tenant-specific authoring or eligibility, before implementing it,
+compare B2B-managed policy data, external operator-managed configuration/feature management, and product
+entitlement ownership against who edits the policy, its audit/change lifecycle, distribution and
+consistency requirements. Select one authoritative owner for each policy, not competing editable copies.
+
+Evaluate Finbuckle against retaining custom tenancy infrastructure in that same future design. It may
+supply tenant resolution, stores, per-tenant options and EF isolation; membership authorization,
+counterparty-aware access and Deal-language validation remain application requirements either way.
+Existing custom code is not evidence that retaining it is the better design. Finbuckle is neither
+selected nor rejected for that future work and is not a dependency of this refactor or the MVP. These
+questions add no implementation phase or delivery gate to this plan and do not redirect the separately
+owned tenant PRS/VAT/payment-term defaults work.
 
 ## Delivery ownership and gates
 
