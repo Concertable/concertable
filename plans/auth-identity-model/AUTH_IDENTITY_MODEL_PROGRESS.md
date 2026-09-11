@@ -54,16 +54,30 @@ harness and one `Concertable.Auth.StartupTests` run failed on a Duende dev-signi
 Freed ~27GB (`bin`/`obj` sweep + NuGet http-cache clear); re-run in isolation and full-suite both passed
 clean afterward. Not a code defect — noted in case the same signature recurs.
 
+**Superseded mid-Phase-2:** while this branch was in flight, the repo owner landed the proper fix for the
+Phase-1-discovered pin freeze — `plans/platform/PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 2/3
+(`feat(packages): give service-owned packages their own train property`, merged as part of PR #1004,
+~an hour after this branch forked). It introduces **exactly** the `ConcertableAuthVersion` name this branch
+had already improvised, plus siblings for every other retained target
+(`ConcertableB2BContractsVersion`/`ConcertableCustomerVersion`/`ConcertablePaymentVersion`/`ConcertableSearchVersion`),
+advances `ConcertableDotNetPlatformVersion` to `0.2.0-alpha.0.4`, and adds `.github/scripts/pin-trains.test.mjs`
+enforcing every package id pins to the train its `eng/repository-split/inventory.json` target names.
+Merged `origin/main` in (`8e436a702`); resolved by taking main's property scheme everywhere and (a) bumping
+`ConcertableAuthVersion` from main's `.1381` to `.1383` (the version this plan's Phase 1 actually published)
+and (b) re-adding the `Concertable.Auth.Contracts` `PackageVersion` line to Search and Shared, which main's
+version doesn't carry (they didn't consume it before this plan). `node --test
+.github/scripts/pin-trains.test.mjs` — 3/3 pass. Rebuilt + retested everything post-merge — all still green.
+
 ## Next Steps
 
-1. Commit Phase 2 (all the above, one or a few logical commits) on `Refactor/AuthIdentityModelPhase2`.
-2. Push, open the PR (`open-pr`) — breaking-but-safe republish of `Concertable.Auth.Contracts` (removes
-   `ClientIds`/`ApiScopeIds`); nothing outside this repo references them. Full E2E likely required (auth
-   flow, cross-service) — apply the `merge` skill's tier table fresh rather than assuming.
-3. Review (`review` skill) + record in `## Reviews`; get exact-head CI green (Docker-backed integration
-   tests run there). Merge. No sync PR follows this one either (see Phase 1 note above) — Phase 2 is
-   delivery-terminal on its own merge.
-4. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
+1. Push, open the PR (`open-pr`) — breaking-but-safe republish of `Concertable.Auth.Contracts` (removes
+   `ClientIds`/`ApiScopeIds`); nothing outside this repo references them. Apply the `merge` skill's tier
+   table fresh — every changed value is byte-identical to what it replaced (verified in Phase 1), so this
+   is very likely `skip-e2e` again, not full-e2e.
+2. Review (`review` skill) + record in `## Reviews`; get exact-head CI green (Docker-backed integration
+   tests run there — Auth/B2B Tenant/User/Admin were only build-verified locally). Merge. No sync PR
+   follows this one either (see Phase 1 note above) — Phase 2 is delivery-terminal on its own merge.
+3. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
    tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail).
 
 ## Reviews
