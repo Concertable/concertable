@@ -73,7 +73,7 @@ Do not begin a service cut-over during Phase 2.
   `0.2.0-alpha.0.4`; release-train PR #1004 made that published pin independently consumable and passed
   exact-head and merge-group validation before landing as `d6f986c25`.
 - Rebased the prepared consumer commit onto `d6f986c25`; all eight production spatial mappings use
-  `HasGeographyColumn`, with no configuration-level explicit `geography` column types remaining.
+  `HasGeographyColumn`, leaving the cross-provider `geography` relational semantic in one shared seam.
 
 ## Reviews
 
