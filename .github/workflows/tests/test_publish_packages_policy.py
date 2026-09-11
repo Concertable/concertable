@@ -306,32 +306,34 @@ def main() -> None:
                 )
         package_targets = ownership.load_ownership(inventory_path)
         retained, removed = ownership.filter_batch(package_dir, package_targets)
-        require(
-            retained == ["Concertable.Auth.Contracts", "Concertable.B2B.Contracts"],
-            "service packages remain in the publish batch",
-        )
+        require(retained == ["Concertable.B2B.Contracts"], "service package remains in the publish batch")
         require(
             removed
             == [
+                "Concertable.Auth.Contracts",
                 "Concertable.DataAccess.Infrastructure",
                 "Concertable.Testing.E2E",
             ],
-            "platform and future-system packages leave the publish batch",
+            "platform, future-system and promoted packages leave the publish batch",
         )
         require(
             package_targets["Concertable.Auth.Contracts"] == "auth",
             "every known target loads from the inventory",
         )
 
-        # Substituting into RETAINED_TARGETS rather than PROMOTED_TARGETS keeps this independent of which
-        # service is mid-promotion: PROMOTED_TARGETS is empty between promotions, and a fixture naming a
-        # specific service silently stops substituting the moment that service moves.
-        conflicted_source = OWNERSHIP.read_text(encoding="utf-8").replace(
-            "PROMOTED_TARGETS = frozenset()",
+        # Rewrite the whole declaration line rather than matching its contents: PROMOTED_TARGETS changes
+        # every time a service is promoted or de-promoted, and a fixture quoting one spelling silently
+        # stops substituting the moment it moves. `b2b` is retained in every state, so the rewritten
+        # module always conflicts.
+        conflicted_source, substitutions = re.subn(
+            r"^PROMOTED_TARGETS = .*$",
             'PROMOTED_TARGETS = frozenset({"b2b"})',
+            OWNERSHIP.read_text(encoding="utf-8"),
+            count=1,
+            flags=re.MULTILINE,
         )
         require(
-            'frozenset({"b2b"})' in conflicted_source,
+            substitutions == 1,
             "the two-publisher fixture still matches the PROMOTED_TARGETS declaration",
         )
         try:
