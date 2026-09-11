@@ -88,7 +88,7 @@ Gate: existing spatial queries and their integration coverage stay green on SQL 
 
 ### Phase 3 — seed and fixture SQL neutrality
 
-- [ ] Replace the eight `SET IDENTITY_INSERT` blocks and the two `sys.check_constraints` queries with
+- [x] Replace the eight `SET IDENTITY_INSERT` blocks and the two `sys.check_constraints` queries with
   provider-dispatched helpers in the shared testing library.
 
 Consumption contract: `Concertable.Seed.Shared` decides whether explicit identity values require a SQL
