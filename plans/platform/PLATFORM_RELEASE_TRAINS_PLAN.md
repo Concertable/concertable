@@ -76,10 +76,12 @@ platform prepared resolves every `Concertable.*` at its pinned version from the 
 
 ### Phase 3 — finish the train split and publish only what changed
 
-Extend the two existing trains to cover every `platform` and `service-owned` row in the binding admission
-table, including the System train, give each admitted train its own MinVer tag prefix, and make
-`publish-packages.yml` push only the admitted trains whose source changed in the pushed range. `vendor` rows
-leave the published surface and receive no train property.
+Replace the two-train model with the binding admission table's exact train set: one train per distinct
+non-vendor property (`ConcertableDotNetPlatformVersion`, `ConcertableAuthVersion`,
+`ConcertableB2BContractsVersion`, `ConcertableCustomerVersion`, `ConcertablePaymentVersion`,
+`ConcertableSearchVersion`, and `ConcertableSystemVersion`). Give each train its own MinVer tag prefix and
+make `publish-packages.yml` push only the admitted trains whose source changed in the pushed range. `vendor`
+rows leave the published surface and receive no train property.
 `ConcertablePaymentVersion` is the worked precedent: a conditioned property that falls back to the
 platform version under `UseLocalPlatformPackages`, so the source inner loop keeps working while the
 published pins diverge.

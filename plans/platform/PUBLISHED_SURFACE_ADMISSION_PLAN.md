@@ -15,10 +15,8 @@ default, because the monorepo publishes whatever carries `<IsPackable>true</IsPa
 
 ## Why this is the load-bearing decision, not the bump mechanism
 
-Of 58 published packages, 16 are `*.Contracts`. The other 42 are a shared framework: `Kernel`,
-`DataAccess` (2), `Messaging` (5), `ServiceDefaults`, `Grpc`, `Shared.Api`, seven `Shared.*` SaaS
-adapters split across Application and Infrastructure (13), five `Testing.*`, three `*.TestKit`, three
-`Seed.*`, six `*.Hosting`, `AppHost.Shared`.
+Of 58 published packages, 16 are `*.Contracts`. The other 42 span framework, SaaS adapters, testing,
+seeding, hosting, and AppHost packages, with their exact disposition fixed by the binding table below.
 
 Sharing contracts across a service boundary is the intended coupling. Sharing a framework reintroduces
 the compile-time coupling the service split exists to remove: five services that cannot move
