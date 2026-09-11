@@ -3,17 +3,17 @@
 - Plan: `plans/platform/PLATFORM_RELEASE_TRAINS_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/release-trains`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-DotNetPlatformPublisherCutover`
-- Branch: `Refactor/DotNetPlatformPublisherCutover`
-- PR: `#1003` — https://github.com/Concertable/concertable/pull/1003
-- Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
-  train membership. Phases 1 and 2 have no dependency.
-- Last reconciled: 2026-09-11 at reviewed code head `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`
-  against `origin/main` `f48aec45680760aebb45aaf655341072dc769c86`.
+- Worktree: none; Phase 2 worktree closed after merge.
+- Branch: none active.
+- PR: `#1003` — https://github.com/Concertable/concertable/pull/1003 — merged.
+- Dependency/package gates: Phase 3 train membership is now defined by the completed local Phase 1 table in
+  `PUBLISHED_SURFACE_ADMISSION_PLAN.md`; it becomes unblocked when that docs PR lands. Phases 1 and 2 have no dependency.
+- Last reconciled: 2026-09-11 after Phase 2 merged as
+  `d01a2a4857c10be8e1e9ca27f3b2e18543d2c38e`.
 
 ## Current state
 
-Phase 1 is delivered. Phase 2 is reviewed and open in PR `#1003`: the monorepo publisher filters its packed batch from
+Phases 1 and 2 are delivered. The monorepo publisher filters its packed batch from
 the generated ownership inventory, the six bespoke platform-sync artifacts are retired, and Renovate owns a
 grouped weekly non-automerge refresh of the shared platform pin. Retained package dependency metadata is
 validated against that pin before publication. The pin remains at its last resolvable
@@ -22,6 +22,9 @@ validated against that pin before publication. The pin remains at its last resol
 ## Completed milestones
 
 - Phase 1: PR `#1002` merged as `f48aec45680760aebb45aaf655341072dc769c86`; merge-group CI passed.
+- Phase 2: PR `#1003` merged as `d01a2a4857c10be8e1e9ca27f3b2e18543d2c38e`; exact-head and merge-group CI passed.
+- Phase 2 publication run `34580651732` published the retained service batch and passed its isolated
+  feed-restore verification.
 - Post-merge image publication run `34549092195` published all nine deployables. The extracted B2B image
   `Concertable.DataAccess.Infrastructure.dll` has ProductVersion
   `0.1.0-local.1789088643628+f48aec45680760aebb45aaf655341072dc769c86`, matching the run's prepared
@@ -75,11 +78,13 @@ clean after resolving the ownership-trigger, packed-dependency proof and case-in
   Advancing it to `0.2.0-alpha.0.4` made the feed-only restore fail on service packages whose latest train is
   `0.1.x`; Phase 2 therefore preserves the resolvable slow floor. A platform consumer cannot move to `0.2.x`
   until those service-owned references use their own train properties.
+- The Phase 1 admission table assigns every current packable project to a platform/service train or an
+  explicit unpublished verdict. Phase 3 must consume that table rather than today's publisher inventory.
 - This plan was first authored against a checkout 868 commits behind `main`, which made its counts and
   the single-pin premise wrong. Re-measure against `origin/main` before quoting any figure from it.
 
 ## Next Steps
 
-1. Require PR `#1003` exact-head `ci-complete`, `workflow-tests`, and the feed-only restore green.
-2. Merge Phase 2 and delete the `platform-sync-broken` GitHub label.
-3. Reconcile the package-train dependency before moving the PostgreSQL consumer to platform `0.2.x`.
+1. Land the published-surface admission table.
+2. Split service and platform consumer properties from the binding table before
+   moving the PostgreSQL consumer to platform `0.2.x`.
