@@ -941,9 +941,9 @@ modify/delete conflict on that exact file; in `auth` it never reaches a conflict
 carrying it is the skipped catch-up import, so it is settled by inspection instead.
 
 **`search` is the counter-example, and it shows what the subset check has to ask.** Its deleted class
-is the only cover for four assertions — that the migrations resource carries environment callbacks and
-waits on the database, that web and workers wait for its completion, and that the seed simulator waits
-on workers. None has a counterpart in `StartupTests`, because `Concertable.Search.Migrations` is a
+is the only cover for the migration startup ordering — that the migrations resource carries
+environment callbacks and waits on the database, that web and workers each wait for its completion,
+and that the seed simulator waits on workers. None of it has a counterpart in `StartupTests`, because `Concertable.Search.Migrations` is a
 project the target repository authored and the monorepo does not have: search's migrations live inside
 `Infrastructure` there, and `WaitForCompletion` appears nowhere in `api/**/*.cs`. A split made upstream
 cannot cover a resource that exists only downstream. So before accepting one of these deletions, check
@@ -1079,24 +1079,30 @@ green Release build with 74 green tests across four tiers. `search` was the last
 - **The Auth endpoint seam has two right answers, and the composition decides which.** The warning
   against a hardcoded HTTP `8080` and 9B's finding that `WithHttpsEndpoint` stops DCP describe
   different hosts. `system` composes Auth with `WithHttpEndpoint(AuthConstants.ContainerPort,
-  name: "https")` because the pinned image serves plaintext on 8080 and ships *no certificate*. Every
-  standalone AppHost composes it with `WithHttpsEndpoint(AuthConstants.ContainerPort, name: "https")`,
-  which also produces the developer certificate that makes TLS there work — and each service's own
+  name: "https")` because the pinned image serves plaintext on 8080 and ships *no certificate*. The
+  four standalone AppHosts that compose Auth by image — `b2b`, `customer`, `payment`, `search` —
+  declare it with `WithHttpsEndpoint(AuthConstants.ContainerPort, name: "https")`, which also produces
+  the developer certificate that makes TLS there work, and each of their own
   `StartupTests/ResourceGraphTests` asserts both the `https` scheme and `UseDeveloperCertificate`.
   Carrying `system`'s form into a carve fails two assertions in the extraction's own test. Read the
   target host's `ResourceGraphTests` before resolving an endpoint conflict; it states the answer.
+  (`auth`'s own AppHost is the fifth and runs Auth from source, declaring no endpoint at all.)
 - **A three-way merge can duplicate a `GlobalPackageReference` without conflicting.** A patch adding
   `MinVer` at the head of the analyser `ItemGroup` applies cleanly over an extraction that already
   carries the identical item at its foot, because the contexts differ. Nothing reports it. Grep for
   duplicate ids after any `Directory.Packages.props` replay: a clean apply is not evidence of a
   correct one.
-- **Every carve references a `BannedSymbols.txt` that no carve ships.** `Directory.Build.props` carries
-  `<AdditionalFiles Include="$(MSBuildThisFileDirectory)../BannedSymbols.txt" Condition="Exists(…)" />`.
-  That `../` is `api/` in the monorepo and *above the repository root* standalone, and the `Exists()`
-  guard turns the miss into silence, so `Microsoft.CodeAnalysis.BannedApiAnalyzers` runs with an empty
-  list in `auth`, `payment`, `customer` and `search` alike. Same `..`-counted class as the
-  `BaseOutputPath` escape above, but anchoring on `$(ConcertableServiceRoot)` does not fix it — the
-  file has to be carved in or the reference dropped. Open on all four.
+- **The banned-API list silently stops being enforced in a carve, and `customer`'s still is not.** As
+  extracted, `Directory.Build.props` includes `$(MSBuildThisFileDirectory)../BannedSymbols.txt` under
+  an `Exists()` guard. That `../` is `api/` in the monorepo and *above the repository root*
+  standalone, so the guard turns the miss into silence and
+  `Microsoft.CodeAnalysis.BannedApiAnalyzers` runs with an empty list — the
+  `IgnoreQueryFilters` tenancy guard among them. `auth` already fixed it the right way: carve
+  `api/BannedSymbols.txt` in at the repository root and make the reference root-relative. `payment`
+  ships the file and a working root-relative line but still carries the dead `../` one; `search` now
+  matches `auth`; **`customer` has only the `../` line and no file, and is still unguarded.** Another
+  `..`-counted path that says nothing about being wrong, but unlike `BaseOutputPath` it is not fixed by
+  anchoring on `$(ConcertableServiceRoot)` — the file has to come with the carve.
 - **Its own audits come out clean.** The solution file balances in both directions, 17 entries against
   17 project files on disk with no `../Concertable.*` escapes; no project file contains a
   `BaseOutputPath` or any other `..`-counted output path; and the map's assignment of
