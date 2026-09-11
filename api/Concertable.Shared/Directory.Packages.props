@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
+    <ConcertableDotNetPlatformVersion>0.2.0-alpha.0.4</ConcertableDotNetPlatformVersion>
+    <ConcertableServiceVersion>0.1.0-alpha.0.1370</ConcertableServiceVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,11 +57,11 @@
   <!-- Service hosting composition from the org feed, pinned lockstep via ConcertableDotNetPlatformVersion
        above. Bump only to a version already published to the feed, else restore fails NU1101. -->
   <ItemGroup>
-    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableServiceVersion)" />
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Customer.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Payment.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Customer.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Payment.Hosting" Version="$(ConcertableServiceVersion)" />
     <PackageVersion Include="Concertable.Testing" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Seed.Identity" Version="$(ConcertableDotNetPlatformVersion)" />
   </ItemGroup>
