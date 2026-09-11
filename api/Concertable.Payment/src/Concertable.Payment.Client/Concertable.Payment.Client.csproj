@@ -35,9 +35,6 @@
   <ItemGroup>
     <PackageReference Include="Concertable.Grpc" />
     <PackageReference Include="Concertable.Kernel" />
-    <!-- Internal use only (the service-client scope id): PrivateAssets keeps it out of this published
-         package's own nuspec dependencies. -->
-    <PackageReference Include="Concertable.Auth.Contracts" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

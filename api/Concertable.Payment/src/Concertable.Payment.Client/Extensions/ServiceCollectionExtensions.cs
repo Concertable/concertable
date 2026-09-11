@@ -1,6 +1,6 @@
-using Concertable.Auth.Contracts;
 using Concertable.Kernel.Auth;
 using Concertable.Payment.Client.Adapters;
+using Concertable.Payment.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Proto = Concertable.Payment.Grpc;
@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
 
         client.AddCallCredentials(async (_, metadata, serviceProvider) =>
         {
-            var token = await serviceProvider.GetRequiredService<ITokenService>().GetTokenAsync(AuthScope.PaymentWrite.Id());
+            var token = await serviceProvider.GetRequiredService<ITokenService>().GetTokenAsync(PaymentScopes.Write);
             metadata.Add("Authorization", $"Bearer {token}");
         });
     }

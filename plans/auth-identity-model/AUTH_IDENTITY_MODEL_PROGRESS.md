@@ -141,6 +141,33 @@ Phase 1's two review passes are recorded in `reviews/Refactor-AuthIdentityModel.
 plan closes, since it is still this branch's local merge-gate evidence trail for that PR). Phase 2 needs
 its own fresh `review` pass before merge.
 
+**Phase 2's recorded review pass approved a real boundary violation; corrected 2026-09-11.**
+`reviews/Refactor-AuthIdentityModelPhase2.md` is marked approved, and the "all suites re-verified green"
+note above is wrong: `Concertable.Payment.ArchitectureTests` was never run and was red on two tests
+(`PaymentDeployableProjects_ReferenceOnlySharedOrPaymentAssemblies`,
+`PublishedAssemblies_ReferenceOnlySharedPaymentDependencies(PaymentOperationSnapshot)`). Payment is the
+only service carrying that suite, which is why no sibling caught it.
+
+Cause: the typed-scope migration added `Concertable.Auth.Contracts` to `Concertable.Payment.Client` — a
+*published* package — with `PrivateAssets="all"` and a comment asserting that keeps it out of the package.
+It does not. `PrivateAssets` suppresses the nuspec dependency while the compiled assembly keeps the
+assembly reference, so every consumer of `Concertable.Payment.Client` would hit a runtime
+`FileNotFoundException` unless it independently carried Auth.Contracts. A hidden hard dependency is worse
+than a declared one; the suite was right and the construct was wrong.
+
+Fixed: `Payment.Client` drops the reference and uses `PaymentScopes.Write` from the Payment-owned
+`Concertable.Payment.Contracts`; `PaymentScopeParityTests` holds it equal to `AuthScope.PaymentWrite.Id()`
+so the two literals cannot drift silently. `Payment.Web` keeps Auth.Contracts — a non-packable resource
+server legitimately names the audience it validates, as `B2B.Hosting` and `Customer.Hosting` already do —
+and `PaymentPublishedPackageReferenceTests` now grants that prefix to host projects only, so a published
+library still fails. Suite green at 11 tests.
+
+Do not re-add Auth.Contracts to any packable Payment project. The scope/audience registry living in
+`Concertable.Auth.Contracts` is why four resource servers must reference another service's contract
+package for shared vocabulary; the durable fix is to move that registry into the platform's
+`Concertable.Kernel.Auth` beside `ITokenService`, which is a cross-repo platform release and deliberately
+out of scope here.
+
 ## Decisions, discoveries, blockers, and deviations
 
 - **No platform-sync bot any more, and `ConcertableDotNetPlatformVersion` is frozen** (see above) — the
