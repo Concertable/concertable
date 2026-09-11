@@ -72,7 +72,7 @@ stays green. Publish and platform-sync before Phase 5.
 
 ### Phase 2 — spatial configuration seam
 
-- [ ] Replace the eight `HasColumnType("geography")` calls with one shared configuration extension so
+- [x] Replace the eight `HasColumnType("geography")` calls with one shared configuration extension so
   the provider-specific spatial decision has a single site.
 
 Consumption contract: an extension applied to a `Point` property that preserves `geography` semantics.

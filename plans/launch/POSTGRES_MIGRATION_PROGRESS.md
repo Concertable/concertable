@@ -3,30 +3,31 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: `.worktrees/Refactor-launch_postgres-migration`
-- Branch: `Refactor/launch_postgres-migration`
-- PR: Phase 2 consumer PR not opened; producer [#997](https://github.com/Concertable/concertable/pull/997),
+- Worktree: `.worktrees/Docs-launch-postgres-migration-closeout`
+- Branch: `Docs/launch_postgres-migration_closeout`
+- PR: Phase 2 consumer [#1007](https://github.com/Concertable/concertable/pull/1007), producer
+  [#997](https://github.com/Concertable/concertable/pull/997),
   platform publication [Concertable/platform-dotnet#2](https://github.com/Concertable/platform-dotnet/pull/2),
   and release-train alignment [#1004](https://github.com/Concertable/concertable/pull/1004) are merged
-- Dependency/package gates: `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4` is published and the
-  monorepo consumes it through the dedicated platform release-train pin.
-- Last reconciled: `2026-09-11` against `d6f986c25` (`origin/main`)
+- Dependency/package gates: delivered. `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4` is
+  published and consumed through the dedicated platform release-train pin.
+- Last reconciled: `2026-09-11` against `f7e31c26c` (`origin/main`)
 
 ## Current state
 
-Phase 1 and the Phase 2 producer chain are delivered. The consumer is rebased onto the release-train change
-that pins `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4`. Its eight B2B, Customer, and Search
-mappings use the shared `HasGeographyColumn` seam, and its initial migrations preserve the SQL Server schema.
-The branch is ready for final published-package validation, review, and exact-head PR CI.
+Phases 1 and 2 are delivered. All eight B2B, Customer, and Search mappings use the shared
+`HasGeographyColumn` seam from published `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4`, and the
+re-scaffolded initial migrations preserve the SQL Server schema. Consumer PR #1007 passed exact-head,
+merge-group, package, image, and post-merge main validation before landing as `f7e31c26c`.
 
 ## Next Steps
 
-1. Validate the rebased consumer against the published platform package and complete canonical review.
-2. Push the consumer PR and run exact-head CI for the complete affected SQL Server integration matrix and
-   spatial-query coverage.
-3. Deliver the consumer through the merge queue and mark Phase 2 complete only after its post-merge gates pass.
+1. Begin Phase 3 in a new isolated worktree when this roadmap item is selected again.
+2. Replace the eight `SET IDENTITY_INSERT` blocks and two `sys.check_constraints` queries with
+   provider-dispatched helpers in the shared testing library.
+3. Re-scaffold initial migrations and prove the SQL Server schema and full integration matrix remain unchanged.
 
-Do not begin a service cut-over during Phase 2.
+Do not begin a service cut-over during Phase 3.
 
 ## Completed work
 
@@ -49,6 +50,8 @@ Do not begin a service cut-over during Phase 2.
   Messaging Outbox, Messaging Inbox, and Auth persisted grants were byte-identical and retained their IDs;
   the other 21 retained identical migration operations under new IDs while incorporating the
   already-published Phase 1 Inbox max-length snapshot metadata.
+- Delivered the eight consumer mappings and re-scaffolded initial migrations in
+  [#1007](https://github.com/Concertable/concertable/pull/1007), completing Phase 2.
 
 ## Verification
 
@@ -78,6 +81,11 @@ Do not begin a service cut-over during Phase 2.
   the five warnings are existing Auth EF-version, nullable, and generated UI warnings.
 - Rebased-consumer architecture suites passed: B2B 22, Customer 1, Search 7. Search unit tests passed 14,
   including geometry specification coverage.
+- Consumer exact-head run `34597464789` passed the complete affected SQL Server integration matrix.
+- Merge-group run `34598736363` passed the protected build plus B2B and Customer API/browser E2E and landed
+  #1007 as `f7e31c26c`.
+- Post-merge package run `34600419582`, image run `34600419579`, and main CI run `34600419772` passed at
+  the exact merge commit; package verification restored the newly published service closure from a fresh consumer.
 
 ## Reviews
 
@@ -85,7 +93,7 @@ Do not begin a service cut-over during Phase 2.
   removed after PR #985 merged.
 - Phase 2 consumer review found one documentation overclaim about active-provider dispatch. The plan now
   records the actual cross-provider `geography` seam, and native/correctness, test-impact/reliability, and
-  documentation/security lenses are clean through `c453abbcc`.
+  documentation/security lenses approved candidate `3b7c1aca8`; review evidence landed in `b09511d1f`.
 
 ## Decisions, discoveries, blockers, and deviations
 
