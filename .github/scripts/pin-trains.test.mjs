@@ -9,14 +9,17 @@ const apiRoot = join(repoRoot, 'api');
 const inventoryPath = join(repoRoot, 'eng', 'repository-split', 'inventory.json');
 
 const PLATFORM_PIN = 'ConcertableDotNetPlatformVersion';
-const SERVICE_PIN = 'ConcertableServiceVersion';
-const PLATFORM_TARGET = 'platform-dotnet';
+const TARGET_PINS = new Map([
+  ['platform-dotnet', PLATFORM_PIN],
+  ['auth', 'ConcertableAuthVersion'],
+  ['b2b', 'ConcertableB2BContractsVersion'],
+  ['customer', 'ConcertableCustomerVersion'],
+  ['payment', 'ConcertablePaymentVersion'],
+  ['search', 'ConcertableSearchVersion'],
+  ['system', 'ConcertableSystemVersion'],
+]);
+const TRAIN_PINS = new Set(TARGET_PINS.values());
 
-// Two trains publish Concertable.* packages and they advance independently. An id must be pinned to
-// the train that actually publishes it: ask for a version on the wrong train and restore fails
-// NU1102 on an id that never shipped that version. A pin property may resolve through OTHER pin
-// properties (ConcertablePaymentVersion defaults to one of the two), so the train an id follows is
-// the ROOT of its property chain, never the attribute written next to it.
 function pinFiles() {
   const found = [];
   for (const entry of readdirSync(apiRoot, { withFileTypes: true, recursive: true })) {
@@ -48,8 +51,6 @@ function packageVersions(xml) {
   return refs;
 }
 
-// The root of the property chain, so a pin that defaults to another pin is attributed to the train
-// it actually lands on rather than to the intermediate property.
 function rootProperty(version, properties) {
   let current = version;
   for (let hop = 0; hop < 10; hop += 1) {
@@ -85,12 +86,12 @@ test('every Concertable package id is pinned to the train that publishes it', ()
       const target = targets.get(id);
       if (target === undefined) continue;
       checked += 1;
-      const expected = target === PLATFORM_TARGET ? PLATFORM_PIN : SERVICE_PIN;
+      const expected = TARGET_PINS.get(target);
       const actual = rootProperty(version, properties);
-      if (actual !== expected) {
+      if (expected === undefined || actual !== expected) {
         failures.push(
           `${relative(repoRoot, file)}: ${id} (inventory target "${target}") resolves through ` +
-            `${actual ?? version} but must follow $(${expected})`,
+            `${actual ?? version} but must follow ${expected === undefined ? 'a known train' : `$(${expected})`}`,
         );
       }
     }
@@ -100,36 +101,16 @@ test('every Concertable package id is pinned to the train that publishes it', ()
   assert.deepEqual(failures, [], `\n${failures.join('\n')}\n`);
 });
 
-test('an id whose inventory target is a service is never on the platform train', () => {
-  const targets = inventoryTargets();
-  const onPlatform = [];
-  for (const file of pinFiles()) {
-    const xml = readFileSync(file, 'utf8');
-    const properties = declaredProperties(xml);
-    for (const { id, version } of packageVersions(xml)) {
-      if (!id.startsWith('Concertable.')) continue;
-      if (rootProperty(version, properties) !== PLATFORM_PIN) continue;
-      const target = targets.get(id);
-      if (target !== undefined && target !== PLATFORM_TARGET) {
-        onPlatform.push(`${relative(repoRoot, file)}: ${id} -> target "${target}"`);
-      }
-    }
-  }
-  assert.deepEqual(onPlatform, [], `\n${onPlatform.join('\n')}\n`);
-});
-
-// The pin files are the only place the two property names are allowed to originate. A third pin
-// appearing without a train behind it is the shape that broke local-platform-pack.
-test('every pin property resolves to one of the two trains', () => {
+test('every pin property resolves to a known train', () => {
   const orphans = [];
   for (const file of pinFiles()) {
     const xml = readFileSync(file, 'utf8');
     const properties = declaredProperties(xml);
     for (const [name, value] of properties) {
       if (!/^Concertable\w*Version$/.test(name)) continue;
-      if (name === PLATFORM_PIN || name === SERVICE_PIN) continue;
+      if (TRAIN_PINS.has(name)) continue;
       const root = rootProperty(`$(${name})`, properties);
-      if (root !== PLATFORM_PIN && root !== SERVICE_PIN) {
+      if (!TRAIN_PINS.has(root)) {
         orphans.push(`${relative(repoRoot, file)}: <${name}>${value}</${name}> resolves to ${root}`);
       }
     }
@@ -137,26 +118,13 @@ test('every pin property resolves to one of the two trains', () => {
   assert.deepEqual(orphans, [], `\n${orphans.join('\n')}\n`);
 });
 
-// local-platform.ps1 redirects the inner loop at a locally packed feed by overriding pin properties
-// on the command line. A pin holding a literal that it does not override falls through to the real
-// feed, so the loop would silently mix locally built packages with published ones — and images
-// publish from that loop. A pin that only DEFAULTS to another pin needs no override of its own: it
-// is unset, so its condition holds and it inherits the overridden value.
-test('the local platform loop overrides every pin that holds a literal version', () => {
+test('the local platform loop overrides every train for pack and consumption', () => {
   const script = readFileSync(join(repoRoot, 'scripts', 'local-platform.ps1'), 'utf8');
-  const literalPins = new Set();
-  for (const file of pinFiles()) {
-    for (const [name, value] of declaredProperties(readFileSync(file, 'utf8'))) {
-      if (!/^Concertable\w*Version$/.test(name)) continue;
-      if (/^\$\(\w+\)$/.test(value)) continue;
-      literalPins.add(name);
-    }
-  }
-  assert.ok(literalPins.size > 0, 'no literal pin properties found in the pin files');
-  const missing = [...literalPins].filter((name) => !script.includes(`-p:${name}=`));
-  assert.deepEqual(
-    missing,
-    [],
-    `scripts/local-platform.ps1 does not override: ${missing.join(', ')}`,
-  );
+  const workflow = readFileSync(join(repoRoot, '.github', 'workflows', 'test.yml'), 'utf8');
+  const missing = [...TRAIN_PINS].filter((name) => !script.includes(`-p:${name}=`));
+  assert.deepEqual(missing, [], `scripts/local-platform.ps1 does not override: ${missing.join(', ')}`);
+  assert.equal((script.match(/Get-LocalTrainArguments \$version/g) ?? []).length, 3);
+  assert.equal((script.match(/\+ \$trainArguments/g) ?? []).length, 3);
+  assert.match(script, /9999\.0\.0-local\.\$\(/);
+  assert.match(workflow, /LOCAL_PLATFORM_VERSION: 9999\.0\.0-local\.\$\{\{/);
 });
