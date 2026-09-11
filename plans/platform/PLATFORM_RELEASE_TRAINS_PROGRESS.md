@@ -5,16 +5,18 @@
 - Roadmap item: `platform/release-trains`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-DotNetPlatformPublisherCutover`
 - Branch: `Refactor/DotNetPlatformPublisherCutover`
-- PR: none yet
+- PR: `#1003` — https://github.com/Concertable/concertable/pull/1003
 - Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
   train membership. Phases 1 and 2 have no dependency.
-- Last reconciled: 2026-09-11 against `origin/main` `f48aec45680760aebb45aaf655341072dc769c86`.
+- Last reconciled: 2026-09-11 at reviewed code head `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`
+  against `origin/main` `f48aec45680760aebb45aaf655341072dc769c86`.
 
 ## Current state
 
-Phase 1 is delivered. Phase 2 is implemented locally: the monorepo publisher filters its packed batch from
+Phase 1 is delivered. Phase 2 is reviewed and open in PR `#1003`: the monorepo publisher filters its packed batch from
 the generated ownership inventory, the six bespoke platform-sync artifacts are retired, and Renovate owns a
-grouped weekly non-automerge refresh of the shared platform pin. The pin remains at its last resolvable
+grouped weekly non-automerge refresh of the shared platform pin. Retained package dependency metadata is
+validated against that pin before publication. The pin remains at its last resolvable
 `0.1.0-alpha.0.1370` slow floor until the service-owned package trains no longer share that property.
 
 ## Completed milestones
@@ -30,6 +32,11 @@ grouped weekly non-automerge refresh of the shared platform pin. The pin remains
 - Phase 1 exact-head CI run `34545641396`: `ci-complete`, `workflow-tests`, build, and container images green.
 - Phase 1 merge-group run `34547024584`: full API/UI E2E and aggregate CI green.
 - Phase 2 workflow-policy suite: 41/41 service/E2E scope checks passed; package publication policy passed.
+- Phase 2 exact solution pack produced 58 packages; the ownership filter retained 23 service packages and
+  removed 35 platform/system packages. All 39 retained service-to-platform nuspec dependencies target
+  `0.1.0-alpha.0.1370`.
+- A fresh isolated-cache consumer restored the 23 candidate service packages plus all 34 published platform
+  packages without a dependency downgrade.
 - `python eng/repository-split/inventory.py --check`: passed; 23 retained, 34 platform, and 1 system package.
 - `dotnet restore api/Concertable.slnx`: passed from configured feeds with no local platform prepared at the
   retained `0.1.0-alpha.0.1370` slow-floor pin.
@@ -38,7 +45,9 @@ grouped weekly non-automerge refresh of the shared platform pin. The pin remains
 
 ## Reviews
 
-Phase 2 review pending after the branch is reconciled with current `origin/main`.
+Phase 2 canonical review is approved through `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`:
+`reviews/Refactor-DotNetPlatformPublisherCutover.md`. Native, test-impact and security incremental lenses are
+clean after resolving the ownership-trigger, packed-dependency proof and case-insensitive NuGet-ID findings.
 - Phase 1 independent merge review of `fe4b7919e`: one finding — invoke the non-executable PowerShell script
   explicitly through `pwsh` on Ubuntu runners.
 - Phase 1 incremental independent review of `f22f784e9`: clean; both workflow calls and their policy assertions
@@ -71,7 +80,6 @@ Phase 2 review pending after the branch is reconciled with current `origin/main`
 
 ## Next Steps
 
-1. Review the base-current Phase 2 publisher-cutover candidate.
-2. Push the PR and require exact-head `ci-complete`, `workflow-tests`, and the feed-only restore green.
-3. Merge Phase 2 and delete the `platform-sync-broken` GitHub label.
-4. Reconcile the package-train dependency before moving the PostgreSQL consumer to platform `0.2.x`.
+1. Require PR `#1003` exact-head `ci-complete`, `workflow-tests`, and the feed-only restore green.
+2. Merge Phase 2 and delete the `platform-sync-broken` GitHub label.
+3. Reconcile the package-train dependency before moving the PostgreSQL consumer to platform `0.2.x`.
