@@ -5,7 +5,7 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `6722c0603817e8b33a2451c5b5b332759a14331f`  `(2026-09-10)`
+**Reviewed up to commit:** `664675cf78fc`  `(2026-09-12)`
 **Judgment:** `approved`
 
 Checkpoint 10A of [`REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`](../plans/platform/REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md).
@@ -83,3 +83,33 @@ three, and the pass-two no-op finding was deliberately left to the `customer` se
 rather than restated), concision (the plan is not recurring context), dangling references (the two
 `~/.claude/plans/` pointers follow the precedent already set at the same location for the `customer`
 run), or followability.
+
+## Incremental pass — `6722c060..664675cf`
+
+**Pass judgment:** `approved`
+**Mode:** `append`
+
+One commit: `origin/main` merged in to clear a `DIRTY` state. The branch's own contribution against main
+is unchanged at two files — the plan section and this review — so nothing new was authored; the 202-file
+diff against the old watermark is main's own history arriving, not this branch's work.
+
+Two conflicts in `REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`, resolved differently and deliberately:
+
+- **Additive, both kept.** This branch's `#### What the b2b rehearsal added` against main's
+  `#### Landing a re-cut on a pushed carve repository`, the customer rehearsal and the search re-cut.
+  All four sections verified present afterwards and no content dropped.
+- **A real conflict, main's side taken.** The same two status-table rows written at different times.
+  Main's are newer. Conflict resolution is not the place to author content into another branch's
+  document, so they were taken as-is rather than rewritten.
+
+Both of those rows are nonetheless **already stale**, recorded here so the next editor fixes them rather
+than trusting them:
+
+- customer is past "its CI waits on `CONCERTABLE_PACKAGES_TOKEN`" — the secret was misnamed rather than
+  missing (the consumer secret is `CONCERTABLE_PACKAGES_READ`), and `customer#4` and `customer#5` have
+  both merged with CI green.
+- b2b is past "write CI from scratch — it has none" — `b2b#2` landed the extraction and its standalone
+  CI, and `b2b#4` has merged on top.
+
+No security classification: both changed paths are documentation and match neither the generic nor the
+repository `security_paths` inventory.
