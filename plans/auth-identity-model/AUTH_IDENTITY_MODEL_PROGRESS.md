@@ -74,9 +74,12 @@ mid-session) — see Plan's Open Questions "RESOLVED 2026-09-11" entry for the f
 **Verified this session:** `Concertable.Auth.Contracts` + its tests (37 pass, 0 warnings); full rebuild of
 `Concertable.B2B.Web`, `Concertable.Customer.Web`, `Concertable.Payment.Web`, `Concertable.Search.Web`,
 `Concertable.Auth` — all 0 warnings, 0 errors, against the still-published `0.1.0-alpha.0.1383` package
-(these changes needed no new publish — see Decisions). Not yet re-run this session:
-`Concertable.Auth.UnitTests`, `Concertable.Auth.StartupTests`, `Concertable.Customer.User.UnitTests`,
-B2B Tenant/User/Admin integration (Docker). Do that before considering Phase 2 close-out-ready.
+(these changes needed no new publish — see Decisions). `Concertable.Auth.UnitTests` (13),
+`Concertable.Auth.StartupTests` (11), `Concertable.Customer.User.UnitTests` (15) — all green, all re-run
+against the current head. **Still not run: B2B Tenant/User/Admin integration tests — Docker unreachable
+locally** (`docker-health.ps1`: daemon not running). Not blocking — per `remote-validation`, local
+integration/E2E only runs to diagnose a merge-queue failure; the merge queue's `carve-b2b`/
+`integration-tests` jobs are the real gate for these and will run on the real head regardless.
 
 **Environment note:** mid-session the workstation hit ~0 bytes free disk (unrelated background load from
 this machine's other worktrees/NuGet cache, not this plan's own doing) — background jobs got killed by the
