@@ -45,6 +45,19 @@ def package_id(package_path: Path) -> str:
     return ids[0]
 
 
+def package_dependencies(package_path: Path) -> list[tuple[str, str]]:
+    with zipfile.ZipFile(package_path) as archive:
+        nuspecs = [name for name in archive.namelist() if name.lower().endswith(".nuspec")]
+        if len(nuspecs) != 1:
+            raise ValueError(f"{package_path.name} contains {len(nuspecs)} nuspec files")
+        root = ElementTree.fromstring(archive.read(nuspecs[0]))
+    return [
+        (element.attrib.get("id", "").strip(), element.attrib.get("version", "").strip())
+        for element in root.iter()
+        if element.tag.rsplit("}", 1)[-1] == "dependency"
+    ]
+
+
 def packages_for(ownership: dict[str, str], group: str) -> list[str]:
     if group == "retained":
         return sorted(package_id for package_id, target in ownership.items() if target in RETAINED_TARGETS)
@@ -70,6 +83,33 @@ def filter_batch(package_dir: Path, ownership: dict[str, str]) -> tuple[list[str
     return retained, removed
 
 
+def validate_platform_dependencies(
+    package_dir: Path, ownership: dict[str, str], expected_version: str
+) -> int:
+    platform_packages = set(packages_for(ownership, "platform-dotnet"))
+    checked = 0
+    failures: list[str] = []
+    for artifact in sorted(package_dir.glob("*.nupkg")):
+        artifact_id = package_id(artifact)
+        if ownership.get(artifact_id) not in RETAINED_TARGETS:
+            raise ValueError(f"Package '{artifact_id}' is not service-owned")
+        for dependency_id, dependency_version in package_dependencies(artifact):
+            if dependency_id not in platform_packages:
+                continue
+            checked += 1
+            if dependency_version != expected_version:
+                failures.append(
+                    f"{artifact_id} -> {dependency_id} ({dependency_version or '<missing>'})"
+                )
+    if failures:
+        raise ValueError(
+            f"Service packages do not target platform {expected_version}: {', '.join(failures)}"
+        )
+    if checked == 0:
+        raise ValueError("Service packages declare no platform dependencies")
+    return checked
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("inventory", type=Path)
@@ -78,14 +118,20 @@ def main() -> int:
     filter_parser.add_argument("package_dir", type=Path)
     list_parser = subparsers.add_parser("list")
     list_parser.add_argument("group", choices=["retained", "platform-dotnet", "system"])
+    validate_parser = subparsers.add_parser("validate-platform")
+    validate_parser.add_argument("package_dir", type=Path)
+    validate_parser.add_argument("expected_version")
     args = parser.parse_args()
 
     ownership = load_ownership(args.inventory)
     if args.command == "filter":
         retained, removed = filter_batch(args.package_dir, ownership)
         print(f"Retained {len(retained)} service packages; removed {len(removed)} foreign packages.")
-    else:
+    elif args.command == "list":
         print("\n".join(packages_for(ownership, args.group)))
+    else:
+        checked = validate_platform_dependencies(args.package_dir, ownership, args.expected_version)
+        print(f"Validated {checked} service-to-platform package dependencies.")
     return 0
 
 
