@@ -7,18 +7,20 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 
-# A service leaves RETAINED_TARGETS when it starts publishing its own packages from its own
-# repository, at its checkpoint 10C. The monorepo still builds and packs its projects — removing it
-# here only stops the push, so versions already on the feed keep resolving for pinned consumers and
-# nothing is withdrawn. It stays in KNOWN_TARGETS because the inventory still carries its projects
-# until 10F removes the source; dropping it from there instead makes load_ownership reject them.
-#
-# Two publishers of one package id is what this prevents: the second one to push a version that does
-# not advance the id's feed history is rejected outright, which took the monorepo's publisher down for
-# a day on 2026-09-10.
+# A service leaves RETAINED_TARGETS for PROMOTED_TARGETS when it starts publishing its own packages
+# from its own repository. It stays in KNOWN_TARGETS because the inventory still carries its projects
+# until its source is removed; dropping it from there makes load_ownership reject them.
 PROMOTED_TARGETS = frozenset({"auth"})
 RETAINED_TARGETS = frozenset({"b2b", "customer", "payment", "search"})
 KNOWN_TARGETS = RETAINED_TARGETS | PROMOTED_TARGETS | {"platform-dotnet", "system"}
+
+# Promoting a target by adding it here without removing it from RETAINED_TARGETS would leave the
+# monorepo pushing ids its own repository now publishes, which is the two-publisher collision this
+# split exists to prevent and would not otherwise surface until a push was rejected.
+if RETAINED_TARGETS & PROMOTED_TARGETS:
+    raise ValueError(
+        f"Target published from two repositories: {sorted(RETAINED_TARGETS & PROMOTED_TARGETS)}"
+    )
 
 
 def load_ownership(inventory_path: Path) -> dict[str, str]:
@@ -104,7 +106,7 @@ def validate_platform_dependencies(
     for artifact in sorted(package_dir.glob("*.nupkg")):
         artifact_id = package_id(artifact)
         if ownership.get(artifact_id) not in RETAINED_TARGETS:
-            raise ValueError(f"Package '{artifact_id}' is not service-owned")
+            raise ValueError(f"Package '{artifact_id}' is not published by this repository")
         for dependency_id, dependency_version in package_dependencies(artifact):
             if dependency_id.casefold() not in platform_packages:
                 continue

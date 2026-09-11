@@ -273,6 +273,11 @@ def main() -> None:
                                 "target": "system",
                                 "packable": True,
                             },
+                            "promoted": {
+                                "name": "Concertable.Auth.Contracts",
+                                "target": "auth",
+                                "packable": True,
+                            },
                         }
                     }
                 }
@@ -285,6 +290,7 @@ def main() -> None:
             "Concertable.DataAccess.Infrastructure",
             "Concertable.B2B.Contracts",
             "Concertable.Testing.E2E",
+            "Concertable.Auth.Contracts",
         ):
             dependencies = (
                 '<dependencies><group targetFramework="net10.0">'
@@ -302,8 +308,21 @@ def main() -> None:
         retained, removed = ownership.filter_batch(package_dir, package_targets)
         require(retained == ["Concertable.B2B.Contracts"], "service package remains in the publish batch")
         require(
-            removed == ["Concertable.DataAccess.Infrastructure", "Concertable.Testing.E2E"],
-            "platform and future-system packages leave the publish batch",
+            removed
+            == [
+                "Concertable.Auth.Contracts",
+                "Concertable.DataAccess.Infrastructure",
+                "Concertable.Testing.E2E",
+            ],
+            "platform, future-system and promoted packages leave the publish batch",
+        )
+        require(
+            "auth" in ownership.KNOWN_TARGETS and "auth" not in ownership.RETAINED_TARGETS,
+            "a promoted target stays loadable while leaving the retained set",
+        )
+        require(
+            not (ownership.RETAINED_TARGETS & ownership.PROMOTED_TARGETS),
+            "no target is both retained and promoted",
         )
         require(
             ownership.packages_for(package_targets, "platform-dotnet")
