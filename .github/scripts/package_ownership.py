@@ -17,10 +17,13 @@ KNOWN_TARGETS = RETAINED_TARGETS | PROMOTED_TARGETS | {"platform-dotnet", "syste
 # Promoting a target by adding it here without removing it from RETAINED_TARGETS would leave the
 # monorepo pushing ids its own repository now publishes, which is the two-publisher collision this
 # split exists to prevent and would not otherwise surface until a push was rejected.
-if RETAINED_TARGETS & PROMOTED_TARGETS:
-    raise ValueError(
-        f"Target published from two repositories: {sorted(RETAINED_TARGETS & PROMOTED_TARGETS)}"
-    )
+def require_single_publisher(retained: frozenset[str], promoted: frozenset[str]) -> None:
+    conflict = retained & promoted
+    if conflict:
+        raise ValueError(f"Target published from two repositories: {sorted(conflict)}")
+
+
+require_single_publisher(RETAINED_TARGETS, PROMOTED_TARGETS)
 
 
 def load_ownership(inventory_path: Path) -> dict[str, str]:
