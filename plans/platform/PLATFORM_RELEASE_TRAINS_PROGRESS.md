@@ -3,34 +3,54 @@
 - Plan: `plans/platform/PLATFORM_RELEASE_TRAINS_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/release-trains`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Chore-PlatformImagesFromSource`
-- Branch: `Chore/PlatformImagesFromSource`
-- PR: `https://github.com/Concertable/concertable/pull/1002`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-DotNetPlatformPublisherCutover`
+- Branch: `Refactor/DotNetPlatformPublisherCutover`
+- PR: `#1003` — https://github.com/Concertable/concertable/pull/1003
 - Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
   train membership. Phases 1 and 2 have no dependency.
-- Last reconciled: 2026-09-11 against `origin/main` `1f8f1d59a8dc9e0c94e745c81eb41a4c409725ef`.
+- Last reconciled: 2026-09-11 at reviewed code head `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`
+  against `origin/main` `f48aec45680760aebb45aaf655341072dc769c86`.
 
 ## Current state
 
-Phase 1 is implemented on the branch above. Every image matrix leg now prepares the local platform and
-publishes through `scripts/local-platform.ps1`, matching the existing `container-images` CI path. The
-focused workflow-policy test is wired into the repository's workflow-test aggregator.
+Phase 1 is delivered. Phase 2 is reviewed and open in PR `#1003`: the monorepo publisher filters its packed batch from
+the generated ownership inventory, the six bespoke platform-sync artifacts are retired, and Renovate owns a
+grouped weekly non-automerge refresh of the shared platform pin. Retained package dependency metadata is
+validated against that pin before publication. The pin remains at its last resolvable
+`0.1.0-alpha.0.1370` slow floor until the service-owned package trains no longer share that property.
 
 ## Completed milestones
 
-None delivered yet.
+- Phase 1: PR `#1002` merged as `f48aec45680760aebb45aaf655341072dc769c86`; merge-group CI passed.
+- Post-merge image publication run `34549092195` published all nine deployables. The extracted B2B image
+  `Concertable.DataAccess.Infrastructure.dll` has ProductVersion
+  `0.1.0-local.1789088643628+f48aec45680760aebb45aaf655341072dc769c86`, matching the run's prepared
+  local-platform version.
 
 ## Latest verification
 
-- `python .github/workflows/tests/test_service_scope.py`: 41/41 service/E2E scope checks passed; package
-  publication policy passed; image publication policy passed 6/6.
+- Phase 1 exact-head CI run `34545641396`: `ci-complete`, `workflow-tests`, build, and container images green.
+- Phase 1 merge-group run `34547024584`: full API/UI E2E and aggregate CI green.
+- Phase 2 workflow-policy suite: 41/41 service/E2E scope checks passed; package publication policy passed.
+- Phase 2 exact solution pack produced 58 packages; the ownership filter retained 23 service packages and
+  removed 35 platform/system packages. All 39 retained service-to-platform nuspec dependencies target
+  `0.1.0-alpha.0.1370`.
+- A fresh isolated-cache consumer restored the 23 candidate service packages plus all 34 published platform
+  packages without a dependency downgrade.
+- `python eng/repository-split/inventory.py --check`: passed; 23 retained, 34 platform, and 1 system package.
+- `dotnet restore api/Concertable.slnx`: passed from configured feeds with no local platform prepared at the
+  retained `0.1.0-alpha.0.1370` slow-floor pin.
+- Phase 1 image publication policy passed 6/6.
 - `git diff --check`: passed.
 
 ## Reviews
 
-- Independent merge review of `fe4b7919e`: one finding — invoke the non-executable PowerShell script
+Phase 2 canonical review is approved through `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`:
+`reviews/Refactor-DotNetPlatformPublisherCutover.md`. Native, test-impact and security incremental lenses are
+clean after resolving the ownership-trigger, packed-dependency proof and case-insensitive NuGet-ID findings.
+- Phase 1 independent merge review of `fe4b7919e`: one finding — invoke the non-executable PowerShell script
   explicitly through `pwsh` on Ubuntu runners.
-- Incremental independent review of `f22f784e9`: clean; both workflow calls and their policy assertions
+- Phase 1 incremental independent review of `f22f784e9`: clean; both workflow calls and their policy assertions
   now require the explicit PowerShell host.
 
 ## Decisions and discoveries
@@ -51,12 +71,15 @@ None delivered yet.
   untouched.
 - `PLATFORM_SYNC_TOKEN` is left in place by Phase 2. The migration plan owns secret teardown at
   cutover, and retiring it early would contradict that.
+- `ConcertableDotNetPlatformVersion` still versions retained service packages as well as platform packages.
+  Advancing it to `0.2.0-alpha.0.4` made the feed-only restore fail on service packages whose latest train is
+  `0.1.x`; Phase 2 therefore preserves the resolvable slow floor. A platform consumer cannot move to `0.2.x`
+  until those service-owned references use their own train properties.
 - This plan was first authored against a checkout 868 commits behind `main`, which made its counts and
   the single-pin premise wrong. Re-measure against `origin/main` before quoting any figure from it.
 
 ## Next Steps
 
-1. Push the reviewed Phase 1 candidate and require exact-head `ci-complete` and `workflow-tests` green.
-2. Merge and confirm one published image contains the local-platform DataAccess assembly version from its
-   exact publication run.
-3. Resume Phase 2: retire platform sync and hand the slow floor to Renovate.
+1. Require PR `#1003` exact-head `ci-complete`, `workflow-tests`, and the feed-only restore green.
+2. Merge Phase 2 and delete the `platform-sync-broken` GitHub label.
+3. Reconcile the package-train dependency before moving the PostgreSQL consumer to platform `0.2.x`.
