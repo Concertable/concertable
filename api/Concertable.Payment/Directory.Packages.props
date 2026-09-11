@@ -2,18 +2,15 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
-    <!-- Concertable.Auth.Contracts / .Hosting are retained service packages on their own
-         train, independent of the shared platform-dotnet pin above (frozen for
-         Kernel/DataAccess/etc compatibility; see plans/platform/PLATFORM_RELEASE_TRAINS_PROGRESS.md).
-         Same escape-hatch shape as ConcertablePaymentVersion. -->
-    <ConcertableAuthVersion Condition="'$(ConcertableAuthVersion)' == ''">0.1.0-alpha.0.1383</ConcertableAuthVersion>
+    <ConcertableDotNetPlatformVersion>0.2.0-alpha.0.4</ConcertableDotNetPlatformVersion>
+    <ConcertableAuthVersion>0.1.0-alpha.0.1383</ConcertableAuthVersion>
+    <ConcertablePaymentVersion>0.1.0-alpha.0.1381</ConcertablePaymentVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageVersion Include="Concertable.Testing" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Payment.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Payment.TestKit" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Payment.Hosting" Version="$(ConcertablePaymentVersion)" />
+    <PackageVersion Include="Concertable.Payment.TestKit" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Concertable.Testing.Architecture" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Testing.Integration" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Aspire.Hosting.Azure.ServiceBus" Version="13.3.2" />
@@ -48,9 +45,6 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
   </ItemGroup>
 
-  <!-- Shared platform + cross-service contracts from the org feed, pinned lockstep via
-       ConcertableDotNetPlatformVersion above. Bump only to a version already published to the feed,
-       else restore fails NU1101. -->
   <ItemGroup>
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableAuthVersion)" />
