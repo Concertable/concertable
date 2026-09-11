@@ -12,7 +12,7 @@
 
 ## Current state
 
-Phase 1 is implemented locally. Every packable project has one binding verdict, train property or explicit
+Phase 1 is implemented and reviewed locally. Every packable project has one binding verdict, train property or explicit
 unpublished marker, post-cut owner, consumer count and reason. The table admits 35 platform or service-owned
 packages and removes 23 packages from the future published surface through `vendor` verdicts.
 
@@ -29,11 +29,16 @@ rather than trusting any copy of the list, which will rot.
 ## Latest verification
 
 - Table rows: 58; unique package IDs: 58; current `IsPackable` projects: 58.
+- Verdicts: 17 platform, 18 service-owned, 23 vendor; seven distinct admitted train properties.
 - Consumer evidence includes both direct `PackageReference` edges and source-form `ProjectReference` edges.
+- `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings.
+- `git diff --check`: passed.
 
 ## Reviews
 
-Review pending for the completed Phase 1 table.
+Canonical docs review is approved through `506da3bf9cf54310991dbd12954545ad0e9d229c`:
+`reviews/Docs-PublishedSurfaceAdmission.md`. Seven medium findings were resolved across two incremental
+passes; the final native/general, train-set consistency, and inventory-coherence lenses are clean.
 
 ## Decisions and discoveries
 
@@ -65,7 +70,7 @@ Review pending for the completed Phase 1 table.
 
 ## Next Steps
 
-1. Review and land the Phase 1 verdict table.
-2. Execute each `vendor` class through its own follow-on plan; do not delete packages in this docs PR.
-3. Use the admitted train membership to implement the consumer-property split in
+1. Land the reviewed Phase 1 verdict table.
+2. Use the admitted train membership to implement the consumer-property split in
    `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 3.
+3. Execute each `vendor` class through its own follow-on plan; do not delete packages in this docs PR.
