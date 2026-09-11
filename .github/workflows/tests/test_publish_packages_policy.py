@@ -64,6 +64,18 @@ def main() -> None:
         "package-ownership changes trigger acceptance publishing",
     )
     require(
+        "eng/repository-split/inventory.py" in triggers["push"]["paths"],
+        "inventory generator changes trigger acceptance publishing",
+    )
+    require(
+        "eng/repository-split/inventory.json" in triggers["push"]["paths"],
+        "inventory changes trigger acceptance publishing",
+    )
+    require(
+        "eng/repository-split/map.yaml" in triggers["push"]["paths"],
+        "ownership-map changes trigger acceptance publishing",
+    )
+    require(
         all(not (REPO_ROOT / path).exists() for path in RETIRED_PLATFORM_SYNC_PATHS),
         "the bespoke platform-sync implementation is fully retired",
     )
@@ -113,6 +125,12 @@ def main() -> None:
     require(
         publish["outputs"]["version"] == "${{ steps.version.outputs.version }}",
         "validated package version is exported to consumers",
+    )
+    pack_step = next(step for step in publish["steps"] if step.get("name") == "Pack publishable projects")
+    require(
+        "UseLocalPlatformPackages=true" in pack_step["run"]
+        and "UseLocalPlatformSources" not in pack_step["run"],
+        "service package metadata targets the published platform train",
     )
     version_step = next(step for step in publish["steps"] if step.get("id") == "version")
     version_script = version_step["run"]
