@@ -195,22 +195,26 @@ and the previous design (Auth-owned `AuthParty`) was reintroducing exactly the c
 microservice boundaries exist to prevent. This is stronger than, and supersedes, the "move to
 `Concertable.Contracts`" option originally recorded here.
 
-**Not yet decided — surfaced while resolving the above, needs the repository owner's call before this can be
-called closed:** B2B has no dedicated Authorization module. The pre-existing `PermissionAuthorizationHandler`
-/ `PermissionRequirement` / `IMembershipContext` (request-time policy checks) live inside
-`Concertable.B2B.Tenant.Infrastructure`/`.Contracts` purely because Tenant happens to own the membership data
-they read — which means *every* B2B module with a protected endpoint depends on Tenant.Contracts for an
-orthogonal concern, the wrong dependency direction. The new `ManagerClients` (registration-time role
-assignment — a different lifecycle moment, same underlying concern: authorization) currently sits as an
-interim placement in `Concertable.B2B.Infrastructure/Authorization/` — the smallest correct move for *this*
-PR, not a resolution of the module question. The real fix, sketched but **not decided or scoped**: a genuine
-`Concertable.B2B.Authorization` module (`.Contracts` — `PermissionRequirement`, a membership/role-fact facade
-interface Tenant *implements*; `.Infrastructure` — `PermissionAuthorizationHandler`, `ManagerClients`; no
-`.Domain`/`.Api`, no persisted aggregate of its own), inverting today's direction so every module depends on
-Authorization directly instead of on Tenant. This is materially bigger than this PR (rewires every module's
-policy registration) and is **not this plan's scope** — it needs its own plan if pursued. Record the decision
-(build it now as its own epic, or leave the interim placement and log the rest as tracked tech debt) before
-treating Phase 2 as closable on this question.
+**RESOLVED 2026-09-11 (repository owner):** B2B has no dedicated Authorization module. The pre-existing
+`PermissionAuthorizationHandler` / `PermissionRequirement` / `IMembershipContext` (request-time policy
+checks) live inside `Concertable.B2B.Tenant.Infrastructure`/`.Contracts` purely because Tenant happens to own
+the membership data they read — which means *every* B2B module with a protected endpoint depends on
+Tenant.Contracts for an orthogonal concern, the wrong dependency direction. The new `ManagerClients`
+(registration-time role assignment — a different lifecycle moment, same underlying concern: authorization)
+stays at its interim placement in `Concertable.B2B.Infrastructure/Authorization/` — already the right *local*
+shape, just not the full module move. **Decision: leave the interim placement; the module inversion is
+tracked as its own roadmap item, not folded into Phase 2.** Rationale: it rewires every B2B module's policy
+registration — a materially bigger, separately-reviewable change than this plan's typed-identity-contract
+scope — and Phase 2 is otherwise verified and ready; sequencing the rewire as its own plan is correct
+splitting of delivery, not a downgrade of the fix. Logged in
+[`api/Concertable.B2B/TECH_DEBT.md`](../../api/Concertable.B2B/TECH_DEBT.md) ("Authorization code is homed by
+accident-of-ownership, not by a real module") with the design sketch (a genuine `Concertable.B2B.Authorization`
+module: `.Contracts` — `PermissionRequirement`, a membership/role-fact facade interface Tenant *implements*;
+`.Infrastructure` — `PermissionAuthorizationHandler`, `ManagerClients`; no `.Domain`/`.Api`, no persisted
+aggregate of its own) and an objective resolution condition. Roadmap item
+`b2b-authorization/authorization-module` in
+[`plans/b2b-authorization/B2B_AUTHORIZATION_ROADMAP.md`](../b2b-authorization/B2B_AUTHORIZATION_ROADMAP.md) —
+the next plan to work once Phase 2 merges, not indefinitely deferred. Phase 2 can now proceed to close-out.
 
 ### Does `TestTokenMinter` belong inside the service-agnostic `Concertable.Testing.E2E` harness?
 
