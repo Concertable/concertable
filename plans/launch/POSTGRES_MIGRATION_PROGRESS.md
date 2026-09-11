@@ -3,29 +3,28 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: `.worktrees/Refactor-launch-postgres-spatial-package`
-- Branch: `Refactor/launch-postgres-spatial-package`
-- PR: Phase 2 producer PR not opened; Phase 1 [#985](https://github.com/Concertable/concertable/pull/985)
-  and generated platform sync [#988](https://github.com/Concertable/concertable/pull/988) are merged
-- Dependency/package gates: Phase 2 adds a public API to `Concertable.DataAccess.Infrastructure`; publish
-  and platform-sync must complete before the prepared service consumers can enter exact-head CI.
-- Last reconciled: `2026-09-10` against `7c40ddb00` (`origin/main`)
+- Worktree: `.worktrees/Refactor-launch_postgres-migration`
+- Branch: `Refactor/launch_postgres-migration`
+- PR: Phase 2 consumer PR not opened; producer [#997](https://github.com/Concertable/concertable/pull/997),
+  platform publication [Concertable/platform-dotnet#2](https://github.com/Concertable/platform-dotnet/pull/2),
+  and release-train alignment [#1004](https://github.com/Concertable/concertable/pull/1004) are merged
+- Dependency/package gates: `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4` is published and the
+  monorepo consumes it through the dedicated platform release-train pin.
+- Last reconciled: `2026-09-11` against `d6f986c25` (`origin/main`)
 
 ## Current state
 
-Phase 1 is delivered. The Phase 2 producer adds `HasGeographyColumn` to the shared DataAccess package. The
-eight B2B, Customer, and Search mappings and their re-scaffolded initial migrations are prepared and locally
-verified on the separate `Refactor/launch_postgres-migration` branch; they cannot enter exact-head PR CI
-until this package expansion publishes and the generated platform sync lands.
+Phase 1 and the Phase 2 producer chain are delivered. The consumer is rebased onto the release-train change
+that pins `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4`. Its eight B2B, Customer, and Search
+mappings use the shared `HasGeographyColumn` seam, and its initial migrations preserve the SQL Server schema.
+The branch is ready for final published-package validation, review, and exact-head PR CI.
 
 ## Next Steps
 
-1. Commit, review, push, and run exact-head CI for the producer-only
-   `Concertable.DataAccess.Infrastructure` package expansion.
-2. After that PR publishes and the generated platform sync lands, rebase the prepared consumer commit onto
-   current `main` and replace its temporary local-package proof with the published version.
-3. Push the consumer PR and run exact-head CI for the complete affected SQL Server integration matrix and
-   spatial-query coverage. Mark Phase 2 complete only when that consumer PR is delivered.
+1. Validate the rebased consumer against the published platform package and complete canonical review.
+2. Push the consumer PR and run exact-head CI for the complete affected SQL Server integration matrix and
+   spatial-query coverage.
+3. Deliver the consumer through the merge queue and mark Phase 2 complete only after its post-merge gates pass.
 
 Do not begin a service cut-over during Phase 2.
 
@@ -70,6 +69,11 @@ Do not begin a service cut-over during Phase 2.
   coverage; prepared-consumer `Concertable.Search.UnitTests`: 14 passed, including geometry specification
   coverage.
 - Exact-local-package architecture suites: B2B 22 passed, Customer 1 passed, Search 7 passed.
+- Producer PR #997 and platform PR #2 published `Concertable.DataAccess.Infrastructure`
+  `0.2.0-alpha.0.4`; release-train PR #1004 made that published pin independently consumable and passed
+  exact-head and merge-group validation before landing as `d6f986c25`.
+- Rebased the prepared consumer commit onto `d6f986c25`; all eight production spatial mappings use
+  `HasGeographyColumn`, with no configuration-level explicit `geography` column types remaining.
 
 ## Reviews
 
