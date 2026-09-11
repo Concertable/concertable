@@ -96,8 +96,9 @@ Server identity window, while `Concertable.Testing.Integration` exposes `Databas
 identity windows and temporary unvalidated check constraints. Callers provide schema, table, constraint and
 provider-neutral predicate values; the helpers delimit identifiers and render the active provider's SQL.
 
-Delivery sequence: publish the additive shared-package APIs first, consume the generated platform release,
-then migrate the Auth and B2B fixtures on their own branch and validate them against the published packages.
+Delivery sequence: publish the additive shared-package APIs from `Concertable/platform-dotnet` first, advance
+the monorepo's platform train to that exact published version, then migrate the Auth and B2B fixtures on their
+own branch and validate them against the published packages.
 
 Gate: every service's integration suite stays green on SQL Server with no raw SQL Server syntax left in
 the seed or fixture path.

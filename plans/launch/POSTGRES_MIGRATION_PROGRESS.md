@@ -3,33 +3,30 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: `.worktrees/Refactor-launch-postgres-fixture-package`
-- Branch: `Refactor/launch-postgres-fixture-package`
-- PR: Phase 3 producer not opened; Phase 2 consumer [#1007](https://github.com/Concertable/concertable/pull/1007), producer
-  [#997](https://github.com/Concertable/concertable/pull/997),
-  platform publication [Concertable/platform-dotnet#2](https://github.com/Concertable/platform-dotnet/pull/2),
-  and release-train alignment [#1004](https://github.com/Concertable/concertable/pull/1004) are merged
-- Dependency/package gates: Phase 3 adds APIs to published `Concertable.Seed.Shared` and
-  `Concertable.Testing.Integration`; publish and platform release must complete before the Auth and B2B
-  fixture consumers can enter exact-head CI.
-- Last reconciled: `2026-09-11` against `71157873d` (`origin/main`)
+- Worktree: `.worktrees/Refactor-launch_postgres-migration`
+- Branch: `Refactor/launch_postgres-migration`
+- PR: Phase 3 consumer not opened; monorepo producer [#1017](https://github.com/Concertable/concertable/pull/1017)
+  and canonical platform producer [Concertable/platform-dotnet#3](https://github.com/Concertable/platform-dotnet/pull/3)
+  are merged
+- Dependency/package gates: delivered. `Concertable.Seed.Shared` and `Concertable.Testing.Integration`
+  `0.2.0-alpha.0.5` are published, and the prepared consumer advances every monorepo platform pin to that
+  exact train.
+- Last reconciled: `2026-09-11` against `9370ade8a` (`origin/main`)
 
 ## Current state
 
-Phases 1 and 2 are delivered. The Phase 3 producer now makes seeding identity rewriting provider-aware and
-adds shared integration-test helpers for identity windows and temporary unvalidated check constraints. The
-consumer worktree is prepared at `.worktrees/Refactor-launch_postgres-migration`; its Auth and B2B fixture
-changes pass focused SQL Server integration tests against the exact locally packed producer candidate and remain
-delivery-gated until the shared packages publish.
+Phases 1 and 2 are delivered. The Phase 3 package APIs are merged in both the transitional monorepo source and
+their canonical `Concertable/platform-dotnet` owner, and platform train `0.2.0-alpha.0.5` is published. The
+consumer is rebased onto current main, advances all platform pins to `.5`, removes the remaining Auth and B2B
+fixture SQL Server catalog/identity syntax, and passes the complete Auth and B2B SQL Server integration matrix.
 
 ## Next Steps
 
-Complete the Phase 3 shared-package producer:
+Complete the Phase 3 consumer:
 
-1. Build and pack the shared package closure, then commit and run the canonical review.
-2. Push `Refactor/launch-postgres-fixture-package`, open its PR, and run exact-head CI.
-3. After it merges, publish the packages and land the generated platform release before resuming the
-   prepared Auth and B2B consumer worktree.
+1. Run the final current-pin SQL Server integration matrix and repository package/plan gates.
+2. Review the rebased consumer candidate, push `Refactor/launch_postgres-migration`, and open its PR.
+3. Own exact-head and merge-group validation to green, merge the PR, and record the Phase 4 handoff.
 
 Do not begin a service cut-over during Phase 3.
 
@@ -57,8 +54,11 @@ Do not begin a service cut-over during Phase 3.
 - Delivered the eight consumer mappings and re-scaffolded initial migrations in
   [#1007](https://github.com/Concertable/concertable/pull/1007), completing Phase 2.
 - Added the Phase 3 provider dispatch in `Concertable.Seed.Shared` and the shared identity-window and
-  temporary check-constraint API in `Concertable.Testing.Integration`; consumer migration remains gated on
-  publication.
+  temporary check-constraint API in `Concertable.Testing.Integration`.
+- Delivered the transitional monorepo package source through #1017 and the canonical package source through
+  `Concertable/platform-dotnet#3`, then published platform train `0.2.0-alpha.0.5`.
+- Rebased the prepared consumer onto current main and advanced all eight monorepo platform-train pins to the
+  exact published `.5` release.
 
 ## Verification
 
@@ -104,6 +104,15 @@ Do not begin a service cut-over during Phase 3.
   13/13. Each run verified exactly one `Concertable.DataAccess.Infrastructure.dll` at the local package version.
 - The prepared Auth and B2B fixture inventory now contains 0 raw `SET IDENTITY_INSERT` and 0
   `sys.check_constraints` occurrences outside migrations and build outputs.
+- Platform PR #3 exact-head CI run `34630847352` passed both package build/test and build-law consumer jobs;
+  merge commit `3136a4ee1` is published by run `34631131950` as `0.2.0-alpha.0.5`.
+- Feed-only `.5` builds passed for the Auth fixture and the B2B Booking and Concert integration projects with
+  0 warnings and 0 errors.
+- The final current-pin Auth integration matrix passed 54/54 against local platform closure
+  `9999.0.0-local.1789151042614`, including all four operational-store migration cases.
+- The final current-pin B2B integration matrix passed all 12/12 projects against that same closure. The changed
+  Booking and Concert fixture projects passed 24/24 and 72/72 respectively; every project verified exactly one
+  `Concertable.DataAccess.Infrastructure.dll` at the local platform version.
 
 ## Reviews
 
@@ -112,7 +121,8 @@ Do not begin a service cut-over during Phase 3.
 - Phase 2 consumer review found one documentation overclaim about active-provider dispatch. The plan now
   records the actual cross-provider `geography` seam, and native/correctness, test-impact/reliability, and
   documentation/security lenses approved candidate `3b7c1aca8`; review evidence landed in `b09511d1f`.
-- Phase 3 producer review not started.
+- Phase 3 monorepo producer review approved `b437240e9`; the platform review approved byte-identical package
+  source at `ec79f388d`. The rebased consumer awaits its final canonical pass.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -141,6 +151,11 @@ Do not begin a service cut-over during Phase 3.
 - Deep Windows worktree paths exceeded `Microsoft.Data.SqlClient.SNI.dll`'s native loader limit during the B2B
   diagnostic run. The identical tests passed through a temporary short drive mapping; this changes no repository
   or delivery behavior.
+- The organization Renovate policy holds a new dependency release for three days. Phase 3 therefore advances
+  the exact already-published `.5` platform train in its consumer PR rather than waiting for routine automation.
+- `scripts/worktrees.ps1 close -PlanManaged` rejected the producer ledger's repository-relative worktree path
+  even though `plans/AGENTS.md` prescribes that ledger form. Closing without `-PlanManaged` remained safe and
+  succeeded; the contract mismatch is recorded in root technical debt.
 
 ## Downstream handoffs
 
