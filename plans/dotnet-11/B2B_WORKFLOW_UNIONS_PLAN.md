@@ -16,13 +16,14 @@ enables the shared Deal union factory to return a direct native union of module-
 interfaces. No union owns workflow state, performs keyed dependency resolution, or crosses a published
 boundary.
 
-`@plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md` owns the separate Deal decision: a closed record hierarchy,
-direct native interface unions for heterogeneous internal method headers, and invariant module factories
-for the terms, mapper, and updater families that already share one honest interface. Heterogeneous
-workflow methods use the union factory; homogeneous workflow methods use the strategy factory. This plan must establish
-the native-union runtime/toolchain and whether a C# 15-compiled `Deal.Contracts` can retain net10 assets,
-including which consumers require a compiler/runtime retarget. It does not perform that breaking
-published-package cut-over or reclassify the Deal operations itself.
+[The Deal dispatch plan](../launch/DEAL_CLOSED_SUM_MODEL_PLAN.md) owns the separate public-library and
+compile-time dispatch investigation. [The configuration plan](../launch/DEAL_CONFIGURATION_PLAN.md)
+owns the shared template/configuration model: whole deals become data, while rule and capability kinds
+remain finite C# alternatives. It does not wait for .NET 11. Preserve genuine same-interface families
+and direct native interface unions for genuinely heterogeneous internal method headers, not mapper or
+terms interfaces already removed by later refactors. This runtime plan must establish the native-union
+toolchain and supported compiler/target matrix before any downstream contract uses those features.
+It does not perform a breaking published-package cut-over or reclassify Deal operations itself.
 
 ## Dependency gate
 
@@ -84,14 +85,13 @@ Do not use native unions in this runtime plan for:
 - replacing a genuine same-interface terms, mapper, or updater family with a union merely because the
   Deal representation is closed.
 
-The published Deal sum uses a closed hierarchy instead of a native union because it has genuine shared
-members, ordinary reference identity, TPT/class-polymorphism alignment, and an established tagged
-`$type` JSON contract. A heterogeneous Deal-varying method uses a direct native union of its existing
-method-header interfaces, for example `union Accept(IAccept, IAcceptPaid)`. Its consumer uses
-ordinary exhaustive type-pattern matching; a `when` guard may narrow required request input, with the
-unguarded arm returning the typed validation Result. The proven uniform terms, mapper, and updater
-operations remain named calls selected through invariant module factories; their selection switches and
-registrations are never repeated in application source.
+The existing four-case Deal DTO protocol is a compatibility obligation during its replacement, not a
+reason to preserve whole-Deal TPT inheritance permanently. Finite rule/value representations need
+explicit versioned wire schemas independent of native-union implementation details. A genuinely
+heterogeneous operation may use a direct union of its module-owned method-header interfaces; consumers
+match the invocation shape, never template/configuration IDs. `Accept(IAccept, IAcceptPaid)` is an
+illustration, not a required inventory item: if the landed operation is homogeneous, retain that shape.
+Surviving same-interface families remain named calls selected through their owning factories.
 
 The native union has no Dunet case records, `.Accept` wrappers, or service-bearing adapter records. The
 net10 `DealUnionBuilder<TUnion>` mapping and `IDealUnionFactory<TUnion>` consumption contract stay
@@ -151,9 +151,11 @@ inspection proves published B2B contracts still carry net10 assets.
 4. Keep module-owned state machines and aggregate ownership unchanged. Replace keyed resolution outside
    factories, but preserve the method-header interfaces and their DI implementations. Do not convert the
    downstream Deal plan's same-interface terms, mapper, or updater families into unions.
-5. Replace the net10 Application `Apply` and `Accept` Dunet adapter unions with direct native interface
-   unions. Keep the Deal mappings and `IDealUnionFactory<TUnion>` unchanged, switch directly on capability
-   interfaces, and remove wrapper access and default arms.
+5. Replace only the actual heterogeneous adapter unions found in Phase 0 with direct native interface
+   unions. Preserve module-local selection/factory semantics; switch on capability interfaces and remove
+   obsolete wrappers/default arms. Do not recreate Apply/Accept unions where payment ownership has made
+   their invocation homogeneous. Configured selection is over finite capability kind/version, not four
+   whole-Deal cases or configuration-specific DI registrations.
 6. Delete superseded value abstractions in the same checkpoint; do not retain parallel models.
 
 Gate: this plan's unions remain internal value models, and no module/runtime dependency direction

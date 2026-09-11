@@ -49,11 +49,11 @@ The concurrency token is **B2B-local**, not shared — `IConcurrencyVersioned` a
 `ConcurrencyVersionExtensions` both live in `Concertable.B2B.DataAccess`. It is handled in the B2B
 phase rather than as shared prep.
 
-## 4. Prep is provider-neutral and ships on SQL Server
+## 4. Prep removes provider decisions from consumers and ships on SQL Server
 
-Phases 1-4 change no provider. Each one removes a SQL-Server-ism by replacing it with configuration EF
-Core can render for either provider, and each ends green on SQL Server with an unchanged schema. Only
-the per-service phases flip anything.
+Phases 1-4 change no provider. They either replace a SQL Server-specific construct with configuration EF
+Core can render for either provider or centralize a shared relational semantic behind one package seam.
+Each ends green on SQL Server with an unchanged schema. Only the per-service phases flip anything.
 
 ## 5. Phases
 
@@ -72,11 +72,17 @@ stays green. Publish and platform-sync before Phase 5.
 
 ### Phase 2 — spatial configuration seam
 
-- [ ] Replace the eight `HasColumnType("geography")` calls with one shared configuration extension so
-  the provider-specific spatial decision has a single site.
+- [x] Replace the eight `HasColumnType("geography")` calls with one shared configuration extension so
+  the shared `geography` relational semantic has a single site.
 
-Consumption contract: an extension applied to a `Point` property that configures the column for the
-active provider. Entity and query code stays on NetTopologySuite and does not change.
+Consumption contract: an extension applied to a `Point` property that preserves `geography` semantics.
+SQL Server and PostGIS both support that relational type name, so the extension needs no active-provider
+branch. Entity and query code stays on NetTopologySuite and does not change.
+
+Delivery sequence: the extension is an additive public API in the published
+`Concertable.DataAccess.Infrastructure` package, while service projects bind the published package rather
+than its source. Land and publish the package expansion first, consume the generated platform sync, then
+land the eight call-site changes and regenerated service migrations.
 
 Gate: existing spatial queries and their integration coverage stay green on SQL Server.
 
@@ -84,6 +90,14 @@ Gate: existing spatial queries and their integration coverage stay green on SQL 
 
 - [ ] Replace the eight `SET IDENTITY_INSERT` blocks and the two `sys.check_constraints` queries with
   provider-dispatched helpers in the shared testing library.
+
+Consumption contract: `Concertable.Seed.Shared` decides whether explicit identity values require a SQL
+Server identity window, while `Concertable.Testing.Integration` exposes `DatabaseFacade` extensions for
+identity windows and temporary unvalidated check constraints. Callers provide schema, table, constraint and
+provider-neutral predicate values; the helpers delimit identifiers and render the active provider's SQL.
+
+Delivery sequence: publish the additive shared-package APIs first, consume the generated platform release,
+then migrate the Auth and B2B fixtures on their own branch and validate them against the published packages.
 
 Gate: every service's integration suite stays green on SQL Server with no raw SQL Server syntax left in
 the seed or fixture path.
@@ -133,9 +147,12 @@ concurrency token.
 
 - [ ] Replace `byte[] Version` + `IsRowVersion()` with the chosen Postgres token across
   `IConcurrencyVersioned`, `ConcurrencyVersionExtensions`, the five implementers, and
-  `InvoiceSequenceEntity`. Decide between Npgsql's `UseXminAsConcurrencyToken()` (no schema change; the
-  token changes on `VACUUM FREEZE`) and a hand-maintained `bigint` (portable, explicit) with a written
-  rationale before implementing.
+  `InvoiceSequenceEntity`. Decide between Npgsql's `uint` row-version mapping to `xmin` and an explicitly
+  maintained `bigint` (portable, explicit), with a written rationale before implementing. Current
+  PostgreSQL freezing preserves the original `xmin`; do not base the choice on the older claim that
+  `VACUUM FREEZE` rewrites it. Neither token is a durable business/document revision identifier. See
+  [Npgsql concurrency](https://www.npgsql.org/efcore/modeling/concurrency.html) and
+  [PostgreSQL freezing](https://www.postgresql.org/docs/current/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND).
 - [ ] Confirm the tenant global query filters and the `RS0030` `IgnoreQueryFilters` ban behave
   identically under Npgsql.
 
@@ -164,7 +181,13 @@ dependency anywhere.
 - `EXCLUDE USING gist` for venue double-booking, replacing the application-level overlap guard.
 - Rewriting the `launch/lifecycle-seal-enforcement` per-table write-block helpers from SQL Server block
   predicates to Postgres policies plus a `BEFORE UPDATE` trigger for a loud error.
-- `jsonb` + GIN if lifecycle snapshot records are ever persisted as documents.
+- [Versioned Deal configurations](DEAL_CONFIGURATION_PLAN.md): relational ownership/revisions and
+  selected capabilities plus a typed `jsonb` term graph and full Contract snapshot. The B2B provider
+  cut-over gates that plan's persistence delivery, not its typed-language work. It is not a new gate on
+  this provider migration or MVP launch. Tenant authoring/entitlements and a builder remain deferred.
+  Use targeted GIN, expression indexes or relational read projections for evidenced queries, not blanket
+  GIN indexes. That plan selects an aggregate `bigint` edit token for its new mutable configuration/Deal
+  heads; Phase 9 still owns the token decision for existing B2B aggregates.
 
 ## 8. Rejected directions
 

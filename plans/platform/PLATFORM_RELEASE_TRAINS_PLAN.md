@@ -76,8 +76,12 @@ platform prepared resolves every `Concertable.*` at its pinned version from the 
 
 ### Phase 3 — finish the train split and publish only what changed
 
-Extend the two existing trains to cover every packable project, give each train its own MinVer tag
-prefix, and make `publish-packages.yml` push only the trains whose source changed in the pushed range.
+Replace the two-train model with the binding admission table's exact train set: one train per distinct
+non-vendor property (`ConcertableDotNetPlatformVersion`, `ConcertableAuthVersion`,
+`ConcertableB2BContractsVersion`, `ConcertableCustomerVersion`, `ConcertablePaymentVersion`,
+`ConcertableSearchVersion`, and `ConcertableSystemVersion`). Give each train its own MinVer tag prefix and
+make `publish-packages.yml` push only the admitted trains whose source changed in the pushed range. `vendor`
+rows leave the published surface and receive no train property.
 `ConcertablePaymentVersion` is the worked precedent: a conditioned property that falls back to the
 platform version under `UseLocalPlatformPackages`, so the source inner loop keeps working while the
 published pins diverge.
@@ -90,7 +94,8 @@ train, using the names the cut plan already fixes (`ConcertableDotNetPlatformVer
 **Depends on** `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for train membership: which package sits in
 which train is that plan's verdict, not this one's.
 
-**Verification gate** — `verify-restore` restores the full published closure with mixed train versions;
+**Verification gate** — the admitted package set matches the binding table exactly, no `vendor` row is
+packed or pushed, and `verify-restore` restores the full published closure with mixed train versions;
 all `carve-*` jobs green; `package_publication_policy.py` still passes on a partial batch; a
 Payment-only commit publishes only the Payment train, proved by diffing the feed version index before
 and after.
