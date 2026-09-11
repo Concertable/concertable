@@ -26,7 +26,7 @@ jobs:
     # Automatic classification, by the changed-file set:
     #   - non-code    (docs / .claude / .agents / .codex / plans / reviews / root dotfiles) -> ALL FOUR
     #                 false: nothing to compile or test. build + carve no-op, unit/integration skip, E2E no-op.
-    #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
+    #   - package-only (nothing but Directory.Packages.props) -> run_code + run_tests true,
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
     #   - anything else -> initially enables every job; this is conservative job plumbing, not E2E-tier policy.
@@ -327,7 +327,7 @@ jobs:
       packages: read
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      LOCAL_PLATFORM_VERSION: 0.1.0-local.${{ github.run_id }}.${{ github.run_attempt }}
+      LOCAL_PLATFORM_VERSION: 9999.0.0-local.${{ github.run_id }}.${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -408,6 +408,7 @@ jobs:
           dotnet new sln --name CarveAuth --format slnx
           dotnet sln CarveAuth.slnx add \
             src/Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj \
+            src/Concertable.Auth.Contracts/tests/Concertable.Auth.Contracts.UnitTests/Concertable.Auth.Contracts.UnitTests.csproj \
             src/Concertable.Auth/Concertable.Auth.csproj \
             tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj \
             tests/Concertable.Auth.IntegrationTests.Fixtures/Concertable.Auth.IntegrationTests.Fixtures.csproj \

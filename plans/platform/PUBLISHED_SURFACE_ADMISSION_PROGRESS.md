@@ -3,17 +3,18 @@
 - Plan: `plans/platform/PUBLISHED_SURFACE_ADMISSION_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/surface-admission`
-- Worktree: none yet
-- Branch: none yet
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-PublishedSurfaceAdmission`
+- Branch: `Docs/PublishedSurfaceAdmission`
 - PR: none yet
 - Dependency/package gates: none for Phase 1. Phase 1's table is a hard input to
   `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 3.
-- Last reconciled: 2026-09-09 against `origin/main` `081e149a2e0a4544e1c781adc5e322a6ee0e4f85`, merged
-  into this branch.
+- Last reconciled: 2026-09-11 against `origin/main` `d01a2a4857c10be8e1e9ca27f3b2e18543d2c38e`.
 
 ## Current state
 
-Authored, not started. No verdicts assigned.
+Phase 1 is implemented and reviewed locally. Every packable project has one binding verdict, train property or explicit
+unpublished marker, post-cut owner, consumer count and reason. The table admits 35 platform or service-owned
+packages and removes 23 packages from the future published surface through `vendor` verdicts.
 
 Inventory at the reconciled SHA: 58 `IsPackable` projects, 16 of them `*.Contracts`. Enumerate with
 `grep -rl '<IsPackable>true</IsPackable>' api --include='*.csproj' | xargs -n1 basename | sed 's/\.csproj$//' | sort`
@@ -21,15 +22,23 @@ rather than trusting any copy of the list, which will rot.
 
 ## Completed milestones
 
-None.
+- Phase 1 binding verdict table completed for all 58 packable projects.
+- The three required disposition groups are explicit: 13 `Shared.*` adapters, five `Testing.*` plus three
+  `*.TestKit` packages, and sibling `*.Hosting`/`*.TestKit` consumption.
 
 ## Latest verification
 
-None. Nothing implemented.
+- Table rows: 58; unique package IDs: 58; current `IsPackable` projects: 58.
+- Verdicts: 17 platform, 18 service-owned, 23 vendor; seven distinct admitted train properties.
+- Consumer evidence includes both direct `PackageReference` edges and source-form `ProjectReference` edges.
+- `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings.
+- `git diff --check`: passed.
 
 ## Reviews
 
-None recorded — nothing implemented to review.
+Canonical docs review is approved through `506da3bf9cf54310991dbd12954545ad0e9d229c`:
+`reviews/Docs-PublishedSurfaceAdmission.md`. Seven medium findings were resolved across two incremental
+passes; the final native/general, train-set consistency, and inventory-coherence lenses are clean.
 
 ## Decisions and discoveries
 
@@ -44,6 +53,14 @@ None recorded — nothing implemented to review.
   recorded in `api/TECH_DEBT.md`; do not re-derive it here.
 - Vendoring is a legitimate verdict, not a fallback. Do not let a DRY argument silently remove it from
   the option set for the `Shared.*` adapters.
+- The live inventory has 13 `Shared.*` adapter packages, not the plan's stale count of 12. All 13 are
+  vendored by capability family because their thin provider seams cost less to duplicate than coordinate.
+- Internal-only B2B contracts, `Messaging.Application`, `Seed.Infrastructure`, `Concertable.Grpc`, and
+  `Concertable.Testing.Unit` leave the published surface because they have fewer than two legitimate
+  cross-repository consumers.
+- Generic testing primitives remain platform-owned; the topology-bearing E2E harness moves to the System
+  train; service TestKits remain on their owner trains for black-box system tests.
+- Sibling Hosting and TestKit consumption is legitimate only at AppHost composition and test boundaries.
 
 ## Downstream handoffs
 
@@ -53,16 +70,7 @@ None recorded — nothing implemented to review.
 
 ## Next Steps
 
-Produce the Phase 1 verdict table:
-
-1. Enumerate the `IsPackable` projects with the command above; assert the count matches the rows you
-   write.
-2. For each, resolve its real consumers from the `Directory.Packages.props` of every service folder
-   under `api/` — consumer count is evidence, not judgement, and the admission rule turns on "at least
-   two legitimate product consumers".
-3. Apply the admission rule from `REPOSITORY_PER_MICROSERVICE_MIGRATION_PLAN.md`, then the cost test,
-   and record verdict + train property + post-cut owning repository + reason per row.
-4. Answer the three named questions explicitly — the 12 `Shared.*` adapters, the eight
-   `Testing.*`/`*.TestKit` packages, and B2B's sibling `*.Hosting`/`*.TestKit` consumption.
-5. Land the table in the plan, then update
-   `plans/platform/PLATFORM_RELEASE_TRAINS_PROGRESS.md` to record that its Phase 3 input exists.
+1. Land the reviewed Phase 1 verdict table.
+2. Use the admitted train membership to implement the consumer-property split in
+   `PLATFORM_RELEASE_TRAINS_PLAN.md` Phase 3.
+3. Execute each `vendor` class through its own follow-on plan; do not delete packages in this docs PR.
