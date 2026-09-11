@@ -112,10 +112,23 @@ indefinitely deferred. See `AUTH_IDENTITY_MODEL_PLAN.md`'s Open Questions for th
 extension-block-syntax roadmap item was also added (`auth-identity-model/extension-block-syntax` in this
 epic's own roadmap) — do not fold it into Phase 2.
 
-1. Rerun the suites not yet re-verified this session (`Concertable.Auth.UnitTests`,
-   `Concertable.Auth.StartupTests`, `Concertable.Customer.User.UnitTests`, B2B Tenant/User/Admin integration
-   — Docker required), review (`review` skill) + record in `## Reviews`, confirm CI on the exact head, apply
-   the `merge` skill's tier table.
+**All suites re-verified green this session:** `Concertable.Auth.UnitTests` (13), `Concertable.Auth.StartupTests`
+(11 — see fix below), `Concertable.Customer.User.UnitTests` (15), B2B `Tenant.IntegrationTests` (83),
+`User.IntegrationTests` (14), `Admin.IntegrationTests` (8). Every suite named in the old Next Steps step 1
+is now green on the current head.
+
+**Found and fixed re-verifying `Concertable.Auth.StartupTests`:** intermittently red with
+`IOException: tempkey.jwk ... being used by another process` — `AddAuthHost()` calls Duende's
+`AddDeveloperSigningCredential()`, which writes that file as a side effect of building the graph (the exact
+thing the `composition-testing` standard says registration must never do); xUnit runs `WebHostTests` and
+`AppModelStartupContractTests` in parallel by default, and both call `AddAuthHost()`, so they raced on the
+shared file. Fixed at the test boundary — `[assembly: CollectionBehavior(DisableTestParallelization = true)]`
+in `AssemblyInfo.cs` — rather than touching production host wiring. Re-ran twice clean after the fix. Not the
+same signature as the earlier disk-space-triggered StartupTests failure noted below; this one is a real,
+reproducible race, unrelated to disk pressure.
+
+1. Review (`review` skill) + record in `## Reviews`, confirm CI on the exact head, apply the `merge` skill's
+   tier table.
 2. Merge. No sync PR follows this one (see Phase 1 note above) — Phase 2 is delivery-terminal on its own
    merge.
 3. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
