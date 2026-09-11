@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>Concertable/.github:renovate-config.json"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Shared .NET platform train",
+      "managerFilePatterns": ["/(^|/)api/.+/Directory\\.Packages\\.props$/"],
+      "matchStrings": ["<ConcertableDotNetPlatformVersion>(?<currentValue>[^<]+)</ConcertableDotNetPlatformVersion>"],
+      "depNameTemplate": "Concertable.Build",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Refresh the shared .NET platform train weekly",
+      "matchDepNames": ["Concertable.Build"],
+      "groupName": "shared .NET platform train",
+      "schedule": ["* 0-4 * * 1"],
+      "automerge": false
+    }
+  ]
+}
