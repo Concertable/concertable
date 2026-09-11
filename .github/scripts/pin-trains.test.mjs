@@ -136,3 +136,27 @@ test('every pin property resolves to one of the two trains', () => {
   }
   assert.deepEqual(orphans, [], `\n${orphans.join('\n')}\n`);
 });
+
+// local-platform.ps1 redirects the inner loop at a locally packed feed by overriding pin properties
+// on the command line. A pin holding a literal that it does not override falls through to the real
+// feed, so the loop would silently mix locally built packages with published ones — and images
+// publish from that loop. A pin that only DEFAULTS to another pin needs no override of its own: it
+// is unset, so its condition holds and it inherits the overridden value.
+test('the local platform loop overrides every pin that holds a literal version', () => {
+  const script = readFileSync(join(repoRoot, 'scripts', 'local-platform.ps1'), 'utf8');
+  const literalPins = new Set();
+  for (const file of pinFiles()) {
+    for (const [name, value] of declaredProperties(readFileSync(file, 'utf8'))) {
+      if (!/^Concertable\w*Version$/.test(name)) continue;
+      if (/^\$\(\w+\)$/.test(value)) continue;
+      literalPins.add(name);
+    }
+  }
+  assert.ok(literalPins.size > 0, 'no literal pin properties found in the pin files');
+  const missing = [...literalPins].filter((name) => !script.includes(`-p:${name}=`));
+  assert.deepEqual(
+    missing,
+    [],
+    `scripts/local-platform.ps1 does not override: ${missing.join(', ')}`,
+  );
+});
