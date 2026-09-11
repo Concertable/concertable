@@ -102,9 +102,10 @@ Do not begin a service cut-over during Phase 3.
 - Per-service cut-over is possible and preferred; each service has its own database and Aspire resource.
 - Prep phases must leave the SQL Server schema byte-identical. A schema diff in Phase 1 is a defect, not
   an acceptable side effect.
-- The concurrency token choice — Npgsql `UseXminAsConcurrencyToken()` versus a hand-maintained `bigint` —
-  is deliberately deferred to Phase 9 and must be recorded with its rationale before implementation.
-  `xmin` needs no schema change but is rewritten by `VACUUM FREEZE`.
+- The existing B2B concurrency token choice — Npgsql `uint` row-version mapping to `xmin` versus an
+  explicitly maintained `bigint` — remains deferred to Phase 9, with rationale required. Modern
+  PostgreSQL freezing preserves the original `xmin`; the previous contrary statement was incorrect.
+  Business/configuration revision identity remains separate from either optimistic concurrency token.
 - Postgres RLS `USING` on UPDATE filters rather than errors, so the seal enforcement plan's proof test
   must assert on the row rather than the exception type. That constraint is already written into
   `plans/launch/LIFECYCLE_SEAL_ENFORCEMENT_PLAN.md` Phase 4.
@@ -118,6 +119,12 @@ Do not begin a service cut-over during Phase 3.
   not source-swap `Concertable.DataAccess.Infrastructure`.
 
 ## Downstream handoffs
+
+- Waiting plan: `plans/launch/DEAL_CONFIGURATION_PROGRESS.md`.
+  Gate: after Phase 9's B2B provider cut-over is delivered, reconcile that plan's Phase 2 hybrid
+  `jsonb` revision persistence against the landed mappings. Its finite-language Phase 1 can proceed
+  earlier; this provider migration must not wait for the configuration refactor, tenant entitlements
+  or a builder. The new configuration aggregates use their own explicit `bigint` edit token.
 
 - Waiting plan: `plans/launch/LIFECYCLE_SEAL_ENFORCEMENT_PROGRESS.md`.
   Gate: its Phase 4 SQL Server block-predicate helpers must be rewritten as Postgres policies plus a

@@ -139,9 +139,12 @@ concurrency token.
 
 - [ ] Replace `byte[] Version` + `IsRowVersion()` with the chosen Postgres token across
   `IConcurrencyVersioned`, `ConcurrencyVersionExtensions`, the five implementers, and
-  `InvoiceSequenceEntity`. Decide between Npgsql's `UseXminAsConcurrencyToken()` (no schema change; the
-  token changes on `VACUUM FREEZE`) and a hand-maintained `bigint` (portable, explicit) with a written
-  rationale before implementing.
+  `InvoiceSequenceEntity`. Decide between Npgsql's `uint` row-version mapping to `xmin` and an explicitly
+  maintained `bigint` (portable, explicit), with a written rationale before implementing. Current
+  PostgreSQL freezing preserves the original `xmin`; do not base the choice on the older claim that
+  `VACUUM FREEZE` rewrites it. Neither token is a durable business/document revision identifier. See
+  [Npgsql concurrency](https://www.npgsql.org/efcore/modeling/concurrency.html) and
+  [PostgreSQL freezing](https://www.postgresql.org/docs/current/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND).
 - [ ] Confirm the tenant global query filters and the `RS0030` `IgnoreQueryFilters` ban behave
   identically under Npgsql.
 
@@ -170,7 +173,13 @@ dependency anywhere.
 - `EXCLUDE USING gist` for venue double-booking, replacing the application-level overlap guard.
 - Rewriting the `launch/lifecycle-seal-enforcement` per-table write-block helpers from SQL Server block
   predicates to Postgres policies plus a `BEFORE UPDATE` trigger for a loud error.
-- `jsonb` + GIN if lifecycle snapshot records are ever persisted as documents.
+- [Versioned Deal configurations](DEAL_CONFIGURATION_PLAN.md): relational ownership/revisions and
+  selected capabilities plus a typed `jsonb` term graph and full Contract snapshot. The B2B provider
+  cut-over gates that plan's persistence delivery, not its typed-language work. It is not a new gate on
+  this provider migration or MVP launch. Tenant authoring/entitlements and a builder remain deferred.
+  Use targeted GIN, expression indexes or relational read projections for evidenced queries, not blanket
+  GIN indexes. That plan selects an aggregate `bigint` edit token for its new mutable configuration/Deal
+  heads; Phase 9 still owns the token decision for existing B2B aggregates.
 
 ## 8. Rejected directions
 
