@@ -25,6 +25,8 @@ on:
       - main
     paths:
       - 'api/**'
+      - '!api/**/*.md'
+      - '.github/workflows/publish-images.yml'
   workflow_dispatch:
 
 permissions:
