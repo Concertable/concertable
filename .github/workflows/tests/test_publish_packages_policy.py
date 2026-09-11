@@ -283,7 +283,7 @@ def main() -> None:
         ):
             dependencies = (
                 '<dependencies><group targetFramework="net10.0">'
-                '<dependency id="Concertable.DataAccess.Infrastructure" version="1.0.0" />'
+                '<dependency id="concertable.dataaccess.infrastructure" version="1.0.0" />'
                 "</group></dependencies>"
                 if package_id == "Concertable.B2B.Contracts"
                 else ""
