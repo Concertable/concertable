@@ -3,6 +3,11 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
+    <!-- Concertable.Auth.Contracts / .Hosting are retained service packages on their own
+         train, independent of the shared platform-dotnet pin above (frozen for
+         Kernel/DataAccess/etc compatibility; see plans/platform/PLATFORM_RELEASE_TRAINS_PROGRESS.md).
+         Same escape-hatch shape as ConcertablePaymentVersion. -->
+    <ConcertableAuthVersion Condition="'$(ConcertableAuthVersion)' == ''">0.1.0-alpha.0.1383</ConcertableAuthVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,7 +61,7 @@
   <!-- Service hosting composition from the org feed, pinned lockstep via ConcertableDotNetPlatformVersion
        above. Bump only to a version already published to the feed, else restore fails NU1101. -->
   <ItemGroup>
-    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableAuthVersion)" />
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Customer.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />

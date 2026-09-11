@@ -27,11 +27,33 @@ from the wire string (`CustomerBrowser` → `"customer-web"`); the catalog is th
 `Concertable.Auth.Contracts` is a published, feed-pinned package consumed by Auth, B2B, Customer, Payment,
 Search and the external `Concertable.Testing.E2E` harness. Removing `ClientIds` / `ApiScopeIds` is a
 breaking change (`dotnet:package-cutover`: breaking — public type removed). It cannot land in one PR:
-consumers only see the new model once the package republishes and `platform-sync` bumps their pins.
+consumers only see the new model once the package republishes and every consumer's pin moves past that
+version.
+
+**No automated sync bot exists any more, and `ConcertableDotNetPlatformVersion` cannot simply be bumped.**
+Commit `7adedd3a0` ("Cut over platform package publishing", merged 2026-09-11 ~03:27, ~7h before Phase 1
+merged) deleted `platform-sync.yml` / `platform-sync-alert.yml` and split what this repo publishes into
+**retained** (service-owned: `auth`/`b2b`/`customer`/`payment`/`search` — still published from this repo,
+MinVer-height-versioned as before) and **platform-dotnet** (`Kernel`, `Messaging.*`, `DataAccess.*`,
+`ServiceDefaults`, `Shared.*`, …) — the latter now published from an **external** platform-dotnet repo on
+its own independent train (`0.2.0-alpha.0.x` on the feed today, versus retained packages' `0.1.0-alpha.0.x`).
+`ConcertableDotNetPlatformVersion` still pins *both* groups from one variable. Per
+`plans/platform/PLATFORM_RELEASE_TRAINS_PROGRESS.md` (written by the same cutover): advancing it to the new
+`0.2.x` platform train breaks restore for every retained service package still on `0.1.x`, so it is
+**deliberately frozen at its last resolvable value (`0.1.0-alpha.0.1370`)** until retained packages get
+their own train property — exactly the `ConcertablePaymentVersion` pattern that already exists for Payment
+(`api/Concertable.Shared/TECH_DEBT.md`: Payment's height isn't monotonic with the platform's either).
+
+**Consequence for this plan:** `Concertable.Auth.Contracts` publishes at `0.1.0-alpha.0.1383`, but no
+consumer can see it through `ConcertableDotNetPlatformVersion` — that pin must stay put. Phase 2 needs its
+own `ConcertableAuthVersion` property (mirroring `ConcertablePaymentVersion`) in every consumer's
+`Directory.Packages.props`, with `PackageVersion Include="Concertable.Auth.Contracts"` retargeted to it.
+Pin refresh going forward is **Renovate**, weekly (`renovate.json`, `automerge: false`) for the shared
+platform train; `ConcertableAuthVersion` is this repo's own to bump per-need, same as
+`ConcertablePaymentVersion` today.
 
 `TreatWarningsAsErrors` is set nowhere in the repo, so the `[Obsolete]` classes produce **warnings, not
-errors** — the post-publish `platform-sync` PR goes green on its own. Phase 2 is therefore driven
-deliberately, not forced by a red gate.
+errors** — nothing forces Phase 2's timing.
 
 ## Design decisions
 
@@ -88,10 +110,12 @@ changes, because consumers bind the published package.
 
 **Verification gate:** `Concertable.Auth.Contracts` + its unit tests build and pass, 0 warnings.
 
-### Phase 2 — consumers + contract removal (after Phase 1 publishes + sync)
+### Phase 2 — consumers + contract removal (after Phase 1 publishes)
 
-Fresh worktree off the post-publish `origin/main` (pin already bumped by the `platform-sync` PR, or bump it
-in this PR).
+Fresh worktree off the post-publish `origin/main`. Adds `ConcertableAuthVersion` (see Package
+topology) to every consumer's `Directory.Packages.props` — Auth, B2B, Customer, Payment, Search, Shared —
+pinned to `0.1.0-alpha.0.1383`, and retargets each `PackageVersion Include="Concertable.Auth.Contracts"`
+onto it. `ConcertableDotNetPlatformVersion` is untouched.
 
 - Migrate every consumer per the table above.
 - Add `ServiceClient` enum + catalog to `Concertable.Auth`; `AuthHostExtensions` iterates it (id + secret
@@ -107,7 +131,8 @@ in this PR).
 `InteractiveClients.cs` / `AuthScopes.cs` / `AuthResources.cs`, and `CredentialRegisteredEvent.ClientId`
 (deliberate `string` wire field).
 
-This PR republishes `Auth.Contracts` (removal); the following `platform-sync` is non-breaking.
+This PR republishes `Auth.Contracts` (removal) — a non-breaking publish, since nothing outside this repo
+still references the deleted classes once it merges; no further sync PR to follow (see Package topology).
 
 ## Out of scope
 

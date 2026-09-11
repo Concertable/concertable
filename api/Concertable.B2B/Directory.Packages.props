@@ -3,6 +3,11 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
+    <!-- Concertable.Auth.Contracts / .Hosting are retained service packages on their own
+         train, independent of the shared platform-dotnet pin above (frozen for
+         Kernel/DataAccess/etc compatibility; see plans/platform/PLATFORM_RELEASE_TRAINS_PROGRESS.md).
+         Same escape-hatch shape as ConcertablePaymentVersion. -->
+    <ConcertableAuthVersion Condition="'$(ConcertableAuthVersion)' == ''">0.1.0-alpha.0.1383</ConcertableAuthVersion>
     <!-- Payment publishes in the same train as the platform packages, so tracking that version
          is what keeps them in step; a literal here silently ships a stale Payment client. -->
     <ConcertablePaymentVersion Condition="'$(ConcertablePaymentVersion)' == ''">$(ConcertableDotNetPlatformVersion)</ConcertablePaymentVersion>
@@ -14,7 +19,7 @@
     <PackageVersion Include="Concertable.Testing.Integration" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Payment.TestKit" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Concertable.B2B.TestKit" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableAuthVersion)" />
     <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Payment.Hosting" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.1.2" />
@@ -111,7 +116,7 @@
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Frontend.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Search.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableAuthVersion)" />
     <PackageVersion Include="Concertable.Payment.Client" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Concertable.Payment.Contracts" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Concertable.Customer.Review.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
