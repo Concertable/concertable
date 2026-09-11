@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
+    <ConcertableDotNetPlatformVersion>0.2.0-alpha.0.4</ConcertableDotNetPlatformVersion>
+    <ConcertableServiceVersion>0.1.0-alpha.0.1370</ConcertableServiceVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,8 +36,8 @@
        Bump only to a version already published to the feed, else restore fails NU1101. -->
   <ItemGroup>
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableServiceVersion)" />
     <PackageVersion Include="Concertable.Kernel" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Seed.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Seed.Identity" Version="$(ConcertableDotNetPlatformVersion)" />

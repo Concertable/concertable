@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
+    <ConcertableDotNetPlatformVersion>0.2.0-alpha.0.4</ConcertableDotNetPlatformVersion>
+    <ConcertableServiceVersion>0.1.0-alpha.0.1370</ConcertableServiceVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,13 +34,13 @@
        else restore fails NU1101. -->
   <ItemGroup>
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Search.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Artist.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Venue.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Concert.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Seed.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Search.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.B2B.Artist.Contracts" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.B2B.Venue.Contracts" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.B2B.Concert.Contracts" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.B2B.Seed.Contracts" Version="$(ConcertableServiceVersion)" />
     <PackageVersion Include="Concertable.Kernel" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.DataAccess.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Messaging.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />

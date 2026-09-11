@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ConcertableDotNetPlatformVersion>0.1.0-alpha.0.1370</ConcertableDotNetPlatformVersion>
+    <ConcertableDotNetPlatformVersion>0.2.0-alpha.0.4</ConcertableDotNetPlatformVersion>
+    <ConcertableServiceVersion>0.1.0-alpha.0.1370</ConcertableServiceVersion>
     <!-- Payment publishes in the same train as the platform packages, so tracking that version
          is what keeps them in step; a literal here silently ships a stale Payment client. -->
-    <ConcertablePaymentVersion Condition="'$(ConcertablePaymentVersion)' == ''">$(ConcertableDotNetPlatformVersion)</ConcertablePaymentVersion>
+    <ConcertablePaymentVersion Condition="'$(ConcertablePaymentVersion)' == ''">$(ConcertableServiceVersion)</ConcertablePaymentVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,9 +14,9 @@
     <PackageVersion Include="Concertable.Testing.Architecture" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Testing.Integration" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Payment.TestKit" Version="$(ConcertablePaymentVersion)" />
-    <PackageVersion Include="Concertable.B2B.TestKit" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.B2B.TestKit" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Auth.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.B2B.Hosting" Version="$(ConcertableServiceVersion)" />
     <PackageVersion Include="Concertable.Payment.Hosting" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.1.2" />
     <PackageVersion Include="Aspire.Hosting.Azure.ServiceBus" Version="13.3.2" />
@@ -110,12 +111,12 @@
     <PackageVersion Include="Concertable.Seed.Infrastructure" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.AppHost.Shared" Version="$(ConcertableDotNetPlatformVersion)" />
     <PackageVersion Include="Concertable.Frontend.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Search.Hosting" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Search.Hosting" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Auth.Contracts" Version="$(ConcertableServiceVersion)" />
     <PackageVersion Include="Concertable.Payment.Client" Version="$(ConcertablePaymentVersion)" />
     <PackageVersion Include="Concertable.Payment.Contracts" Version="$(ConcertablePaymentVersion)" />
-    <PackageVersion Include="Concertable.Customer.Review.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
-    <PackageVersion Include="Concertable.Customer.Ticket.Contracts" Version="$(ConcertableDotNetPlatformVersion)" />
+    <PackageVersion Include="Concertable.Customer.Review.Contracts" Version="$(ConcertableServiceVersion)" />
+    <PackageVersion Include="Concertable.Customer.Ticket.Contracts" Version="$(ConcertableServiceVersion)" />
   </ItemGroup>
 
   <ItemGroup>
