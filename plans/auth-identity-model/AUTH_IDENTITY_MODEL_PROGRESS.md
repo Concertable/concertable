@@ -5,7 +5,7 @@
 - Roadmap item: `auth-identity-model/typed-identity-contract`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Refactor-AuthIdentityModel-Phase2`
 - Branch: `Refactor/AuthIdentityModelPhase2`
-- PR: not yet opened (Phase 2 — consumer migration)
+- PR: #1008 (draft) — Phase 2 consumer migration. https://github.com/Concertable/concertable/pull/1008
 - Dependency/package gates: none remaining — `ConcertableAuthVersion` now pins all 6 consumers to
   `0.1.0-alpha.0.1383`, the version `Concertable.Auth.Contracts` published at. `ConcertableDotNetPlatformVersion`
   stays untouched at `0.1.0-alpha.0.1370` (frozen — see Decisions).
