@@ -74,11 +74,18 @@ Do not begin a service cut-over during Phase 2.
   exact-head and merge-group validation before landing as `d6f986c25`.
 - Rebased the prepared consumer commit onto `d6f986c25`; all eight production spatial mappings use
   `HasGeographyColumn`, leaving the cross-provider `geography` relational semantic in one shared seam.
+- Published-feed restore passed, and the full Release solution build completed in 11m32s with 0 errors;
+  the five warnings are existing Auth EF-version, nullable, and generated UI warnings.
+- Rebased-consumer architecture suites passed: B2B 22, Customer 1, Search 7. Search unit tests passed 14,
+  including geometry specification coverage.
 
 ## Reviews
 
 - Canonical review approved with no findings through Phase 1 head `4eb4be854`; its spent work order was
   removed after PR #985 merged.
+- Phase 2 consumer review found one documentation overclaim about active-provider dispatch. The plan now
+  records the actual cross-provider `geography` seam, and native/correctness, test-impact/reliability, and
+  documentation/security lenses are clean through `c453abbcc`.
 
 ## Decisions, discoveries, blockers, and deviations
 
