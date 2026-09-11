@@ -3,29 +3,33 @@
 - Plan: `plans/launch/POSTGRES_MIGRATION_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/postgres-migration`
-- Worktree: `.worktrees/Docs-launch-postgres-migration-closeout`
-- Branch: `Docs/launch_postgres-migration_closeout`
-- PR: Phase 2 consumer [#1007](https://github.com/Concertable/concertable/pull/1007), producer
+- Worktree: `.worktrees/Refactor-launch-postgres-fixture-package`
+- Branch: `Refactor/launch-postgres-fixture-package`
+- PR: Phase 3 producer not opened; Phase 2 consumer [#1007](https://github.com/Concertable/concertable/pull/1007), producer
   [#997](https://github.com/Concertable/concertable/pull/997),
   platform publication [Concertable/platform-dotnet#2](https://github.com/Concertable/platform-dotnet/pull/2),
   and release-train alignment [#1004](https://github.com/Concertable/concertable/pull/1004) are merged
-- Dependency/package gates: delivered. `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4` is
-  published and consumed through the dedicated platform release-train pin.
-- Last reconciled: `2026-09-11` against `f7e31c26c` (`origin/main`)
+- Dependency/package gates: Phase 3 adds APIs to published `Concertable.Seed.Shared` and
+  `Concertable.Testing.Integration`; publish and platform release must complete before the Auth and B2B
+  fixture consumers can enter exact-head CI.
+- Last reconciled: `2026-09-11` against `71157873d` (`origin/main`)
 
 ## Current state
 
-Phases 1 and 2 are delivered. All eight B2B, Customer, and Search mappings use the shared
-`HasGeographyColumn` seam from published `Concertable.DataAccess.Infrastructure` `0.2.0-alpha.0.4`, and the
-re-scaffolded initial migrations preserve the SQL Server schema. Consumer PR #1007 passed exact-head,
-merge-group, package, image, and post-merge main validation before landing as `f7e31c26c`.
+Phases 1 and 2 are delivered. The Phase 3 producer now makes seeding identity rewriting provider-aware and
+adds shared integration-test helpers for identity windows and temporary unvalidated check constraints. The
+consumer worktree is prepared at `.worktrees/Refactor-launch_postgres-migration`; its Auth and B2B fixture
+changes pass focused SQL Server integration tests against the exact locally packed producer candidate and remain
+delivery-gated until the shared packages publish.
 
 ## Next Steps
 
-1. Begin Phase 3 in a new isolated worktree when this roadmap item is selected again.
-2. Replace the eight `SET IDENTITY_INSERT` blocks and two `sys.check_constraints` queries with
-   provider-dispatched helpers in the shared testing library.
-3. Run the full affected SQL Server integration matrix and prove the helpers preserve fixture behavior.
+Complete the Phase 3 shared-package producer:
+
+1. Build and pack the shared package closure, then commit and run the canonical review.
+2. Push `Refactor/launch-postgres-fixture-package`, open its PR, and run exact-head CI.
+3. After it merges, publish the packages and land the generated platform release before resuming the
+   prepared Auth and B2B consumer worktree.
 
 Do not begin a service cut-over during Phase 3.
 
@@ -52,6 +56,9 @@ Do not begin a service cut-over during Phase 3.
   already-published Phase 1 Inbox max-length snapshot metadata.
 - Delivered the eight consumer mappings and re-scaffolded initial migrations in
   [#1007](https://github.com/Concertable/concertable/pull/1007), completing Phase 2.
+- Added the Phase 3 provider dispatch in `Concertable.Seed.Shared` and the shared identity-window and
+  temporary check-constraint API in `Concertable.Testing.Integration`; consumer migration remains gated on
+  publication.
 
 ## Verification
 
@@ -86,6 +93,17 @@ Do not begin a service cut-over during Phase 3.
   #1007 as `f7e31c26c`.
 - Post-merge package run `34600419582`, image run `34600419579`, and main CI run `34600419772` passed at
   the exact merge commit; package verification restored the newly published service closure from a fresh consumer.
+- Phase 3 producer: `Concertable.Seed.Shared.UnitTests` 20 passed; `Concertable.Testing.Integration` Release
+  build passed with 0 warnings and 0 errors.
+- Phase 3 local package `9999.0.0-local.1789143141361` packed the complete 58-package closure. SHA-256:
+  `Concertable.Seed.Shared` `E33488E9A69A0A112889CB0481A41E05C53C4D31D50F7D6CE8968ADE249F6D8D`;
+  `Concertable.Testing.Integration` `24FBD6114B64922366826A71A88D64EEB08D5E185901086991B9706F02ECDA13`.
+- The prepared Auth consumer built with 0 errors and its operational-store migration tests passed 4/4,
+  including identity preservation. The prepared B2B solution built with 0 errors; existing warnings remain.
+- Prepared-consumer SQL Server integration tests passed against that exact package: Booking 3/3 and Concert
+  13/13. Each run verified exactly one `Concertable.DataAccess.Infrastructure.dll` at the local package version.
+- The prepared Auth and B2B fixture inventory now contains 0 raw `SET IDENTITY_INSERT` and 0
+  `sys.check_constraints` occurrences outside migrations and build outputs.
 
 ## Reviews
 
@@ -94,6 +112,7 @@ Do not begin a service cut-over during Phase 3.
 - Phase 2 consumer review found one documentation overclaim about active-provider dispatch. The plan now
   records the actual cross-provider `geography` seam, and native/correctness, test-impact/reliability, and
   documentation/security lenses approved candidate `3b7c1aca8`; review evidence landed in `b09511d1f`.
+- Phase 3 producer review not started.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -117,6 +136,11 @@ Do not begin a service cut-over during Phase 3.
 - Phase 2 requires a publish-first package expansion even though the API addition is compatible: the eight
   changed consumers cannot compile against their currently pinned package because production projects do
   not source-swap `Concertable.DataAccess.Infrastructure`.
+- Phase 3 has the same publish-first shape: service test projects bind the published shared-test packages,
+  so the provider APIs land and publish before Auth and B2B migrate their fixture call sites.
+- Deep Windows worktree paths exceeded `Microsoft.Data.SqlClient.SNI.dll`'s native loader limit during the B2B
+  diagnostic run. The identical tests passed through a temporary short drive mapping; this changes no repository
+  or delivery behavior.
 
 ## Downstream handoffs
 
