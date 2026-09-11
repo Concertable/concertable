@@ -8,6 +8,37 @@ Service- or tier-specific debt belongs in that area's own `TECH_DEBT.md`.
 
 ---
 
+## HIGH
+
+### A shared contract change scopes CI to its owning service, so no consumer's suites run
+
+`test.yml`'s service scope narrows a PR's test matrix to the services its `api/` paths touch, and fails
+safe to `ALL` when any path sits outside a single service folder. The regex deciding that is
+`SERVICE_DIRS='^api/Concertable\.(Auth|B2B|Customer|Payment|Search)([./]|$)'`, and its character class
+admits `.`, so `api/Concertable.Auth.Contracts/` matches as the `Auth` service folder and the per-file
+`sed` reduces it to `Auth`.
+
+`Concertable.Auth.Contracts` is not Auth's private tree. It is a published contract package that
+`Concertable.B2B.Web`, `Concertable.Customer.Web`, `Concertable.Search.Web` and `Concertable.Payment.Web`
+all consume, and it carries the scope and audience registry every resource server validates tokens
+against. A PR changing only that directory therefore runs Auth's suites and none of its four consumers' —
+the opposite of the fail-safe-to-`ALL` intent stated in the scoping block's own comment. The same holds
+for any `api/Concertable.<Service>.Contracts/` directory.
+
+Verified rather than reasoned: piping `api/Concertable.Auth.Contracts/AuthScopes.cs` through the shipped
+regex matches, and through the shipped `sed` yields `Auth`.
+
+The concrete loss today is that `PaymentScopeParityTests`, which holds Payment's `payment:write` literal
+equal to `AuthScope.PaymentWrite.Id()`, cannot fire on an Auth-side rename — it is excluded from that PR's
+matrix. `push` and `merge_group` use the same scoping code, so the merge queue does not recover it.
+
+**Resolves when:** `SERVICE_DIRS` matches only a service's own directory (`(/|$)` rather than `([./]|$)`),
+so every `api/Concertable.*.Contracts/` path falls through to `ALL` and a shared contract change runs every
+consumer's suites. Worth confirming at the same time that no other sibling directory is being swallowed by
+the same character class.
+
+---
+
 ## MED
 
 ### One style rule the standard requires enforced is missing from `.editorconfig`

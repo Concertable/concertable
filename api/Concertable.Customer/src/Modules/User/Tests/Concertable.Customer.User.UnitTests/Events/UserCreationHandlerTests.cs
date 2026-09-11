@@ -21,9 +21,9 @@ public sealed class UserCreationHandlerTests
         new(UserId, "customer@test.com", clientId);
 
     [Theory]
-    [InlineData(ClientIds.CustomerWeb)]
-    [InlineData(ClientIds.CustomerMobile)]
-    public async Task HandleAsync_ForCustomerClient_CreatesUserAndRecordsInbox(string clientId)
+    [InlineData(InteractiveClient.CustomerBrowser)]
+    [InlineData(InteractiveClient.CustomerMobile)]
+    public async Task HandleAsync_ForCustomerClient_CreatesUserAndRecordsInbox(InteractiveClient client)
     {
         // Arrange
         var dbName = Guid.NewGuid().ToString();
@@ -31,7 +31,7 @@ public sealed class UserCreationHandlerTests
 
         // Act
         await using (var context = NewContext(dbName))
-            await new UserCreationHandler(context).HandleAsync(NewEvent(clientId), envelope);
+            await new UserCreationHandler(context).HandleAsync(NewEvent(client.Info().Id), envelope);
 
         // Assert
         await using var probe = NewContext(dbName);
@@ -42,10 +42,10 @@ public sealed class UserCreationHandlerTests
     }
 
     [Theory]
-    [InlineData(ClientIds.VenueWeb)]
-    [InlineData(ClientIds.ArtistMobile)]
-    [InlineData(ClientIds.Admin)]
-    public async Task HandleAsync_ForNonCustomerClient_DoesNothing(string clientId)
+    [InlineData(InteractiveClient.VenueBrowser)]
+    [InlineData(InteractiveClient.ArtistMobile)]
+    [InlineData(InteractiveClient.Admin)]
+    public async Task HandleAsync_ForNonCustomerClient_DoesNothing(InteractiveClient client)
     {
         // Arrange
         var dbName = Guid.NewGuid().ToString();
@@ -53,7 +53,7 @@ public sealed class UserCreationHandlerTests
 
         // Act
         await using (var context = NewContext(dbName))
-            await new UserCreationHandler(context).HandleAsync(NewEvent(clientId), envelope);
+            await new UserCreationHandler(context).HandleAsync(NewEvent(client.Info().Id), envelope);
 
         // Assert — other services' registrations are not this module's users; nothing persists
         await using var probe = NewContext(dbName);
@@ -75,7 +75,7 @@ public sealed class UserCreationHandlerTests
 
         // Act
         await using (var context = NewContext(dbName))
-            await new UserCreationHandler(context).HandleAsync(NewEvent(ClientIds.CustomerWeb), envelope);
+            await new UserCreationHandler(context).HandleAsync(NewEvent(InteractiveClient.CustomerBrowser.Info().Id), envelope);
 
         // Assert
         await using var probe = NewContext(dbName);

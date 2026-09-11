@@ -15,8 +15,8 @@ name: Publish images
 # TAGS: the commit SHA, and nothing else. AppHosts and the fleet manifest pin image DIGESTS, never a
 # mutable tag, so one immutable tag is all that is needed and there is no mutable tag sitting around
 # to be pinned by mistake. A SemVer tag is deliberately absent: deriving one here would mean either
-# recomputing MinVer (which has produced phantom versions in this repo before — see
-# platform-sync.yml) or reading the NuGet feed, whose train is the platform packages' and not these
+# recomputing MinVer (which has produced phantom versions in this repo before) or reading the NuGet
+# feed, whose train is the platform packages' and not these
 # images'. Each service gets its own real release train when it is extracted to its own repository.
 
 on:
@@ -25,6 +25,8 @@ on:
       - main
     paths:
       - 'api/**'
+      - '!api/**/*.md'
+      - '.github/workflows/publish-images.yml'
   workflow_dispatch:
 
 permissions:
@@ -87,11 +89,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare local platform packages
+        run: pwsh ./scripts/local-platform.ps1 prepare
+
       - name: Build and push the image
         # Registry and repository come from the project's own build config, so this step carries no
         # per-service knowledge and a new deployable needs no edit here.
         run: |
-          dotnet publish "${{ matrix.project }}" \
+          pwsh ./scripts/local-platform.ps1 publish "${{ matrix.project }}" \
             --configuration Release \
             /t:PublishContainer \
             -p:ContainerImageTag=${{ github.sha }}
