@@ -86,7 +86,9 @@ def filter_batch(package_dir: Path, ownership: dict[str, str]) -> tuple[list[str
 def validate_platform_dependencies(
     package_dir: Path, ownership: dict[str, str], expected_version: str
 ) -> int:
-    platform_packages = set(packages_for(ownership, "platform-dotnet"))
+    platform_packages = {
+        package_id_value.casefold() for package_id_value in packages_for(ownership, "platform-dotnet")
+    }
     checked = 0
     failures: list[str] = []
     for artifact in sorted(package_dir.glob("*.nupkg")):
@@ -94,7 +96,7 @@ def validate_platform_dependencies(
         if ownership.get(artifact_id) not in RETAINED_TARGETS:
             raise ValueError(f"Package '{artifact_id}' is not service-owned")
         for dependency_id, dependency_version in package_dependencies(artifact):
-            if dependency_id not in platform_packages:
+            if dependency_id.casefold() not in platform_packages:
                 continue
             checked += 1
             if dependency_version != expected_version:
