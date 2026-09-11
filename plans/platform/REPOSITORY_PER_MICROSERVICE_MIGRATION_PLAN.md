@@ -489,7 +489,9 @@ permissions are separate per environment.
 
 Secrets are redistributed by least privilege:
 
-- service repositories receive only package credentials and their own integration-test secrets;
+- service repositories receive only package credentials — including `CONCERTABLE_PACKAGES_TOKEN`, which
+  their restore steps need before an AppHost joins their solution — and their own integration-test
+  secrets;
 - Stripe/Google/full-system service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
 - canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
@@ -826,7 +828,10 @@ re-extraction is a reconciliation, not a replacement. Split what a target holds 
   Re-apply on top of the fresh extraction; none of it belongs in the monorepo.
 - **Repository-only service source and tests** — replay the target's own post-extraction commits onto
   the fresh extraction. `git rebase --onto` cannot reach them: filter-repo rewrites hashes and the
-  map's rules have changed since the first cut, so the two extractions share no ancestor. Establish
+  map's rules have changed since the first cut, so the target's own commits sit on parents the fresh
+  run never produced. The two extractions do share ancestry, but only up to the last commit both
+  produced identically, which is too old to rebase onto — see "Landing a re-cut on a pushed carve
+  repository" below for where that boundary falls. Establish
   the extraction boundary — the last commit the target inherited from the monorepo, identifiable as
   the newest commit carrying a monorepo PR number or platform-sync subject — then
   `git format-patch <boundary>..main` and `git am` onto the fresh extraction. Measured 2026-09-10:
@@ -1007,9 +1012,9 @@ dependency closure into 178 MB, and is how to run any of these builds while disk
 
 #### Landing a re-cut on a pushed carve repository
 
-Settled by `Concertable/auth#6` (merged `18cd4b82a`) and reproduced by `Concertable/payment#5`. The
-reconciliation above produces a correct tree; it does not on its own produce a mergeable pull request,
-and that is a separate problem with a separate answer.
+Settled 2026-09-11. `Concertable/auth#6` established it, merged as `18cd4b82a`, and the `payment`
+re-cut reproduced it. The reconciliation above produces a correct tree; it does not on its own produce
+a mergeable pull request, and that is a separate problem with a separate answer.
 
 **A re-cut opened against a carve repository that has already been pushed to comes out `DIRTY`.** The
 first extraction and the fresh one agree only up to the last commit both produced identically — `auth`
@@ -1025,7 +1030,8 @@ authored.
 the extraction's tree exactly and records the target's `main` as a second parent. The pull request then
 reports `CLEAN`, its diff is the honest content delta — `auth` 50 files, `payment` 338 — and CI runs.
 Resolving those paths by hand would be re-deriving the reconciliation a second time, and the superseded
-history stays reachable, so **no active carve repository is force-pushed.** Enumerate in the merge
+history stays reachable — which is how step 5 of "Git history preservation" is satisfied here rather
+than by force-pushing an active carve repository. Enumerate in the merge
 commit every path the target holds that the extraction does not, with the reason each is settled;
 `payment`'s forty were fifteen map-reassigned `E2ETests.Helpers` files, one `*ArchitectureTests` class,
 and twenty-four upstream deletions each verified absent at the monorepo SHA the cut was taken from.
@@ -1042,16 +1048,16 @@ four packed packages.
   `ConcertableDotNetPlatformVersion` at `0.1.0-alpha.0.1370`, covers every `Concertable.*` id; there is
   no second stale train of the kind `customer` carried. `PublishedBaseline.props` pins
   `0.1.0-alpha.0.1254` deliberately, as the published-contract compatibility baseline.
-- **A carved project's `..`-counted path silently resolves outside the checkout.** `BaseOutputPath` on
-  `Concertable.Payment.E2ETests.Web` and `.Workers` walks five directories up, which is the monorepo
-  root from `api/Concertable.Payment/tests/E2ETests/<project>/` and two directories *above the
-  repository* from `tests/E2ETests/<project>/`. Nothing fails — the build succeeds and writes ~70 MB of
-  Release output where `.gitignore` and every clean step cannot see it. `$(ConcertableServiceRoot)`,
-  which `Directory.Build.props` already defines as the service folder in the monorepo and the
-  repository root standalone, is the anchor to use instead. **`customer` has the same defect and it is
-  unfixed**: its `customer-web` output is sitting in the same escaped directory. Audit every `..` in a
-  carved project file — a path that counted directories from the monorepo layout is wrong standalone and
-  says nothing about it.
+- **A carved project's `..`-counted path silently resolves outside the checkout.** As extracted,
+  `BaseOutputPath` on `Concertable.Payment.E2ETests.Web` and `.Workers` walked five directories up,
+  which is the monorepo root from `api/Concertable.Payment/tests/E2ETests/<project>/` and two
+  directories *above the repository* from `tests/E2ETests/<project>/`. Nothing failed — the build
+  succeeded and wrote ~70 MB of Release output where `.gitignore` and every clean step could not reach
+  it. Both now anchor on `$(ConcertableServiceRoot)`, which `Directory.Build.props` already defines as
+  the service folder in the monorepo and the repository root standalone; that is the fix for this whole
+  class. **`customer` carries the same escape and it is still open** — as of 2026-09-11 its
+  `customer-web` output lands outside its checkout. Audit every `..` in a carved project file: a path
+  that counted directories from the monorepo layout is wrong standalone and says nothing about it.
 
 ### Producer parity gates every promotion
 
@@ -1089,16 +1095,17 @@ PR, which opens a pull request in its own repository and wants the repository to
 access" panel for a NuGet or npm package; that is a GHCR container feature only. The bindings stay on
 `concertable`, which is cosmetic and resolves itself when the monorepo is archived.
 
-The same scope limit applies to **reads**, and it is what stops `Concertable/payment#5`. Bringing a
-target's AppHost into its solution makes repository CI ask the feed for that AppHost's cross-service
-packages for the first time, and `payment`'s repository `GITHUB_TOKEN` gets `NU1301` / `403` on
-`Concertable.Auth.Hosting` — deterministically, across two independent workflow runs, while
-`Concertable.AppHost.Shared`, same visibility and same binding, restores in those same runs with the
-same token. The pinned version is on the feed and a user PAT with org-wide `read:packages` restores the
-whole solution. Since there is no per-package panel to grant, the remedy is the same account-scoped
-`CONCERTABLE_PACKAGES_TOKEN`, set on the carve repository and preferred over `GITHUB_TOKEN` in its
-restore steps. **Every carve repository hits this at the moment its AppHost joins its solution**, so set
-that secret as part of 10B rather than diagnosing it again per service.
+The same scope limit applies to **reads**, observed 2026-09-11 on `payment`'s first CI run to restore
+its AppHost closure. Bringing a target's AppHost into its solution makes repository CI ask the feed for
+that AppHost's cross-service packages for the first time, and `payment`'s repository `GITHUB_TOKEN` got
+`NU1301` / `403` on `Concertable.Auth.Hosting` — deterministically, across two independent workflow
+runs, while `Concertable.AppHost.Shared`, same visibility and same binding, restored in those same runs
+with the same token. The pinned version is on the feed and a user PAT with org-wide `read:packages`
+restores the whole solution. Since there is no per-package panel to grant, the remedy is the
+account-scoped `CONCERTABLE_PACKAGES_TOKEN` the secrets-distribution list above assigns to every service
+repository, preferred over `GITHUB_TOKEN` in the restore steps. **Every carve repository reaches this at
+the moment its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per
+service.
 
 `eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
 is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
