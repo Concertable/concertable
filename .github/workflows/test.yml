@@ -327,7 +327,7 @@ jobs:
       packages: read
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      LOCAL_PLATFORM_VERSION: 0.1.0-local.${{ github.run_id }}.${{ github.run_attempt }}
+      LOCAL_PLATFORM_VERSION: 9999.0.0-local.${{ github.run_id }}.${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
