@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-DotNetPlatformPublisherCutover`
 - Branch: `Refactor/DotNetPlatformPublisherCutover`
 - PR: `#1003` — https://github.com/Concertable/concertable/pull/1003
-- Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
-  train membership. Phases 1 and 2 have no dependency.
+- Dependency/package gates: Phase 3 train membership is now defined by the completed local Phase 1 table in
+  `PUBLISHED_SURFACE_ADMISSION_PLAN.md`; it becomes unblocked when that docs PR lands. Phases 1 and 2 have no dependency.
 - Last reconciled: 2026-09-11 at reviewed code head `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`
   against `origin/main` `f48aec45680760aebb45aaf655341072dc769c86`.
 
@@ -75,6 +75,8 @@ clean after resolving the ownership-trigger, packed-dependency proof and case-in
   Advancing it to `0.2.0-alpha.0.4` made the feed-only restore fail on service packages whose latest train is
   `0.1.x`; Phase 2 therefore preserves the resolvable slow floor. A platform consumer cannot move to `0.2.x`
   until those service-owned references use their own train properties.
+- The Phase 1 admission table assigns every current packable project to a platform/service train or an
+  explicit unpublished verdict. Phase 3 must consume that table rather than today's publisher inventory.
 - This plan was first authored against a checkout 868 commits behind `main`, which made its counts and
   the single-pin premise wrong. Re-measure against `origin/main` before quoting any figure from it.
 
@@ -82,4 +84,5 @@ clean after resolving the ownership-trigger, packed-dependency proof and case-in
 
 1. Require PR `#1003` exact-head `ci-complete`, `workflow-tests`, and the feed-only restore green.
 2. Merge Phase 2 and delete the `platform-sync-broken` GitHub label.
-3. Reconcile the package-train dependency before moving the PostgreSQL consumer to platform `0.2.x`.
+3. Land the published-surface admission table, then split service and platform consumer properties before
+   moving the PostgreSQL consumer to platform `0.2.x`.
