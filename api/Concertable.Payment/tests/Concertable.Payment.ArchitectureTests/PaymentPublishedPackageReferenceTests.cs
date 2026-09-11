@@ -38,7 +38,7 @@ public sealed class PaymentPublishedPackageReferenceTests
                 .Select(element => new
                 {
                     Project = Path.GetRelativePath(sourceRoot, path),
-                    Allowed = HasSuffix(path, HostProjectSuffixes)
+                    Allowed = IsHost(path)
                         ? AllowedHostOnlyDependencyPrefixes
                         : AllowedConcertableDependencyPrefixes,
                     Reference = (string?)element.Attribute("Include")
@@ -52,4 +52,14 @@ public sealed class PaymentPublishedPackageReferenceTests
 
     private static bool HasSuffix(string projectPath, string[] suffixes) =>
         suffixes.Any(suffix => Path.GetFileNameWithoutExtension(projectPath).EndsWith(suffix, StringComparison.Ordinal));
+
+    // The name alone would hand the allowance to a future packable *.Web library, which is the defect this
+    // check exists to catch; IsPackable is what decides whether the reference reaches a consumer.
+    private static bool IsHost(string projectPath) =>
+        HasSuffix(projectPath, HostProjectSuffixes) && !DeclaresPackable(projectPath);
+
+    private static bool DeclaresPackable(string projectPath) =>
+        XDocument.Load(projectPath).Descendants()
+            .Any(element => element.Name.LocalName == "IsPackable"
+                && string.Equals(element.Value.Trim(), "true", StringComparison.OrdinalIgnoreCase));
 }
