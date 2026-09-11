@@ -33,11 +33,16 @@ grouped weekly non-automerge refresh of the shared platform pin. The pin remains
 - `python eng/repository-split/inventory.py --check`: passed; 23 retained, 34 platform, and 1 system package.
 - `dotnet restore api/Concertable.slnx`: passed from configured feeds with no local platform prepared at the
   retained `0.1.0-alpha.0.1370` slow-floor pin.
+- Phase 1 image publication policy passed 6/6.
 - `git diff --check`: passed.
 
 ## Reviews
 
 Phase 2 review pending after the branch is reconciled with current `origin/main`.
+- Phase 1 independent merge review of `fe4b7919e`: one finding — invoke the non-executable PowerShell script
+  explicitly through `pwsh` on Ubuntu runners.
+- Phase 1 incremental independent review of `f22f784e9`: clean; both workflow calls and their policy assertions
+  now require the explicit PowerShell host.
 
 ## Decisions and discoveries
 
@@ -66,7 +71,7 @@ Phase 2 review pending after the branch is reconciled with current `origin/main`
 
 ## Next Steps
 
-1. Merge current `origin/main`, then review the Phase 2 publisher-cutover candidate.
+1. Review the base-current Phase 2 publisher-cutover candidate.
 2. Push the PR and require exact-head `ci-complete`, `workflow-tests`, and the feed-only restore green.
 3. Merge Phase 2 and delete the `platform-sync-broken` GitHub label.
 4. Reconcile the package-train dependency before moving the PostgreSQL consumer to platform `0.2.x`.
