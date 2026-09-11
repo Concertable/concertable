@@ -44,6 +44,8 @@ their latest published `0.1.0-alpha.0.1381` versions.
 - The seven-train package-pin scan checked 152 `Concertable.*` references with 0 ownership mismatches.
 - `dotnet restore api/Concertable.slnx --disable-parallel`: passed against the published platform
   `0.2.0-alpha.0.4` and service `0.1.0-alpha.0.1381` pins.
+- PR `#1004` exact-head CI run `34589350572`: passed all workflow policy, package preparation, build,
+  carve, architecture, startup, unit, and integration gates at `e32fafbe4`.
 - Phase 1 exact-head CI run `34545641396`: `ci-complete`, `workflow-tests`, build, and container images green.
 - Phase 1 merge-group run `34547024584`: full API/UI E2E and aggregate CI green.
 - Phase 2 workflow-policy suite: 41/41 service/E2E scope checks passed; package publication policy passed.
@@ -59,6 +61,11 @@ their latest published `0.1.0-alpha.0.1381` versions.
 - `git diff --check`: passed.
 
 ## Reviews
+
+PR `#1004` canonical review is approved through `e32fafbe4edc468e03a63eaaa57312787f2faf61`:
+`reviews/Fix-StopDuplicatePlatformPublication.md`. Native/general and security/reliability lenses were
+clean. The test-impact lens found one medium gap in the ownership-policy test; `e32fafbe4` resolves it by
+rejecting every `Concertable.*` pin absent from the generated inventory, and the incremental review is clean.
 
 Phase 2 canonical review is approved through `3686811e6e2eb0afd30d486a444d40e9ae4a23ca`:
 `reviews/Refactor-DotNetPlatformPublisherCutover.md`. Native, test-impact and security incremental lenses are
