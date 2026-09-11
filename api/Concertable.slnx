@@ -21,6 +21,7 @@
     <Project Path="Concertable.Auth/tests/Concertable.Auth.StartupTests/Concertable.Auth.StartupTests.csproj" />
     <Project Path="Concertable.Auth/tools/Concertable.Auth.OperationalStoreMigration/Concertable.Auth.OperationalStoreMigration.csproj" />
     <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
+    <Project Path="Concertable.Auth.Contracts/tests/Concertable.Auth.Contracts.UnitTests/Concertable.Auth.Contracts.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/">
     <Project Path="Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj" />

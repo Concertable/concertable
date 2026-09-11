@@ -30,6 +30,18 @@ function Get-LocalPlatformVersion {
     return (Get-Content -Raw -LiteralPath $versionPath).Trim()
 }
 
+function Get-LocalTrainArguments([string]$Version) {
+    @(
+        "-p:ConcertableDotNetPlatformVersion=$Version",
+        "-p:ConcertableAuthVersion=$Version",
+        "-p:ConcertableB2BContractsVersion=$Version",
+        "-p:ConcertableCustomerVersion=$Version",
+        "-p:ConcertablePaymentVersion=$Version",
+        "-p:ConcertableSearchVersion=$Version",
+        "-p:ConcertableSystemVersion=$Version"
+    )
+}
+
 function Get-LocalPlatformInputsHash {
     $scoped = @('api', 'scripts/local-platform.ps1')
     $builder = [System.Text.StringBuilder]::new()
@@ -117,7 +129,7 @@ function Initialize-LocalPlatform([switch]$Force) {
 
     $version = $requestedVersion
     if ([string]::IsNullOrWhiteSpace($version)) {
-        $version = "0.1.0-local.$([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())"
+        $version = "9999.0.0-local.$([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())"
     }
 
     if (Test-Path -LiteralPath $packagesRoot) {
@@ -138,7 +150,8 @@ function Initialize-LocalPlatform([switch]$Force) {
         "-p:ArtifactsPath=$buildRoot",
         '-p:UseLocalPlatformSources=true'
     )
-    Invoke-DotNet @(
+    $trainArguments = Get-LocalTrainArguments $version
+    Invoke-DotNet (@(
         'pack', $solution,
         '--configuration', 'Release',
         '--output', $packagesRoot,
@@ -150,7 +163,7 @@ function Initialize-LocalPlatform([switch]$Force) {
         '-p:UseLocalPlatformSources=true',
         "-p:MinVerVersionOverride=$version",
         "-p:PackageVersion=$version"
-    )
+    ) + $trainArguments)
 
     $packableProjects = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'api') -Recurse -Filter '*.csproj' |
         Where-Object { Select-String -LiteralPath $_.FullName -SimpleMatch '<IsPackable>true</IsPackable>' -Quiet }
@@ -177,13 +190,13 @@ function Initialize-LocalPlatform([switch]$Force) {
 
 function Invoke-LocalPlatformRestore([string]$Project) {
     $version = Get-LocalPlatformVersion
-    Invoke-DotNet @(
+    $trainArguments = Get-LocalTrainArguments $version
+    Invoke-DotNet (@(
         'restore', $Project,
         '--configfile', $configPath,
-        "-p:ConcertableDotNetPlatformVersion=$version",
         "-p:MinVerVersionOverride=$version",
         '-p:UseLocalPlatformPackages=true'
-    )
+    ) + $trainArguments)
 }
 
 function Get-Configuration([string[]]$Arguments) {
@@ -246,15 +259,15 @@ switch ($Command) {
         if ([string]::IsNullOrWhiteSpace($Target)) { throw "$Command requires a project or solution target." }
         Invoke-LocalPlatformRestore $Target
         $version = Get-LocalPlatformVersion
+        $trainArguments = Get-LocalTrainArguments $version
         Invoke-DotNet (@(
             $Command, $Target,
             '--no-restore',
             '-m:1',
             '-nodeReuse:false',
-            "-p:ConcertableDotNetPlatformVersion=$version",
             "-p:MinVerVersionOverride=$version",
             '-p:UseLocalPlatformPackages=true'
-        ) + $Rest)
+        ) + $trainArguments + $Rest)
         Assert-DataAccessAssembly $Target $version $Rest
     }
 }

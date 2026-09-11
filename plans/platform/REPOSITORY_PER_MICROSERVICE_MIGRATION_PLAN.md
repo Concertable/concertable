@@ -489,7 +489,10 @@ permissions are separate per environment.
 
 Secrets are redistributed by least privilege:
 
-- service repositories receive only package credentials and their own integration-test secrets;
+- service repositories receive only package credentials — the **read** token
+  `CONCERTABLE_PACKAGES_READ`, which their restore steps need before an AppHost joins their solution,
+  not the `CONCERTABLE_PACKAGES_TOKEN` that publisher repositories hold to push — and their own
+  integration-test secrets;
 - Stripe/Google/full-system service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
 - canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
@@ -746,8 +749,17 @@ private extraction proof.
   version, and prove clean restore.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
-- 7C (GitHub): apply the `platform-dotnet` repository policy, then update package links and Actions access.
-  Any unrelated historical mirror is excluded from this publisher cutover.
+- 7C (GitHub): apply the `platform-dotnet` repository policy, then authenticate its publisher and the org
+  reusable `nuget-publish` workflow's **push** step with `CONCERTABLE_PACKAGES_TOKEN` instead of
+  `GITHUB_TOKEN` — that workflow's `verify` job still restores on `GITHUB_TOKEN`, which the token-scope
+  section below shows is not enough for a carve repository. The package
+  links stay on the monorepo; the section on package ownership below says why. Any unrelated historical
+  mirror is excluded from this publisher cutover.
+  **Done 2026-09-10.** `Concertable.Build 0.2.0-alpha.0.3` published from `platform-dotnet` at
+  19:32:30Z and was verified on the feed, not merely in a green log. The token had been set to an empty
+  string twice before; a length probe in the workflow is what finally distinguished empty from
+  wrong-scoped. `platform-frontend`'s `Release` is green on the same change. What remains for this
+  checkpoint's hard stop is proving the monorepo no longer publishes the same package IDs.
 - Verification: platform unit/integration tests, pack/restore; all five service builds and integration suites;
   umbrella build. E2E is skipped unless runtime package behavior changed.
 - **Hard stop:** only `platform-dotnet` can publish platform package IDs.
@@ -788,7 +800,8 @@ the Renovate rollout.
   initial package versions. Web and mobile remain package tiers rather than repository boundaries.
 - 8B (`concertable`): switch every product workspace to registry packages, generate stable per-repo-ready
   lockfiles, and remove monorepo publication for those IDs.
-- 8C (GitHub): apply the `platform-frontend` repository policy and update package links.
+- 8C (GitHub): apply the `platform-frontend` repository policy and authenticate `release.yml`'s publishing
+  steps with `CONCERTABLE_PACKAGES_TOKEN`, leaving the changesets version PR on the repository token.
 - Verification: clean npm installs, package tests, all four SPA builds, both mobile builds/tests.
 - **Hard stop:** product builds succeed with the platform source directories absent.
 
@@ -807,10 +820,362 @@ the Renovate rollout.
   available.
 - **Hard stop:** `system` is green using monorepo-produced images before the first service source cut.
 
+### Target-repository divergence — governs every 10A
+
+Surveyed 2026-09-10 across all five service repositories. Each already holds work that a fresh
+`git filter-repo` run governed by `eng/repository-split/map.yaml` would not reproduce, so a
+re-extraction is a reconciliation, not a replacement. Split what a target holds into two classes:
+
+- **Repository infrastructure** — CI workflow, Dockerfile, verify scripts, dotfiles,
+  `.claude/settings.json`, `RepositoryUrl`/`PackageProjectUrl` edits, standalone README sections.
+  Re-apply on top of the fresh extraction; none of it belongs in the monorepo.
+- **Repository-only service source and tests** — replay the target's own post-extraction commits onto
+  the fresh extraction. `git rebase --onto` cannot reach them: filter-repo rewrites hashes and the
+  map's rules have changed since the first cut, so the target's own commits sit on parents the fresh
+  run never produced. The two extractions do share ancestry, but only up to the last commit both
+  produced identically, which is too old to rebase onto — see "Landing a re-cut on a pushed carve
+  repository" below for where that boundary falls. Establish
+  the extraction boundary — the last commit the target inherited from the monorepo, identifiable as
+  the newest commit carrying a monorepo PR number or platform-sync subject — then
+  `git format-patch <boundary>..main` and `git am` onto the fresh extraction. Measured 2026-09-10:
+
+  | Target | Boundary | Repository-only commits |
+  |---|---|---|
+  | `auth` | `9c20128` | 18 |
+  | `payment` | `e4da6e2` | 11 |
+  | `search` | `befe816` | 35 |
+  | `customer` | `b22c5ba` | 28 |
+  | `b2b` | re-extract wholesale; see below | — |
+
+| Target | Infrastructure to re-apply | Repository-only source to replay | CI |
+|---|---|---|---|
+| `auth` | Dockerfile, `ci.yml`, four verify scripts, `.slnx`, `.gitignore`, `.dockerignore`, `Directory.Build.props` and README edits | none that survives — `Concertable.Auth.ArchitectureTests` is a subset of the monorepo's `StartupTests` (renamed in `fee52b4cf`) and is dropped, and the repository's one source commit is a superseded catch-up import; see the rehearsal below | green |
+| `payment` | `ci.yml`, `.gitignore` and four content edits | none | green |
+| `search` | Dockerfile with three targets, `ci.yml`, three verify scripts, `.gitignore`, `.dockerignore` | `Concertable.Search.Migrations`, `Concertable.Search.TestKit`, `Concertable.Search.StandaloneTests`, and the `Application/Interfaces/I*Specification` refactor that replaced `Infrastructure/Queries/*`. The refactor is the one certain conflict against surviving monorepo source | green |
+| `customer` | `ci.yml`, `CODEOWNERS`, `customer-promotion-candidates.json`, five scripts, the npm workspace root, `.npmrc`, `.config/dotnet-tools.json` | `Concertable.Customer.Migrations`, `Seed.Contracts`, `Seed.Simulator`, `Seed/Tests`, `AppHost.ArchitectureTests`, `TestKit.Tests`, the `DataAccess.Infrastructure` split | green |
+| `b2b` | `.claude/`, `HANDOFF.md`, the `app/` workspace root, `app/web/.env.*` | none | **none — zero workflows, zero runs** |
+
+`b2b` is the exception that makes re-extraction the cheap path rather than the expensive one: its
+existing extraction renamed `api/Concertable.B2B/` to `src/`, producing `src/src/**`, and left the
+frontend at monorepo paths, so it already contradicts the map. Its backend content is complete — the
+earlier "no solution file" reading missed `src/Concertable.B2B.slnx` one level down. What it lacks is
+CI, which has to be written rather than carried.
+
+**Every service repository is private**, so branch protection and ruleset reads return 403 on this
+entitlement and no protection can be configured, while three of the five CI workflows already declare
+a `merge_group` trigger for a queue that cannot be enabled. Promotion to public is therefore a shared
+prerequisite of 10C and its repeats, not a per-service afterthought. None of the five publishes
+anything yet; every CI is deliberately verify-only.
+
+`.editorconfig` and `.gitattributes` exist only at the monorepo root, so no extraction supplies them
+and no target has them. `map.yaml` lists them as `replicated` and nothing has replicated them.
+
+#### The reconciliation, run end to end against `auth`
+
+Rehearsed 2026-09-10 in a throwaway clone and carried to a green build, so 10A's cost is measured
+rather than estimated. `git filter-repo 2.47.0` against the emitted `auth.paths` reduced 6635 commits
+to 815 in about a minute and produced the map's layout exactly. `git format-patch 9c20128..main` in
+the target yielded 13 non-merge patches from its 18 commits, and `git am --3way` matched the
+repository-root Contracts tree to the map's `src/` one on its own, so no duplicate tree appeared.
+
+Two results, the second of which generalises (the first turned out to be `auth` alone — see the
+rehearsals below):
+
+- **`auth`'s first post-extraction commit is a catch-up import and must be skipped, not
+  resolved.** `auth`'s `198ca1e` imported the monorepo through platform generation 1279; the fresh
+  extraction already carries every file it added, at 1370. Replaying it drags the tree backwards —
+  onto the pre-`WithSpaClients` Hosting, the pre-`extension()` member syntax, and the retired
+  `ConcertablePlatformVersion` property name. Its only durable residue is repository infrastructure
+  (`.gitignore`, the standalone package closure, `AGENTS.md`), which the class above re-applies
+  anyway. The remaining 12 patches then applied with a single conflict, the retired property name in
+  `Directory.Packages.props`.
+- **Where the map moves a project, every replayed reference to its old location breaks, and they are
+  all mechanical.** Contracts is the whole conflict class for `auth`: eight references across four
+  files — the `.slnx`, two `ProjectReference` paths, four `Dockerfile` `COPY` lines and one path in
+  `verify-auth-packages.ps1`. Either fix those at reconciliation or change the map's rename to keep
+  Contracts at the root; keeping the map is preferred, because Contracts is source and every other
+  target puts source under `src/`.
+
+Two further reconciliations are settled by inspection. The target's `ArchitectureTests` is a strict
+subset of the monorepo's `StartupTests` — the same two graph-and-strict-validation tests plus six SPA
+client tests — so it is dropped rather than merged. And `Concertable.Auth.Contracts` and
+`Concertable.Auth.Hosting` are `PackageReference`s in the extraction and `ProjectReference`s in the
+standalone repository, which is correct there and means their `PackageVersion` entries come out of
+`Directory.Packages.props`.
+
+The reconciled tree restored all nine projects against the live feed at `0.1.0-alpha.0.1370` and
+built Release with zero errors, carrying `ApiScopeIds`, `AuthConstants.ContainerPort` and
+`WithSpaClients` — so the parity gate below is satisfied by this route rather than by hand-syncing.
+
+#### What the `payment` and `search` rehearsals added
+
+Run 2026-09-10 against the same recipe. `payment` reached a green Release build; `search` was stopped
+deliberately, for the reason at the end.
+
+Three mechanics the `auth` run could not reveal, because `auth` is one of only three targets with no
+`exclude`:
+
+- **Six of the nine targets need a two-pass extraction.** Only `auth`, `platform-frontend` and
+  `org-github` are single-pass. `emit_paths.py` refuses a target declaring `exclude` and says so; pass
+  two is `git filter-repo --invert-paths --path ...`, and **its paths must be written at their
+  post-rename location**, because pass one has already renamed. For `payment` that is
+  `tests/E2ETests/…Helpers`, not `api/Concertable.Payment/tests/E2ETests/…Helpers`.
+- **`git am --3way` needs the target's objects before it can 3-way anything.** Without them it fails
+  `sha1 information is lacking or useless` and cannot build a fake ancestor — not a conflict, a dead
+  stop. Add the target as a remote and fetch it into the extraction first; on that alone `payment`'s
+  patch 7 goes from unappliable to a real three-way merge that resolves two of its three files.
+- **Pass two leaves the solution file dangling.** It deletes the excluded projects and does not touch
+  the `.slnx` that still lists them, so every two-pass target needs its solution reconciled by hand.
+  Read that as reasoning rather than observation: the `customer` run below found pass two had not in
+  fact been deleting anything on Windows, so neither rehearsal saw the deletion it describes.
+
+Two divergences that are about the map rather than the tooling:
+
+- **Targets still hold E2E projects the map reassigns to `system`** — `payment` keeps
+  `E2ETests.Helpers` and `E2ETests.Helpers.UnitTests`, `search` keeps all of `tests/E2ETests`. Resolve
+  to the map: the extraction is right and the target's solution edit is not.
+- **`payment` is also missing one the map gives it**, `Concertable.Payment.E2ETests.Server`. Its
+  standalone-solution commit drops that project along with the two it should drop, so replaying it
+  verbatim silently loses a suite.
+
+Confirmed on all three: every target's `*ArchitectureTests` graph-validation class is a subset of the
+monorepo's `StartupTests`. `payment` and `search` surface it as a modify/delete conflict on that exact
+file, which is resolved by accepting the deletion; in `auth` it never reaches a conflict because the
+commit carrying it is the skipped catch-up import, so it is settled by inspection instead.
+
+**`search` is blocked on 9B and should not be reconciled until the hosting seam settles.** Its patch 9
+rewrites the Auth composition, and replaying it would drop `--user root`, replace
+`WithHttpsEndpoint(targetPort: AuthConstants.ContainerPort)` with a hardcoded HTTP `8080`, drop
+`WithSpaClients`, and pin a superseded Auth image digest — undoing the work 9B is landing. Five further
+patches build on that same seam. It is not a take-one-side conflict either: `search`'s own
+`Concertable.Search.Hosting` is genuinely ahead of the monorepo's, carrying an `AddSearchMigrations`
+pair and the C# 14 `extension()` block form that the monorepo's copy of that file still lacks. So
+`search`'s 10A is a real two-way merge against a seam that is currently moving, and it is cheaper after
+9B than during it. `auth` and `payment` have no such dependency.
+
+#### What the `customer` rehearsal added
+
+Run 2026-09-10 against the same recipe and carried to a green Release build. `customer` has **no 9B
+dependency** — no patch in `b22c5ba..main` touches `src/Concertable.Customer.AppHost/**` or
+`src/Concertable.Customer.Hosting/**`, so the extraction keeps the monorepo's current AppHost intact
+and the one moving seam, `CustomerWebHostExtensions.cs`, auto-merged. 24 non-merge patches from 28
+commits, six conflicts.
+
+Three findings that change how every remaining 10A is run:
+
+- **Pass two has been a silent no-op on Windows, so `payment` and `search` were reconciled with their
+  excluded suites still present.** `polyrepo-cut.sh` writes the excludes with `pathlib.write_text`,
+  which translates to CRLF on Windows, and reads them with a bare `while read`, which drops a final
+  line that has no newline. The last exclude is therefore never passed and the rest reach
+  `--path` with a trailing carriage return that matches nothing. `git filter-repo` exits 0, and the
+  script prints a `pass2:` line whose commit and file counts are identical to `pass1:` — the only
+  evidence that anything went wrong. Strip the `\r` and use `while IFS= read -r p || [ -n "$p" ]`;
+  `customer` then goes 696 files to 635 and keeps exactly the two E2E projects the map gives it.
+  **Re-check `payment` and `search` before either is pushed.**
+- **A carve deliberately does not copy `api/PlatformSourcePackages.targets`, and its absence is what
+  first exercises a target's package pins.** That file swaps an AppHost or test project's platform
+  `PackageReference` for the in-repo project, so inside the monorepo those projects never resolve
+  those packages from the feed. Standalone they do, for the first time, and `customer`'s AppHost
+  fails `CS0117` on `PaymentConstants.AllowInsecureHttpClientEnvironmentVariable` because
+  `ConcertablePaymentVersion` is pinned at `0.1.0-alpha.0.1330`, forty releases behind. The fix is to
+  move it onto the same `0.1.0-alpha.0.1370` train as `ConcertableDotNetPlatformVersion` — not to the
+  newest `1371`, whose `Concertable.Payment.Hosting` requires `Concertable.AppHost.Shared >= 1371`
+  and `NU1605`s against the platform pin. The trains move together. **Audit every target's
+  `Directory.Packages.props` at its 10A: a stale pin is invisible in the monorepo.**
+- **The `.slnx` gap runs the opposite way here — nothing stale, five projects missing.** The target's
+  own solution never listed the map-excluded suites, so pass two leaves nothing dangling; instead the
+  replayed solution lists 59 of the 64 projects on disk, omitting `AppHost`, `StartupTests`,
+  `E2EAdmin.IntegrationTests`, `E2ETests.Server` and `E2ETests.Web`. Because CI is
+  `dotnet restore/build/test/pack Concertable.Customer.slnx`, the solution file is the entire build
+  and test surface, so **`Concertable/customer` has never compiled its own AppHost** — which is why
+  the stale Payment pin above went unnoticed there. Reconcile the solution against `git ls-files
+  '*.csproj'` in both directions, not just for dangling entries.
+
+Two conflict classes the file-set forecast cannot predict, both needing a union rather than a side:
+
+- **Same type name, disjoint members.** `CustomerTestClient` is an add/add conflict: the extraction's
+  is an E2E admin client (`X-Concertable-E2E-Key`, `ResetAsync`, `GetSeedStateAsync`), the target's a
+  black-box public-API client (`PurchaseTicketAsync`, `GetUpcomingTicketsAsync`). Neither is a subset,
+  and both supporting type sets land as clean adds, so the resolution is one field, two constructors
+  and all four methods.
+- **The same sequence arriving twice.** `97aec2b` factors the module migrations into
+  `MigrateCustomerDatabaseAsync` for its new `Concertable.Customer.Migrations` executable, while the
+  extraction has already inlined the identical sequence into `UseCustomerWebHost`. Taking either side
+  alone loses the other's host shape; keeping both leaves two copies to drift. Call the new extension
+  from the collapsed host.
+
+The subset rule held twice more — `CustomerArchitectureTests` and `CustomerAppHostArchitectureTests`
+are both strict subsets of the extraction's `StartupTests` split, and the second additionally calls
+`CustomerAppHost.CreateBuilder`, a class the monorepo renamed to `AppHost`, so it would apply cleanly
+and then fail to compile. Both were deleted. With that, all 64 projects restore against the live feed
+and build Release with zero errors — obtained, unlike the `auth` and `payment` rehearsals, with
+`-m:1 -p:DebugType=none -p:OutDir=<shared>/`, because the default per-project output layout needs
+about 1.9 GB and the machine had less. A shared output directory collapses 64 copies of the
+dependency closure into 178 MB, and is how to run any of these builds while disk is scarce.
+
+#### Landing a re-cut on a pushed carve repository
+
+Settled 2026-09-11. `Concertable/auth#6` established it, merged as `18cd4b82a`, and the `payment`
+re-cut reproduced it. The reconciliation above produces a correct tree; it does not on its own produce
+a mergeable pull request, and that is a separate problem with a separate answer.
+
+**A re-cut opened against a carve repository that has already been pushed to comes out `DIRTY`.** The
+first extraction and the fresh one agree only up to the last commit both produced identically — `auth`
+`532a3a6`, `payment` `b9efa7e` — and the first commit after it that the current map no longer routes to
+that target makes `filter-repo` drop it and reassign every hash downstream. For `payment` that commit
+is `c4e40ca refactor(shared): … rename to Concertable.Shared`. The merge base is therefore months old,
+an ordinary merge conflicts on hundreds of paths (`auth` nineteen, `payment` 691), and because
+`pull_request` workflows run against a merge ref GitHub never builds it, so CI does not fire either.
+`Concertable/payment#4` is what that looks like: `+42,595/−5,933` across 100+ files, none of it
+authored.
+
+**Resolve it by taking the extraction whole, not file by file.** `git merge -s ours <target-main>` keeps
+the extraction's tree exactly and records the target's `main` as a second parent. The pull request then
+reports `CLEAN`, its diff is the honest content delta — `auth` 50 files, `payment` 338 — and CI runs.
+Resolving those paths by hand would be re-deriving the reconciliation a second time, and the superseded
+history stays reachable — which is how step 5 of "Git history preservation" is satisfied here rather
+than by force-pushing an active carve repository. Enumerate in the merge commit every path the target
+holds that the extraction does not, with the reason each is settled; `payment`'s forty were fifteen
+map-reassigned `E2ETests.Helpers` files, one `*ArchitectureTests` class, and twenty-four upstream
+deletions each verified absent at the monorepo SHA the cut was taken from.
+
+#### What the `payment` re-cut added
+
+Run 2026-09-11 from a fresh cut at `c366a672f` and carried to a green Release build, 621 green tests and
+four packed packages.
+
+- **Pass two now works.** The CRLF defect above is fixed: `payment`'s cut kept exactly the four E2E
+  projects the map gives it and dropped both `Helpers` projects, so the re-check that section asks for
+  is done for `payment`. `search` is still outstanding.
+- **Its `Directory.Packages.props` audit comes out clean.** One property,
+  `ConcertableDotNetPlatformVersion` at `0.1.0-alpha.0.1370`, covers every `Concertable.*` id; there is
+  no second stale train of the kind `customer` carried. `PublishedBaseline.props` pins
+  `0.1.0-alpha.0.1254` deliberately, as the published-contract compatibility baseline.
+- **A carved project's `..`-counted path silently resolves outside the checkout.** As extracted,
+  `BaseOutputPath` on `Concertable.Payment.E2ETests.Web` and `.Workers` walked five directories up,
+  which is the monorepo root from `api/Concertable.Payment/tests/E2ETests/<project>/` and two
+  directories *above the repository* from `tests/E2ETests/<project>/`. Nothing failed — the build
+  succeeded and wrote ~70 MB of Release output where `.gitignore` and every clean step could not reach
+  it. Both now anchor on `$(ConcertableServiceRoot)`, which `Directory.Build.props` already defines as
+  the service folder in the monorepo and the repository root standalone; that is the fix for this whole
+  class. **`customer` carries the same escape and it is still open** — as of 2026-09-11 its
+  `customer-web` output lands outside its checkout. Audit every `..` in a carved project file: a path
+  that counted directories from the monorepo layout is wrong standalone and says nothing about it.
+
+### Producer parity gates every promotion
+
+Surveyed 2026-09-10. A target repository's published surface must not lose members the monorepo's
+current package already exposes, because the promotion publishes at a *higher* version and consumers
+take it automatically. `auth` demonstrates the failure: its `Concertable.Auth.Hosting` has no
+`AuthConstants.ContainerPort` and no `WithSpaClients` overload, and its `Concertable.Auth.Contracts`
+has no `ApiScopeIds` — all present in the monorepo copy, and the first two consumed by `system`'s
+AppHost. Publishing `0.2.0` from that repository would break the composition at a version that looks
+like an upgrade.
+
+This is the same divergence the section above describes, running the other way: `search` and
+`customer` hold source the monorepo lacks, while `auth` lacks source the monorepo holds. Both are
+answered by replaying the target's own commits onto a fresh extraction rather than hand-syncing
+either direction. Before publishing from any target, diff its packable public surface against the
+currently published package and treat any missing member as a blocker.
+
+### Package ownership is a token scope, not a rename
+
+Settled by test 2026-09-10. All 59 `Concertable.*` NuGet ids and all 8 `@concertable/*` npm ids stay
+bound to the monorepo, and binding follows the first publisher, but the binding never had to move. A
+user PAT carrying `write:packages` pushed `Concertable.Shared.Geocoding.Application` — a package bound
+to `Concertable/concertable` — and the feed answered `Conflict: version already pushed`, not
+`403 Forbidden`. Authorisation succeeded; only the duplicate version stopped it.
+
+The publishers fail because both authenticate with `secrets.GITHUB_TOKEN`, which is scoped to the
+repository the workflow runs in and therefore cannot write a package bound to another. A user PAT is
+account-scoped. So the remedy is `CONCERTABLE_PACKAGES_TOKEN`, already set on both publisher
+repositories, swapped in for `GITHUB_TOKEN` in `platform-dotnet`'s `publish.yml`, in the org reusable
+workflow under `Concertable/.github` that runs the actual `dotnet nuget push`, and in
+`platform-frontend`'s `release.yml` as `NODE_AUTH_TOKEN` — every step except the changesets version
+PR, which opens a pull request in its own repository and wants the repository token.
+
+**No deletions, no republishing 59 ids, and no per-package UI work.** There is no "Manage Actions
+access" panel for a NuGet or npm package; that is a GHCR container feature only. The bindings stay on
+`concertable`, which is cosmetic and resolves itself when the monorepo is archived.
+
+The same scope limit applies to **reads**, observed 2026-09-11 on `payment`'s first CI run to restore
+its AppHost closure. Bringing a target's AppHost into its solution makes repository CI ask the feed for
+that AppHost's cross-service packages for the first time, and `payment`'s repository `GITHUB_TOKEN` got
+`NU1301` / `403` on `Concertable.Auth.Hosting` — deterministically, across two independent workflow
+runs, while `Concertable.AppHost.Shared`, same visibility and same binding, restored in those same runs
+with the same token. The pinned version is on the feed and a user PAT with org-wide `read:packages`
+restores the whole solution. Since there is no per-package panel to grant, the remedy is the
+account-scoped read token the secrets-distribution list above assigns to every service repository,
+preferred over `GITHUB_TOKEN` in the restore steps. **Name it `CONCERTABLE_PACKAGES_READ`** — the
+write-side `CONCERTABLE_PACKAGES_TOKEN` this section settles is *not* distributed to consumers, and
+`${{ secrets.<wrong-name> || secrets.GITHUB_TOKEN }}` fails soundlessly: the unknown secret resolves
+empty, the fallback restores every id that already worked, and the one cross-repository package keeps
+returning the identical 403, so a misnamed secret is indistinguishable from an unset one. Read the names
+off the repository rather than off this document:
+`gh api repos/<owner>/<repo>/actions/organization-secrets`. **Every carve repository reaches this at the
+moment its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per
+service.
+
+One consumer of that rail cannot be fixed from the service repository at all, and it is why 7C's "Done"
+above is narrowed to the push step. The `verify` job in `Concertable/.github`'s `nuget-publish.yml`
+hardcodes both `GITHUB_PACKAGES_TOKEN` and `NUGET_AUTH_TOKEN` from `secrets.GITHUB_TOKEN`, and uses
+`PACKAGES_TOKEN` — that workflow's own `workflow_call` name for the secret a caller maps
+`CONCERTABLE_PACKAGES_TOKEN` into — only on the push step. So no value a service passes authenticates
+its restore, and packing a solution that contains an AppHost fails there for every carve repository on
+the rail. Nor is passing `PACKAGES_TOKEN` through to the restore quite the fix: that input is declared
+`write:packages`, so it would make every consumer hold a write token merely to pack. The workflow needs
+a read credential it can accept from a caller — a second, read-scoped secret input, or `PACKAGES_TOKEN`
+redefined as read-at-minimum — after which each consumer re-pins.
+
+`eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
+is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
+which the local inner loop and the carve gates still depend on.
+
+### Parallelisation — what actually serialises, and what only looks like it
+
+Added 2026-09-10 because the delivery target is days, not weeks, and the checkpoint numbering reads as
+a queue when most of it is not one. **Default to running the five promotions concurrently.** Sequential
+execution here is the exception that must be justified, not the norm.
+
+**Checkpoint 9's hard stop gates the first service *source cut*, not the preparation for one.** Read
+the sub-steps rather than the checkpoint number:
+
+- **Unblocked now, for all five services at once** — the extraction-and-reconciliation half of every
+  `10A`, and the whole of every `10B`. `10B` is entirely target-repository work (CI, standalone
+  AppHost, migrations, Hosting/TestKit, rules, main branch) and touches neither `system` nor the
+  monorepo's source. Five people or five sessions can do five services' worth of this simultaneously,
+  today, with `system` still red.
+- **Genuinely gated on `system` being green** — `10C` onward. `10C` publishes a canonical release that
+  consumers immediately take, `10D` is `system` consuming it, and `10F` removes the frozen source.
+  Publishing a canonical release into a composition that is not green is what the hard stop exists to
+  prevent.
+- **Hold the freeze.** `10A` also says "freeze source"; that half is best left until its `10C` is
+  imminent, so a defect found meanwhile can still be fixed in the monorepo.
+- **The Auth → Payment → Search → Customer → B2B order binds only from `10C`.** Preparation is
+  order-independent; the ordering exists for contract and seed fan-out at cut-over.
+
+So the critical path is `9B` → the five `10C`-onward sequences → `16`. Everything before each `10C` is
+parallel work that should already be in flight.
+
+**Measured readiness, 2026-09-10** — four of five have a rehearsed reconciliation, so these are
+mechanical rather than exploratory:
+
+| Target | State | Left before its `10C` |
+|---|---|---|
+| `auth` | reconciled to a green Release build | apply the 8 recorded path fixes; push to the target |
+| `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
+| `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
+| `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
+| `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none; green build needs disk |
+
+Detail for `customer` and `b2b` is in `~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and
+`10A_b2b_FINDINGS.md`, pending consolidation here.
+
 ### 10. Promote Auth
 
-- 10A (`concertable`): refresh Auth's extraction at the approved SHA, freeze Auth source, and remove Auth from
-  mirror automation. Do not delete source yet.
+- 10A (`concertable`): refresh Auth's extraction at the approved SHA, reconcile it against the target
+  per the divergence section above, freeze Auth source, and remove Auth from mirror automation. Do not
+  delete source yet.
 - 10B (`auth`): rebase the verified extraction on that SHA; land CI, Auth-owned publication/images,
   standalone AppHost, migrations, Hosting/TestKit, rules, and main branch.
 - 10C (GitHub): transfer package/image permissions and publish a canonical Auth release from `auth`.

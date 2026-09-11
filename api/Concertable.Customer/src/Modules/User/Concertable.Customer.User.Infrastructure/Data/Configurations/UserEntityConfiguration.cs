@@ -1,3 +1,4 @@
+using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Kernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,7 +12,7 @@ internal sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEnt
         builder.ToTable(Schema.Tables.Users, Schema.Name);
         builder.HasKey(u => u.Id);
         builder.Property(u => u.Id).ValueGeneratedNever();
-        builder.Property(u => u.Location).HasColumnType("geography");
+        builder.Property(u => u.Location).HasGeographyColumn();
         builder.OwnsAddress(u => u.Address, required: false);
     }
 }

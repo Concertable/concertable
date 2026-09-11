@@ -278,10 +278,11 @@ def main() -> int:
         len(CASES) + len(MATRIX_GUARDS) + len(QUEUE_E2E_JOBS) + len(RUNTIME_CASES) + len(TIER_CASES) + 1
     )
     print(f"\n{total - failures}/{total} passed")
-    package_policy = Path(__file__).with_name("test_publish_packages_policy.py")
-    publication = subprocess.run([sys.executable, package_policy], check=False)
-    if publication.returncode != 0:
-        failures += 1
+    for policy_name in ("test_publish_packages_policy.py", "test_publish_images_policy.py"):
+        policy = Path(__file__).with_name(policy_name)
+        publication = subprocess.run([sys.executable, policy], check=False)
+        if publication.returncode != 0:
+            failures += 1
     return 1 if failures else 0
 
 

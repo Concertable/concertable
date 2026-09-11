@@ -49,11 +49,11 @@ The concurrency token is **B2B-local**, not shared — `IConcurrencyVersioned` a
 `ConcurrencyVersionExtensions` both live in `Concertable.B2B.DataAccess`. It is handled in the B2B
 phase rather than as shared prep.
 
-## 4. Prep is provider-neutral and ships on SQL Server
+## 4. Prep removes provider decisions from consumers and ships on SQL Server
 
-Phases 1-4 change no provider. Each one removes a SQL-Server-ism by replacing it with configuration EF
-Core can render for either provider, and each ends green on SQL Server with an unchanged schema. Only
-the per-service phases flip anything.
+Phases 1-4 change no provider. They either replace a SQL Server-specific construct with configuration EF
+Core can render for either provider or centralize a shared relational semantic behind one package seam.
+Each ends green on SQL Server with an unchanged schema. Only the per-service phases flip anything.
 
 ## 5. Phases
 
@@ -72,11 +72,17 @@ stays green. Publish and platform-sync before Phase 5.
 
 ### Phase 2 — spatial configuration seam
 
-- [ ] Replace the eight `HasColumnType("geography")` calls with one shared configuration extension so
-  the provider-specific spatial decision has a single site.
+- [x] Replace the eight `HasColumnType("geography")` calls with one shared configuration extension so
+  the shared `geography` relational semantic has a single site.
 
-Consumption contract: an extension applied to a `Point` property that configures the column for the
-active provider. Entity and query code stays on NetTopologySuite and does not change.
+Consumption contract: an extension applied to a `Point` property that preserves `geography` semantics.
+SQL Server and PostGIS both support that relational type name, so the extension needs no active-provider
+branch. Entity and query code stays on NetTopologySuite and does not change.
+
+Delivery sequence: the extension is an additive public API in the published
+`Concertable.DataAccess.Infrastructure` package, while service projects bind the published package rather
+than its source. Land and publish the package expansion first, consume the generated platform sync, then
+land the eight call-site changes and regenerated service migrations.
 
 Gate: existing spatial queries and their integration coverage stay green on SQL Server.
 
