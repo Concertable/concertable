@@ -44,7 +44,7 @@ public sealed class OperationalStoreMigrationFixture : IAsyncLifetime
 
     public async Task SeedEveryTableAsync(string connectionString)
     {
-        const string nonIdentitySql = """
+        const string sql = """
             SET QUOTED_IDENTIFIER ON;
 
             INSERT INTO [idsrv].[DeviceCodes]
@@ -85,7 +85,7 @@ public sealed class OperationalStoreMigrationFixture : IAsyncLifetime
 
         await using var provider = CreateProvider(connectionString);
         var database = provider.GetRequiredService<PersistedGrantDbContext>().Database;
-        await database.ExecuteSqlRawAsync(nonIdentitySql);
+        await database.ExecuteSqlRawAsync(sql);
         await database.ExecuteWithIdentityInsertAsync(
             "idsrv",
             "PersistedGrants",
