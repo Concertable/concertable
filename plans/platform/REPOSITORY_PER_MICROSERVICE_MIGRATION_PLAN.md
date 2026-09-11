@@ -489,9 +489,10 @@ permissions are separate per environment.
 
 Secrets are redistributed by least privilege:
 
-- service repositories receive only package credentials — including `CONCERTABLE_PACKAGES_TOKEN`, which
-  their restore steps need before an AppHost joins their solution — and their own integration-test
-  secrets;
+- service repositories receive only package credentials — the read secret their restore steps need
+  before an AppHost joins their solution, named `CONCERTABLE_PACKAGES_READ`, and their own
+  integration-test secrets. `CONCERTABLE_PACKAGES_TOKEN` is the publishers' write credential and is
+  **not** distributed to a service repository;
 - Stripe/Google/full-system service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
 - canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
@@ -1174,10 +1175,28 @@ that AppHost's cross-service packages for the first time, and `payment`'s reposi
 runs, while `Concertable.AppHost.Shared`, same visibility and same binding, restored in those same runs
 with the same token. The pinned version is on the feed and a user PAT with org-wide `read:packages`
 restores the whole solution. Since there is no per-package panel to grant, the remedy is the
-account-scoped `CONCERTABLE_PACKAGES_TOKEN` the secrets-distribution list above assigns to every service
-repository, preferred over `GITHUB_TOKEN` in the restore steps. **Every carve repository reaches this at
-the moment its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per
-service.
+account-scoped read secret the secrets-distribution list above assigns to every service repository,
+preferred over `GITHUB_TOKEN` in the restore steps. **Every carve repository reaches this at the moment
+its AppHost joins its solution**, so it belongs in 10B rather than being diagnosed again per service.
+
+**Get the secret's name from the API, not from this plan or a sibling's workflow.** Settled 2026-09-11
+after it cost four services a day between them. The name is `CONCERTABLE_PACKAGES_READ` —
+`gh api repos/Concertable/<repo>/actions/organization-secrets` returns exactly that one on all six
+service repositories and nothing else. Three carves wrote `CONCERTABLE_PACKAGES_TOKEN`, each copying
+the one before, and this section named it too.
+
+The reason a wrong name survived that long is the shape of the expression it sits in:
+
+```yaml
+GITHUB_PACKAGES_TOKEN: ${{ secrets.CONCERTABLE_PACKAGES_READ || secrets.GITHUB_TOKEN }}
+```
+
+**A `secrets.X || secrets.GITHUB_TOKEN` fallback cannot fail loudly.** An undistributed or misspelled
+first operand is empty, not an error, so the expression silently degrades to the repository token and
+restore returns exactly the `NU1301` / `403` an ungranted package produces. The two are
+indistinguishable from the log, so a one-word typo reads as somebody else's credential action — and
+`search` was parked behind a secret that had been provisioned all along. Enumerate the secret before
+writing its name, and when a fallback expression yields a 403, suspect the operand before the grant.
 
 `eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
 is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
