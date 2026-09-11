@@ -15,7 +15,8 @@
 Design selected; implementation has not started. Hybrid relational metadata/capabilities plus a typed
 `jsonb` rule graph replaces permanent whole-Deal subtype identity. Four platform presets remain the MVP;
 tenant authoring, feature entitlements and the visual builder are future product work. The representation
-refactor is not an additional launch gate. Finbuckle is not a dependency.
+refactor is not an additional launch gate. Finbuckle is not a dependency of this refactor; future tenant
+policy ownership and tenancy infrastructure remain open decisions, as scoped in the plan.
 
 ## Next Steps
 
