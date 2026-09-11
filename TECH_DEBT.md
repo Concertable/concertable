@@ -41,6 +41,16 @@ the same character class.
 
 ## MED
 
+### Plan-managed worktree close rejects the prescribed repository-relative ledger path
+
+`plans/AGENTS.md` prescribes repository-relative worktree paths in progress ledgers and
+`scripts/worktrees.ps1 close -PlanManaged`, but the close command compares that ledger value with the resolved
+absolute registered worktree path. A correctly recorded producer worktree was therefore rejected until the same
+safe close ran without `-PlanManaged`.
+
+**Resolves when:** `AssertLedger` resolves repository-relative ledger worktree values against the repository
+root before comparing them with the registered path, with a regression test covering the documented ledger form.
+
 ### One style rule the standard requires enforced is missing from `.editorconfig`
 
 `STYLE.md` opens by stating that style rules an analyzer can express belong in `.editorconfig` at
