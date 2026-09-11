@@ -1031,10 +1031,10 @@ the extraction's tree exactly and records the target's `main` as a second parent
 reports `CLEAN`, its diff is the honest content delta — `auth` 50 files, `payment` 338 — and CI runs.
 Resolving those paths by hand would be re-deriving the reconciliation a second time, and the superseded
 history stays reachable — which is how step 5 of "Git history preservation" is satisfied here rather
-than by force-pushing an active carve repository. Enumerate in the merge
-commit every path the target holds that the extraction does not, with the reason each is settled;
-`payment`'s forty were fifteen map-reassigned `E2ETests.Helpers` files, one `*ArchitectureTests` class,
-and twenty-four upstream deletions each verified absent at the monorepo SHA the cut was taken from.
+than by force-pushing an active carve repository. Enumerate in the merge commit every path the target
+holds that the extraction does not, with the reason each is settled; `payment`'s forty were fifteen
+map-reassigned `E2ETests.Helpers` files, one `*ArchitectureTests` class, and twenty-four upstream
+deletions each verified absent at the monorepo SHA the cut was taken from.
 
 #### What the `payment` re-cut added
 
