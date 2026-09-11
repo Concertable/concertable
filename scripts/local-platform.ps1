@@ -181,6 +181,7 @@ function Invoke-LocalPlatformRestore([string]$Project) {
         'restore', $Project,
         '--configfile', $configPath,
         "-p:ConcertableDotNetPlatformVersion=$version",
+        "-p:ConcertableServiceVersion=$version",
         "-p:MinVerVersionOverride=$version",
         '-p:UseLocalPlatformPackages=true'
     )
@@ -252,6 +253,7 @@ switch ($Command) {
             '-m:1',
             '-nodeReuse:false',
             "-p:ConcertableDotNetPlatformVersion=$version",
+            "-p:ConcertableServiceVersion=$version",
             "-p:MinVerVersionOverride=$version",
             '-p:UseLocalPlatformPackages=true'
         ) + $Rest)
