@@ -297,7 +297,7 @@
       "api/Concertable.Shared/tests/Concertable.Testing.Unit/Concertable.Testing.Unit.csproj",
       "api/Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj"
     ],
-    "projectCount": 276,
+    "projectCount": 277,
     "projects": {
       "api/Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj": {
         "area": "Concertable.AppHost.Shared",
@@ -318,6 +318,13 @@
         "kind": "runtime",
         "name": "Concertable.Auth.Contracts",
         "packable": true,
+        "target": "auth"
+      },
+      "api/Concertable.Auth.Contracts/tests/Concertable.Auth.Contracts.UnitTests/Concertable.Auth.Contracts.UnitTests.csproj": {
+        "area": "Concertable.Auth.Contracts",
+        "kind": "unit-test",
+        "name": "Concertable.Auth.Contracts.UnitTests",
+        "packable": false,
         "target": "auth"
       },
       "api/Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj": {

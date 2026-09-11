@@ -114,6 +114,7 @@ namespace Concertable.Auth.Data.Migrations.Auth
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")

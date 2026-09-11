@@ -168,7 +168,20 @@ const CHECKS = {
     "features/tenant",
     true,
   ),
-  "@concertable/web-b2b": b2bChecks("@concertable/web-b2b", "features/tenant/constants"),
+  // web-b2b re-exports TENANT_HEADER from @concertable/b2b rather than owning it, and its
+  // features/tenant barrel cannot be imported under plain Node: the component chain reaches
+  // b2bClient, which calls configureWebClient(import.meta.env.VITE_API_URL) at module load. So this
+  // asserts what the tier does own, from the load-safe leaf. @concertable/b2b's own check covers the
+  // header's value.
+  "@concertable/web-b2b": {
+    node: [
+      'import { TENANT_ROLE_LABELS } from "@concertable/web-b2b/features/tenant/constants";',
+      'import type { TenantRole } from "@concertable/web-b2b/features/tenant/types";',
+      'if (TENANT_ROLE_LABELS.owner !== "Owner") throw new Error("Unexpected web-b2b TENANT_ROLE_LABELS");',
+      'const role = "owner" as TenantRole;',
+      "void role;",
+    ],
+  },
   "@concertable/mobile": {
     metro: [
       'import { registerRootComponent } from "expo";',

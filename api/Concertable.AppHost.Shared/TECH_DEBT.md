@@ -8,36 +8,44 @@ Debt local to the reusable Aspire hosting and topology helpers.
 
 ### The standalone B2B and Customer AppHosts never supply `services:payment-web:https:0`, so three hosts cannot start
 
-`Concertable.B2B.AppHost` and `Concertable.Customer.AppHost` declare the pinned Payment web container as
+`AddPaymentWeb`'s image overload declares the pinned Payment web container's HTTP traffic on an endpoint
+**named** `https`, because consumers reach one another through `GetEndpoint("https")`. Aspire keys
+service-discovery configuration for that name by the endpoint's **`UriScheme`, not its name**, and
+`WithHttpEndpoint` sets the scheme to `http` whatever the name says, so `services:payment-web:https:0` —
+the key `Concertable.Payment.Client.AddPaymentClient` throws on when it is the only one it reads — is never
+produced. That broke **b2b-web**, **b2b-workers** and **customer-web** at startup under `dotnet run` on
+either standalone AppHost, which `AGENTS.md` calls the canonical entry point.
 
-```csharp
-.WithHttpEndpoint(targetPort: 8080, name: "https")
-.WithHttpEndpoint(targetPort: 8080, name: "http")
-```
+**Verified against the Aspire source, 2026-09-10.** The scheme reading above is correct, and an
+earlier correction claiming keys come from the endpoint name was not. `ResourceBuilderExtensions`
+in Aspire 13.3.2 builds every service-discovery key as
+`services__{resource}__{endpoint.IsHttpSchemeNamedEndpoint ? endpoint.Scheme : endpointName}__{index}`,
+and `EndpointReference.IsHttpSchemeNamedEndpoint` is true for exactly the two names `http` and `https`.
+An endpoint *named* `https` is therefore keyed by its scheme, which `WithHttpEndpoint` sets to `http`.
+`payment-web` therefore publishes `services:payment-web:http:0` and `:grpc:0` — and, while it still
+declared a second endpoint named `http`, a colliding `:http:1`. No arrangement of those names produces
+`:https:0`. `Concertable.Frontend.Hosting` does key by endpoint name, but it
+hand-writes its own keys rather than going through `WithReference`, so it says nothing about this path.
 
-Aspire keys service-discovery configuration by an endpoint's **`UriScheme`, not its name**, and
-`WithHttpEndpoint` sets the scheme to `http` whatever the name says. Both endpoints therefore collapse into
-`services:payment-web:http:0` and `services:payment-web:http:1`, and `services:payment-web:https:0` — the key
-`Concertable.Payment.Client.AddPaymentClient` requires and throws on — is never produced. That breaks
-**b2b-web**, **b2b-workers** and **customer-web** at startup under `dotnet run` on either standalone AppHost,
-which `AGENTS.md` calls the canonical entry point.
+The `https:0` key exists in exactly one place: `Concertable.Testing.E2E`'s `PinPaymentDiscovery`
+fabricates it. That is why E2E passes while a standalone AppHost and `Concertable/system` do not.
 
-Nothing catches it today because the E2E harness sets the key by hand in three places
-(`Concertable.B2B.E2ETests/DistributedApplicationBuilderExtensions.cs:66,89` and the Customer sibling at
-`:68`), so the only path that exercises these hosts supplies what the app model does not.
+What clears the startup failure is the client, not the app model. From `0.1.0-alpha.0.1364`
+`AddPaymentClient` reads `services:payment-web:grpc:0` before falling back to `:https:0`, and `grpc` is
+not an http-scheme name, so Aspire does produce that key. The image that failed was carrying the
+`0.1.0-alpha.0.1330` client, provable from the error text alone: it names one key where every version
+since names two.
 
-Do **not** "fix" this by switching the first declaration to `WithHttpsEndpoint`: the pinned image serves
+Do **not** "fix" this by switching that endpoint to `WithHttpsEndpoint`: the pinned image serves
 plaintext on 8080 (same constraint as the Auth image, see `2aba5fc2c`), so that would make the key appear and
 every gRPC call over it fail at runtime — the endpoint-name-versus-scheme lie that caused RT3's Auth TLS
-failure, moved one layer along. The real options are (a) give `Concertable.Payment.Client` a scheme-agnostic
-address key it owns, matching the existing `Services:B2BApiUrl` / `Services:CustomerApiUrl` convention —
-a published-contract change, so accept-new-with-fallback, publish, then migrate; or (b) run Payment from
-source in the standalone AppHosts as E2E now does for Auth, which gives up part of the RT3 image cut-over.
+failure, moved one layer along. The endpoint named `https` is the lie; `grpc` is the name that survives
+Aspire's keying, and the client already prefers it.
 
-**Resolves when:** `Concertable.B2B.StartupTests` and `Concertable.Customer.StartupTests` each carry the
-`AppModelStartupContractTests` their siblings already have — covering b2b-web, b2b-workers and customer-web —
-and those tests pass without the E2E harness's manual `services__payment-web__https__0` overrides, which are
-deleted in the same stroke.
+**Resolves when:** `PinPaymentDiscovery` no longer fabricates `services__payment-web__https__0` and
+`CompositionTestArguments` no longer passes it, and `Concertable.B2B.StartupTests` and
+`Concertable.Customer.StartupTests` prove b2b-web, b2b-workers and customer-web start on the keys the app
+model really produces. Until then the harness supplies a key no composition does.
 
 ---
 
