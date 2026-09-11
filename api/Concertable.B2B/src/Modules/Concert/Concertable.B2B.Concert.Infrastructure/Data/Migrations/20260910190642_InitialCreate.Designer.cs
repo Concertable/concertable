@@ -14,7 +14,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ConcertDbContext))]
-    [Migration("20260905134246_InitialCreate")]
+    [Migration("20260910190642_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -618,6 +618,7 @@ namespace Concertable.B2B.Concert.Infrastructure.Data.Migrations
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")

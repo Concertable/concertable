@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Search.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SearchDbContext))]
-    [Migration("20260724224108_InitialCreate")]
+    [Migration("20260910192059_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -37,6 +37,7 @@ namespace Concertable.Search.Infrastructure.Data.Migrations
 
                     b.Property<string>("MessageType")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")
