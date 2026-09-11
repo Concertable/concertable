@@ -2,16 +2,16 @@
 
 **Reviewed up to commit:** `2dc34b53b6a7a1a230375a5b51f994e9fedec8f2`
 **Security-reviewed up to commit:** `2dc34b53b6a7a1a230375a5b51f994e9fedec8f2`
-**Review status:** complete
-**Judgment:** approved
+**Review status:** `complete`
+**Judgment:** `approved`
 
 PR #1016 — stop the monorepo publishing Auth's package ids.
 
 ## Pass 1 — frozen at `35184b1c6`
 
-**Pass judgment:** changes requested (all findings since remediated in pass 2)
-**Effort:** low
-**Mode:** new
+**Pass judgment:** `changes-requested` (all findings since remediated in pass 2)
+**Effort:** `low`
+**Mode:** `new`
 
 | Field | Value |
 | --- | --- |
@@ -77,8 +77,8 @@ Three independent layers agreed, and the parent verified each claim:
 
 ## Pass 2 — incremental, frozen at `2dc34b53b`
 
-**Pass judgment:** approved
-**Mode:** append
+**Pass judgment:** `approved`
+**Mode:** `append`
 **Range:** `35184b1c6..2dc34b53b` — same two paths, no widening.
 
 All four findings resolved. Remediation verified by **mutation**, not by the suite passing, since the defect
