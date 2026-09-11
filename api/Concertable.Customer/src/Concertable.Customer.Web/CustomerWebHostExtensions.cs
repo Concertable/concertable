@@ -1,3 +1,4 @@
+using Concertable.Auth.Contracts;
 using Concertable.Auth.Contracts.Events;
 using Concertable.B2B.Artist.Contracts.Events;
 using Concertable.B2B.Concert.Contracts.Events;
@@ -142,7 +143,7 @@ public static class CustomerWebHostExtensions
                     opts.MapInboundClaims = false;
                     opts.Authority = builder.Configuration["Auth:Authority"] ?? builder.Configuration["services__auth__https__0"];
                     opts.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
-                    opts.Audience = "concertable.customer.api";
+                    opts.Audience = AuthResource.Customer.Audience();
                     opts.TokenValidationParameters = new TokenValidationParameters
                     {
                         ClockSkew = TimeSpan.Zero,

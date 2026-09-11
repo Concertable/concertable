@@ -8,7 +8,7 @@ Sign-in/up/verify/reset are Razor `PageModel`s under `Pages/Account/`; the api/ 
 
 ## Duende config is in code
 
-Clients, scopes, resources live in `Config.cs` + `Program.cs` (in-memory) — add one there. The identity-only-B2B vs `role`+`owner`-Customer claim split is enforced in `Config.ApiResources`. Keep the E2E `concertable-test` client in sync with the harness `TestTokenMinter` (→ [`TECH_DEBT.md`](./TECH_DEBT.md)).
+Clients, scopes, resources live in `Config.cs` + `Program.cs` (in-memory) — add one there. The identity-only-B2B vs `role`+`owner`-Customer claim split is enforced in `Config.ApiResources`. Every client id and scope name is a `Concertable.Auth.Contracts.InteractiveClient` / `AuthScope` / `AuthResource` — `Config.cs` and the external harness `TestTokenMinter` both bind them, so the E2E `concertable-test` client cannot drift from what the harness requests. Add a new client to `InteractiveClient` + `InteractiveClients` (publish-first — see the `packages` skill), never as a bare string.
 
 ## Two migration contexts; the grant store lives in B2BDb
 
