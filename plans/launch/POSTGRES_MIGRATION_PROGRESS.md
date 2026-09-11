@@ -25,7 +25,7 @@ merge-group, package, image, and post-merge main validation before landing as `f
 1. Begin Phase 3 in a new isolated worktree when this roadmap item is selected again.
 2. Replace the eight `SET IDENTITY_INSERT` blocks and two `sys.check_constraints` queries with
    provider-dispatched helpers in the shared testing library.
-3. Re-scaffold initial migrations and prove the SQL Server schema and full integration matrix remain unchanged.
+3. Run the full affected SQL Server integration matrix and prove the helpers preserve fixture behavior.
 
 Do not begin a service cut-over during Phase 3.
 
