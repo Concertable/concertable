@@ -5,7 +5,7 @@
 - Roadmap item: `platform/release-trains`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Chore-PlatformImagesFromSource`
 - Branch: `Chore/PlatformImagesFromSource`
-- PR: none yet
+- PR: `https://github.com/Concertable/concertable/pull/1002`
 - Dependency/package gates: Phase 3 is blocked on `PUBLISHED_SURFACE_ADMISSION_PLAN.md` Phase 1 for
   train membership. Phases 1 and 2 have no dependency.
 - Last reconciled: 2026-09-11 against `origin/main` `1f8f1d59a8dc9e0c94e745c81eb41a4c409725ef`.
