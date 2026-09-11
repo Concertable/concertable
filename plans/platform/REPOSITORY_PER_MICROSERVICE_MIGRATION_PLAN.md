@@ -1058,9 +1058,48 @@ four packed packages.
   succeeded and wrote ~70 MB of Release output where `.gitignore` and every clean step could not reach
   it. Both now anchor on `$(ConcertableServiceRoot)`, which `Directory.Build.props` already defines as
   the service folder in the monorepo and the repository root standalone; that is the fix for this whole
-  class. **`customer` carries the same escape and it is still open** — as of 2026-09-11 its
-  `customer-web` output lands outside its checkout. Audit every `..` in a carved project file: a path
-  that counted directories from the monorepo layout is wrong standalone and says nothing about it.
+  class. `customer` carried the same escape on `Concertable.Customer.E2ETests.Web`, confirmed as 144 MB
+  of Release output two directories above its checkout and closed the same way. Audit every `..` in a
+  carved project file: a path that counted directories from the monorepo layout is wrong standalone and
+  says nothing about it.
+
+#### What the `customer` re-cut added
+
+Run 2026-09-11 from the same `c366a672f` cut and carried through `ci.yml` locally — Release build with
+zero errors across 64 projects, 233 tests over 19 assemblies, seven clean migration snapshots, five
+packed packages verified from a clean consumer, all three container images, the seed-simulator smoke,
+the migration job against an empty database, the promotion-config gate, and the whole frontend job
+including the Expo Android export. Landed as `Concertable/customer#4`, `MERGEABLE` at 154 files. Two
+gates are honestly partial and CI owns them: the one complete suite run was 231 passed / 2 failed, and
+though both failures are since resolved — one by the fix below, re-verified 9/9 on that assembly, one
+by clearing an ambient `Stripe__SecretKey` — no single all-green run of the whole suite was observed;
+and `verify-artifact-integrity.ps1` produced six of eight SBOMs before its Trivy vulnerability-database
+download took 25 minutes and the run was stopped.
+
+- **Reconciling the `.slnx` enlarges the compile surface, so build immediately afterwards.** The
+  rehearsal above ends by asking for the solution to be reconciled in both directions; doing that is not
+  a neutral edit.
+  Adding the five missing entries put `tests/Concertable.Customer.AppHost.ArchitectureTests` in front
+  of the compiler for the first time and it failed `CS0103` on `CustomerAppHost` — the class the
+  monorepo renamed to `AppHost` — plus `CS0619` on an obsolete `Assert.ThrowsAny` overload. The
+  rehearsal had already ruled that project a deletable subset of `StartupTests`; the target's own
+  patch 23 re-added it afterwards, and replaying that patch silently reinstated it. **A decision
+  recorded at 10A can be undone by a patch replayed at 10B, and only a build will say so.**
+- **The npm half needs the same pin audit as `Directory.Packages.props`.** `npm ci` refused the
+  workspace outright with `Missing: @concertable/build-config@0.1.0 from lock file`. The extraction
+  carries the monorepo's current `app/mobile/metro.config.js`, which requires
+  `@concertable/build-config/metro`; the target's own standalone `metro.config.js` inlined that
+  resolution and predates the extraction boundary, so no replayed commit restored it, and its root
+  lockfile had never seen the package. `app/build-config` is `platform-frontend`'s under `map.yaml`
+  and is published, so consuming it is the intended shape — but a target's lockfile is as stale as its
+  `Directory.Packages.props`, and for the same reason. **`b2b` carries app workspaces too.**
+- **A test that asserts the monorepo's directory layout can only fail in the extracted repository.**
+  `ResourceGraphTests.MobileGraph_ContainsOnlyCustomerSurfaces` asserted `app/web/customer` and
+  `app/mobile/customer`; `map.yaml` renames those to `app/web` and `app/mobile` on the way out. The
+  production code was already correct — `AddCustomerSpa` and `AddCustomerMobileSurface` pass both
+  layouts as an ordered candidate list and take the first that exists — so the fix is to make the
+  assertion walk that same list rather than branch on which repository it is in, which keeps one
+  shape valid in both. `b2b` renames `app/web/b2b` identically and will hit this.
 
 ### Producer parity gates every promotion
 
@@ -1165,7 +1204,7 @@ mechanical rather than exploratory:
 | `auth` | reconciled to a green Release build | apply the 8 recorded path fixes; push to the target |
 | `payment` | reconciled to a green Release build | apply the recorded `.slnx` resolution; push |
 | `search` | **the one true `9B` dependency** | six patches rewrite the Auth composition `9B` is changing; resume after it lands |
-| `customer` | statically reconciled, **not** `9B`-blocked | 13 fixes, all in the `.slnx`; green build needs disk |
+| `customer` | re-cut, built, and pushed as `Concertable/customer#4` | see "What the `customer` re-cut added"; its CI waits on `CONCERTABLE_PACKAGES_TOKEN` |
 | `b2b` | statically reconciled; 1970 files, 0 collisions, 0 broken references of 426 | write CI from scratch — it has none; green build needs disk |
 
 Detail for `customer` and `b2b` is in `~/.claude/plans/Concertable/10A_customer_FINDINGS.md` and
