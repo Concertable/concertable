@@ -7,8 +7,18 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 
-RETAINED_TARGETS = frozenset({"auth", "b2b", "customer", "payment", "search"})
-KNOWN_TARGETS = RETAINED_TARGETS | {"platform-dotnet", "system"}
+# A service leaves RETAINED_TARGETS when it starts publishing its own packages from its own
+# repository, at its checkpoint 10C. The monorepo still builds and packs its projects — removing it
+# here only stops the push, so versions already on the feed keep resolving for pinned consumers and
+# nothing is withdrawn. It stays in KNOWN_TARGETS because the inventory still carries its projects
+# until 10F removes the source; dropping it from there instead makes load_ownership reject them.
+#
+# Two publishers of one package id is what this prevents: the second one to push a version that does
+# not advance the id's feed history is rejected outright, which took the monorepo's publisher down for
+# a day on 2026-09-10.
+PROMOTED_TARGETS = frozenset({"auth"})
+RETAINED_TARGETS = frozenset({"b2b", "customer", "payment", "search"})
+KNOWN_TARGETS = RETAINED_TARGETS | PROMOTED_TARGETS | {"platform-dotnet", "system"}
 
 
 def load_ownership(inventory_path: Path) -> dict[str, str]:
