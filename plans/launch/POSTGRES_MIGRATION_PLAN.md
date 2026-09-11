@@ -91,6 +91,14 @@ Gate: existing spatial queries and their integration coverage stay green on SQL 
 - [ ] Replace the eight `SET IDENTITY_INSERT` blocks and the two `sys.check_constraints` queries with
   provider-dispatched helpers in the shared testing library.
 
+Consumption contract: `Concertable.Seed.Shared` decides whether explicit identity values require a SQL
+Server identity window, while `Concertable.Testing.Integration` exposes `DatabaseFacade` extensions for
+identity windows and temporary unvalidated check constraints. Callers provide schema, table, constraint and
+provider-neutral predicate values; the helpers delimit identifiers and render the active provider's SQL.
+
+Delivery sequence: publish the additive shared-package APIs first, consume the generated platform release,
+then migrate the Auth and B2B fixtures on their own branch and validate them against the published packages.
+
 Gate: every service's integration suite stays green on SQL Server with no raw SQL Server syntax left in
 the seed or fixture path.
 
