@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'api/**'
+      - '!api/**/*.md'
       # A publication-policy repair must be able to republish without an unrelated api/** touch.
       - '.github/workflows/publish-packages.yml'
       - '.github/scripts/package_publication_policy.py'
