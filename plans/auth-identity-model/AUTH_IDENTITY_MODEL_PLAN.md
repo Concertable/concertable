@@ -73,6 +73,22 @@ errors** — nothing forces Phase 2's timing.
 - **`AuthResources` is extension methods on the enum, not an info struct** — a struct with
   `ImmutableArray` members has a `default(T)` NRE trap and fragile equality; the collections come from the
   catalog keyed by the enum instead.
+- **Extension members must be C#14 `extension()` blocks with property members, not legacy `this`-parameter
+  methods.** `InteractiveClients`/`AuthScopes`/`AuthResources`/`ServiceClients` as landed on this branch all
+  use the legacy form (`scope.Id()`, `resource.Audience()`, `client.Info()`) — missed by both Phase 1 review
+  rounds. `csharp-style` requires `extension()` blocks for new extension members, migrating every ordinary
+  member in a touched container. **Not yet applied on this branch** — do it before merge; mechanical,
+  already verified safe on a scratch branch (`extension(AuthScope scope) { public string Id => ...; }` etc.,
+  50/50 `Concertable.Auth.Contracts.UnitTests` green). Every `.Id()`/`.Info()`/`.Audience()`/
+  `.AcceptedScopes()`/`.IncludedClaims()` call site in this plan's consumption contract below becomes
+  parenless (`.Id`, `.Info`, …) once applied.
+- **Considered and declined: splitting `InteractiveClient` into separate `Browser`/`Mobile` record types**
+  (one nullable `MobileScheme` field currently distinguishes the two shapes). Real trade-off, not a clear
+  win: the current enum-keyed shape is what gives the compiler-checked exhaustiveness the "Enum +
+  descriptor" decision above deliberately wants across the three classifying handlers; a record-per-shape
+  split would need either two separate catalogs (losing one `Find(clientId)` entry point across both) or
+  a discriminated union (this repo deliberately avoids `Dunet` in shared production — see root
+  `TECH_DEBT.md`). Keeping the current shape.
 
 ## Phases
 
@@ -133,6 +149,45 @@ onto it. `ConcertableDotNetPlatformVersion` is untouched.
 
 This PR republishes `Auth.Contracts` (removal) — a non-breaking publish, since nothing outside this repo
 still references the deleted classes once it merges; no further sync PR to follow (see Package topology).
+
+## Open questions — surfaced 2026-09-11, this branch is code-complete but not yet reconciled with them
+
+Not addressed by either Phase 1 review round. One (extension-block syntax) is a same-branch fix with no
+design call to make; the other (`AuthParty` placement) needs a decision before this branch is review-ready.
+
+### Does business/party classification belong in an identity-only Auth package at all?
+
+`Concertable.Auth` is documented as an identity-only adapter (its own `AGENTS.md`). `AuthParty`
+(Customer/Venue/Artist/Admin) and `InteractiveClientInfo.IsB2b` are marketplace/domain classification, not
+authentication facts — yet exactly three consumers on this branch import Auth's opinion of what party a
+client belongs to, to make their own domain decisions: `TenantProvisioningHandler` (B2B's own domain,
+deciding B2B's own `TenantType`), `CredentialRegisteredHandler` (`IsB2b`), `UserCreationHandler`. Before
+this plan, each made that call locally from the raw wire-id string, with no cross-service enum dependency.
+Nothing else on this branch is affected — `AuthScope`/`AuthResource`/`ServiceClient` and the four
+resource-server hosts are genuinely Auth's own scope/audience vocabulary, no boundary issue there.
+
+One option surfaced, not chosen: move `Party` (renamed from `AuthParty`) into `Concertable.Contracts`
+(`api/Concertable.Shared/src/Concertable.Contracts/`) — the existing home for shared reference vocabulary no
+single service owns, the same place `Genre` lives (`module-structure` skill). `InteractiveClientInfo.Party`
+would then be typed as the neutral `Party`, not an Auth-branded enum; `Concertable.Auth.Contracts` keeps only
+wire ids, redirect schemes, scopes and audiences. Also flagged: `Party` (Customer/Venue/Artist/Admin) risks
+duplicating the vocabulary B2B already has in `TenantType` (Venue/Artist) — worth resolving together, not as
+two separate enums that happen to mean the same thing for two of their four cases.
+
+**Blocks:** merge-readiness of the three handler files above (and their tests) as currently written. Does
+not block the extension-block fix, or anything else on this branch.
+
+### Does `TestTokenMinter` belong inside the service-agnostic `Concertable.Testing.E2E` harness?
+
+That project's own `AGENTS.md`: "SERVICE-AGNOSTIC. Nothing service-specific goes here. Ever.", with one
+stated exception — pins for adapter services (Auth, Payment), because they sit in every host by
+architecture. `TestTokenMinter` predates this plan and goes further than a pin: it POSTs directly to Auth's
+`/connect/token`, and this branch has it resolving `InteractiveClient`/`AuthScope` directly, carrying Auth's
+own identity vocabulary into the shared harness rather than opaque strings a reviewer could mistake for
+generic OAuth plumbing.
+
+**Blocks:** nothing — `TestTokenMinter` can stay on the typed model regardless of where it ends up living;
+this is about *where the file sits*, not whether it compiles.
 
 ## Out of scope
 

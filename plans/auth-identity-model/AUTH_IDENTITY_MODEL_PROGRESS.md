@@ -70,14 +70,30 @@ version doesn't carry (they didn't consume it before this plan). `node --test
 
 ## Next Steps
 
-1. Push, open the PR (`open-pr`) — breaking-but-safe republish of `Concertable.Auth.Contracts` (removes
-   `ClientIds`/`ApiScopeIds`); nothing outside this repo references them. Apply the `merge` skill's tier
-   table fresh — every changed value is byte-identical to what it replaced (verified in Phase 1), so this
-   is very likely `skip-e2e` again, not full-e2e.
-2. Review (`review` skill) + record in `## Reviews`; get exact-head CI green (Docker-backed integration
-   tests run there — Auth/B2B Tenant/User/Admin were only build-verified locally). Merge. No sync PR
-   follows this one either (see Phase 1 note above) — Phase 2 is delivery-terminal on its own merge.
-3. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
+PR #1008 already exists (draft) — the "push, open the PR" step below is stale in that this branch is
+already pushed; treat it as "confirm CI on the current head" instead. Two things surfaced 2026-09-11
+reviewing this branch against a scratch spike of the same migration (see Decisions) — resolve both before
+requesting review:
+
+1. **Apply the extension-block fix** (`AUTH_IDENTITY_MODEL_PLAN.md`, "Design decisions" — the new
+   `extension()`-block bullet). Mechanical, no design call: convert `InteractiveClients`/`AuthScopes`/
+   `AuthResources`/`ServiceClients` from legacy `this`-parameter extension methods to `extension()` blocks
+   with property members, and update every call site (`.Id()` → `.Id`, `.Info()` → `.Info`, `.Audience()` →
+   `.Audience`, `.AcceptedScopes()` → `.AcceptedScopes`, `.IncludedClaims()` → `.IncludedClaims`). Rebuild +
+   rerun the non-Docker suites listed under Verified above.
+2. **Resolve the `AuthParty` open question** (`AUTH_IDENTITY_MODEL_PLAN.md`, "Open questions") — repository
+   owner call: does client → business-party classification stay in `Concertable.Auth.Contracts` as
+   `AuthParty`, or move to `Concertable.Contracts` as a neutral `Party` (the `Genre` precedent)? This is the
+   one open item that is genuinely undecided, not something to guess at again. It only affects
+   `TenantProvisioningHandler`/`CredentialRegisteredHandler`/`UserCreationHandler` and their tests — rework
+   those three (and only those three) once decided.
+3. Once both are resolved: push, confirm CI on the head that includes the fixes, review (`review` skill) +
+   record in `## Reviews`, get exact-head CI green (Docker-backed integration tests run there —
+   Auth/B2B Tenant/User/Admin were only build-verified locally). Apply the `merge` skill's tier table fresh
+   for the final head.
+4. Merge. No sync PR follows this one (see Phase 1 note above) — Phase 2 is delivery-terminal on its own
+   merge.
+5. Close the whole plan: delete `plans/auth-identity-model/` and `reviews/Refactor-AuthIdentityModel.md`,
    tick the roadmap item, in the Phase 2 PR's own merge commit (not a separate docs tail).
 
 ## Reviews
@@ -104,3 +120,13 @@ its own fresh `review` pass before merge.
 - Superseded `Chore/TechDebt-20260909-234925` / PR #981 (closed) — its worktree is still unretired
   (`worktrees.ps1 retire` needs a durable evidence commit; #981 was closed not merged, so there is none —
   low-priority manual cleanup, not blocking this plan).
+- **2026-09-11, same evening:** a separate session spiked the same Phase 2 migration from scratch in
+  `.worktrees/Chore-TechDebt-Auth-20260911-122436` (branch `Chore/TechDebt-Auth-20260911-122436`,
+  no PR), not knowing this branch/PR #1008 already existed. It independently found the two issues in
+  "Open questions" above — the extension-block-syntax gap and the `AuthParty`-in-an-identity-package
+  concern — reverted its own attempt at the three handlers rather than guess at the resolution, and wrote
+  both up. That worktree's own copies of this plan/ledger are now superseded by this entry; its code
+  changes (extension-block conversion, Auth `Config.cs`/`TestTokenMinter` wiring) are a verified-safe
+  reference for step 1 above but were never intended to ship from there. Retire that worktree
+  (`worktrees.ps1 retire`) once step 1 above is done here — nothing in it needs preserving beyond what
+  this entry already captured.
