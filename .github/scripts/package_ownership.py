@@ -7,8 +7,23 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 
-RETAINED_TARGETS = frozenset({"auth", "b2b", "customer", "payment", "search"})
-KNOWN_TARGETS = RETAINED_TARGETS | {"platform-dotnet", "system"}
+# A service leaves RETAINED_TARGETS for PROMOTED_TARGETS when it starts publishing its own packages
+# from its own repository. It stays in KNOWN_TARGETS because the inventory still carries its projects
+# until its source is removed; dropping it from there makes load_ownership reject them.
+PROMOTED_TARGETS = frozenset({"auth"})
+RETAINED_TARGETS = frozenset({"b2b", "customer", "payment", "search"})
+KNOWN_TARGETS = RETAINED_TARGETS | PROMOTED_TARGETS | {"platform-dotnet", "system"}
+
+# Promoting a target by adding it here without removing it from RETAINED_TARGETS would leave the
+# monorepo pushing ids its own repository now publishes, which is the two-publisher collision this
+# split exists to prevent and would not otherwise surface until a push was rejected.
+def require_single_publisher(retained: frozenset[str], promoted: frozenset[str]) -> None:
+    conflict = retained & promoted
+    if conflict:
+        raise ValueError(f"Target published from two repositories: {sorted(conflict)}")
+
+
+require_single_publisher(RETAINED_TARGETS, PROMOTED_TARGETS)
 
 
 def load_ownership(inventory_path: Path) -> dict[str, str]:
@@ -94,7 +109,7 @@ def validate_platform_dependencies(
     for artifact in sorted(package_dir.glob("*.nupkg")):
         artifact_id = package_id(artifact)
         if ownership.get(artifact_id) not in RETAINED_TARGETS:
-            raise ValueError(f"Package '{artifact_id}' is not service-owned")
+            raise ValueError(f"Package '{artifact_id}' is not published by this repository")
         for dependency_id, dependency_version in package_dependencies(artifact):
             if dependency_id.casefold() not in platform_packages:
                 continue

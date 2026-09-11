@@ -51,28 +51,33 @@ def main() -> None:
     triggers = spec.get("on", spec.get(True))
     require(set(triggers) == {"push"}, "packages publish only from a main push")
     require(triggers["push"]["branches"] == ["main"], "push trigger is restricted to main")
+    paths = triggers["push"]["paths"]
     require(
-        ".github/workflows/publish-packages.yml" in triggers["push"]["paths"],
+        paths.index("api/**") < paths.index("!api/**/*.md"),
+        "API Markdown is excluded after the API source inclusion",
+    )
+    require(
+        ".github/workflows/publish-packages.yml" in paths,
         "publication-policy repairs trigger their own acceptance publish",
     )
     require(
-        ".github/scripts/package_publication_policy.py" in triggers["push"]["paths"],
+        ".github/scripts/package_publication_policy.py" in paths,
         "publication-policy implementation changes trigger acceptance publishing",
     )
     require(
-        ".github/scripts/package_ownership.py" in triggers["push"]["paths"],
+        ".github/scripts/package_ownership.py" in paths,
         "package-ownership changes trigger acceptance publishing",
     )
     require(
-        "eng/repository-split/inventory.py" in triggers["push"]["paths"],
+        "eng/repository-split/inventory.py" in paths,
         "inventory generator changes trigger acceptance publishing",
     )
     require(
-        "eng/repository-split/inventory.json" in triggers["push"]["paths"],
+        "eng/repository-split/inventory.json" in paths,
         "inventory changes trigger acceptance publishing",
     )
     require(
-        "eng/repository-split/map.yaml" in triggers["push"]["paths"],
+        "eng/repository-split/map.yaml" in paths,
         "ownership-map changes trigger acceptance publishing",
     )
     require(
@@ -268,6 +273,11 @@ def main() -> None:
                                 "target": "system",
                                 "packable": True,
                             },
+                            "promoted": {
+                                "name": "Concertable.Auth.Contracts",
+                                "target": "auth",
+                                "packable": True,
+                            },
                         }
                     }
                 }
@@ -280,6 +290,7 @@ def main() -> None:
             "Concertable.DataAccess.Infrastructure",
             "Concertable.B2B.Contracts",
             "Concertable.Testing.E2E",
+            "Concertable.Auth.Contracts",
         ):
             dependencies = (
                 '<dependencies><group targetFramework="net10.0">'
@@ -297,8 +308,42 @@ def main() -> None:
         retained, removed = ownership.filter_batch(package_dir, package_targets)
         require(retained == ["Concertable.B2B.Contracts"], "service package remains in the publish batch")
         require(
-            removed == ["Concertable.DataAccess.Infrastructure", "Concertable.Testing.E2E"],
-            "platform and future-system packages leave the publish batch",
+            removed
+            == [
+                "Concertable.Auth.Contracts",
+                "Concertable.DataAccess.Infrastructure",
+                "Concertable.Testing.E2E",
+            ],
+            "platform, future-system and promoted packages leave the publish batch",
+        )
+        require(
+            package_targets["Concertable.Auth.Contracts"] == "auth",
+            "a promoted target stays loadable while leaving the retained set",
+        )
+
+        conflicted_source = OWNERSHIP.read_text(encoding="utf-8").replace(
+            'PROMOTED_TARGETS = frozenset({"auth"})',
+            'PROMOTED_TARGETS = frozenset({"auth", "b2b"})',
+        )
+        require(
+            'frozenset({"auth", "b2b"})' in conflicted_source,
+            "the two-publisher fixture still matches the PROMOTED_TARGETS declaration",
+        )
+        try:
+            exec(
+                compile(conflicted_source, str(OWNERSHIP), "exec"),
+                {"__name__": "package_ownership_conflict"},
+            )
+        except ValueError as error:
+            require(
+                "b2b" in str(error),
+                "a target left in both the retained and promoted sets refuses to load",
+            )
+        else:
+            raise SystemExit("FAIL: a target published from two repositories was allowed to load")
+        require(
+            not any((package_dir / f"{name}.1.0.0.nupkg").exists() for name in removed),
+            "withheld packages are deleted from disk, not merely excluded from the batch",
         )
         require(
             ownership.packages_for(package_targets, "platform-dotnet")
@@ -315,6 +360,23 @@ def main() -> None:
             print("ok  retained package metadata rejects a mismatched platform train")
         else:
             raise SystemExit("FAIL: retained package metadata accepts a mismatched platform train")
+
+        promoted_only = root / "promoted-only"
+        promoted_only.mkdir()
+        with zipfile.ZipFile(promoted_only / "Concertable.Auth.Contracts.1.0.0.nupkg", "w") as archive:
+            archive.writestr(
+                "Concertable.Auth.Contracts.nuspec",
+                "<package><metadata><id>Concertable.Auth.Contracts</id></metadata></package>",
+            )
+        try:
+            ownership.validate_platform_dependencies(promoted_only, package_targets, "1.0.0")
+        except ValueError as error:
+            require(
+                "not published by this repository" in str(error),
+                "validation rejects an artifact this repository no longer publishes",
+            )
+        else:
+            raise SystemExit("FAIL: validation accepted a package this repository no longer publishes")
 
 
 if __name__ == "__main__":
