@@ -6,29 +6,6 @@ proper fix. Delete an entry when its proper fix lands.
 
 ---
 
-## API Markdown changes trigger package and image publication
-
-**Found:** 2026-09-10 while delivering the configurable-Deal architecture/plan update.
-
-**Problem.** `.github/workflows/publish-packages.yml` and `publish-images.yml` both trigger on every
-`api/**` path, including `ARCHITECTURE.md`. The former packs/publishes packages and triggers generated
-consumer synchronization; the latter publishes the deployable-image matrix. The test workflow treats
-Markdown as inert, so a docs-only PR can pass lightweight checks but still start unrelated package and
-image releases on merge.
-
-**Interim boundary.** Keep affected docs PRs unmerged unless their delivery explicitly owns the
-package/image publication and sync chain. Do not change CI selection or use a skip marker as part of a
-documentation task.
-
-**Resolution condition.** The publication owner excludes purely inert documentation changes from both
-release workflows while
-retaining publication for executable/package/policy changes and mixed diffs. Focused classifier/trigger
-coverage proves API Markdown alone publishes neither packages nor images, code plus Markdown still
-selects the appropriate releases, and publication-policy repairs still execute. A docs-only merge must
-produce no package version, container image/tag or generated version-sync PR.
-
----
-
 ## Breaking published-package (wire-format) change can't pass the merge-queue full UI E2E
 
 **First hit:** PR #595 (camel-case JSON enums, backend + `@concertable/shared`/`@concertable/b2b`
