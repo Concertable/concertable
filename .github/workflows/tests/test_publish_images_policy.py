@@ -23,11 +23,11 @@ def main() -> None:
         "local platform packages are prepared before image publication",
     )
     require(
-        prepare["run"] == "./scripts/local-platform.ps1 prepare",
+        prepare["run"] == "pwsh ./scripts/local-platform.ps1 prepare",
         "image publication uses the canonical local platform preparation entry point",
     )
     require(
-        './scripts/local-platform.ps1 publish "${{ matrix.project }}"' in image["run"],
+        'pwsh ./scripts/local-platform.ps1 publish "${{ matrix.project }}"' in image["run"],
         "each image publishes through the canonical local platform entry point",
     )
     require("dotnet publish" not in image["run"], "image publication cannot restore the stale feed pin")
