@@ -61,10 +61,6 @@ targets:
       - app/web/customer
       - app/mobile/customer
       - app/customer/shared
-    exclude:
-      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests
-      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile
-      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui
     rename:
       api/Concertable.Customer/: ""
       app/web/customer/: "app/web/"
@@ -79,9 +75,6 @@ targets:
       - app/web/admin
       - app/mobile/b2b
       - app/b2b/shared
-    exclude:
-      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests
-      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui
     rename:
       api/Concertable.B2B/: ""
       app/web/b2b/: "app/web/"
@@ -141,11 +134,6 @@ targets:
       - api/Concertable.AppHost
       - api/tests
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
-      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests
-      - api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui
-      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests
-      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile
-      - api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui
       - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers
       - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers.UnitTests
       - api/Concertable.Search/tests/E2ETests
@@ -159,8 +147,6 @@ targets:
     rename:
       api/Concertable.AppHost/: "src/Concertable.AppHost/"
       api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
-      api/Concertable.B2B/tests/E2ETests/: "tests/b2b/"
-      api/Concertable.Customer/tests/E2ETests/: "tests/customer/"
       api/Concertable.Payment/tests/E2ETests/: "tests/payment/"
       api/Concertable.Search/tests/E2ETests/: "tests/search/"
       api/tests/: "tests/shared/"
