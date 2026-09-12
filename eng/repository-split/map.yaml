@@ -75,16 +75,13 @@ targets:
       - app/web/admin
       - app/mobile/b2b
       - app/b2b/shared
-      - api/Concertable.Search/tests/E2ETests
     rename:
       api/Concertable.B2B/: ""
-      api/Concertable.Search/tests/E2ETests/: "tests/E2ETests/"
       app/web/b2b/: "app/web/"
       app/web/admin/: "app/web/admin/"
       app/mobile/b2b/: "app/mobile/"
       app/b2b/shared/: "app/shared/"
     notes:
-      - Owns Concertable.Search.E2ETests.Helpers and its unit tests: B2B's suite is the sole consumer.
       - The admin console is B2B-exclusive; customer and payment have no admin surface.
       - Cut last: widest contract and seed fan-out.
 
@@ -167,6 +164,7 @@ targets:
 
 # Paths with no successor repository. Each target repo authors its own at the cut.
 dissolves:
+  - api/Concertable.Search/tests/E2ETests
   - app/package.json
   - app/package-lock.json
   - api/Concertable.slnx
