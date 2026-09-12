@@ -75,13 +75,16 @@ targets:
       - app/web/admin
       - app/mobile/b2b
       - app/b2b/shared
+      - api/Concertable.Search/tests/E2ETests
     rename:
       api/Concertable.B2B/: ""
+      api/Concertable.Search/tests/E2ETests/: "tests/E2ETests/"
       app/web/b2b/: "app/web/"
       app/web/admin/: "app/web/admin/"
       app/mobile/b2b/: "app/mobile/"
       app/b2b/shared/: "app/shared/"
     notes:
+      - Owns Concertable.Search.E2ETests.Helpers and its unit tests: B2B's suite is the sole consumer.
       - The admin console is B2B-exclusive; customer and payment have no admin surface.
       - Cut last: widest contract and seed fan-out.
 
@@ -136,7 +139,6 @@ targets:
       - api/Concertable.Shared/tests/Concertable.Testing.E2E
       - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers
       - api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers.UnitTests
-      - api/Concertable.Search/tests/E2ETests
       - eng/repository-split/carve-e2e.ps1
       - scripts
     exclude:
@@ -148,7 +150,6 @@ targets:
       api/Concertable.AppHost/: "src/Concertable.AppHost/"
       api/Concertable.Shared/tests/Concertable.Testing.E2E/: "testkits/Concertable.Testing.E2E/"
       api/Concertable.Payment/tests/E2ETests/: "tests/payment/"
-      api/Concertable.Search/tests/E2ETests/: "tests/search/"
       api/tests/: "tests/shared/"
     notes:
       - "Composes and ships the system: umbrella AppHost, cross-service E2E, system manifest, IaC, deployment and rollback."
