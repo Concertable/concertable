@@ -13,9 +13,10 @@ switch on `AuthParty` instead of matching hand-maintained string sets.
   (Auth `Config.cs` + host wiring, the B2B/Customer registration handlers, the four resource-server hosts,
   `TestTokenMinter`, tests) and delete the old classes. Breaking published-contract change: producer PR
   publishes first, consumer migration follows against the bumped pin.
-- [ ] `auth-identity-model/extension-block-syntax` — two related fixes to the typed model's shape, both
-  blocked on the same publish-first constraint below. Scope revised 2026-09-11 evening (a design discussion
-  found more than the original extension-block gap):
+- [ ] `auth-identity-model/extension-block-syntax` — in progress, own plan:
+  `plans/auth-identity-model/AUTH_IDENTITY_CONTRACT_SHAPES_PLAN.md`. Two related fixes to the typed
+  model's shape, both blocked on the same publish-first constraint below. Scope revised 2026-09-11 evening
+  (a design discussion found more than the original extension-block gap):
   - `AuthScope`/`AuthScopes` and `AuthResource`/`AuthResources` — convert the legacy `this`-parameter
     extension methods to C# 14 `extension()` blocks (`csharp-style` requirement, missed by both Phase 1
     review rounds). These two have no public row struct (nothing needs the whole row, every call site wants
@@ -45,18 +46,14 @@ switch on `AuthParty` instead of matching hand-maintained string sets.
       `Config.cs`, which builds its client list by hand. `ServiceClients.All` stays as-is — it has a real
       production consumer (`AuthHostExtensions.cs`) and never leaves the service since it's unpublished.
 
-  **This work belongs in `Concertable/auth`, not this monorepo.** PR #1016 ("Stop the monorepo publishing
-  Auth's package ids", merged 2026-09-11 `c778b6adb`) moved Auth to `PROMOTED_TARGETS` in
-  `.github/scripts/package_ownership.py` — Auth's source still physically lives here
-  (`api/Concertable.Auth.Contracts/`; removing it is a later, separate step, "10F"), and the monorepo still
-  builds/packs it, but `publish-packages.yml`'s `filter` step now unlinks Auth's artifacts before the push,
-  so nothing built from this copy ever reaches the feed. Auth publishes canonically from its own
-  `Concertable/auth` repository now (first service to do so). Editing the monorepo copy is dead work with no
-  publish path. Blocked on `Concertable/auth`'s own polyrepo cutover finishing — hold until that's confirmed
-  stable.
+  **This work lives in this monorepo.** PR #1016 ("Stop the monorepo publishing Auth's package ids", merged
+  2026-09-11 `c778b6adb`) briefly moved Auth to `PROMOTED_TARGETS`, redirecting this item to a separate
+  `Concertable/auth` repo; PR #1020 ("Resume Auth publishing", same evening) reverted that —
+  `RETAINED_TARGETS` includes `"auth"` again, verified directly against `package_ownership.py` before this
+  phase's own work started. If that promotion returns for real, re-check before resuming any unstarted part
+  of this item — don't assume this note stays current.
 
-  **Do not attempt the producer and consumer halves in one PR — it was tried and cannot build**, and the
-  same constraint applies once this moves to `Concertable/auth`: every consumer restores
+  **Do not attempt the producer and consumer halves in one PR — it was tried and cannot build.** Every consumer restores
   `Concertable.Auth.Contracts` as a `PackageReference`, never a `ProjectReference`, so a consumer only sees a
   new shape after it publishes and the consumer's pin moves past it. Converting the four containers and
   updating every call site in one PR left `Concertable.Auth.Contracts` building with its own tests green and
