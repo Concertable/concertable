@@ -43,9 +43,8 @@ jobs:
 
       - name: Derive the image matrix from <ContainerRepository>
         id: find
-        # Same single-source-of-truth trick as publish-packages.yml's verify-restore job: the set of
-        # things that ship is read off the csproj property that makes them ship. The empty-list guard
-        # fails loudly rather than silently publishing nothing if the grep ever stops matching.
+        # The empty-list guard fails loudly rather than silently publishing nothing if the grep ever
+        # stops matching.
         run: |
           projects=$(grep -rl '<ContainerRepository>' api --include='*.csproj' | sort)
           test -n "$projects" || { echo "No <ContainerRepository> projects found — refusing to pass"; exit 1; }
