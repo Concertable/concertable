@@ -807,10 +807,88 @@ the Renovate rollout.
   available.
 - **Hard stop:** `system` is green using monorepo-produced images before the first service source cut.
 
+### Target-repository divergence — governs every 10A
+
+Surveyed 2026-09-10 across all five service repositories. Each already holds work that a fresh
+`git filter-repo` run governed by `eng/repository-split/map.yaml` would not reproduce, so a
+re-extraction is a reconciliation, not a replacement. Split what a target holds into two classes:
+
+- **Repository infrastructure** — CI workflow, Dockerfile, verify scripts, dotfiles,
+  `.claude/settings.json`, `RepositoryUrl`/`PackageProjectUrl` edits, standalone README sections.
+  Re-apply on top of the fresh extraction; none of it belongs in the monorepo.
+- **Repository-only service source and tests** — replay the target's own post-extraction commits onto
+  the fresh extraction. `git rebase --onto` cannot reach them: filter-repo rewrites hashes and the
+  map's rules have changed since the first cut, so the two extractions share no ancestor. Establish
+  the extraction boundary — the last commit the target inherited from the monorepo, identifiable as
+  the newest commit carrying a monorepo PR number or platform-sync subject — then
+  `git format-patch <boundary>..main` and `git am` onto the fresh extraction. Measured 2026-09-10:
+
+  | Target | Boundary | Repository-only commits |
+  |---|---|---|
+  | `auth` | `9c20128` | 18 |
+  | `payment` | `e4da6e2` | 11 |
+  | `search` | `befe816` | 35 |
+  | `customer` | `b22c5ba` | 28 |
+  | `b2b` | re-extract wholesale; see below | — |
+
+| Target | Infrastructure to re-apply | Repository-only source to replay | CI |
+|---|---|---|---|
+| `auth` | Dockerfile, `ci.yml`, four verify scripts, `.slnx`, `.gitignore`, `.dockerignore`, `Directory.Build.props` and README edits | `Concertable.Auth.ArchitectureTests`, which the monorepo renamed to `StartupTests` in `fee52b4cf` — reconcile rather than keep both. Contracts sits at the repository root but the map renames it under `src/` | green |
+| `payment` | `ci.yml`, `.gitignore` and four content edits | none | green |
+| `search` | Dockerfile with three targets, `ci.yml`, three verify scripts, `.gitignore`, `.dockerignore` | `Concertable.Search.Migrations`, `Concertable.Search.TestKit`, `Concertable.Search.StandaloneTests`, and the `Application/Interfaces/I*Specification` refactor that replaced `Infrastructure/Queries/*`. The refactor is the one certain conflict against surviving monorepo source | green |
+| `customer` | `ci.yml`, `CODEOWNERS`, `customer-promotion-candidates.json`, five scripts, the npm workspace root, `.npmrc`, `.config/dotnet-tools.json` | `Concertable.Customer.Migrations`, `Seed.Contracts`, `Seed.Simulator`, `Seed/Tests`, `AppHost.ArchitectureTests`, `TestKit.Tests`, the `DataAccess.Infrastructure` split | green |
+| `b2b` | `.claude/`, `HANDOFF.md`, the `app/` workspace root, `app/web/.env.*` | none | **none — zero workflows, zero runs** |
+
+`b2b` is the exception that makes re-extraction the cheap path rather than the expensive one: its
+existing extraction renamed `api/Concertable.B2B/` to `src/`, producing `src/src/**`, and left the
+frontend at monorepo paths, so it already contradicts the map. Its backend content is complete — the
+earlier "no solution file" reading missed `src/Concertable.B2B.slnx` one level down. What it lacks is
+CI, which has to be written rather than carried.
+
+**Every service repository is private**, so branch protection and ruleset reads return 403 on this
+entitlement and no protection can be configured, while three of the five CI workflows already declare
+a `merge_group` trigger for a queue that cannot be enabled. Promotion to public is therefore a shared
+prerequisite of 10C and its repeats, not a per-service afterthought. None of the five publishes
+anything yet; every CI is deliberately verify-only.
+
+`.editorconfig` and `.gitattributes` exist only at the monorepo root, so no extraction supplies them
+and no target has them. `map.yaml` lists them as `replicated` and nothing has replicated them.
+
+### Producer parity gates every promotion
+
+Surveyed 2026-09-10. A target repository's published surface must not lose members the monorepo's
+current package already exposes, because the promotion publishes at a *higher* version and consumers
+take it automatically. `auth` demonstrates the failure: its `Concertable.Auth.Hosting` has no
+`AuthConstants.ContainerPort` and no `WithSpaClients` overload, and its `Concertable.Auth.Contracts`
+has no `ApiScopeIds` — all present in the monorepo copy, and the first two consumed by `system`'s
+AppHost. Publishing `0.2.0` from that repository would break the composition at a version that looks
+like an upgrade.
+
+This is the same divergence the section above describes, running the other way: `search` and
+`customer` hold source the monorepo lacks, while `auth` lacks source the monorepo holds. Both are
+answered by replaying the target's own commits onto a fresh extraction rather than hand-syncing
+either direction. Before publishing from any target, diff its packable public surface against the
+currently published package and treat any missing member as a blocker.
+
+### Package ownership may be an access grant, not a rename
+
+All 59 `Concertable.*` NuGet ids and all 8 `@concertable/*` npm ids are bound to the monorepo, and
+binding follows the first publisher: there is no REST route and no GraphQL mutation to re-point a
+package, so deletion and republication is the only way to move a binding. But moving the binding may
+not be necessary. The frontend publisher fails with `permission_denied: read_package` on a GET, which
+is an Actions-access failure rather than a name conflict, and a package's settings can grant another
+repository's Actions write access while the binding stays put. Establish which of the two applies by
+granting one package and re-dispatching before planning any deletion.
+
+`eng/repository-split/inventory.json` already carries the per-package target and is drift-gated, so it
+is the split's source of truth: filter the pack output against it rather than toggling `IsPackable`,
+which the local inner loop and the carve gates still depend on.
+
 ### 10. Promote Auth
 
-- 10A (`concertable`): refresh Auth's extraction at the approved SHA, freeze Auth source, and remove Auth from
-  mirror automation. Do not delete source yet.
+- 10A (`concertable`): refresh Auth's extraction at the approved SHA, reconcile it against the target
+  per the divergence section above, freeze Auth source, and remove Auth from mirror automation. Do not
+  delete source yet.
 - 10B (`auth`): rebase the verified extraction on that SHA; land CI, Auth-owned publication/images,
   standalone AppHost, migrations, Hosting/TestKit, rules, and main branch.
 - 10C (GitHub): transfer package/image permissions and publish a canonical Auth release from `auth`.
