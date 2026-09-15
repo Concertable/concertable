@@ -94,13 +94,11 @@ function run(cmd, args, opts = {}) {
 }
 
 try {
-  // 1. Extract only the surface and its explicit shared build inputs (no siblings, no .git). Preserve
-  //    their app-relative paths: Vite configs legitimately import shared build tooling through those
-  //    paths, while the isolated carve root still prevents monorepo package/config leakage.
+  // 1. Extract the surface alone (no siblings, no shared source, no .git). Every build input it does
+  //    not own now arrives as an @concertable package, so anything it reaches for outside its own
+  //    directory fails here rather than in the repository it is destined for.
   const tar = join(work, "surface.tar");
-  const archivePaths = [`app/${surface}`];
-  if (spec.kind === "web") archivePaths.push("app/scripts/vite-development-https.ts");
-  execFileSync("git", ["archive", "--format=tar", "-o", tar, treeish, ...archivePaths], {
+  execFileSync("git", ["archive", "--format=tar", "-o", tar, treeish, `app/${surface}`], {
     cwd: repoRoot,
   });
   mkdirSync(carveRoot, { recursive: true });

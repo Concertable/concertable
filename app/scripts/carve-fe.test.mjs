@@ -36,9 +36,10 @@ for (const surface of webSurfaces) {
       const surfaceDirectory = join(work, "repo", "app", ...surface.split("/"));
       const configPath = join(surfaceDirectory, "vite.config.ts");
       const config = readFileSync(configPath, "utf8");
-      const importMatch = config.match(/from ['"](.+\/vite-development-https)['"]/);
-      assert.ok(importMatch, `${configPath} does not import the shared HTTPS helper`);
-      assert.equal(existsSync(resolve(surfaceDirectory, `${importMatch[1]}.ts`)), true);
+      // The helper is a package export now, so the carved tree must contain no source copy of it:
+      // a relative specifier here would be a path the surface repository cannot resolve.
+      assert.match(config, /from ['"]@concertable\/build-config\/vite-development-https['"]/);
+      assert.equal(existsSync(join(work, "repo", "app", "scripts")), false);
     } finally {
       rmSync(work, { recursive: true, force: true });
     }
